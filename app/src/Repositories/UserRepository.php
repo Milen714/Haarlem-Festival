@@ -57,7 +57,47 @@ class UserRepository extends Repository implements IUserRepository{
 	}
 	
 	public function createUser(User $user): bool {
-		// TODO: Implement createUser method
-		return false;
+		try{
+			$pdo = $this->connect();
+			$query = 'INSERT INTO users (email, fname, lname) VALUES (:email, :fname, :lname)';
+			$stmt = $pdo->prepare($query);
+			$stmt->bindParam(':email', $user->email);
+			$stmt->bindParam(':fname', $user->fname);
+			$stmt->bindParam(':lname', $user->lname);
+			return $stmt->execute();
+		}catch(PDOException $e){
+			die("Error creating user: " . $e->getMessage());
+		}
+	}
+	public function updateUser(User $user): bool {
+        // Implementation to update user details in the database
+        try {
+            $pdo = $this->connect();
+            $query = 'UPDATE users SET fname = :fname, lname = :lname, role = :role, email = :email, 
+                    password_hash = :password_hash, address = :address, post_code = :post_code, 
+                    country = :country, isActive = :isActive, isVerified = :isVerified, 
+                    reset_token = :reset_token, reset_token_expiry = :reset_token_expiry
+                    WHERE id = :id';
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':fname', $user->fname);
+            $stmt->bindParam(':lname', $user->lname);
+            $roleValue = $user->role->value;
+            $stmt->bindParam(':role', $roleValue);
+            $stmt->bindParam(':email', $user->email);
+            $stmt->bindParam(':password_hash', $user->password_hash);
+            $stmt->bindParam(':address', $user->address);
+            $stmt->bindParam(':post_code', $user->post_code); 
+            $stmt->bindParam(':country', $user->country);
+            $stmt->bindParam(':isActive', $user->isActive, PDO::PARAM_BOOL);
+            $stmt->bindParam(':isVerified', $user->isVerified, PDO::PARAM_BOOL);
+            $stmt->bindParam(':id', $user->id, PDO::PARAM_INT); 
+            $stmt->bindParam(':reset_token', $user->reset_token);
+            $resetTokenExpiry = $user->reset_token_expiry ? $user->reset_token_expiry->format('Y-m-d H:i:s') : null;
+            $stmt->bindParam(':reset_token_expiry', $resetTokenExpiry);
+            return $stmt->execute();
+
+        } catch (PDOException $e) {
+            throw new \Exception("Error updating user: " . $e->getMessage());
+        }
 	}
 }

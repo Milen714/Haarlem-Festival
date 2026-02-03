@@ -17,14 +17,16 @@ class HomeController extends BaseController
     }
     public function index($vars = [])
     {
-        $user = $this->userService->getUserById(1);
+        $user = $this->userService->getUserById(5);
         if ($user) {
             $message = "Welcome back, " . $user->fname . "!";
         } else {
             $message = "User not found.";
         }
-        $this->view('Home/Landing', ['message' => $message, 'title' => 'The Festival Home'] );
+        $this->view('Home/Landing', ['message' => $message, 'title' => 'The Festival Home', 'user' => $user] );
     }
+    
+    
     public function setTheme($vars = [])
     {
         header('Content-Type: application/json');

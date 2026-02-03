@@ -60,23 +60,23 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
 
                     <li class="flex items-center gap-2">
                         <a href="/"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 px-3 font-bold <?php echo $_SERVER['REQUEST_URI'] == '/' ? 'text-blue-600 ' : 'text_colors_home' ?> rounded md:bg-transparent md:p-0"
+                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 px-3 font-bold <?php echo $_SERVER['REQUEST_URI'] == '/' ? 'text-blue-600 ' : 'text_colors_nav' ?> rounded md:bg-transparent md:p-0"
                             aria-current="page">Home</a>
                     </li>
 
                     <li class="flex items-center gap-2">
                         <a href="/addBook"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo $_SERVER['REQUEST_URI'] == '/addBook' ? 'text-blue-600 ' : 'text_colors_home' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo $_SERVER['REQUEST_URI'] == '/addBook' ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                             Events</a>
                     </li>
                     <li class="flex items-center gap-2">
                         <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_home' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                             Schedule</a>
                     </li>
                     <li class="flex items-center gap-2">
                         <a href="/myRequests/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myRequests') ? 'text-blue-600 ' : 'text_colors_home' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myRequests') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                             Personal Plan</a>
                     </li>
                     <li class="flex items-center gap-2">
@@ -104,7 +104,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
             <div class="flex flex-row gap-2">
                 <div class="relative flex flex-row gap-2 items-center">
                     <button id="userMenuButton" type="button" aria-expanded="false"
-                        class="flex items-center gap-2 after:content-arrow_right after:ml-1 before:content-accessibility_icon before:mr-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_home' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                        class="flex items-center gap-2 after:content-arrow_right after:ml-1 before:content-accessibility_icon before:mr-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                         Accessibility
                         <span class="sr-only">Accessibility Toggle</span>
                     </button>
@@ -115,16 +115,10 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                         <ul class="py-1 text-sm text-black dark:text-white" aria-labelledby="userMenuButton">
                             <li>
                                 <a href="/settings" class="block px-4 py-2 hover-color rounded-md">
-                                    Settings
+                                    High Contrast Mode
                                 </a>
                             </li>
-                            <li>
-                                <form action="/logout" method="post">
-                                    <button type="submit" class="w-full text-left px-4 py-2 hover-color rounded-md">
-                                        Logout
-                                    </button>
-                                </form>
-                            </li>
+
                         </ul>
                     </div>
                 </div>
@@ -139,8 +133,10 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
 
             </div>
             <div class="relative flex flex-row gap-2 items-center">
+                <?php
+                    if(isset($_SESSION['loggedInUser'])): ?>
                 <button id="userMenuButton" type="button" aria-expanded="false"
-                    class="inline-flex items-center text-colors font-semibold p-2 rounded-full
+                    class="inline-flex items-center text-colors_nav font-semibold p-2 rounded-full
                    bg-[#CBCBCB] dark:bg-[#222222] hover:bg-[#b5b5b5] dark:hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-brand">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                         L
@@ -167,9 +163,19 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                         </li>
                     </ul>
                 </div>
-                <span class="text-colors font-medium whitespace-nowrap">
-                    <span id="userTokens"></span> Credits
-                </span>
+                <?php else: ?>
+                <a href="/login" class="text-colors font-semibold p-3 rounded-[5px] shadow-[-7px_-7px_0px_#FFD93E] hover:shadow-[-4px_-4px_0px_#FFD93E]
+                   bg-[#A7C957] dark:bg-[#222222]  focus:outline-none focus:ring-2 focus:ring-brand">
+                    Login
+                </a>
+                <a href="/signup"
+                    class="text-colors font-semibold p-2 rounded-full
+                   bg-[#CBCBCB] dark:bg-[#222222] hover:bg-[#b5b5b5] dark:hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-brand">
+                    Sign Up
+                </a>
+
+                <?php endif; ?>
+
             </div>
 
         </div>

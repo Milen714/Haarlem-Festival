@@ -26,4 +26,14 @@ class UserService implements IUserService{
     public function createUser(User $user): bool {
         return $this->userRepository->createUser($user);
     }
+    public function authenticateUser(string $email, string $password): ?User {
+        $user = $this->userRepository->getUserByEmail($email);
+        if ($user && password_verify($password, $user->password_hash)) {
+            return $user;
+        }
+        return null;
+    }
+    public function updateUser(User $user): bool {
+        return $this->userRepository->updateUser($user);
+    }
 }

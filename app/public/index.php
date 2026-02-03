@@ -22,6 +22,10 @@ use App\Middleware\RoleMiddleware;
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
     $r->addRoute('POST', '/setTheme', ['App\Controllers\HomeController', 'setTheme']);
+    $r->addRoute('GET', '/login', ['App\Controllers\AccountController', 'login']);
+    $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);
+    $r->addRoute('GET', '/signup', ['App\Controllers\AccountController', 'signup']);
+    $r->addRoute('POST', '/signup', ['App\Controllers\AccountController', 'signupPost']);
 });
 
 

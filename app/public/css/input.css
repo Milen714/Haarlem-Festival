@@ -6,15 +6,22 @@
   :root {
     --text-color-nav-primary: #173A4B;
     --text-color-nav-secondary: #2C3233;
+    --text-home-primary: #004A7F;
+    --home-gold-accent: #C69A4D;
     --spacing-unit: 1rem;
     --bg-color-home-light:#F2F4F3;
     --bg-color-home-dark:#0F0F0F;
+
+    --shadow-yellow: -7px -7px 0px #FFD93E;
   }
 }
 
 @layer components{
+    .text_colors_nav{
+        @apply text-[var(--text-color-nav-primary)] dark:text-black;
+    }
     .text_colors_home{
-        @apply text-[var(--text-color-nav-primary)];
+        @apply text-[var(--text-home-primary)];
     }
     .bg_colors_home{
         @apply bg-[var(--bg-color-home-light)];
@@ -25,5 +32,20 @@
     -webkit-appearance: base-select;
     -moz-appearance: base-select;
     @apply bg_colors_home text_colors_home border border-[#2C3233] rounded-xl focus:outline-none focus:ring-0 focus:border-[#2C3233];
-}
+  }
+  .input_group{
+        @apply flex flex-col mb-4;
+    }  
+    /* .input_label{
+        @apply font-semibold block mb-2 text-sm  text-black dark:text-black;
+    }  */
+    .input_label{
+        @apply block mb-2 text-sm font-medium text-black dark:text-black;
+    }
+    .form_input{
+        @apply block min-w-0 grow bg-gray-200 py-1.5 pr-3 pl-1 rounded-md text-base text-black placeholder:text-gray-500 focus:outline-none sm:text-sm/6;
+    }
+    .button_primary{
+        @apply block w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700;
+    }
 }
