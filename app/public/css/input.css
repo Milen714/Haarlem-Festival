@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --text-color-nav-primary: #173A4B;
+    --text-color-nav-secondary: #2C3233;
+    --spacing-unit: 1rem;
+    --bg-color-home-light:#F2F4F3;
+    --bg-color-home-dark:#0F0F0F;
+  }
+}
+
+@layer components{
+    .text_colors_home{
+        @apply text-[var(--text-color-nav-primary)];
+    }
+    .bg_colors_home{
+        @apply bg-[var(--bg-color-home-light)];
+    }
+    select,
+    select::picker(select) {
+    appearance: base-select;
+    -webkit-appearance: base-select;
+    -moz-appearance: base-select;
+    @apply bg_colors_home text_colors_home border border-[#2C3233] rounded-xl focus:outline-none focus:ring-0 focus:border-[#2C3233];
+}
+}
