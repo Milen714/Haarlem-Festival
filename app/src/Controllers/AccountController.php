@@ -22,7 +22,7 @@ class AccountController extends BaseController {
         if (isset($_GET['error'])) {
             $error = htmlspecialchars(urldecode($_GET['error']));
         }
-        $this->view('Home/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+        $this->view('Account/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
     }
     public function loginPost($vars = [])
     {
@@ -42,7 +42,7 @@ class AccountController extends BaseController {
         }
         } catch (\Exception $e) {
             //header("Location: /login/" . urlencode($e->getMessage()));
-            $this->view('Home/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            $this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
             exit();
         }
     }
@@ -57,7 +57,7 @@ class AccountController extends BaseController {
     }
     public function signup($vars = [])
     {
-        $this->view('Home/Signup', ['title' => 'Signup Page'] );
+        $this->view('Account/Signup', ['title' => 'Signup Page'] );
     }
     public function signupPost($vars = [])
     {
@@ -65,14 +65,14 @@ class AccountController extends BaseController {
         $user = $user->fromPost();
         try {
             $this->userService->createUser($user);
-        $this->view('Home/Login', ['success' => "Signup successful for " . htmlspecialchars($user->fname) . " with email " . htmlspecialchars($user->email) . ".", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+        $this->view('Account/Login', ['success' => "Signup successful for " . htmlspecialchars($user->fname) . " with email " . htmlspecialchars($user->email) . ".", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
             } catch (\Exception $e) {
                 if(str_contains($e->getMessage(), 'email')) {
                     $errorMsg = "This email is already in use.";
                 } else {
                  $errorMsg = $e->getMessage();
                 }
-                $this->view('Home/Signup', ['title' => 'Signup Page', 'userModel' => $user, 'error' => $errorMsg] );
+                $this->view('Account/Signup', ['title' => 'Signup Page', 'userModel' => $user, 'error' => $errorMsg] );
         }
     }
     public function forgotPassword() {
@@ -90,7 +90,7 @@ class AccountController extends BaseController {
             $resetLink = $DOMAIN_URL . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
-            $this->view('Home/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
             
             
         } catch (\Exception $e) {

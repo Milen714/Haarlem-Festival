@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        montserrat: ['Montserrat', 'sans-serif'],
+      },
       content: {
         'arrow_right': 'url("/Assets/Nav/ArrowRightNav.svg")',
         'arrow_down': 'url("/Assets/Nav/ArrowDownNav.svg")',
