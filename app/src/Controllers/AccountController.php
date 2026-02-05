@@ -64,15 +64,25 @@ class AccountController extends BaseController {
         $user = new User();
         $user = $user->fromPost();
         try {
+            // Check if email already exists
+            $existingUser = $this->userService->getUserByEmail($user->email);
+            if ($existingUser) {
+                throw new \Exception("This email is already in use.");
+            }
+            
+            $token = $this->generateVerificationToken($user);
+            require_once '../config/secrets.php';
+            $verificationLink = $DOMAIN_URL . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             $this->userService->createUser($user);
-        $this->view('Account/Login', ['success' => "Signup successful for " . htmlspecialchars($user->fname) . " with email " . htmlspecialchars($user->email) . ".", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            } catch (\Exception $e) {
-                if(str_contains($e->getMessage(), 'email')) {
-                    $errorMsg = "This email is already in use.";
-                } else {
-                 $errorMsg = $e->getMessage();
-                }
-                $this->view('Account/Signup', ['title' => 'Signup Page', 'userModel' => $user, 'error' => $errorMsg] );
+            $this->mailService->accountVerificationMail($user->email, $verificationLink);
+            $this->view('Account/Login', ['success' => "Signup successful for " . htmlspecialchars($user->fname) . " with email " . htmlspecialchars($user->email) . ".", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+        } catch (\Exception $e) {
+            if(str_contains($e->getMessage(), 'email')) {
+                $errorMsg = "This email is already in use.";
+            } else {
+                $errorMsg = $e->getMessage();
+            }
+            $this->view('Account/Signup', ['title' => 'Signup Page', 'userModel' => $user, 'error' => $errorMsg] );
         }
     }
     public function forgotPassword() {
@@ -162,6 +172,15 @@ class AccountController extends BaseController {
         } catch (\Exception $e) {
             die("Error generating password reset token: " . $e->getMessage());
         }
-
+    }
+    private function generateVerificationToken(User $user): string {
+        try {
+        $token = $this->generateSecureToken();
+        $user->verification_token = $token;
+        
+        return $token;
+        } catch (\Exception $e) {
+            die("Error generating verification token: " . $e->getMessage());
+        }
     }
 }

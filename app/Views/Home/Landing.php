@@ -7,4 +7,5 @@ namespace App\Views\Home;
     <?php include 'Components/HomeHero.php'; ?>
     <?php include 'Components/HomeEvents.php'; ?>
     <?php include 'Components/HomeSchedule.php'; ?>
+    <?php include 'Components/HomeMap.php'; ?>
 </section>

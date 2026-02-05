@@ -1,5 +1,6 @@
 <?php 
 namespace App\Models;
+use App\Models\Enums\UserRole;
 use DateTime;
 class User {
     public ?int $id = null;

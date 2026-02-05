@@ -13,18 +13,23 @@
     --home-gold-accent: #C69A4D;
     --home-history-accent: #A7C957;
     --home-history-accent-muted: #A7C9574D;
+    --home-history-accent-muted-high-contrast: #0066664D;
     --home-history-high-contrast-accent: #006666;
     --home-yummy-accent: #CC112F;
     --home-yummy-accent-muted: #CC112F4D;
+    --home-yummy-accent-muted-high-contrast: #8B00004D;
     --home-yummy-high-contrast-accent:#8B0000;
     --home-jazz-accent: #6B2FD1;
     --home-jazz-accent-muted: #6B2FD14D;
+    --home-jazz-accent-muted-high-contrast: #4B00824D;
     --home-jazz-high-contrast-accent: #4B0082;
     --home-dance-accent: #FFD600;
     --home-dance-accent-muted: #FFD6004D;
+    --home-dance-accent-muted-high-contrast: #CC99004D;
     --home-dance-high-contrast-accent: #CC9900;
     --home-magic-accent: #B18132;
     --home-magic-accent-muted: #B181324D;
+    --home-magic-accent-muted-high-contrast: #8B69144D;
     --home-magic-high-contrast-accent: #8B6914;
 
     

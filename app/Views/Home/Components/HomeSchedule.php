@@ -73,7 +73,7 @@ if ($bool) {
     <div class="w-full flex flex-col items-center justify-center gap-3">
         <header class="flex flex-row gap-3 items-center justify-center mb-4 w-full">
             <div class="flex flex-col items-center justify-center p-5 bg-[var(--text-home-primary)] 
-                dark:bg-[var(--text-home-primary-high-contrast)] rounded-lg flex-shrink-0">
+                dark:bg-[var(--text-home-high-contrast-primary:)] rounded-lg flex-shrink-0">
                 <h2 class="text-white text-2xl font-bold mb-1">Evening</h2>
                 <p class="text-white">17:00 - 21:00</p>
             </div>

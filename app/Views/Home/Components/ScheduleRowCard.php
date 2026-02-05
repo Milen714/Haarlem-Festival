@@ -3,22 +3,22 @@ namespace App\Views\Home\Components;
 $cardStyles = [];
 switch (rand(1, 5)) {
     case 1:
-        $cardStyles = ['side' => 'bg-[var(--home-magic-accent)]', 'muted' => 'bg-[var(--home-magic-accent-muted)]'];
+        $cardStyles = ['side' => 'bg-[var(--home-magic-accent)] dark:bg-[var(--home-magic-accent-muted)]', 'muted' => 'bg-[var(--home-magic-accent-muted)] dark:bg-[var(--home-magic-accent-muted-high-contrast)]'];
         break;
     case 2:
-        $cardStyles = ['side' => 'bg-[var(--home-history-accent)]', 'muted' => 'bg-[var(--home-history-accent-muted)]'];
+        $cardStyles = ['side' => 'bg-[var(--home-history-accent)] dark:bg-[var(--home-history-accent-muted)]', 'muted' => 'bg-[var(--home-history-accent-muted)] dark:bg-[var(--home-history-accent-muted-high-contrast)]'];
         break;
     case 3:
-        $cardStyles = ['side' => 'bg-[var(--home-yummy-accent)]', 'muted' => 'bg-[var(--home-yummy-accent-muted)]'];
+        $cardStyles = ['side' => 'bg-[var(--home-yummy-accent)] dark:bg-[var(--home-yummy-accent-muted)]', 'muted' => 'bg-[var(--home-yummy-accent-muted)] dark:bg-[var(--home-yummy-accent-muted-high-contrast)]'];
         break;
     case 4:
-        $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)]', 'muted' => 'bg-[var(--home-jazz-accent-muted)]'];
+        $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)] dark:bg-[var(--home-jazz-accent-muted)]', 'muted' => 'bg-[var(--home-jazz-accent-muted)] dark:bg-[var(--home-jazz-accent-muted-high-contrast)]'];
         break;
     case 5:
-        $cardStyles = ['side' => 'bg-[var(--home-dance-accent)]', 'muted' => 'bg-[var(--home-dance-accent-muted)]'];
+        $cardStyles = ['side' => 'bg-[var(--home-dance-accent)] dark:bg-[var(--home-dance-accent-muted)]', 'muted' => 'bg-[var(--home-dance-accent-muted)] dark:bg-[var(--home-dance-accent-muted-high-contrast)]'];
         break;
     default:
-        $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)]', 'muted' => 'bg-[var(--home-jazz-accent-muted)]'];
+        $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)] dark:bg-[var(--home-jazz-accent-muted)]', 'muted' => 'bg-[var(--home-jazz-accent-muted)] dark:bg-[var(--home-jazz-accent-muted-high-contrast)]'];
 }
 ?>
 
