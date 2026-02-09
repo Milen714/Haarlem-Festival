@@ -3,6 +3,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\Mailer;
 use App\Models\User;
+use App\Models\Enums\UserRole;
 use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Services\MailService;
@@ -33,10 +34,16 @@ class AccountController extends BaseController {
             $password = $_POST['password'] ?? '';
             $user = $this->userService->authenticateUser($email, $password);
         if ($user) {
-            // Successful login
             $_SESSION['loggedInUser'] = $user;
+            if($user->role === UserRole::ADMIN) {
+                header("Location: /cms");
+            }else{
+                // Successful login
+            
             header("Location: /");
             exit();
+            
+            }
             
         } else {
             // Failed login

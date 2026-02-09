@@ -21,6 +21,7 @@ use App\Middleware\RoleMiddleware;
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
+    $r->addRoute('GET', '/cms', ['App\Controllers\HomeController', 'adminIndex']);
     $r->addRoute('POST', '/setTheme', ['App\Controllers\HomeController', 'setTheme']);
     $r->addRoute('GET', '/login', ['App\Controllers\AccountController', 'login']);
     $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);
@@ -28,9 +29,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/signup', ['App\Controllers\AccountController', 'signupPost']);
     $r->addRoute('GET', '/forgot-password', ['App\Controllers\AccountController', 'forgotPassword']);
     $r->addRoute('POST', '/forgot-password', ['App\Controllers\AccountController', 'forgotPasswordPost']);
-    $r->addRoute('GET', '/logout', ['App\Controllers\AccountController', 'logout']);
+    $r->addRoute('POST', '/logout', ['App\Controllers\AccountController', 'logout']);
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
+    $r->addRoute('GET', '/wysiwyg-demo', ['App\Controllers\HomeController', 'wysiwygDemo']);
+    $r->addRoute('POST', '/wysiwyg-demo-post', ['App\Controllers\HomeController', 'wysiwygDemoPost']);
 });
 
 

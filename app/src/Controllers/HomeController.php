@@ -5,6 +5,8 @@ use App\Controllers\BaseController;
 use App\Services\UserService;
 use App\Repositories\UserRepository;
 use App\Models\User;
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
 
 class HomeController extends BaseController
 {
@@ -25,7 +27,17 @@ class HomeController extends BaseController
         }
         $this->view('Home/Landing', ['message' => $message, 'title' => 'The Festival Home', 'user' => $user] );
     }
-    
+    #[RequireRole([UserRole::ADMIN])]
+    public function adminIndex($vars = [])
+    {
+        $user = $this->userService->getUserById(5);
+        if ($user) {
+            $message = "Welcome back, " . $user->fname . "!";
+        } else {
+            $message = "User not found.";
+        }
+        $this->cmsLayout('Home/Landing', ['message' => $message, 'title' => 'The Festival Home', 'user' => $user] );
+    }
     
     public function setTheme($vars = [])
     {
@@ -40,5 +52,15 @@ class HomeController extends BaseController
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'No theme selected']);
         }
+    }
+    public function wysiwygDemo($vars = [])
+    {
+        $this->cmsLayout('Cms/WysiwygDemo', ['message' => "Thi", 'title' => 'WYSIWYG Editor Demo', 'param' => $vars['param'] ?? 'noParam'] );
+    }
+    public function wysiwygDemoPost($vars = [])
+    {
+        $html = $_POST['content'] ?? '';
+
+        $this->cmsLayout('Cms/WysiwgDemoPreview', ['content' => $html, 'title' => 'WYSIWYG Editor Result'] );
     }
 }
