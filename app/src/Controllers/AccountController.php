@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Services\MailService;
+$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->safeLoad();
 
 class AccountController extends BaseController {
     private UserService $userService;
@@ -71,8 +73,7 @@ class AccountController extends BaseController {
             }
             
             $token = $this->generateVerificationToken($user);
-            require_once '../config/secrets.php';
-            $verificationLink = $DOMAIN_URL . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            $verificationLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             $this->userService->createUser($user);
             $this->mailService->accountVerificationMail($user->email, $verificationLink);
             $this->view('Account/Login', ['success' => "Signup successful for " . htmlspecialchars($user->fname) . " with email " . htmlspecialchars($user->email) . ".", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
@@ -96,8 +97,7 @@ class AccountController extends BaseController {
                 throw new \Exception("No user found with that email address.");
             }
             $token = $this->generatePasswordResetToken($user);
-            require_once '../config/secrets.php';
-            $resetLink = $DOMAIN_URL . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            $resetLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
             $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
@@ -152,7 +152,7 @@ class AccountController extends BaseController {
             $user->reset_token_expiry = null;
             $this->userService->updateUser($user);
             // Redirect to login with success message
-            $this->view('Home/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
         } catch (\Exception $e) {
             $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage()]);
         }

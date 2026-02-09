@@ -1864,10 +1864,6 @@ select:focus,
   background-color: rgb(34 34 34 / var(--tw-bg-opacity, 1));
 }
 
-.dark\:bg-\[var\(--text-home-primary-high-contrast\)\]:is(.dark *){
-  background-color: var(--text-home-primary-high-contrast);
-}
-
 .dark\:bg-\[var\(--home-dance-accent-muted\)\]:is(.dark *){
   background-color: var(--home-dance-accent-muted);
 }
@@ -1915,11 +1911,6 @@ select:focus,
 .dark\:text-white:is(.dark *){
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.dark\:text-black:is(.dark *){
-  --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
 }
 
 .dark\:hover\:bg-\[\#3a3a3a\]:hover:is(.dark *){
