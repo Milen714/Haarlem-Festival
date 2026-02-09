@@ -103,13 +103,13 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
             <!-- User menu button -->
             <div class="flex flex-row gap-2">
                 <div class="relative flex flex-row gap-2 items-center">
-                    <button id="userMenuButton" type="button" aria-expanded="false"
+                    <button data-dropdown-toggle="accessibilityDropdown" type="button" aria-expanded="false"
                         class="flex items-center gap-2 after:content-arrow_right after:ml-1 before:content-accessibility_icon before:mr-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                         Accessibility
                         <span class="sr-only">Accessibility Toggle</span>
                     </button>
                     <!-- Dropdown -->
-                    <div id="userMenuDropdown" class="absolute right-0 top-full mt-2 w-44 z-50 hidden
+                    <div id="accessibilityDropdown" class="absolute right-0 top-full mt-2 w-44 z-50 hidden
                        rounded-lg border border-[#2C3233]
                        bg-[#F2F0EF] dark:bg-[#0F0F0F] shadow-lg">
                         <ul class="py-1 text-sm text-black dark:text-white" aria-labelledby="userMenuButton">
@@ -122,20 +122,49 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                         </ul>
                     </div>
                 </div>
-                <select name="language" id="language-select">
-                    <selectedcontent></selectedcontent>
-                    <option default value="EN"><img src="/Assets/Nav/EnglishIcon.png" alt="EnglishIcon"> English
-                    </option>
-                    <option value="NL"><img src="/Assets/Nav/DutchIcon.png" alt="DutchIcon"> Dutch</option>
-                    <option value="DE"><img src="/Assets/Nav/GermanIcon.png" alt="GermanIcon"> German</option>
-                    <option value="FR"><img src="/Assets/Nav/FrenchIcon.png" alt="FrenchIcon"> French</option>
-                </select>
+                <div class="relative flex flex-row gap-2 items-center">
+                    <button data-dropdown-toggle="languageDropdown" type="button" aria-expanded="false"
+                        class="flex items-center gap-2 py-2 font-bold text_colors_nav px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                        <img src="/Assets/Nav/EnglishIcon.png" alt="Language" class="w-5 h-5">
+                        <span id="selectedLanguage">EN</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <!-- Dropdown -->
+                    <div id="languageDropdown" class="absolute right-0 top-full mt-2 w-36 z-50 hidden
+                       rounded-lg border border-[#2C3233]
+                       bg-[#F2F0EF] dark:bg-[#0F0F0F] shadow-lg">
+                        <ul class="py-1 text-sm text-black dark:text-white" aria-labelledby="languageButton">
+                            <li>
+                                <button type="button" data-lang="EN" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                    <img src="/Assets/Nav/EnglishIcon.png" alt="English" class="w-5 h-5"> English
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" data-lang="NL" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                    <img src="/Assets/Nav/DutchIcon.png" alt="Dutch" class="w-5 h-5"> Dutch
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" data-lang="DE" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                    <img src="/Assets/Nav/GermanIcon.png" alt="German" class="w-5 h-5"> German
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" data-lang="FR" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                    <img src="/Assets/Nav/FrenchIcon.png" alt="French" class="w-5 h-5"> French
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
             </div>
             <div class="relative flex flex-row gap-2 items-center">
                 <?php
                     if(isset($_SESSION['loggedInUser'])): ?>
-                <button id="userMenuButton" type="button" aria-expanded="false"
+                <button data-dropdown-toggle="userMenuDropdown" type="button" aria-expanded="false"
                     class="inline-flex items-center text-colors_nav font-semibold p-2 rounded-full
                    bg-[#CBCBCB] dark:bg-[#222222] hover:bg-[#b5b5b5] dark:hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-brand">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
@@ -164,15 +193,14 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                     </ul>
                 </div>
                 <?php else: ?>
-                <a href="/login" class="text-colors font-semibold p-3 rounded-[5px] shadow-[-7px_-7px_0px_#FFD93E] hover:shadow-[-4px_-4px_0px_#FFD93E]
-                   bg-[#A7C957] dark:bg-[#222222]  focus:outline-none focus:ring-2 focus:ring-brand">
-                    Login
-                </a>
-                <a href="/signup"
-                    class="text-colors font-semibold p-2 rounded-full
-                   bg-[#CBCBCB] dark:bg-[#222222] hover:bg-[#b5b5b5] dark:hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-brand">
-                    Sign Up
-                </a>
+                <section class="flex flex-row gap-4">
+                    <a href="/login" class="home_history_button">
+                        Login
+                    </a>
+                    <a href="/signup" class="home_jazz_button">
+                        Sign Up
+                    </a>
+                </section>
 
                 <?php endif; ?>
 

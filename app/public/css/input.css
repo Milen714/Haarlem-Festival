@@ -125,5 +125,15 @@
     .calendar-coils::before{
         @apply absolute content-['']  block w-[2rem] h-[3rem] bg-[url("/Assets/Home/CalendarCoilsJazz.svg")] bg-cover bg-no-repeat bg-center right-1/2 top-1/2;
     } */
+    /* MAGIC@TEYLERS */
+    .magic_paragraph{
+        @apply text-[#C69A4D]
+    }
+    .magic_paragraph h1{
+        @apply text-3xl font-bold mb-2
+    }
+     .magic_paragraph p{
+        @apply text-lg text-black
+    }
 
 }

@@ -1037,6 +1037,27 @@ select:focus,
         @apply absolute content-['']  block w-[2rem] h-[3rem] bg-[url("/Assets/Home/CalendarCoilsJazz.svg")] bg-cover bg-no-repeat bg-center right-1/2 top-1/2;
     } */
 
+/* MAGIC@TEYLERS */
+
+.magic_paragraph{
+  --tw-text-opacity: 1;
+  color: rgb(198 154 77 / var(--tw-text-opacity, 1));
+}
+
+.magic_paragraph h1{
+  margin-bottom: 0.5rem;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+}
+
+.magic_paragraph p{
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+}
+
 .sr-only{
   position: absolute;
   width: 1px;
@@ -1901,6 +1922,11 @@ select:focus,
   color: rgb(220 38 38 / var(--tw-text-opacity, 1));
 }
 
+.text-red-700{
+  --tw-text-opacity: 1;
+  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
+}
+
 .text-red-900{
   --tw-text-opacity: 1;
   color: rgb(127 29 29 / var(--tw-text-opacity, 1));
@@ -1913,16 +1939,6 @@ select:focus,
 .text-white{
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-green-500{
-  --tw-text-opacity: 1;
-  color: rgb(34 197 94 / var(--tw-text-opacity, 1));
-}
-
-.text-red-700{
-  --tw-text-opacity: 1;
-  color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
 .shadow-\[-7px_-7px_0px_\#FFD93E\]{

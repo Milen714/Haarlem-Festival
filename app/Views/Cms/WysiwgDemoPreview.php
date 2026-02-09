@@ -15,3 +15,7 @@ $html = isset($content) ? $content : $existingHtml;
         <?= $html ?>
     </div>
     <p><a href="/wysiwyg-demo">Back</a></p>
+
+    <div class="magic_paragraph">
+        <?= $html ?>
+    </div>
