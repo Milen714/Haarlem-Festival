@@ -8,29 +8,61 @@ services:
         volumes:
             - ./nginx.conf:/etc/nginx/nginx.conf
             - ./app:/app
+#     php:
+#         build:
+#             context: .
+#             dockerfile: PHP.Dockerfile
+#         volumes:
+#             - ./app:/app
+        
+#     mysql:
+#         image: mariadb:latest
+#         environment:
+#             MYSQL_ROOT_PASSWORD: 'secret123'
+#             MYSQL_USER: 'developer'
+#             MYSQL_PASSWORD: 'secret123'
+#             MYSQL_DATABASE: 'developmentdb'
+#         volumes:
+#             - mysqldata:/var/lib/mysql
+#         ports:
+#             - 3306:3306
+#     phpmyadmin:
+#         image: phpmyadmin:latest
+#         ports:
+#             - 8080:80
+#         environment:
+#             - PMA_HOST=mysql
+# volumes:
+#     mysqldata: {}
+
     php:
         build:
             context: .
             dockerfile: PHP.Dockerfile
         volumes:
             - ./app:/app
-        
-    mysql:
-        image: mariadb:latest
+            - ./ca.pem:/etc/ssl/certs/aiven-ca.pem:ro
         environment:
-            MYSQL_ROOT_PASSWORD: 'secret123'
-            MYSQL_USER: 'developer'
-            MYSQL_PASSWORD: 'secret123'
-            MYSQL_DATABASE: 'developmentdb'
-        volumes:
-            - mysqldata:/var/lib/mysql
-        ports:
-            - 3306:3306
+            DB_HOST: ${AIVEN_HOST}
+            DB_PORT: ${AIVEN_PORT}
+            DB_DATABASE: ${AIVEN_DB}
+            DB_USERNAME: ${AIVEN_USER}
+            DB_PASSWORD: ${AIVEN_PASSWORD}
+            DB_SSL_CA: /etc/ssl/certs/aiven-ca.pem
+
     phpmyadmin:
         image: phpmyadmin:latest
         ports:
-            - 8080:80
+            - "8080:80"
+        env_file:
+            - ./app/.env
         environment:
-            - PMA_HOST=mysql
-volumes:
-    mysqldata: {}
+            PMA_HOST: ${AIVEN_HOST}
+            PMA_PORT: ${AIVEN_PORT}
+            PMA_USER: ${AIVEN_USER}
+            PMA_PASSWORD: ${AIVEN_PASSWORD}
+            PMA_SSL: "true"
+            PMA_SSL_CA: /etc/ssl/certs/aiven-ca.pem
+        volumes:
+            - ./ca.pem:/etc/ssl/certs/aiven-ca.pem:ro
+        restart: unless-stopped

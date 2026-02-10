@@ -45,25 +45,14 @@ if (isset($userModel)) {
                 value="<?php echo htmlspecialchars($user->lname ?? ''); ?>" required>
         </article>
         <article class="input_group">
-            <label class="input_label" for="country">Country:</label>
-            <input class="form_input" type="text" id="country" name="country"
-                value="<?php echo htmlspecialchars($user->country ?? ''); ?>" required>
-        </article>
-        <article class="input_group">
             <label class="input_label" for="address">Address:</label>
             <input class="form_input" type="text" id="address" name="address"
-                value="<?php echo htmlspecialchars($user->address ?? ''); ?>" required>
+                value="<?php echo htmlspecialchars($user->address ?? ''); ?>">
         </article>
         <article class="input_group">
-            <label class="input_label" for="state">State/Province:</label>
-            <input class="form_input" type="text" id="state" name="state"
-                value="<?php echo htmlspecialchars($user->state ?? ''); ?>" required>
-        </article>
-
-        <article class="input_group">
-            <label class="input_label" for="post_code">PostCode:</label>
-            <input class="form_input" type="text" id="post_code" name="post_code"
-                value="<?php echo htmlspecialchars($user->post_code ?? ''); ?>" required>
+            <label class="input_label" for="phone">Phone:</label>
+            <input class="form_input" type="tel" id="phone" name="phone"
+                value="<?php echo htmlspecialchars($user->phone ?? ''); ?>">
         </article>
         <button class="button_primary" type="submit">Signup</button>
     </form>
