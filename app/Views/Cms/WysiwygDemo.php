@@ -19,7 +19,7 @@ tinymce.init({
     selector: '#content',
     menubar: false,
     plugins: 'link lists',
-    toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link',
+    toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link | image',
     block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2',
     branding: false
 });

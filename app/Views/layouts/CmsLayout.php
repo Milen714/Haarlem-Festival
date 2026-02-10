@@ -192,7 +192,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                 <!-- Left side: Menu toggle & Breadcrumb -->
                 <div class="flex items-center space-x-4">
                     <button id="openSidebar"
-                        class="lg:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                        class="hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16" />
@@ -303,10 +303,12 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
     function openSidebar() {
         sidebar.classList.remove('-translate-x-full');
         sidebar.classList.add('translate-x-0');
+        sidebar.classList.add('lg:translate-x-0');
         sidebarOverlay?.classList.remove('hidden');
         if (mainContent) mainContent.classList.add('lg:ml-64');
         closeSidebarBtn?.classList.remove('hidden');
         sidebarMenuToggle?.classList.add('hidden');
+        openSidebarBtn?.classList.add('hidden');
     }
 
     function closeSidebarFn() {
@@ -317,6 +319,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
         if (mainContent) mainContent.classList.remove('lg:ml-64');
         closeSidebarBtn?.classList.add('hidden');
         sidebarMenuToggle?.classList.remove('hidden');
+        openSidebarBtn?.classList.remove('hidden');
     }
 
     openSidebarBtn?.addEventListener('click', openSidebar);
