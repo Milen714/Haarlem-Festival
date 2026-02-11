@@ -4,6 +4,9 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Services\UserService;
 use App\Repositories\UserRepository;
+use App\Repositories\HomePageRepository;
+use App\CmsModels\Enums\TheFestivalPageType;
+use App\Services\HomePageService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
@@ -12,10 +15,15 @@ class HomeController extends BaseController
 {
     private UserService $userService;
     private UserRepository $userRepository;
+    private HomePageService $homePageService;
+    private HomePageRepository $homePageRepository;
+
     public function __construct()
     {
         $this->userRepository = new UserRepository();
         $this->userService = new UserService($this->userRepository);
+        $this->homePageRepository = new HomePageRepository();
+        $this->homePageService = new HomePageService($this->homePageRepository);    
     }
     public function index($vars = [])
     {
@@ -62,5 +70,18 @@ class HomeController extends BaseController
         $html = $_POST['content'] ?? '';
 
         $this->cmsLayout('Cms/WysiwgDemoPreview', ['content' => $html, 'title' => 'WYSIWYG Editor Result'] );
+    }
+    public function homePage($vars = [])
+    {
+        header('Content-Type: application/json');
+        
+        $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
+        echo json_encode($pageData);
+    }
+    public function updateHomePage($vars = [])
+    {
+        
+        $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
+        $this->cmsLayout('Cms/UpdateHomepage', ['pageData' => $pageData, 'title' => 'Edit Home Page'] );
     }
 }
