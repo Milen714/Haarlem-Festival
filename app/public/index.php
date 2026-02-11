@@ -34,6 +34,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/wysiwyg-demo', ['App\Controllers\HomeController', 'wysiwygDemo']);
     $r->addRoute('POST', '/wysiwyg-demo-post', ['App\Controllers\HomeController', 'wysiwygDemoPost']);
+    $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
 });
 
 

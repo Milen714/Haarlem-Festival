@@ -63,4 +63,8 @@ class HomeController extends BaseController
 
         $this->cmsLayout('Cms/WysiwgDemoPreview', ['content' => $html, 'title' => 'WYSIWYG Editor Result'] );
     }
+    public function YummyHome($vars = [])
+    {
+        $this->view('Yummy/HomePage', ['id'=> 1] );
+    }
 }
