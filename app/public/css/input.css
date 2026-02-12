@@ -30,7 +30,9 @@
     --home-magic-accent: #B18132;
     --home-magic-accent-muted: #B181324D;
     --home-magic-accent-muted-high-contrast: #8B69144D;
-    --home-magic-high-contrast-accent: #8B6914;
+    --home-magic-high-contrast-accent: #8B6914; 
+
+    --yummy-primary: #CC112F;
 
     
     --spacing-unit: 1rem;
