@@ -102,11 +102,10 @@ class HomeController extends BaseController
     }
     public function testJazz($vars = [])
     {
-        header('Content-Type: application/json');
-        $media = $this->mediaService->getGalleryById(1);
-        echo json_encode($media);
-        // var_dump($media);
-        // die();
-        // $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
+        $media = new \App\CmsModels\TheFestivalPage();
+        $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
+    public function YummyHome($vars = [])
+    {
+        $this->view('Yummy/HomePage', ['id'=> 1] );
     }
 }
