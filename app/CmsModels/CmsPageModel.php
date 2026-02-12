@@ -9,8 +9,6 @@ abstract class CmsPageModel
     public TheFestivalPageType $page_type;
     public ?string $slug = null;
     public ?string $title = null;
-    public ?Media $hero_media = null;
-    public ?int $hero_gallery_id = null;
     public ?string $sidebar_html = null;
 
     public function __construct() {

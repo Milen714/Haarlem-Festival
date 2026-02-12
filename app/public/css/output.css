@@ -1673,10 +1673,6 @@ select:focus,
   background-color: var(--home-yummy-accent-muted);
 }
 
-.bg-\[var\(--jazz-text-primary\)\]{
-  background-color: var(--jazz-text-primary);
-}
-
 .bg-\[var\(--text-home-primary\)\]{
   background-color: var(--text-home-primary);
 }
@@ -2027,11 +2023,6 @@ select:focus,
   background-color: rgb(181 181 181 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-black:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
-}
-
 .hover\:bg-gray-100:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
@@ -2040,11 +2031,6 @@ select:focus,
 .hover\:text-gray-700:hover{
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity, 1));
-}
-
-.hover\:text-yellow-300:hover{
-  --tw-text-opacity: 1;
-  color: rgb(253 224 71 / var(--tw-text-opacity, 1));
 }
 
 .hover\:underline:hover{

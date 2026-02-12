@@ -3,6 +3,7 @@ namespace App\CmsModels;
 use App\CmsModels\Enums\TheFestivalSectionPageType;
 use App\CmsModels\Enums\SectionType;
 use App\Models\Media;
+use App\Models\Gallery;
 
 class TheFestivalSection
 {
@@ -17,6 +18,7 @@ class TheFestivalSection
     public int $display_order;
     public ?string $cta_text = null;
     public ?string $cta_url = null;
+    public ?Gallery $gallery = null;
 
     public function __construct() {
        
@@ -27,8 +29,6 @@ class TheFestivalSection
         $this->section_type = SectionType::from($data['section_type']);
         $this->title = $data['title'] ?? null;
         $this->content_html = $data['content_html'] ?? null;
-        $this->media = new Media();
-        $this->media->fromPDOData($data);
         $this->caption = $data['caption'] ?? null;
         $this->display_order = isset($data['sec_order']) ? (int)$data['sec_order'] : 0;
         $this->cta_text = $data['cta_text'] ?? null;

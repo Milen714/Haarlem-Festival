@@ -10,6 +10,8 @@ use App\Services\HomePageService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
+use App\Repositories\MediaRepository;
+use App\Services\MediaService;
 
 class HomeController extends BaseController
 {
@@ -17,13 +19,17 @@ class HomeController extends BaseController
     private UserRepository $userRepository;
     private HomePageService $homePageService;
     private HomePageRepository $homePageRepository;
+    private MediaService $mediaService;
+    private MediaRepository $mediaRepository;
 
     public function __construct()
     {
         $this->userRepository = new UserRepository();
         $this->userService = new UserService($this->userRepository);
         $this->homePageRepository = new HomePageRepository();
-        $this->homePageService = new HomePageService($this->homePageRepository);    
+        $this->homePageService = new HomePageService($this->homePageRepository);
+        $this->mediaRepository = new MediaRepository();
+        $this->mediaService = new MediaService($this->mediaRepository);
     }
     public function index($vars = [])
     {
@@ -96,7 +102,11 @@ class HomeController extends BaseController
     }
     public function testJazz($vars = [])
     {
-        $media = new \App\CmsModels\TheFestivalPage();
-        $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
+        header('Content-Type: application/json');
+        $media = $this->mediaService->getGalleryById(1);
+        echo json_encode($media);
+        // var_dump($media);
+        // die();
+        // $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
     }
 }
