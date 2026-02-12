@@ -98,5 +98,8 @@ class HomeController extends BaseController
     {
         $media = new \App\CmsModels\TheFestivalPage();
         $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
+    public function YummyHome($vars = [])
+    {
+        $this->view('Yummy/HomePage', ['id'=> 1] );
     }
 }

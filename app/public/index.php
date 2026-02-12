@@ -34,10 +34,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/wysiwyg-demo', ['App\Controllers\HomeController', 'wysiwygDemo']);
     $r->addRoute('POST', '/wysiwyg-demo-post', ['App\Controllers\HomeController', 'wysiwygDemoPost']);
+
     $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
     $r->addRoute('GET', '/home-update', ['App\Controllers\HomeController', 'updateHomePage']);
     $r->addRoute('POST', '/home-update', ['App\Controllers\HomeController', 'updateHomePagePost']);
     $r->addRoute('GET', '/testJazz', ['App\Controllers\HomeController', 'testJazz']);
+
+    $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
+
 });
 
 
