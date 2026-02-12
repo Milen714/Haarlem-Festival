@@ -4,7 +4,7 @@ namespace App\Views\Yummy\Components;
 ?>
 
 <section>
-    <section class="bg-yellow-500 py-16 px-6 text-gray-900">
+    <section class="bg-yellow-500 py-16 px-6 text-gray-900 gap-6">
       <div class="container mx-auto grid md:grid-cols-2 gap-10 items-center">
         <div>
           <h2 class="text-2xl font-bold mb-4">Discover Haarlem</h2>

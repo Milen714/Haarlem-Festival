@@ -3,7 +3,7 @@ namespace App\Views\Yummy\Components;
 ?>
 
 
-<section class="bg-yellow-500 py-16 px-6">
+<section class="bg-yellow-500 py-16 px-6 gap-6">
       <h2 class="text-xl font-bold text-gray-900 mb-8 text-center">
         More Events to See
       </h2>

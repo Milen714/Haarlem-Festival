@@ -34,8 +34,17 @@
     --home-magic-high-contrast-accent: #8B6914;
     /* Jazz section*/
     --jazz-text-primary: #ffffff; 
+
     /* Yummy Section*/
-    --yummy-primary: #CC112F;
+    --yummy-primary: #49111C;
+    --yummy-primary-muted: #CC112F4D;
+    --yummy-primary-text: #FFFFFF;
+    --yummy-sec-section: #C8963E;
+    --yummy-sec-text: #49111C;
+    --yummy-sec-btn: #C8963E; 
+    --yummy-sec-btn-text:#FFFFFF;
+    --yummy-sec-hover-btn: #49111C;
+    --yummy-sec-hover-btn-text:#000000;
     
     --spacing-unit: 1rem;
     --bg-color-home-light:#F2F4F3;

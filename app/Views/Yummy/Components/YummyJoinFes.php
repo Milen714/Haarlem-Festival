@@ -3,7 +3,7 @@ namespace App\Views\Yummy\Components;
 
 ?>
 
-<section class="bg-yellow-500 text-gray-900 py-16 px-6 text-center">
+<section class="bg-yellow-500 text-gray-900 py-16 px-6 text-center gap-6">
       <h2 class="text-2xl font-bold mb-6">Join the Yummy Festival Experience</h2>
       <p class="max-w-2xl mx-auto mb-10">
         Immerse yourself in Haarlem’s culinary landscape featuring exceptional restaurants, street dining,

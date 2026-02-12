@@ -3,10 +3,10 @@ namespace App\Views\Yummy\Components;
 
 ?>
 
-<section class="bg-[#4b1212] text-white py-16 px-6 md:px-12">
+<section class="bg-[var(--yummy-primary)] text-white py-16 px-6 md:px-12 gap-6">
       <div class="container mx-auto grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <h2 class="text-2xl font-bold text-yellow-400 mb-4">
+          <h2 class="text-2xl font-bold text-[var(--yummy-primary-text)] mb-4">
             Haven for foodies!
           </h2>
           <p class="text-gray-200 mb-6 leading-relaxed">
