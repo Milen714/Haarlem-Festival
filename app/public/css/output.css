@@ -1340,11 +1340,6 @@ select:focus,
   width: 100%;
 }
 
-.w-min{
-  width: -moz-min-content;
-  width: min-content;
-}
-
 .min-w-0{
   min-width: 0px;
 }

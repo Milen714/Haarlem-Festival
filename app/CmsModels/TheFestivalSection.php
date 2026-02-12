@@ -28,4 +28,15 @@ class TheFestivalSection
         $this->caption = $data['caption'] ?? null;
         $this->display_order = isset($data['sec_order']) ? (int)$data['sec_order'] : 0;
     }
+
+    public function fromPostData(array $data, ?int $pageId = null): void {
+        $this->section_id = isset($data['section_id']) ? (int)$data['section_id'] : null;
+        $this->page_id = $pageId ?? (isset($data['page_id']) ? (int)$data['page_id'] : null);
+        $this->section_type = SectionType::from($data['section_type']);
+        $this->title = $data['title'] ?? null;
+        $this->content_html = $data['content_html'] ?? null;
+        $this->media_id = isset($data['media_id']) ? (int)$data['media_id'] : null;
+        $this->caption = $data['caption'] ?? null;
+        $this->display_order = isset($data['display_order']) ? (int)$data['display_order'] : 0;
+    }
 }

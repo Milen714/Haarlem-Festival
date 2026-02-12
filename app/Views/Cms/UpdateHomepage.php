@@ -12,20 +12,29 @@ $pageData = $pageData ?? null;
             <h1 class="text-4xl font-bold">Edit Home Page</h1>
         </header>
     </div>
-    <form method="POST" action="/home-page-update" class=" flex flex-col gap-4 items-start justify-center">
-        <article class="text-center">
-            <label for="title">Title</label><br>
+    <form method="POST" action="/home-update" class=" flex flex-col gap-4 items-start justify-center">
+        <input type="hidden" name="page_id" value="<?= htmlspecialchars($pageData->page_id) ?>">
+        <input type="hidden" name="page_type" value="<?= htmlspecialchars($pageData->page_type->value) ?>">
+        <article class="input_group ">
+            <label class="input_label" for="title">Page Title:</label>
             <input type="text" id="title" name="title" value="<?= htmlspecialchars($pageData->title) ?>"
-                class="input_primary">
+                class="form_input">
+        </article>
+        <article class="input_group ">
+            <label class="input_label" for="slug">Page Slug:</label>
+            <input type="text" id="slug" name="slug" value="<?= htmlspecialchars($pageData->slug) ?>"
+                class="form_input">
         </article>
 
-        <article class="text-center">
-            <label for="content">Content</label>
+        <article class="input_group ">
+            <label class="input_label" for="content">SideBar Content:</label>
             <!-- TinyMCE -->
-            <textarea id="content" name="content" rows="5"
+            <textarea id="content" class="tinymce" name="content" rows="5"
                 cols="80"><?= htmlspecialchars($pageData->sidebar_html) ?></textarea>
         </article>
-
+        <?php foreach ($pageData->content_sections as $i => $section): ?>
+        <?php include __DIR__ . '/Components/SectionForm.php'; ?>
+        <?php endforeach; ?>
 
         <button class="button_primary" type="submit">Save</button>
     </form>
@@ -35,7 +44,7 @@ $pageData = $pageData ?? null;
 
 <script>
 tinymce.init({
-    selector: '#content',
+    selector: '.tinymce',
     menubar: false,
     plugins: 'link lists',
     toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link | image',

@@ -84,4 +84,14 @@ class HomeController extends BaseController
         $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
         $this->cmsLayout('Cms/UpdateHomepage', ['pageData' => $pageData, 'title' => 'Edit Home Page'] );
     }
+    public function updateHomePagePost($vars = [])
+    {
+        header('Content-Type: application/json');
+        $pageData = new \App\CmsModels\TheFestivalPage();
+        $pageData->fromPostData($_POST);
+        
+        echo json_encode($pageData);
+               
+    
+    }
 }
