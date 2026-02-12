@@ -50,7 +50,7 @@ class BaseController
         echo "403 Forbidden";
         exit();
     }
-    protected function cmsLayout($viewName, $vars = [],$layout = 'layouts/cmsLayout')
+    protected function cmsLayout($viewName, $vars = [],$layout = 'layouts/CmsLayout')
     {
          // Load the view and capture output
         ob_start();
