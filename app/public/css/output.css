@@ -582,6 +582,8 @@ video {
   --home-magic-accent-muted: #B181324D;
   --home-magic-accent-muted-high-contrast: #8B69144D;
   --home-magic-high-contrast-accent: #8B6914;
+  /* Jazz section*/
+  --jazz-text-primary: #ffffff;
   --spacing-unit: 1rem;
   --bg-color-home-light:#F2F4F3;
   --bg-color-home-dark:#0F0F0F;
@@ -1360,6 +1362,10 @@ select:focus,
   max-width: 1536px;
 }
 
+.max-w-xs{
+  max-width: 20rem;
+}
+
 .flex-1{
   flex: 1 1 0%;
 }
@@ -1448,6 +1454,10 @@ select:focus,
 
 .gap-8{
   gap: 2rem;
+}
+
+.gap-\[16px\]{
+  gap: 16px;
 }
 
 .space-x-2 > :not([hidden]) ~ :not([hidden]){
@@ -1661,6 +1671,10 @@ select:focus,
 
 .bg-\[var\(--home-yummy-accent-muted\)\]{
   background-color: var(--home-yummy-accent-muted);
+}
+
+.bg-\[var\(--jazz-text-primary\)\]{
+  background-color: var(--jazz-text-primary);
 }
 
 .bg-\[var\(--text-home-primary\)\]{
@@ -2013,6 +2027,11 @@ select:focus,
   background-color: rgb(181 181 181 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-black:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:bg-gray-100:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
@@ -2021,6 +2040,11 @@ select:focus,
 .hover\:text-gray-700:hover{
   --tw-text-opacity: 1;
   color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-yellow-300:hover{
+  --tw-text-opacity: 1;
+  color: rgb(253 224 71 / var(--tw-text-opacity, 1));
 }
 
 .hover\:underline:hover{

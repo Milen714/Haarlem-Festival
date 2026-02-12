@@ -4,6 +4,7 @@ namespace App\CmsModels;
 use App\CmsModels\Enums\TheFestivalPageType;
 use App\CmsModels\TheFestivalSection;
 use App\CmsModels\CmsPageModel;
+use App\Models\Media;
 
 class TheFestivalPage extends CmsPageModel
 {
@@ -21,7 +22,8 @@ class TheFestivalPage extends CmsPageModel
         $this->page_type = TheFestivalPageType::from($data['page_type']);
         $this->slug = $data['slug'] ?? null;
         $this->title = $data['page_title'] ?? null;
-        $this->hero_media_id = isset($data['hero_media_id']) ? (int)$data['hero_media_id'] : null;
+        $this->hero_media = new Media();
+        $this->hero_media->fromPDOData($data);
         $this->hero_gallery_id = isset($data['hero_gallery_id']) ? (int)$data['hero_gallery_id'] : null;
         $this->sidebar_html = $data['sidebar_html'] ?? null;
     }
@@ -31,7 +33,8 @@ class TheFestivalPage extends CmsPageModel
         $this->page_type = TheFestivalPageType::from($data['page_type']);
         $this->slug = $data['slug'] ?? null;
         $this->title = $data['title'] ?? null;
-        $this->hero_media_id = isset($data['hero_media_id']) ? (int)$data['hero_media_id'] : null;
+        $this->hero_media = new Media();
+        $this->hero_media->fromPostData($data);
         $this->hero_gallery_id = isset($data['hero_gallery_id']) ? (int)$data['hero_gallery_id'] : null;
         $this->sidebar_html = $data['content'] ?? ($data['sidebar_html'] ?? null);
 

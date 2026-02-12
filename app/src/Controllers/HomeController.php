@@ -86,12 +86,17 @@ class HomeController extends BaseController
     }
     public function updateHomePagePost($vars = [])
     {
+        // var_dump($_POST);
+        // die();
         header('Content-Type: application/json');
         $pageData = new \App\CmsModels\TheFestivalPage();
         $pageData->fromPostData($_POST);
         
         echo json_encode($pageData);
-               
-    
+    }
+    public function testJazz($vars = [])
+    {
+        $media = new \App\CmsModels\TheFestivalPage();
+        $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
     }
 }

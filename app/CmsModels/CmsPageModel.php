@@ -1,6 +1,7 @@
 <?php
 namespace App\CmsModels;
 use App\CmsModels\Enums\TheFestivalPageType;
+use App\Models\Media;
 
 abstract class CmsPageModel
 {
@@ -8,7 +9,7 @@ abstract class CmsPageModel
     public TheFestivalPageType $page_type;
     public ?string $slug = null;
     public ?string $title = null;
-    public ?int $hero_media_id = null;
+    public ?Media $hero_media = null;
     public ?int $hero_gallery_id = null;
     public ?string $sidebar_html = null;
 

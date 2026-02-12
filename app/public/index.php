@@ -37,6 +37,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
     $r->addRoute('GET', '/home-update', ['App\Controllers\HomeController', 'updateHomePage']);
     $r->addRoute('POST', '/home-update', ['App\Controllers\HomeController', 'updateHomePagePost']);
+    $r->addRoute('GET', '/testJazz', ['App\Controllers\HomeController', 'testJazz']);
 });
 
 

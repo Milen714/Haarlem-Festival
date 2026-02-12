@@ -2,6 +2,7 @@
 namespace App\CmsModels;
 use App\CmsModels\Enums\TheFestivalSectionPageType;
 use App\CmsModels\Enums\SectionType;
+use App\Models\Media;
 
 class TheFestivalSection
 {
@@ -11,9 +12,11 @@ class TheFestivalSection
     public SectionType $section_type;
     public ?string $title = null;
     public ?string $content_html = null;
-    public ?int $media_id = null;
+    public ?Media $media = null;
     public ?string $caption = null;
     public int $display_order;
+    public ?string $cta_text = null;
+    public ?string $cta_url = null;
 
     public function __construct() {
        
@@ -24,9 +27,12 @@ class TheFestivalSection
         $this->section_type = SectionType::from($data['section_type']);
         $this->title = $data['title'] ?? null;
         $this->content_html = $data['content_html'] ?? null;
-        $this->media_id = isset($data['media_id']) ? (int)$data['media_id'] : null;
+        $this->media = new Media();
+        $this->media->fromPDOData($data);
         $this->caption = $data['caption'] ?? null;
         $this->display_order = isset($data['sec_order']) ? (int)$data['sec_order'] : 0;
+        $this->cta_text = $data['cta_text'] ?? null;
+        $this->cta_url = $data['cta_url'] ?? null;
     }
 
     public function fromPostData(array $data, ?int $pageId = null): void {
@@ -35,8 +41,13 @@ class TheFestivalSection
         $this->section_type = SectionType::from($data['section_type']);
         $this->title = $data['title'] ?? null;
         $this->content_html = $data['content_html'] ?? null;
-        $this->media_id = isset($data['media_id']) ? (int)$data['media_id'] : null;
+        $this->media = new Media();
+        $this->media->fromPostData(['media_id' => $data['media_id'] ?? null,
+            'file_path' => $data['file_path'] ?? null,
+            'alt_text' => $data['alt_text'] ?? null]);   
         $this->caption = $data['caption'] ?? null;
         $this->display_order = isset($data['display_order']) ? (int)$data['display_order'] : 0;
+        $this->cta_text = $data['cta_text'] ?? null;
+        $this->cta_url = $data['cta_url'] ?? null;
     }
 }
