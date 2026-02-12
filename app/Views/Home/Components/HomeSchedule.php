@@ -11,14 +11,12 @@ if ($bool) {
 
 
 <div class="flex flex-col gap-4 items-center justify-center p-5 w-[90%] mx-auto mb-10">
-    <div>
-        <header class="headers_home pb-5">
-            <h1 class="text-4xl font-bold">Festival at a Glance</h1>
-        </header>
-        <header class="pb-5 text-center">
-            <h1 class="text-4xl font-bold">July 2026</h1>
-        </header>
-    </div>
+    <section>
+        <?php if (isset($scheduleSection->content_html)) {
+            echo $scheduleSection->content_html;
+        }?>
+
+    </section>
     <div class="flex flex-col gap-4">
         <nav>
             <ul class="flex flex-row flex-wrap gap-4 items-center justify-center">

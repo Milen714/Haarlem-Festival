@@ -33,13 +33,8 @@ class HomeController extends BaseController
     }
     public function index($vars = [])
     {
-        $user = $this->userService->getUserById(5);
-        if ($user) {
-            $message = "Welcome back, " . $user->fname . "!";
-        } else {
-            $message = "User not found.";
-        }
-        $this->view('Home/Landing', ['message' => $message, 'title' => 'The Festival Home', 'user' => $user] );
+        $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
+        $this->view('Home/Landing', ['title' => 'The Festival Home', 'pageData' => $pageData] );
     }
     #[RequireRole([UserRole::ADMIN])]
     public function adminIndex($vars = [])
@@ -97,8 +92,9 @@ class HomeController extends BaseController
         header('Content-Type: application/json');
         $pageData = new \App\CmsModels\TheFestivalPage();
         $pageData->fromPostData($_POST);
+        $success = $this->homePageService->updatePage($pageData);
         
-        echo json_encode($pageData);
+        echo json_encode(['success' => $success, 'pageData' => $pageData]);
     }
     public function testJazz($vars = [])
     {
