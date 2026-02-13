@@ -1627,10 +1627,6 @@ select:focus,
   border-width: 1px;
 }
 
-.border-2{
-  border-width: 2px;
-}
-
 .border-4{
   border-width: 4px;
 }
@@ -1673,8 +1669,28 @@ select:focus,
   border-color: var(--home-history-accent);
 }
 
+.border-\[var\(--home-dance-accent\)\]{
+  border-color: var(--home-dance-accent);
+}
+
 .border-\[var\(--home-gold-accent\)\]{
   border-color: var(--home-gold-accent);
+}
+
+.border-\[var\(--home-history-accent\)\]{
+  border-color: var(--home-history-accent);
+}
+
+.border-\[var\(--home-jazz-accent\)\]{
+  border-color: var(--home-jazz-accent);
+}
+
+.border-\[var\(--home-magic-accent\)\]{
+  border-color: var(--home-magic-accent);
+}
+
+.border-\[var\(--home-yummy-accent\)\]{
+  border-color: var(--home-yummy-accent);
 }
 
 .border-gray-200{
@@ -1682,9 +1698,9 @@ select:focus,
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
 }
 
-.border-gray-500{
+.border-gray-300{
   --tw-border-opacity: 1;
-  border-color: rgb(107 114 128 / var(--tw-border-opacity, 1));
+  border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
 }
 
 .border-green-400{
@@ -1695,11 +1711,6 @@ select:focus,
 .border-red-400{
   --tw-border-opacity: 1;
   border-color: rgb(248 113 113 / var(--tw-border-opacity, 1));
-}
-
-.border-gray-300{
-  --tw-border-opacity: 1;
-  border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
 }
 
 .bg-\[\#4b1212\]{
@@ -2195,24 +2206,14 @@ select:focus,
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-gray-400:hover{
+.hover\:bg-gray-200:hover{
   --tw-bg-opacity: 1;
-  background-color: rgb(156 163 175 / var(--tw-bg-opacity, 1));
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-yellow-600:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(202 138 4 / var(--tw-bg-opacity, 1));
-}
-
-.hover\:bg-gray-300:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(209 213 219 / var(--tw-bg-opacity, 1));
-}
-
-.hover\:bg-gray-200:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:text-gray-700:hover{

@@ -6,12 +6,12 @@ use App\CmsModels\PageSection;
 use App\CmsModels\Enums\PageType;
 use App\CmsModels\Page;
 use App\Framework\Repository;
-use App\Repositories\Interfaces\IHomePageRepository;
+use App\Repositories\Interfaces\IPageRepository;
 use App\Repositories\MediaRepository;
 use PDO;
 use PDOException;
 
-class HomePageRepository extends Repository implements IHomePageRepository
+class PageRepository extends Repository implements IPageRepository
 {
     private MediaRepository $mediaRepository; 
 
