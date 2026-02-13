@@ -5,7 +5,7 @@ use App\Controllers\BaseController;
 use App\Services\UserService;
 use App\Repositories\UserRepository;
 use App\Repositories\HomePageRepository;
-use App\CmsModels\Enums\TheFestivalPageType;
+use App\CmsModels\Enums\PageType;
 use App\Services\HomePageService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
@@ -33,8 +33,8 @@ class HomeController extends BaseController
     }
     public function index($vars = [])
     {
-        $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
-        $this->view('Home/Landing', ['title' => 'The Festival Home', 'pageData' => $pageData] );
+        $pageData = $this->homePageService->getPageData(PageType::homepage);
+        $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData] );
     }
     #[RequireRole([UserRole::ADMIN])]
     public function adminIndex($vars = [])
@@ -76,13 +76,13 @@ class HomeController extends BaseController
     {
         header('Content-Type: application/json');
         
-        $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
+        $pageData = $this->homePageService->getPageData(PageType::homepage);
         echo json_encode($pageData);
     }
     public function updateHomePage($vars = [])
     {
         
-        $pageData = $this->homePageService->getPageData(TheFestivalPageType::homepage);
+        $pageData = $this->homePageService->getPageData(PageType::homepage);
         $this->cmsLayout('Cms/UpdateHomepage', ['pageData' => $pageData, 'title' => 'Edit Home Page'] );
     }
     public function updateHomePagePost($vars = [])
@@ -90,7 +90,7 @@ class HomeController extends BaseController
         // var_dump($_POST);
         // die();
         header('Content-Type: application/json');
-        $pageData = new \App\CmsModels\TheFestivalPage();
+        $pageData = new \App\CmsModels\Page();
         $pageData->fromPostData($_POST);
         $success = $this->homePageService->updatePage($pageData);
         
@@ -98,7 +98,7 @@ class HomeController extends BaseController
     }
     public function testJazz($vars = [])
     {
-        $media = new \App\CmsModels\TheFestivalPage();
+        $media = new \App\CmsModels\Page();
         $this->view('Jazz/index', ['title' => 'Test Jazz Page' , 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"] );
     }
     public function YummyHome($vars = [])

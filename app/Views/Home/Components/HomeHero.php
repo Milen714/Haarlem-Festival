@@ -13,7 +13,7 @@ namespace App\Views\Home\Components;
             <img src="/Assets/Home/HomeHero.png" alt="Haarlem Panorama"
                 class="w-full h-auto object-cover rounded-l-3xl">
         </div>
-        <div class="w-[45%] flex flex-col justify-center text-lg space-y-4">
+        <div class="w-[45%] flex flex-col justify-center text-lg space-y-4 text-black">
             <?php echo $heroSection->content_html ?>
         </div>
     </div>
