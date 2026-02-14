@@ -593,7 +593,7 @@ video {
   --yummy-sec-btn: #C8963E;
   --yummy-sec-btn-text:#FFFFFF;
   --yummy-sec-hover-btn: #49111C;
-  --yummy-sec-hover-btn-text:#000000;
+  --yummy-sec-hover-btn-text:#FFFFFF;
   --spacing-unit: 1rem;
   --bg-color-home-light:#F2F4F3;
   --bg-color-home-dark:#0F0F0F;
@@ -1398,6 +1398,10 @@ select:focus,
   width: 100%;
 }
 
+.w-3{
+  width: 0.75rem;
+}
+
 .min-w-0{
   min-width: 0px;
 }
@@ -1700,6 +1704,10 @@ select:focus,
   border-color: rgb(248 113 113 / var(--tw-border-opacity, 1));
 }
 
+.border-\[var\(--yummy-sec-section\)\]{
+  border-color: var(--yummy-sec-section);
+}
+
 .bg-\[\#4b1212\]{
   --tw-bg-opacity: 1;
   background-color: rgb(75 18 18 / var(--tw-bg-opacity, 1));
@@ -1814,6 +1822,10 @@ select:focus,
 .bg-yellow-500{
   --tw-bg-opacity: 1;
   background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
+}
+
+.bg-\[var\(--yummy-secondary-section\)\]{
+  background-color: var(--yummy-secondary-section);
 }
 
 .bg-opacity-50{
@@ -2125,6 +2137,22 @@ select:focus,
 .text-yellow-400{
   --tw-text-opacity: 1;
   color: rgb(250 204 21 / var(--tw-text-opacity, 1));
+}
+
+.text-\[var\(--yummy-section\)\]{
+  color: var(--yummy-section);
+}
+
+.text-\[var\(--yummy-sec-section\)\]{
+  color: var(--yummy-sec-section);
+}
+
+.text-\[var\(--yummy-sec-text\)\]{
+  color: var(--yummy-sec-text);
+}
+
+.text-\[var\(--yummy-primary\)\]{
+  color: var(--yummy-primary);
 }
 
 .opacity-60{

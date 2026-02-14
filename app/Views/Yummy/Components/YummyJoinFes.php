@@ -3,9 +3,9 @@ namespace App\Views\Yummy\Components;
 
 ?>
 
-<section class="bg-yellow-500 text-gray-900 py-16 px-6 text-center gap-6">
-      <h2 class="text-2xl font-bold mb-6">Join the Yummy Festival Experience</h2>
-      <p class="max-w-2xl mx-auto mb-10">
+<section class="bg-[var(--yummy-sec-section)] py-16 px-6 text-center gap-6">
+      <h2 class="text-2xl text-[var(--yummy-primary)]  font-bold mb-6">Join the Yummy Festival Experience</h2>
+      <p class="max-w-2xl text-[var(--yummy-primary)] mx-auto mb-10">
         Immerse yourself in Haarlem’s culinary landscape featuring exceptional restaurants, street dining,
         and delightful tasting experiences.
       </p>

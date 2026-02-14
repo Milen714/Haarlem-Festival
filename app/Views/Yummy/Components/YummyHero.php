@@ -19,7 +19,7 @@ namespace App\Views\Yummy\Components;
         </p>
         <a
           href="#restaurants"
-          class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] font-semibold px-6 py-3 rounded"
+          class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] font-semibold px-6 py-3 rounded"
         >
           View Restaurants
         </a>

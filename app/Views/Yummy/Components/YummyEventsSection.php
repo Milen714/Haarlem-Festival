@@ -3,7 +3,7 @@ namespace App\Views\Yummy\Components;
 ?>
 
 
-<section class="bg-yellow-500 py-16 px-6 gap-6">
+<section class="bg-[var(--yummy-sec-section)] py-16 px-6 gap-6">
       <h2 class="text-xl font-bold text-gray-900 mb-8 text-center">
         More Events to See
       </h2>
@@ -17,7 +17,7 @@ namespace App\Views\Yummy\Components;
           <div class="p-4">
             <h3 class="font-semibold">Jazz - Haarlem Festival</h3>
             <button
-              class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded mt-3"
+              class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)]  text-white text-sm px-4 py-2 rounded mt-3"
             >
               View more
             </button>
@@ -32,7 +32,7 @@ namespace App\Views\Yummy\Components;
           <div class="p-4">
             <h3 class="font-semibold">Magic - Haarlem Festival</h3>
             <button
-              class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded mt-3"
+              class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] text-white text-sm px-4 py-2 rounded mt-3"
             >
               View more
             </button>
@@ -47,7 +47,7 @@ namespace App\Views\Yummy\Components;
           <div class="p-4">
             <h3 class="font-semibold">History - Haarlem Festival</h3>
             <button
-              class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded mt-3"
+              class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] text-white text-sm px-4 py-2 rounded mt-3"
             >
               View more
             </button>
@@ -62,7 +62,7 @@ namespace App\Views\Yummy\Components;
           <div class="p-4">
             <h3 class="font-semibold">Dance - Haarlem Festival</h3>
             <button
-              class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded mt-3"
+              class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] text-white text-sm px-4 py-2 rounded mt-3"
             >
               View more
             </button>

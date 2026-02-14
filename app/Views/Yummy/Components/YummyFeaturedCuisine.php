@@ -3,7 +3,7 @@ namespace App\Views\Yummy\Components;
 ?>
 
 <section class="bg-[var(--yummy-sec-section)] text-[#FFFFFF] py-16 pt-4 pb-4 gap-6">
-      <h2 class="text-center text-2xl font-bold text-[var(--yummy-secondary-text)] mb-10">
+      <h2 class="text-center text-[var(--yummy-primary)] text-2xl font-bold mb-10">
         Featured Cuisines
       </h2>
       <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-6">
