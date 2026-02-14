@@ -5,6 +5,8 @@ use App\CmsModels\Enums\PageType;
 use App\CmsModels\PageSection;
 use App\CmsModels\CmsPageModel;
 use App\Models\Media;
+use App\Models\EventCategory;
+
 
 class Page extends CmsPageModel
 {
@@ -23,6 +25,11 @@ class Page extends CmsPageModel
         $this->slug = $data['slug'] ?? null;
         $this->title = $data['page_title'] ?? null;
         $this->sidebar_html = $data['sidebar_html'] ?? null;
+        
+        if (isset($data['event_category_id'])) {
+            $this->event_category = new EventCategory();
+            $this->event_category->fromPDOData($data);
+        }
     }
 
     public function fromPostData(array $data): void {

@@ -8,6 +8,7 @@ use App\CmsModels\Page;
 use App\Framework\Repository;
 use App\Repositories\Interfaces\IPageRepository;
 use App\Repositories\MediaRepository;
+use App\Models\EventCategory;
 use PDO;
 use PDOException;
 
@@ -26,10 +27,13 @@ class PageRepository extends Repository implements IPageRepository
         try {
             $pdo = $this->connect();
             $query = "SELECT 
-                p.page_id, p.page_type, p.slug, p.title AS page_title, p.sidebar_html,
+                p.page_id, p.page_type, p.slug, p.title AS page_title, p.sidebar_html, p.event_category_id,
                 s.section_id, s.section_type, s.title AS section_title, s.content_html, 
-                s.media_id, s.display_order AS sec_order, s.cta_text, s.cta_url, s.gallery_id
+                s.media_id, s.display_order AS sec_order, s.cta_text, s.cta_url, s.gallery_id, 
+                ec.event_id AS event_category_id, ec.title AS event_category_title,
+                ec.type AS event_category_type, ec.category_description AS event_category_description, ec.slug AS event_category_slug
             FROM PAGES p
+            LEFT JOIN EVENT_CATEGORIES ec ON p.event_category_id = ec.event_id
             LEFT JOIN PAGE_SECTIONS s ON p.page_id = s.page_id
             WHERE p.page_type = :type
             ORDER BY s.display_order ASC";
