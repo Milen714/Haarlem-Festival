@@ -1,28 +1,28 @@
 <?php
 namespace App\Views\Home\Components;
 $reverseStyle = isset($isReverse) && $isReverse ? "flex-row-reverse" : "flex-row";
-$borderColor = "";
+$borderClass = "";
 $buttonStyle = "";
 switch ($section->title)
 {
     case str_contains($section->title, "History"):
-        $borderColor = "--home-history-accent";
+        $borderClass = "border-[var(--home-history-accent)]";
         $buttonStyle = "home_history_button";
         break;
     case str_contains($section->title, "Yummy"):
-        $borderColor = "--home-yummy-accent";
+        $borderClass = "border-[var(--home-yummy-accent)]";
         $buttonStyle = "home_yummy_button";
         break;
     case str_contains($section->title, "Jazz"):
-        $borderColor = "--home-jazz-accent";
+        $borderClass = "border-[var(--home-jazz-accent)]";
         $buttonStyle = "home_jazz_button";
         break;
     case str_contains($section->title, "Dance"):
-        $borderColor = "--home-dance-accent";
+        $borderClass = "border-[var(--home-dance-accent)]";
         $buttonStyle = "home_dance_button";         
         break;
     case str_contains($section->title, "Magic"): 
-        $borderColor = "--home-magic-accent"; 
+        $borderClass = "border-[var(--home-magic-accent)]"; 
         $buttonStyle = "home_magic_button"; 
         break;
 }
@@ -31,7 +31,7 @@ switch ($section->title)
 
 <article class="flex <?php echo $reverseStyle ?> w-full justify-around items-center">
 
-    <img class=" w-[40%] mr-5 h-auto object-cover rounded-xl border-4 border-[<?php echo $borderColor ?>] shadow-md"
+    <img class=" w-[40%] mr-5 h-auto object-cover rounded-xl border-4 <?php echo $borderClass ?> shadow-md"
         src="<?php echo $section->media->file_path ?>" alt="St. Bavo Church">
 
     <div class="flex flex-col w-[30%] items-center gap-4">
