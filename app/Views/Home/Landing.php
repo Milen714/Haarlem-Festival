@@ -1,9 +1,9 @@
 <?php
 namespace App\Views\Home;
-use App\CmsModels\TheFestivalSection;
+use App\CmsModels\PageSection;
 use App\CmsModels\Enums\SectionType;
-/** @var TheFestivalSection[] $sections */
-$heroSection = TheFestivalSection::findHeroSection($pageData->content_sections);
+/** @var PageSection[] $sections */
+$heroSection = PageSection::findHeroSection($pageData->content_sections);
 $eventSections = [];
 $eventTitleSection = null;
 $scheduleSection = null;

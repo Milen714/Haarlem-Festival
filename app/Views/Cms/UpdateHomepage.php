@@ -1,7 +1,7 @@
 <?php 
 namespace App\Views\Cms;
-use App\CmsModels\TheFestivalPage;
-/** @var TheFestivalPage $pageData */
+use App\CmsModels\Page;
+/** @var Page $pageData */
 $pageData = $pageData ?? null;
 
 ?>

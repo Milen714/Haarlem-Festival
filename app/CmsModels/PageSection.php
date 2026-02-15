@@ -5,7 +5,7 @@ use App\CmsModels\Enums\SectionType;
 use App\Models\Media;
 use App\Models\Gallery;
 
-class TheFestivalSection
+class PageSection
 {
     
     public ?int $section_id = null;
@@ -50,7 +50,7 @@ class TheFestivalSection
         $this->cta_text = $data['cta_text'] ?? null;
         $this->cta_url = $data['cta_url'] ?? null;
     }
-    public static function findHeroSection(array $sections): ?TheFestivalSection {
+    public static function findHeroSection(array $sections): ?PageSection {
         foreach ($sections as $section) {
             if ($section->section_type === SectionType::hero_picture || $section->section_type === SectionType::hero_gallery) {
                 return $section;
