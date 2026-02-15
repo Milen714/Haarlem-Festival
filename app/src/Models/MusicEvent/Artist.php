@@ -22,6 +22,11 @@ class Artist
 	public ?string $collaborations = null;
 	public ?DateTime $deleted_at = null;
 
+	// Display properties for event listings
+	public ?string $genres = null;
+	public ?bool $is_headliner = null;
+	public ?int $performance_order = null;
+
 	public function __construct() {}
 
 	public function fromPDOData(array $data): void
@@ -39,10 +44,15 @@ class Artist
 		$this->collaborations = $data['collaborations'] ?? null;
 		$this->deleted_at = isset($data['deleted_at']) ? new DateTime($data['deleted_at']) : null;
 
-		if (isset($data['profile_image_id'])) {
+		// Genre and event data
+		$this->genres = $data['genres'] ?? null;
+		$this->is_headliner = isset($data['is_headliner']) ? (bool)$data['is_headliner'] : null;
+		$this->performance_order = isset($data['performance_order']) ? (int)$data['performance_order'] : null;
+
+		if (isset($data['profile_image_id']) || isset($data['media_id'])) {
 			$this->profile_image = new Media();
 			$this->profile_image->fromPDOData([
-				'media_id' => $data['profile_image_id'],
+				'media_id' => $data['profile_image_id'] ?? $data['media_id'] ?? null,
 				'file_path' => $data['profile_image_path'] ?? ($data['file_path'] ?? null),
 				'alt_text' => $data['profile_image_alt_text'] ?? ($data['alt_text'] ?? null),
 			]);
@@ -73,6 +83,11 @@ class Artist
 		$this->press_quote = $data['press_quote'] ?? '';
 		$this->collaborations = $data['collaborations'] ?? '';
 		$this->deleted_at = !empty($data['deleted_at']) ? new DateTime($data['deleted_at']) : null;
+
+		// Genre and event data from POST
+		$this->genres = $data['genres'] ?? null;
+		$this->is_headliner = isset($data['is_headliner']) ? (bool)$data['is_headliner'] : null;
+		$this->performance_order = isset($data['performance_order']) ? (int)$data['performance_order'] : null;
 
 		$profileImageId = $data['profile_image_id'] ?? null;
 		if ($profileImageId !== null && $profileImageId !== '') {
