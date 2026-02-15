@@ -1,7 +1,7 @@
 <?php 
 namespace App\Views\Cms;
-use App\CmsModels\TheFestivalPage;
-/** @var TheFestivalPage $pageData */
+use App\CmsModels\Page;
+/** @var Page $pageData */
 $pageData = $pageData ?? null;
 
 ?>
@@ -12,20 +12,32 @@ $pageData = $pageData ?? null;
             <h1 class="text-4xl font-bold">Edit Home Page</h1>
         </header>
     </div>
-    <form method="POST" action="/home-page-update" class=" flex flex-col gap-4 items-start justify-center">
-        <article class="text-center">
-            <label for="title">Title</label><br>
-            <input type="text" id="title" name="title" value="<?= htmlspecialchars($pageData->title) ?>"
-                class="input_primary">
-        </article>
-
-        <article class="text-center">
-            <label for="content">Content</label>
-            <!-- TinyMCE -->
-            <textarea id="content" name="content" rows="5"
-                cols="80"><?= htmlspecialchars($pageData->sidebar_html) ?></textarea>
-        </article>
-
+    <form method="POST" action="/home-update" class=" flex flex-col gap-4 items-start justify-center ">
+        <input type="hidden" name="page_id" value="<?= htmlspecialchars($pageData->page_id) ?>">
+        <input type="hidden" name="page_type" value="<?= htmlspecialchars($pageData->page_type->value) ?>">
+        <section class="border p-4 rounded-md mb-4 inset-shadow-sm">
+            <article class="flex flex-row gap-2 justify-between">
+                <article class="input_group ">
+                    <label class="input_label" for="title">Page Title:</label>
+                    <input type="text" id="title" name="title" value="<?= htmlspecialchars($pageData->title) ?>"
+                        class="form_input">
+                </article>
+                <article class="input_group ">
+                    <label class="input_label" for="slug">Page Slug:</label>
+                    <input type="text" id="slug" name="slug" value="<?= htmlspecialchars($pageData->slug) ?>"
+                        class="form_input">
+                </article>
+            </article>
+            <article class="input_group ">
+                <label class="input_label" for="content">SideBar Content:</label>
+                <!-- TinyMCE -->
+                <textarea id="content" class="tinymce" name="content" rows="5"
+                    cols="40"><?= htmlspecialchars($pageData->sidebar_html) ?></textarea>
+            </article>
+        </section>
+        <?php foreach ($pageData->content_sections as $i => $section): ?>
+        <?php include __DIR__ . '/Components/SectionForm.php'; ?>
+        <?php endforeach; ?>
 
         <button class="button_primary" type="submit">Save</button>
     </form>
@@ -35,11 +47,13 @@ $pageData = $pageData ?? null;
 
 <script>
 tinymce.init({
-    selector: '#content',
+    selector: '.tinymce',
     menubar: false,
-    plugins: 'link lists',
+    plugins: 'autoresize link lists',
     toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link | image',
     block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2',
+    min_height: 150,
+    max_height: 700,
     branding: false
 });
 </script>
