@@ -1649,28 +1649,12 @@ select:focus,
   border-color: rgb(177 129 50 / var(--tw-border-opacity, 1));
 }
 
-.border-\[--home-dance-accent\]{
-  border-color: var(--home-dance-accent);
-}
-
 .border-\[--home-gold-accent\]{
   border-color: var(--home-gold-accent);
 }
 
 .border-\[--home-history-accent\]{
   border-color: var(--home-history-accent);
-}
-
-.border-\[--home-jazz-accent\]{
-  border-color: var(--home-jazz-accent);
-}
-
-.border-\[--home-magic-accent\]{
-  border-color: var(--home-magic-accent);
-}
-
-.border-\[--home-yummy-accent\]{
-  border-color: var(--home-yummy-accent);
 }
 
 .border-\[var\(--home-gold-accent\)\]{
