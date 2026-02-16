@@ -42,6 +42,37 @@
     --bg-color-home-dark:#0F0F0F;
 
     --shadow-yellow: -7px -7px 0px #FFD93E;
+
+    /*  */
+    
+--color-brand-50:  #f7fbf4;
+  --color-brand-100: #eaf7de;
+  --color-brand-200: #cfeec0;
+  --color-brand-300: #a9e28e;
+  --color-brand-400: #82d762;  /* corregido el typo */
+  --color-brand-500: #57c23b;  /* acento (botones/enlaces) */
+  --color-brand-600: #3ea12f;
+  --color-brand-700: #2f7e26;
+  --color-brand-800: #256321;
+  --color-brand-900: #1e521d;
+
+  /* GOLD (doodles decorativos) */
+  --color-gold-400:  #f0b65a;
+
+  /* INK (texto/tonos neutros) */
+  --color-ink-900: #121212;
+  --color-ink-800: #222222;
+  --color-ink-700: #2f2f2f;
+  --color-ink-600: #4a4a4a;
+  --color-ink-500: #6b6b6b;
+
+  /* Otros tokens que ya usas */
+  --container-max: 1100px;
+  --container-pad: 1rem;     /* sm–md */
+  --container-pad-lg: 2rem;  /* ≥1024px */
+  --shadow-card: 0 6px 20px rgba(0,0,0,.06);
+  --hero-h: 52vh
+
   }
 }
 
@@ -141,31 +172,39 @@
     }
 
 
-    /* HISTORY */
-    .history-hero-title {
-        font-family: 'Libre Baskerville', serif;
-        font-weight: 700;
-        color: #fbf7e5;
-        font-size: 3.4rem; 
-        line-height: 5.1rem; 
-        letter-spacing: 0.034rem;
-        text-shadow: 0.25rem 0.25rem 0.25rem #000000ed;
-        -webkit-text-stroke: 0.06rem #fbf8e5;
-    }
+    
+ /*Layouts base */
+    .page { @apply container max-w-content; }
+    .section-gap { @apply mt-8; }
+    .cards-gap { @apply space-y-8; }
 
-    .btn-history-book {
-        background-color: #d0ec91;
-        border: 0.12rem solid #5f7135;
-        border-radius: 0.9rem;
-        padding: 0.75rem 2rem;
-        font-family: 'Nobile', sans-serif;
-        font-weight: 500;
-        font-size: 1.25rem;
-        transition: all 0.3s ease;
-    }
+    /* Tipografía */
+    .title-hero { @apply font-serif text-4xl md:text-5xl lg:text-6xl text-white leading-tight drop-shadow; }
+    .title-h2   { @apply font-serif text-2xl md:text-3xl; color: var(--color-ink-900); } /* ← color con var */
+    .title-h3   { @apply text-center font-serif text-xl md:text-2xl; color: var(--color-ink-900); }
+    .para-intro { @apply mt-4 max-w-3xl mx-auto text-ink-700 leading-relaxed; }
 
-    .btn-history-book:hover {
-        background-color: #b8d67a;
-        transform: translateY(-0.12rem);
-    }
+    /* Breadcrumb */
+    .breadcrumb { @apply text-sm text-ink-500 mt-6; }
+    .breadcrumb a { @apply hover:text-ink-700; }
+
+    /* Tarjetas */
+    .card      { @apply rounded-lg border shadow-card p-6; background:#fafafa; border-color:#e5e5e5; }
+    .card-img  { @apply w-full h-56 md:h-full object-cover rounded-lg shadow-card border border-neutral-200; }
+    .readmore  { @apply mt-3 inline-block font-semibold; color: var(--color-brand-600); }
+    .readmore:hover{ color: var(--color-brand-700); }
+    .sep-line  { @apply mt-3 h-px w-10 bg-neutral-300; }
+    .card-grid { @apply grid md:grid-cols-5 gap-6 items-start; }
+
+    /* CTA */
+    .cta-title { @apply font-serif text-lg md:text-xl; color: var(--color-ink-900); }
+    .cta-text  { @apply mt-2 max-w-2xl mx-auto; color: var(--color-ink-700); }
+    .btn-primary { @apply mt-5 inline-flex items-center justify-center rounded-md text-white px-5 py-3 text-sm font-semibold; background: var(--color-brand-600); }
+    .btn-primary:hover{ background: var(--color-brand-700); }
+
+    /* Doodles (solo color; el trazo viene del SVG/imagen de fondo) */
+    .doodoodle-left, .doodle-right { color: var(--color-gold-400); }
+
+
+    
 }

@@ -9,6 +9,8 @@ module.exports = {
     extend: {
       fontFamily: {
         montserrat: ['Montserrat', 'sans-serif'],
+        sans: ['ui-sans-serif','system-ui','Segoe UI','Roboto','Helvetica','Arial','sans-serif'],
+        serif: ['Georgia','Cambria','Times New Roman','Times','serif']
       },
       content: {
         'arrow_right': 'url("/Assets/Nav/ArrowRightNav.svg")',

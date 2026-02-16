@@ -1,16 +1,22 @@
-<section class="relative py-[5rem] overflow-hidden bg-[#fffdf6]">
-    <img src="/Assets/History/line-20.svg" class="absolute top-[6.25rem] left-0 w-[19rem] hidden lg:block" alt="">
-    <img src="/Assets/History/line-21.svg" class="absolute top-[7rem] right-0 w-[18.7rem] hidden lg:block" alt="">
+<section class="relative page my-14">
+    <!-- Doodles: mantienen atributos inline para trazo punteado exacto -->
+    <svg class="hidden md:block absolute -left-24 top-1/2 -translate-y-1/2 w-48 h-20 text-gold-400"
+         viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+         stroke-dasharray="3 10">
+      <path d="M5,60 C50,5 120,95 195,40" />
+    </svg>
+    <svg class="hidden md:block absolute -right-24 top-1/2 -translate-y-1/2 w-48 h-20 text-gold-400"
+         viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+         stroke-dasharray="3 10">
+      <path d="M5,40 C80,95 150,5 195,60" />
+    </svg>
 
-    <div class="container mx-auto px-[1.5rem] text-center relative z-10">
-        <p class="text-[#344212] font-nobile font-bold text-[1.25rem] leading-[1.9rem] max-w-[46rem] mx-auto mb-[2.5rem]">
-            Why not to come see them with your own eyes? <br>
-            The Festival offers an incredible tour, a walk through centuries and <br class="hidden md:block">
-            unforgettable places in the city. Discover more!
-        </p>
-
-        <a href="/book-tour" class="btn-history-book inline-block no-underline">
-            Book your tour
-        </a>
+    <div class="text-center bg-white">
+      <h3 class="cta-title">Why not come see them with your own eyes?</h3>
+      <p class="cta-text">
+        The Festival offers an incredible tour, a walk through centuries and unforgettable places in the city.
+        Discover more!
+      </p>
+      <a href="#book" class="btn-primary">Book your tour</a>
     </div>
-</section>
+  </section>
