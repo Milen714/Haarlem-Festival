@@ -66,13 +66,6 @@
   --color-ink-600: #4a4a4a;
   --color-ink-500: #6b6b6b;
 
-  /* Otros tokens que ya usas */
-  --container-max: 1100px;
-  --container-pad: 1rem;     /* sm–md */
-  --container-pad-lg: 2rem;  /* ≥1024px */
-  --shadow-card: 0 6px 20px rgba(0,0,0,.06);
-  --hero-h: 52vh
-
   }
 }
 
@@ -172,39 +165,7 @@
     }
 
 
-    
- /*Layouts base */
-    .page { @apply container max-w-content; }
-    .section-gap { @apply mt-8; }
-    .cards-gap { @apply space-y-8; }
-
-    /* Tipografía */
-    .title-hero { @apply font-serif text-4xl md:text-5xl lg:text-6xl text-white leading-tight drop-shadow; }
-    .title-h2   { @apply font-serif text-2xl md:text-3xl; color: var(--color-ink-900); } /* ← color con var */
-    .title-h3   { @apply text-center font-serif text-xl md:text-2xl; color: var(--color-ink-900); }
-    .para-intro { @apply mt-4 max-w-3xl mx-auto text-ink-700 leading-relaxed; }
-
-    /* Breadcrumb */
-    .breadcrumb { @apply text-sm text-ink-500 mt-6; }
-    .breadcrumb a { @apply hover:text-ink-700; }
-
-    /* Tarjetas */
-    .card      { @apply rounded-lg border shadow-card p-6; background:#fafafa; border-color:#e5e5e5; }
-    .card-img  { @apply w-full h-56 md:h-full object-cover rounded-lg shadow-card border border-neutral-200; }
-    .readmore  { @apply mt-3 inline-block font-semibold; color: var(--color-brand-600); }
-    .readmore:hover{ color: var(--color-brand-700); }
-    .sep-line  { @apply mt-3 h-px w-10 bg-neutral-300; }
-    .card-grid { @apply grid md:grid-cols-5 gap-6 items-start; }
-
-    /* CTA */
-    .cta-title { @apply font-serif text-lg md:text-xl; color: var(--color-ink-900); }
-    .cta-text  { @apply mt-2 max-w-2xl mx-auto; color: var(--color-ink-700); }
-    .btn-primary { @apply mt-5 inline-flex items-center justify-center rounded-md text-white px-5 py-3 text-sm font-semibold; background: var(--color-brand-600); }
-    .btn-primary:hover{ background: var(--color-brand-700); }
-
-    /* Doodles (solo color; el trazo viene del SVG/imagen de fondo) */
-    .doodoodle-left, .doodle-right { color: var(--color-gold-400); }
-
+  
 
     
 }
