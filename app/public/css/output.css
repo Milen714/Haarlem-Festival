@@ -585,7 +585,16 @@ video {
   /* Jazz section*/
   --jazz-text-primary: #ffffff;
   /* Yummy Section*/
-  --yummy-primary: #CC112F;
+
+  --yummy-primary: #49111C;
+  --yummy-primary-muted: #CC112F4D;
+  --yummy-primary-text: #FFFFFF;
+  --yummy-sec-section: #C8963E;
+  --yummy-sec-text: #49111C;
+  --yummy-sec-btn: #C8963E;
+  --yummy-sec-btn-text:#FFFFFF;
+  --yummy-sec-hover-btn: #49111C;
+  --yummy-sec-hover-btn-text:#FFFFFF;
   --spacing-unit: 1rem;
   --bg-color-home-light:#F2F4F3;
   --bg-color-home-dark:#0F0F0F;
@@ -1066,6 +1075,8 @@ select:focus,
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
   box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
+
+/* Yummy Home */
 
 /* CalendarHome */
 
@@ -1754,6 +1765,10 @@ select:focus,
   border-color: rgb(243 244 246 / var(--tw-border-opacity, 1));
 }
 
+.border-\[var\(--yummy-sec-section\)\]{
+  border-color: var(--yummy-sec-section);
+}
+
 .border-gray-200{
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
@@ -1772,11 +1787,6 @@ select:focus,
 .border-red-400{
   --tw-border-opacity: 1;
   border-color: rgb(248 113 113 / var(--tw-border-opacity, 1));
-}
-
-.bg-\[\#4b1212\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(75 18 18 / var(--tw-bg-opacity, 1));
 }
 
 .bg-\[\#A7C957\]{
@@ -1848,6 +1858,18 @@ select:focus,
   background-color: var(--text-home-primary);
 }
 
+.bg-\[var\(--yummy-primary\)\]{
+  background-color: var(--yummy-primary);
+}
+
+.bg-\[var\(--yummy-sec-btn\)\]{
+  background-color: var(--yummy-sec-btn);
+}
+
+.bg-\[var\(--yummy-sec-section\)\]{
+  background-color: var(--yummy-sec-section);
+}
+
 .bg-black{
   --tw-bg-opacity: 1;
   background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
@@ -1876,11 +1898,6 @@ select:focus,
 .bg-white{
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-}
-
-.bg-yellow-500{
-  --tw-bg-opacity: 1;
-  background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
 }
 
 .bg-opacity-50{
@@ -2129,8 +2146,29 @@ select:focus,
   color: rgb(177 129 50 / var(--tw-text-opacity, 1));
 }
 
+.text-\[\#FFFFFF\]{
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
 .text-\[var\(--text-home-primary\)\]{
   color: var(--text-home-primary);
+}
+
+.text-\[var\(--yummy-primary\)\]{
+  color: var(--yummy-primary);
+}
+
+.text-\[var\(--yummy-sec-btn-text\)\]{
+  color: var(--yummy-sec-btn-text);
+}
+
+.text-\[var\(--yummy-sec-section\)\]{
+  color: var(--yummy-sec-section);
+}
+
+.text-\[var\(--yummy-section\)\]{
+  color: var(--yummy-section);
 }
 
 .text-black{
@@ -2302,6 +2340,8 @@ select:focus,
   background-color: rgb(181 181 181 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-\[var\(--yummy-sec-hover-btn\)\]:hover{
+  background-color: var(--yummy-sec-hover-btn);
 .hover\:bg-gray-100:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
@@ -2312,9 +2352,8 @@ select:focus,
   background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-yellow-600:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(202 138 4 / var(--tw-bg-opacity, 1));
+.hover\:text-\[var\(--yummy-sec-hover-btn-text\)\]:hover{
+  color: var(--yummy-sec-hover-btn-text);
 }
 
 .hover\:text-gray-700:hover{
