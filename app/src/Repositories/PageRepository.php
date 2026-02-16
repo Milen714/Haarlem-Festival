@@ -22,7 +22,7 @@ class PageRepository extends Repository implements IPageRepository
         $this->mediaRepository = new MediaRepository(); 
     }
 
-    public function getPageData(PageType $type): Page
+    public function getPageBySlug(string $slug): Page
     {
         try {
             $pdo = $this->connect();
@@ -35,12 +35,11 @@ class PageRepository extends Repository implements IPageRepository
             FROM PAGES p
             LEFT JOIN EVENT_CATEGORIES ec ON p.event_category_id = ec.event_id
             LEFT JOIN PAGE_SECTIONS s ON p.page_id = s.page_id
-            WHERE p.page_type = :type
+            WHERE p.slug = :slug
             ORDER BY s.display_order ASC";
 
             $stmt = $pdo->prepare($query);
-            $typeValue = $type->value;
-            $stmt->bindParam(':type', $typeValue, PDO::PARAM_STR);
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
             $stmt->execute();
 
             $page = $stmt->fetch(PDO::FETCH_ASSOC);

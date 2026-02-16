@@ -7,7 +7,6 @@ use App\Services\PageService;
 use App\Services\ArtistService;
 use App\Repositories\PageRepository;
 use App\Repositories\ArtistRepository;
-use App\CmsModels\Enums\PageType;
 
 class JazzController extends BaseController
 {
@@ -30,8 +29,10 @@ class JazzController extends BaseController
 
     public function index($vars = [])
     {
+        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
+        
         // Get the Jazz landing page data from database
-        $pageData = $this->pageService->getPageData(PageType::event_landing);
+        $pageData = $this->pageService->getPageBySlug($slug);
         
         // Get artists for Jazz event through service
         $artists = $this->artistService->getArtistsByEventId(self::JAZZ_EVENT_ID);

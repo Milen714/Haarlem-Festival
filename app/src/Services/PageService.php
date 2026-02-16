@@ -1,7 +1,6 @@
 <?php
 namespace App\Services;
 use App\CmsModels\Page;
-use App\CmsModels\Enums\PageType;
 use App\CmsModels\PageSection;
 use App\Repositories\Interfaces\IPageRepository;
 use App\Services\Interfaces\IPageService;
@@ -15,9 +14,9 @@ class PageService implements IPageService
         $this->pageRepository = $pageRepository;
     }
 
-    public function getPageData(PageType $type): Page
+    public function getPageBySlug(string $slug): Page
     {
-        return $this->pageRepository->getPageData($type);
+        return $this->pageRepository->getPageBySlug($slug);
     }
     public function updatePageSectionById(PageSection $section): bool
     {
