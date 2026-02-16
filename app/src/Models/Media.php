@@ -17,7 +17,8 @@ class Media
     }
 
     public function fromPostData(array $data): void {
-        $this->media_id = isset($data['media_id']) ? (int)$data['media_id'] : 0;
+        $mediaId = $data['media_id'] ?? null;
+        $this->media_id = ($mediaId === null || $mediaId === '') ? null : (int)$mediaId;
         $this->file_path = $data['file_path'] ?? '';
         $this->alt_text = $data['alt_text'] ?? '';
     }

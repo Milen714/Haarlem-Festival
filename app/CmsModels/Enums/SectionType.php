@@ -9,4 +9,8 @@ enum SectionType: string
     case two_column = 'two_column';
     case divider = 'divider';
     case accordion_group = 'accordion_group';
+    case hero_picture = 'hero_picture';
+    case hero_gallery = 'hero_gallery';
+    case event_left = 'event_left';
+    case event_right = 'event_right';
 }

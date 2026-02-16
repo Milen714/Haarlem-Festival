@@ -137,22 +137,26 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                        bg-[#F2F0EF] dark:bg-[#0F0F0F] shadow-lg">
                         <ul class="py-1 text-sm text-black dark:text-white" aria-labelledby="languageButton">
                             <li>
-                                <button type="button" data-lang="EN" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                <button type="button" data-lang="EN"
+                                    class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
                                     <img src="/Assets/Nav/EnglishIcon.png" alt="English" class="w-5 h-5"> English
                                 </button>
                             </li>
                             <li>
-                                <button type="button" data-lang="NL" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                <button type="button" data-lang="NL"
+                                    class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
                                     <img src="/Assets/Nav/DutchIcon.png" alt="Dutch" class="w-5 h-5"> Dutch
                                 </button>
                             </li>
                             <li>
-                                <button type="button" data-lang="DE" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                <button type="button" data-lang="DE"
+                                    class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
                                     <img src="/Assets/Nav/GermanIcon.png" alt="German" class="w-5 h-5"> German
                                 </button>
                             </li>
                             <li>
-                                <button type="button" data-lang="FR" class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
+                                <button type="button" data-lang="FR"
+                                    class="language-option flex items-center gap-2 w-full px-4 py-2 hover-color rounded-md">
                                     <img src="/Assets/Nav/FrenchIcon.png" alt="French" class="w-5 h-5"> French
                                 </button>
                             </li>
@@ -168,8 +172,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                     class="inline-flex items-center text-colors_nav font-semibold p-2 rounded-full
                    bg-[#CBCBCB] dark:bg-[#222222] hover:bg-[#b5b5b5] dark:hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-brand">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                        L
-                        <!-- <?= strtoupper(substr($_SESSION['loggedInUser']->fname, 0, 1) . substr($_SESSION['loggedInUser']->lname, 0, 1)); ?> -->
+                        <?= strtoupper(substr($_SESSION['loggedInUser']->fname, 0, 1) . substr($_SESSION['loggedInUser']->lname, 0, 1)); ?>
                     </span>
                     <span class="sr-only">Toggle user menu</span>
                 </button>

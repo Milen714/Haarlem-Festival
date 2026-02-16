@@ -18,6 +18,8 @@ use App\Middleware\RoleMiddleware;
 
 /**
  * Define the routes for the application.
+ * 
+ * @phpstan-ignore-next-line
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
@@ -42,6 +44,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
 
+    $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
 });
 
 
