@@ -13,6 +13,7 @@ use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use App\Controllers\HomeController;
 use App\Controllers\AccountController;
+use App\Controllers\CMS\CmsMediaController;
 use App\Services\AuthService;
 use App\Middleware\RoleMiddleware;
 
@@ -38,14 +39,21 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/wysiwyg-demo-post', ['App\Controllers\HomeController', 'wysiwygDemoPost']);
 
     $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
-    $r->addRoute('GET', '/home-update', ['App\Controllers\HomeController', 'updateHomePage']);
-    $r->addRoute('POST', '/home-update', ['App\Controllers\HomeController', 'updateHomePagePost']);
-    $r->addRoute('GET', '/testJazz', ['App\Controllers\HomeController', 'testJazz']);
-
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
-/* Jazz Event Route */
+
+    /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
 
+    /* CMS Routes */
+    $r->addRoute('GET', '/cms/page/edit/{pageType}[/{eventType}]', ['App\Controllers\CMS\CmsPageController', 'edit']);
+    $r->addRoute('POST', '/cms/page/update', ['App\Controllers\CMS\CmsPageController', 'update']);
+
+    /* CMS Media Routes (AJAX) */
+    $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
+
+    /* Legacy route for homepage (keep for backwards compatibility) */
+    $r->addRoute('GET', '/home-update', ['App\Controllers\HomeController', 'updateHomePage']);
+    $r->addRoute('POST', '/home-update', ['App\Controllers\HomeController', 'updateHomePagePost']);
 });
 
 
@@ -63,7 +71,7 @@ switch ($routeInfo[0]) {
     // Handle not found routes
     case FastRoute\Dispatcher::NOT_FOUND:
         http_response_code(404);
-       // (new HomeController())->notFound();
+        // (new HomeController())->notFound();
         break;
     // Handle routes that were invoked with the wrong HTTP method
     case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
@@ -98,11 +106,11 @@ switch ($routeInfo[0]) {
         $controller = new $routeInfo[1][0]();
         $method = $routeInfo[1][1];
         $params = $routeInfo[2];
-        
-    //     if (session_status() === PHP_SESSION_NONE) {
-    //     session_start();
-    // }
-        
+
+        //     if (session_status() === PHP_SESSION_NONE) {
+        //     session_start();
+        // }
+
 
         $authService = new AuthService();
         $roleMiddleware = new RoleMiddleware($authService);
