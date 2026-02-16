@@ -25,7 +25,7 @@ namespace App\Views\Yummy\Components;
           </div>
         </div>
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/4/47/Haarlem_Park.jpg"
+          src="../Assets/Yummy/Home/discoverHaarlem.png"
           alt="Grote Houtstraat Haarlem"
           class="rounded-lg shadow-lg"
         />

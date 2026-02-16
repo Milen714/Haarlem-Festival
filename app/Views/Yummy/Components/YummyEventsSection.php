@@ -32,7 +32,7 @@ namespace App\Views\Yummy\Components;
           <div class="p-4">
             <h3 class="font-semibold">Magic - Haarlem Festival</h3>
             <button
-              class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] text-white text-sm px-4 py-2 rounded mt-3"
+              class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)]  text-white text-sm px-4 py-2 rounded mt-3"
             >
               View more
             </button>

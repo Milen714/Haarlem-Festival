@@ -4,8 +4,8 @@ namespace App\Views\Yummy\Components;
 
 </section>
     <!-- Explore 7 Restaurants -->
-    <section class="bg-[#4b1212] text-white py-16 text-center gap-6">
-      <h2 class="text-2xl font-bold text-yellow-400 mb-6">
+    <section class="bg-[var(--yummy-primary)] text-white py-16 text-center gap-6">
+      <h2 class="text-2xl font-bold text-[var(--yummy-sec-section)] mb-6">
         Explore 7 Amazing Restaurants
       </h2>
       <p class="max-w-xl mx-auto mb-8">

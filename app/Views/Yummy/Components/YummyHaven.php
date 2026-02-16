@@ -25,7 +25,7 @@ namespace App\Views\Yummy\Components;
           </a>
         </div>
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Food_in_Haarlem.jpg"
+          src="../Assets/Yummy/Home/Haven_img.png"
           alt="Meal in Haarlem"
           class="rounded-lg shadow-lg"
         />

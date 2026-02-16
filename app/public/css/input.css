@@ -131,6 +131,11 @@
         @apply text-black font-semibold p-3 rounded-[5px] shadow-[inset_0_2px_6px_0_rgba(0,0,0,0.1)] 
                    bg-white hover:bg-[#FFD600] hover:shadow-[-4px_-4px_0px_#000000CC] focus:outline-none focus:ring-2 transition-all ;
     }
+    /* Yummy Home */
+    .home_yummy_buttons{
+        @apply bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)]
+                   font-semibold p-3 rounded-[5px] focus:outline-none focus:ring-2 transition-all;
+    }
     /* CalendarHome */
     /* .calendar-coils{
         @apply relative w-full flex justify-center items-center overflow-visible;
