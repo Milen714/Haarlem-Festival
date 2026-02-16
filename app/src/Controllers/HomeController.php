@@ -37,14 +37,15 @@ class HomeController extends BaseController
     }
     public function index($vars = [])
     {
-        header('Content-Type: application/json');
+        //header('Content-Type: application/json');
         $pageData = $this->pageService->getPageBySlug('home');
-        $schedule = $this->scheduleService->getScheduleById(1);
-        echo json_encode(['schedule' => $schedule]);
-
-
-        
-        //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData] );
+        /**
+     * 
+     * TODO: For the homepage we will likely want to show a schedule overview of all events, so we can fetch all schedules and pass to view for now. In the future we can enhance this to only show upcoming events or featured events based on some criteria.
+     */
+        $schedule = $this->scheduleService->getAllSchedules();
+        //echo json_encode($schedule);
+        $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
     }
     #[RequireRole([UserRole::ADMIN])]
     public function adminIndex($vars = [])

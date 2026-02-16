@@ -22,14 +22,14 @@ class Venue
 
     public function fromPDOData(array $data): void {
         $this->venue_id = isset($data['venue_id']) ? (int)$data['venue_id'] : null;
-        $this->name = $data['name'] ?? '';
-        $this->street_address = $data['street_address'] ?? '';
-        $this->postal_code = $data['postal_code'] ?? null;
-        $this->city = $data['city'] ?? '';
-        $this->country = $data['country'] ?? null;
-        $this->description_html = $data['description_html'] ?? null;
-        $this->capacity = isset($data['capacity']) ? (int)$data['capacity'] : null;
-        $this->phone = $data['phone'] ?? null;
-        $this->email = $data['email'] ?? null;
+        $this->name = $data['venue_name'] ?? '';
+        $this->street_address = $data['venue_address'] ?? '';
+        $this->postal_code = $data['venue_postal_code'] ?? null;
+        $this->city = $data['venue_city'] ?? '';
+        $this->country = $data['venue_country'] ?? null;
+        $this->description_html = $data['venue_description_html'] ?? null;
+        $this->capacity = isset($data['venue_capacity']) ? (int)$data['venue_capacity'] : null;
+        $this->phone = $data['venue_phone'] ?? null;
+        $this->email = $data['venue_email'] ?? null;
     }
 }

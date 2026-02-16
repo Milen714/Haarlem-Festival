@@ -78,11 +78,14 @@ if ($bool) {
             <div class="flex-grow border-b-2 border-[var(--home-gold-accent)]"></div>
         </header>
         <?php
-        // Example of including ScheduleRowCard component multiple times
-        include 'ScheduleRowCard.php';
-        include 'ScheduleRowCard.php';
-        include 'ScheduleRowCard.php';
-        include 'ScheduleRowCard.php';
+        if (isset($schedule) && !empty($schedule)) {
+            /** @var \App\Models\Schedule $scheduleItem */
+            foreach ($schedule as $scheduleItem) {
+                include 'ScheduleRowCard.php';
+            }
+        } else {
+            echo "<p class='text-gray-500'>No schedule available.</p>";
+        }
         ?>
     </div>
 

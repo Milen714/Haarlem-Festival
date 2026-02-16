@@ -83,18 +83,7 @@ class Schedule
     {
         if (isset($data['venue_id']) && $data['venue_id'] !== null) {
             $this->venue = new Venue();
-            $this->venue->fromPDOData([
-                'venue_id' => $data['venue_id'],
-                'name' => $data['venue_name'] ?? '',
-                'street_address' => $data['venue_address'] ?? '',
-                'city' => $data['venue_city'] ?? '',
-                'postal_code' => $data['venue_postal_code'] ?? null,
-                'country' => $data['venue_country'] ?? null,
-                'description_html' => $data['venue_description_html'] ?? null,
-                'capacity' => $data['venue_capacity'] ?? null,
-                'phone' => $data['venue_phone'] ?? null,
-                'email' => $data['venue_email'] ?? null,
-            ]);
+            $this->venue->fromPDOData($data);
         }
     }
 
@@ -105,21 +94,7 @@ class Schedule
     {
         if (isset($data['artist_id']) && $data['artist_id'] !== null) {
             $this->artist = new Artist();
-            $this->artist->fromPDOData([
-                'artist_id' => $data['artist_id'],
-                'name' => $data['artist_name'] ?? '',
-                'slug' => $data['artist_slug'] ?? '',
-                'bio' => $data['artist_bio'] ?? null,
-                'website' => $data['artist_website'] ?? null,
-                'spotify_url' => $data['artist_spotify_url'] ?? null,
-                'youtube_url' => $data['artist_youtube_url'] ?? null,
-                'soundcloud_url' => $data['artist_soundcloud_url'] ?? null,
-                'featured_quote' => $data['artist_featured_quote'] ?? null,
-                'press_quote' => $data['artist_press_quote'] ?? null,
-                'profile_image_id' => $data['artist_profile_image_id'] ?? null,
-                'profile_image_path' => $data['artist_profile_image_path'] ?? null,
-                'profile_image_alt_text' => $data['artist_profile_image_alt'] ?? null,
-            ]);
+            $this->artist->fromPDOData($data);
         }
     }
 
@@ -130,19 +105,7 @@ class Schedule
     {
         if (isset($data['restaurant_id']) && $data['restaurant_id'] !== null) {
             $this->restaurant = new Restaurant();
-            $this->restaurant->fromPDOData([
-                'restaurant_id' => $data['restaurant_id'],
-                'name' => $data['restaurant_name'] ?? '',
-                'short_description' => $data['restaurant_short_description'] ?? null,
-                'welcome_text' => $data['restaurant_welcome_text'] ?? null,
-                'price_category' => $data['restaurant_price_category'] ?? null,
-                'stars' => $data['restaurant_stars'] ?? null,
-                'review_count' => $data['restaurant_review_count'] ?? null,
-                'website_url' => $data['restaurant_website_url'] ?? null,
-                'main_image_id' => $data['restaurant_main_image_id'] ?? null,
-                'restaurant_image_path' => $data['restaurant_image_path'] ?? null,
-                'restaurant_image_alt' => $data['restaurant_image_alt'] ?? null,
-            ]);
+            $this->restaurant->fromPDOData($data);
         }
     }
 
@@ -153,17 +116,18 @@ class Schedule
     {
         if (isset($data['landmark_id']) && $data['landmark_id'] !== null) {
             $this->landmark = new Landmark();
-            $this->landmark->fromPDOData([
-                'landmark_id' => $data['landmark_id'],
-                'name' => $data['landmark_name'] ?? '',
-                'landmark_title' => $data['landmark_title'] ?? null,
-                'short_description' => $data['landmark_short_description'] ?? null,
-                'has_detail_page' => $data['landmark_has_detail_page'] ?? false,
-                'landmark_slug' => $data['landmark_slug'] ?? null,
-                'landmark_image_id' => $data['landmark_image_id'] ?? null,
-                'landmark_image_path' => $data['landmark_image_path'] ?? null,
-                'landmark_image_alt' => $data['landmark_image_alt'] ?? null,
-            ]);
+            $this->landmark->fromPDOData($data);
+        }
+    }
+
+    /**
+     * Hydrate the EventCategory object if event category data is available
+     */
+    public function hydrateEventCategory(array $data): void 
+    {
+        if (isset($data['event_category_type']) && $data['event_category_type'] !== null) {
+            $this->event_category = new EventCategory();
+            $this->event_category->fromPDOData($data);
         }
     }
 
@@ -176,6 +140,7 @@ class Schedule
         $this->hydrateArtist($data);
         $this->hydrateRestaurant($data);
         $this->hydrateLandmark($data);
+        $this->hydrateEventCategory($data);
     }
 
     /**
@@ -192,5 +157,19 @@ class Schedule
     public function hasAvailableTickets(): bool 
     {
         return !$this->is_sold_out && $this->getAvailableCapacity() > 0;
+    }
+    public function getDurationInMinutes(): ?float
+    {
+        if ($this->start_time && $this->end_time) {
+            $interval = $this->start_time->diff($this->end_time);
+            return (float)(($interval->h * 60) + $interval->i);
+        }
+        return null;
+    }
+
+    public function getDurationInHours(): ?float
+    {
+        $minutes = $this->getDurationInMinutes();
+        return $minutes !== null ? $minutes / 60 : null;
     }
 }

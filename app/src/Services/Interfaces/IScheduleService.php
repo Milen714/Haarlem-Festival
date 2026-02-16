@@ -24,16 +24,6 @@ interface IScheduleService
      */
     public function getSchedulesByEventId(int $eventId): array;
 
-    /**
-     * Get schedule grouped by date for a specific event
-     * @return array
-     */
-    public function getScheduleByEventIdGrouped(int $eventId): array;
-
-    /**
-     * Legacy method for backwards compatibility
-     * @deprecated Use getScheduleByEventIdGrouped() instead
-     * @return array
-     */
-    public function getScheduleByEventId(int $eventId): array;
+ 
+   
 }
