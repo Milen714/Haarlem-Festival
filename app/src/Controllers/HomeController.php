@@ -4,9 +4,10 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\UserService;
+use App\Services\ScheduleService;
 use App\Repositories\UserRepository;
 use App\Repositories\PageRepository;
-use App\CmsModels\Enums\PageType;
+use App\Repositories\ScheduleRepository;
 use App\Services\PageService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
@@ -22,21 +23,30 @@ class HomeController extends BaseController
     private PageRepository $pageRepository;
     private MediaService $mediaService;
     private MediaRepository $mediaRepository;
-
+    private ScheduleRepository $scheduleRepository;
+    private ScheduleService $scheduleService;
     public function __construct()
     {
         $this->userRepository = new UserRepository();
         $this->userService = new UserService($this->userRepository);
         $this->pageRepository = new PageRepository();
         $this->pageService = new PageService($this->pageRepository);
+        $this->scheduleRepository = new ScheduleRepository();
+        $this->scheduleService = new ScheduleService($this->scheduleRepository);
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
     }
 
     public function index($vars = [])
     {
-        $pageData = $this->pageService->getPageData(PageType::homepage);
-        $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData]);
+        header('Content-Type: application/json');
+        $pageData = $this->pageService->getPageBySlug('home');
+        $schedule = $this->scheduleService->getScheduleById(1);
+        echo json_encode(['schedule' => $schedule]);
+
+
+
+        //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData] );
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -80,13 +90,16 @@ class HomeController extends BaseController
     public function homePage($vars = [])
     {
         header('Content-Type: application/json');
-        $pageData = $this->pageService->getPageData(PageType::homepage);
+        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
+
+        $pageData = $this->pageService->getPageBySlug('events-jazz');
         echo json_encode($pageData);
     }
 
     public function updateHomePage($vars = [])
     {
-        $pageData = $this->pageService->getPageData(PageType::homepage);
+
+        $pageData = $this->pageService->getPageBySlug('home');
         $this->cmsLayout('Cms/UpdateHomepage', ['pageData' => $pageData, 'title' => 'Edit Home Page']);
     }
 
