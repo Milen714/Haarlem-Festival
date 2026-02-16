@@ -44,6 +44,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
 
+    $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
 });
 
 
