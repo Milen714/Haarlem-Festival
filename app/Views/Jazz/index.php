@@ -1,73 +1,65 @@
 <?php
 namespace App\Views\Jazz;
 
-// Display any messages
-echo isset($message) ? htmlspecialchars($message) : '';
-
-// Use the organized sections passed from controller, fallback to manual extraction if needed
-if (!isset($heroSection) || !isset($aboutSection)) {
-    $heroSection = $heroSection ?? null;
-    $aboutSection = $aboutSection ?? null;
-    $artistSection = $artistSection ?? null;
-    $scheduleSection = $scheduleSection ?? null;
-    $venuesSection = $venuesSection ?? null;
-    $ticketsSection = $ticketsSection ?? null;
-
-    if (isset($sections) && is_array($sections)) {
-        foreach ($sections as $section) {
-            switch ($section->title) {
-                case 'Where Jazz Meets History':
-                    $heroSection = $heroSection ?? $section;
-                    break;
-                case 'About the Festival':
-                    $aboutSection = $aboutSection ?? $section;
-                    break;
-                case 'Meet the Artists':
-                    $artistSection = $artistSection ?? $section;
-                    break;
-                case 'Festival at a Glance':
-                    $scheduleSection = $scheduleSection ?? $section;
-                    break;
-                case 'Venues':
-                    $venuesSection = $venuesSection ?? $section;
-                    break;
-                case 'Tickets & Passes':
-                    $ticketsSection = $ticketsSection ?? $section;
-                    break;
-            }
-        }
-    }
-}
 ?>
 
-<section class="flex flex-col gap-6 bg-gray-50 text-gray-900 pt-4">
-    <!-- Hero Section -->
-    <?php if (isset($heroSection)): ?>
-        <?php include __DIR__ . '/Components/jazz-hero.php'; ?>
-    <?php endif; ?>
-
-    <!-- About Section -->
-    <?php if (isset($aboutSection)): ?>
-        <?php include __DIR__ . '/Components/jazz-about.php'; ?>
-    <?php endif; ?>
-
-    <!-- Artists Carousel Section -->
-    <?php if (isset($artists) && !empty($artists)): ?>
-        <?php include __DIR__ . '/Components/jazz-carousel.php'; ?>
-    <?php endif; ?>
-
-    <!-- Schedule Section -->
-    <?php if (isset($scheduleSection)): ?>
-        <?php include __DIR__ . '/Components/jazz-schedule.php'; ?>
-    <?php endif; ?>
-
-    <!-- Venues Section -->
-    <?php if (isset($venuesSection)): ?>
-        <?php include __DIR__ . '/Components/jazz-venues.php'; ?>
-    <?php endif; ?>
-
-    <!-- Tickets Section -->
-    <?php if (isset($ticketsSection)): ?>
-        <?php include __DIR__ . '/Components/jazz-tickets.php'; ?>
-    <?php endif; ?>
-</section>
+<?php foreach ($sections as $section): ?>
+    <?php
+    // Match by title since section_type is generic ("text", "hero_picture", etc.)
+    $sectionTitle = strtolower(trim($section->title ?? ''));
+    
+    // Hero Section
+    if (strpos($sectionTitle, 'history') !== false || strpos($sectionTitle, 'hero') !== false) {
+        $heroSection = $section;
+        include __DIR__ . '/Components/jazz-hero.php';
+    }
+    
+    // About Section
+    elseif (strpos($sectionTitle, 'about') !== false) {
+        $aboutSection = $section;
+        include __DIR__ . '/Components/jazz-about.php';
+    }
+    
+    // Artists Section
+    elseif (strpos($sectionTitle, 'artist') !== false) {
+        $artistSection = $section;
+        if (!empty($artists)) {
+            include __DIR__ . '/Components/jazz-carousel.php';
+        }
+    }
+    
+    // Schedule Section
+    elseif (strpos($sectionTitle, 'schedule') !== false || strpos($sectionTitle, 'glance') !== false) {
+        $scheduleSection = $section;
+        // TODO: Create jazz-schedule.php component when ready
+    }
+    
+    // Venues Section
+    elseif (strpos($sectionTitle, 'venue') !== false) {
+        $venuesSection = $section;
+        if (!empty($venues)) {
+            include __DIR__ . '/Components/jazz-venues.php';
+        }
+    }
+    
+    // Tickets Section
+    elseif (strpos($sectionTitle, 'ticket') !== false || strpos($sectionTitle, 'pass') !== false) {
+        $ticketsSection = $section;
+        include __DIR__ . '/Components/jazz-tickets.php';
+    }
+    
+    // Gallery Section
+    elseif (strpos($sectionTitle, 'gallery') !== false) {
+        // TODO: Create jazz-gallery.php component if needed
+    }
+    
+    // Generic content section (fallback)
+    else {
+        if (!empty($section->content_html)) {
+            echo '<div class="container mx-auto px-4 py-8">';
+            echo $section->content_html;
+            echo '</div>';
+        }
+    }
+    ?>
+<?php endforeach; ?>

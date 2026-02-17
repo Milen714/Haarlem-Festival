@@ -1,6 +1,7 @@
 <?php
 namespace App\Views\Jazz\Components;
-/** @var array $artists */
+
+/** @var \App\Models\MusicEvent\Artist[] $artists */
 
 // Split artists into pages of 12 (6x2 grid)
 $artistsPerPage = 12;
@@ -48,10 +49,10 @@ $totalPages = count($pages);
                 type="button"
                 id="prev-arrow"
                 onclick="changePage(-1)"
-                class="absolute left-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-4 shadow-xl hover:bg-gray-100 transition-all z-20"
-                aria-label="Previous page">
-                <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/>
+                class="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white border-2 border-gray-900 flex items-center justify-center hover:bg-gray-900 hover:text-white transition-all shadow-lg z-10"
+                aria-label="Previous artists">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="stroke-width: 3;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
                 </svg>
             </button>
             
@@ -60,26 +61,12 @@ $totalPages = count($pages);
                 type="button"
                 id="next-arrow"
                 onclick="changePage(1)"
-                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-4 shadow-xl hover:bg-gray-100 transition-all z-20"
-                aria-label="Next page">
-                <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                class="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white border-2 border-gray-900 flex items-center justify-center hover:bg-gray-900 hover:text-white transition-all shadow-lg z-10"
+                aria-label="Next artists">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="stroke-width: 3;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>
             </button>
-            <?php endif; ?>
-            
-            <!-- Page Indicators -->
-            <?php if ($totalPages > 1): ?>
-            <div class="flex justify-center gap-3 mt-8">
-                <?php for ($i = 0; $i < $totalPages; $i++): ?>
-                <button 
-                    class="page-dot w-3 h-3 rounded-full transition-all <?= $i === 0 ? 'bg-gray-800 scale-125' : 'bg-gray-400' ?>"
-                    onclick="goToPage(<?= $i ?>)"
-                    data-dot="<?= $i ?>"
-                    aria-label="Go to page <?= $i + 1 ?>">
-                </button>
-                <?php endfor; ?>
-            </div>
             <?php endif; ?>
             
         </div>
@@ -122,28 +109,7 @@ function goToPage(pageIndex) {
         newPage.style.display = 'block';
     }
     
-    // Update current index
+    // Update index
     currentPageIndex = pageIndex;
-    
-    // Update dots
-    updateDots();
 }
-
-function updateDots() {
-    const dots = document.querySelectorAll('.page-dot');
-    dots.forEach((dot, index) => {
-        if (index === currentPageIndex) {
-            dot.classList.add('bg-gray-800', 'scale-125');
-            dot.classList.remove('bg-gray-400');
-        } else {
-            dot.classList.remove('bg-gray-800', 'scale-125');
-            dot.classList.add('bg-gray-400');
-        }
-    });
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    updateDots();
-});
 </script>
