@@ -39,14 +39,14 @@ class HomeController extends BaseController
 
     public function index($vars = [])
     {
-        header('Content-Type: application/json');
+
         $pageData = $this->pageService->getPageBySlug('home');
         $schedule = $this->scheduleService->getScheduleById(1);
-        echo json_encode(['schedule' => $schedule]);
 
 
 
-        //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData] );
+
+        $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData]);
     }
 
     #[RequireRole([UserRole::ADMIN])]
