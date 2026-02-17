@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\CMS;
+namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\PageService;

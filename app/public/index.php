@@ -24,7 +24,7 @@ use App\Middleware\RoleMiddleware;
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
-    $r->addRoute('GET', '/cms', ['App\Controllers\HomeController', 'adminIndex']);
+    $r->addRoute('GET', '/cms', ['App\Controllers\CmsPageController', 'editBySlug']);
     $r->addRoute('POST', '/setTheme', ['App\Controllers\HomeController', 'setTheme']);
     $r->addRoute('GET', '/login', ['App\Controllers\AccountController', 'login']);
     $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);
@@ -43,15 +43,22 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
 
     /* CMS Routes */
-    $r->addRoute('GET', '/cms/page/edit/{pageType}[/{eventType}]', ['App\Controllers\CMS\CmsPageController', 'edit']);
-    $r->addRoute('POST', '/cms/page/update', ['App\Controllers\CMS\CmsPageController', 'update']);
+
+    $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);
+    $r->addRoute('POST', '/cms/page/update', ['App\Controllers\CmsPageController', 'update']);
 
     /* CMS Media Routes (AJAX) */
     $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
 
     /* Legacy route for homepage (keep for backwards compatibility) */
-    $r->addRoute('GET', '/home-update', ['App\Controllers\HomeController', 'updateHomePage']);
-    $r->addRoute('POST', '/home-update', ['App\Controllers\HomeController', 'updateHomePagePost']);
+    $r->addRoute('GET', '/home-update', function () {
+        header('Location: /cms/page/edit/home');
+        exit;
+    });
+    $r->addRoute('POST', '/home-update', function () {
+        header('Location: /cms/page/edit/home');
+        exit;
+    });
 });
 
 
