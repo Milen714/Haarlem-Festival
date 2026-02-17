@@ -2,7 +2,7 @@
 namespace App\Views\History;
 ?>
 
-<div class="antialiased text-ink-800 bg-white">
+<div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
     <?php include __DIR__ . '/Components/HistoryHero.php'; ?>
 
     <div class="max-w-content">

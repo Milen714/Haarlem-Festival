@@ -9,7 +9,7 @@
       <path d="M5,40 C80,95 150,5 195,60" />
     </svg>
 
-    <div class="text-center bg-white px-4 relative z-10">
+    <div class="text-center px-4 relative z-10">
       <h3 class="font-history-serif text-xl md:text-2xl text-ink-900">Why not come see them with your own eyes?</h3>
       <p class="mt-3 max-w-2xl mx-auto text-ink-700 leading-relaxed">
           The Festival offers an incredible tour, a walk through centuries and unforgettable places in the city. 
