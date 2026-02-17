@@ -33,7 +33,7 @@ foreach ($pageData->content_sections as $section) {
     <?php include 'Components/HomeEvents.php'; ?>
     <?php endif; ?>
 
-    <?php if ($scheduleSection && !empty($schedule)): ?>
+    <?php if ($scheduleSection): ?>
     <?php
         include 'Components/HomeSchedule.php'; ?>
     <?php endif; ?>

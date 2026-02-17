@@ -128,17 +128,40 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     }
 
     /**
-     * Gets all schedules
+     * Gets all schedules with optional filters
+     * @param string|null $eventType Filter by event type (e.g., 'Yummy', 'Jazz', 'Magic')
+     * @param string|null $date Filter by date (format: 'Y-m-d')
      * @return Schedule[]
      */
-    public function getAllSchedules(): array
+    public function getAllSchedules(?string $eventType = null, ?string $date = null): array
     {
         try {
             $pdo = $this->connect();
             
-            $query = $this->getBaseQuery() . " ORDER BY s.date ASC, s.start_time ASC";
+            $query = $this->getBaseQuery();
+            $conditions = [];
+            $params = [];
+
+            if ($eventType !== null && $eventType !== '') {
+                $conditions[] = "ec.type = :event_type";
+                $params[':event_type'] = $eventType;
+            }
+
+            if ($date !== null && $date !== '') {
+                $conditions[] = "s.date = :date";
+                $params[':date'] = $date;
+            }
+
+            if (!empty($conditions)) {
+                $query .= " WHERE " . implode(" AND ", $conditions);
+            }
+
+            $query .= " ORDER BY s.date ASC, s.start_time ASC";
 
             $stmt = $pdo->prepare($query);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
             $stmt->execute();
             
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);

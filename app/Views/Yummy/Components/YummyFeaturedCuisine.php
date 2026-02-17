@@ -2,14 +2,14 @@
 namespace App\Views\Yummy\Components;
 ?>
 
-<section class="bg-[#4b1212] text-white py-16">
-      <h2 class="text-center text-2xl font-bold text-yellow-400 mb-10">
+<section class="bg-[var(--yummy-sec-section)] text-[#FFFFFF] py-16 pt-4 pb-4 gap-6">
+      <h2 class="text-center text-[var(--yummy-primary)] text-2xl font-bold mb-10">
         Featured Cuisines
       </h2>
       <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-6">
         <div class="bg-gray-800 p-4 rounded-lg">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Dutch_food.jpg"
+            src="../Assets/Yummy/Home/cuisine_img1.png"
             class="rounded mb-4"
             alt="Dutch Classics"
           />
@@ -20,7 +20,7 @@ namespace App\Views\Yummy\Components;
         </div>
         <div class="bg-gray-800 p-4 rounded-lg">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/9/9b/Modern_food_plating.jpg"
+            src="../Assets/Yummy/Home/cuisine_img2.png"
             class="rounded mb-4"
             alt="International Flavors"
           />
@@ -31,7 +31,7 @@ namespace App\Views\Yummy\Components;
         </div>
         <div class="bg-gray-800 p-4 rounded-lg">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Fine_dining_dish.jpg"
+            src="../Assets/Yummy/Home/cuisine_img3.jpg"
             class="rounded mb-4"
             alt="Modern Twist"
           />
