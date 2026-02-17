@@ -32,38 +32,38 @@ class Artist
 	public function fromPDOData(array $data): void
 	{
 		$this->artist_id = isset($data['artist_id']) ? (int)$data['artist_id'] : null;
-		$this->name = $data['name'] ?? null;
-		$this->slug = $data['slug'] ?? null;
-		$this->bio = $data['bio'] ?? null;
-		$this->website = $data['website'] ?? null;
-		$this->spotify_url = $data['spotify_url'] ?? null;
-		$this->youtube_url = $data['youtube_url'] ?? null;
-		$this->soundcloud_url = $data['soundcloud_url'] ?? null;
-		$this->featured_quote = $data['featured_quote'] ?? null;
-		$this->press_quote = $data['press_quote'] ?? null;
-		$this->collaborations = $data['collaborations'] ?? null;
-		$this->deleted_at = isset($data['deleted_at']) ? new DateTime($data['deleted_at']) : null;
+		$this->name = $data['artist_name'] ?? null;
+		$this->slug = $data['artist_slug'] ?? null;
+		$this->bio = $data['artist_bio'] ?? null;
+		$this->website = $data['artist_website'] ?? null;
+		$this->spotify_url = $data['artist_spotify_url'] ?? null;
+		$this->youtube_url = $data['artist_youtube_url'] ?? null;
+		$this->soundcloud_url = $data['artist_soundcloud_url'] ?? null;
+		$this->featured_quote = $data['artist_featured_quote'] ?? null;
+		$this->press_quote = $data['artist_press_quote'] ?? null;
+		$this->collaborations = $data['artist_collaborations'] ?? null;
+		$this->deleted_at = isset($data['artist_deleted_at']) ? new DateTime($data['artist_deleted_at']) : null;
 
 		// Genre and event data
 		$this->genres = $data['genres'] ?? null;
 		$this->is_headliner = isset($data['is_headliner']) ? (bool)$data['is_headliner'] : null;
 		$this->performance_order = isset($data['performance_order']) ? (int)$data['performance_order'] : null;
 
-		if (isset($data['profile_image_id']) || isset($data['media_id'])) {
+		if (isset($data['artist_profile_image_id']) || isset($data['media_id'])) {
 			$this->profile_image = new Media();
 			$this->profile_image->fromPDOData([
-				'media_id' => $data['profile_image_id'] ?? $data['media_id'] ?? null,
-				'file_path' => $data['profile_image_path'] ?? ($data['file_path'] ?? null),
-				'alt_text' => $data['profile_image_alt_text'] ?? ($data['alt_text'] ?? null),
+				'media_id' => $data['artist_profile_image_id'] ?? $data['media_id'] ?? null,
+				'file_path' => $data['artist_profile_image_path'] ?? ($data['file_path'] ?? null),
+				'alt_text' => $data['artist_profile_image_alt'] ?? ($data['alt_text'] ?? null),
 			]);
 		}
 
-		if (isset($data['gallery_id'])) {
+		if (isset($data['artist_gallery_id'])) {
 			$this->gallery = new Gallery();
 			$this->gallery->fromPDOData([
-				'gallery_id' => $data['gallery_id'],
-				'gallery_title' => $data['gallery_title'] ?? null,
-				'created_at' => $data['gallery_created_at'] ?? ($data['created_at'] ?? null),
+				'gallery_id' => $data['artist_gallery_id'],
+				'gallery_title' => $data['artist_gallery_title'] ?? null,
+				'created_at' => $data['artist_gallery_created_at'] ?? ($data['created_at'] ?? null),
 			]);
 		}
 	}

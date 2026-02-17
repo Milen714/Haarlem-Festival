@@ -5,7 +5,7 @@ namespace App\Models;
 class Media
 {
     public ?int $media_id = null;
-    public ?string $file_path = null;
+    public ?string $file_path = 'Assets/Home/ImagePlaceholder.png';
     public ?string $alt_text = null;
 
     public function __construct() {}

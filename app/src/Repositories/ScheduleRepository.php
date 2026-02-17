@@ -10,8 +10,15 @@ use PDOException;
 
 class ScheduleRepository extends Repository implements IScheduleRepository
 {
+    private MediaRepository $mediaRepository;
+
+    public function __construct()
+    {
+        $this->mediaRepository = new MediaRepository();
+    }
+
     /**
-     * Base query with all JOINs for nested objects
+     * Base query with all JOINs for nested objects (no media joins)
      */
     private function getBaseQuery(): string
     {
@@ -46,6 +53,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 a.name as artist_name,
                 a.slug as artist_slug,
                 a.bio as artist_bio,
+                a.gallery_id as artist_gallery_id,
                 a.website as artist_website,
                 a.spotify_url as artist_spotify_url,
                 a.youtube_url as artist_youtube_url,
@@ -53,8 +61,8 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 a.featured_quote as artist_featured_quote,
                 a.press_quote as artist_press_quote,
                 a.profile_image_id as artist_profile_image_id,
-                am.file_path as artist_profile_image_path,
-                am.alt_text as artist_profile_image_alt,
+                a.collaborations as artist_collaborations,
+                a.deleted_at as artist_deleted_at,
                 
                 -- Restaurant fields
                 r.restaurant_id,
@@ -66,8 +74,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 r.review_count as restaurant_review_count,
                 r.website_url as restaurant_website_url,
                 r.main_image_id as restaurant_main_image_id,
-                rm.file_path as restaurant_image_path,
-                rm.alt_text as restaurant_image_alt,
                 
                 -- Landmark fields
                 l.landmark_id,
@@ -77,17 +83,20 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 l.has_detail_page as landmark_has_detail_page,
                 l.landmark_slug,
                 l.landmark_image_id,
-                lm.file_path as landmark_image_path,
-                lm.alt_text as landmark_image_alt
+                
+                -- Event Category fields
+                ec.event_id as event_category_id,
+                ec.type as event_category_type,
+                ec.title as event_category_title,
+                ec.category_description as event_category_description,
+                ec.slug as event_category_slug
                 
             FROM SCHEDULE s
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
-            LEFT JOIN MEDIA am ON a.profile_image_id = am.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
-            LEFT JOIN MEDIA rm ON r.main_image_id = rm.media_id
             LEFT JOIN LANDMARK l ON s.landmark_id = l.landmark_id
-            LEFT JOIN MEDIA lm ON l.landmark_image_id = lm.media_id
+            LEFT JOIN EVENT_CATEGORIES ec ON s.event_id = ec.event_id
         ";
     }
 
@@ -200,12 +209,28 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     /**
      * Hydrate a Schedule object from a database row
      * All nested objects (venue, artist, restaurant, landmark) will be hydrated if data exists
+     * Media objects are fetched separately using MediaRepository
      */
     private function hydrateSchedule(array $row): Schedule
     {
         $schedule = new Schedule();
         $schedule->fromPDOData($row);
         $schedule->hydrateAllRelations($row);
+        
+        // Hydrate media for Artist
+        if ($schedule->artist !== null && isset($row['artist_profile_image_id']) && $row['artist_profile_image_id'] !== null) {
+            $schedule->artist->profile_image = $this->mediaRepository->getMediaById((int)$row['artist_profile_image_id']);
+        }
+        
+        // Hydrate media for Restaurant
+        if ($schedule->restaurant !== null && isset($row['restaurant_main_image_id']) && $row['restaurant_main_image_id'] !== null) {
+            $schedule->restaurant->main_image = $this->mediaRepository->getMediaById((int)$row['restaurant_main_image_id']);
+        }
+        
+        // Hydrate media for Landmark
+        if ($schedule->landmark !== null && isset($row['landmark_image_id']) && $row['landmark_image_id'] !== null) {
+            $schedule->landmark->landmark_image = $this->mediaRepository->getMediaById((int)$row['landmark_image_id']);
+        }
         
         return $schedule;
     }
