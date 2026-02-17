@@ -39,14 +39,14 @@ class HomeController extends BaseController
 
     public function index($vars = [])
     {
-        //header('Content-Type: application/json');
+        $eventFilter = $_GET['event']  ?? null;  
+        $dateFilter = $_GET['date'] ?? null;
+
+        
         $pageData = $this->pageService->getPageBySlug('home');
-        /**
-     * 
-     * TODO: For the homepage we will likely want to show a schedule overview of all events, so we can fetch all schedules and pass to view for now. In the future we can enhance this to only show upcoming events or featured events based on some criteria.
-     */
-        $schedule = $this->scheduleService->getAllSchedules();
-        //echo json_encode($schedule);
+        $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
+
+        
         $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
     }
 
@@ -77,15 +77,10 @@ class HomeController extends BaseController
         }
     }
 
-    public function wysiwygDemo($vars = [])
+    public function notFound($vars = [])
     {
-        $this->cmsLayout('Cms/WysiwygDemo', ['message' => "Thi", 'title' => 'WYSIWYG Editor Demo', 'param' => $vars['param'] ?? 'noParam']);
-    }
-
-    public function wysiwygDemoPost($vars = [])
-    {
-        $html = $_POST['content'] ?? '';
-        $this->cmsLayout('Cms/WysiwgDemoPreview', ['content' => $html, 'title' => 'WYSIWYG Editor Result']);
+        http_response_code(404);
+        $this->view('Errors/404', ['title' => 'Page Not Found']);
     }
 
     public function homePage($vars = [])

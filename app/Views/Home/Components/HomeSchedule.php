@@ -1,5 +1,6 @@
 <?php
 namespace App\Views\Home\Components;
+use App\Models\Enums\EventType;
 $bool = false; // This should be replaced with the actual condition to determine if the schedule button is active or not
 $scheduleButtonStyle = "home_calendar_button_inactive";
 $scheduleEventSelectButtonStyle = "home_event_select_button_inactive";
@@ -7,6 +8,8 @@ if ($bool) {
     $scheduleButtonStyle = "home_calendar_button_active";
     $scheduleEventSelectButtonStyle = "home_event_select_button_active";
 }
+$eventFiler = $_GET['event'] ?? null;
+$dateFilter = $_GET['date'] ?? null;
 ?>
 
 
@@ -21,23 +24,29 @@ if ($bool) {
         <nav>
             <ul class="flex flex-row flex-wrap gap-4 items-center justify-center">
                 <li class="mb-2">
-                    <a href="#family-fun-day" class="<?php echo $scheduleEventSelectButtonStyle ?>">All Events</a>
+                    <a href="/?event=''&date=<?php echo $dateFilter; ?>"
+                        class="<?php echo $scheduleEventSelectButtonStyle ?>">All Events</a>
                 </li>
                 <li class="mb-2">
-                    <a href="#family-fun-day" class="<?php echo $scheduleEventSelectButtonStyle ?>">Food & Drinks</a>
+                    <a href="/?event=<?= EventType::Yummy->value ?>&date=<?php echo $dateFilter; ?>"
+                        class="<?php echo $scheduleEventSelectButtonStyle ?>">Food & Drinks</a>
                 </li>
                 <li class="mb-2">
-                    <a href="#family-fun-day" class="<?php echo $scheduleEventSelectButtonStyle ?>">Jazz</a>
+                    <a href="/?event=<?= EventType::Jazz->value ?>&date=<?php echo $dateFilter; ?>"
+                        class="<?php echo $scheduleEventSelectButtonStyle ?>">Jazz</a>
                 </li>
                 <li class="mb-2">
-                    <a href="#family-fun-day" class="<?php echo $scheduleEventSelectButtonStyle ?>">A Stroll Through
+                    <a href="/?event=<?= EventType::History->value ?>&date=<?php echo $dateFilter; ?>"
+                        class="<?php echo $scheduleEventSelectButtonStyle ?>">A Stroll Through
                         History</a>
                 </li>
                 <li class="mb-2">
-                    <a href="#family-fun-day" class="<?php echo $scheduleEventSelectButtonStyle ?>">Dance</a>
+                    <a href="/?event=<?= EventType::Dance->value ?>&date=<?php echo $dateFilter; ?>"
+                        class="<?php echo $scheduleEventSelectButtonStyle ?>">Dance</a>
                 </li>
                 <li class="mb-2">
-                    <a href="#family-fun-day" class="<?php echo $scheduleEventSelectButtonStyle ?>">Magic@Teylers</a>
+                    <a href="/?event=<?= EventType::Magic->value ?>&date=<?php echo $dateFilter; ?>"
+                        class="<?php echo $scheduleEventSelectButtonStyle ?>">Magic@Teylers</a>
                 </li>
             </ul>
         </nav>
@@ -45,22 +54,26 @@ if ($bool) {
             <ul class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4
                max-w-5xl mx-auto items-stretch">
                 <li>
-                    <a href="" class="<?php echo $scheduleButtonStyle ?> w-full h-full">
+                    <a href="/?event=<?php echo $eventFiler; ?>&date=2026-07-24"
+                        class="<?php echo $scheduleButtonStyle ?> w-full h-full">
                         <span>Thursday</span><span>24</span>
                     </a>
                 </li>
                 <li>
-                    <a href="" class="<?php echo $scheduleButtonStyle ?> w-full h-full">
+                    <a href="/?event=<?php echo $eventFiler; ?>&date=2026-07-25"
+                        class="<?php echo $scheduleButtonStyle ?> w-full h-full">
                         <span>Friday</span><span>25</span>
                     </a>
                 </li>
                 <li>
-                    <a href="" class="<?php echo $scheduleButtonStyle ?> w-full h-full">
+                    <a href="/?event=<?php echo $eventFiler; ?>&date=2026-07-26"
+                        class="<?php echo $scheduleButtonStyle ?> w-full h-full">
                         <span>Saturday</span><span>26</span>
                     </a>
                 </li>
                 <li>
-                    <a href="" class="<?php echo $scheduleButtonStyle ?> w-full h-full">
+                    <a href="/?event=<?php echo $eventFiler; ?>&date=2026-07-27"
+                        class="<?php echo $scheduleButtonStyle ?> w-full h-full">
                         <span>Sunday</span><span>27</span>
                     </a>
                 </li>

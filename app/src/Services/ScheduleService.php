@@ -25,12 +25,14 @@ class ScheduleService implements IScheduleService
     }
 
     /**
-     * Get all schedules as an array of Schedule objects
+     * Get all schedules with optional filters
+     * @param string|null $eventType Filter by event type (e.g., 'Yummy', 'Jazz', 'Magic')
+     * @param string|null $date Filter by date (format: 'Y-m-d')
      * @return Schedule[]
      */
-    public function getAllSchedules(): array
+    public function getAllSchedules(?string $eventType = null, ?string $date = null): array
     {
-        return $this->scheduleRepository->getAllSchedules();
+        return $this->scheduleRepository->getAllSchedules($eventType, $date);
     }
 
     /**

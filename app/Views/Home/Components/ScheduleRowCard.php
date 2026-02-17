@@ -84,7 +84,6 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
             <div class="flex-shrink-0 w-48 pl-4 border-l border-gray-200">
                 <header class="text-black">
                     <h3 class="font-semibold text-base mb-2">Description</h3>
-                    <p class="text-sm text-gray-700">Description of the event goes here.</p>
                 </header>
             </div>
         </div>
