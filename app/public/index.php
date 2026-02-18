@@ -50,7 +50,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     /* CMS Media Routes (AJAX) */
     $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
 
-    /* CMS Artist Management - ADD THESE */
+    /* CMS Artist Management*/
     $r->addRoute('GET', '/cms/artists', ['App\Controllers\ArtistController', 'index']);
     $r->addRoute('GET', '/cms/artists/create', ['App\Controllers\ArtistController', 'create']);
     $r->addRoute('POST', '/cms/artists/store', ['App\Controllers\ArtistController', 'store']);
@@ -58,7 +58,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
     $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
 
-    /* CMS Venue Management - ADD THESE */
+    /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
     $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
     $r->addRoute('POST', '/cms/venues/store', ['App\Controllers\VenueController', 'store']);
