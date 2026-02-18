@@ -91,93 +91,27 @@ class HomeController extends BaseController
         $pageData = $this->pageService->getPageBySlug('events-jazz');
         echo json_encode($pageData);
     }
-
-    public function updateHomePage($vars = [])
-    {
-
-        $pageData = $this->pageService->getPageBySlug('home');
-        $this->cmsLayout('Cms/UpdateHomepage', ['pageData' => $pageData, 'title' => 'Edit Home Page']);
-    }
-
-    public function updateHomePagePost($vars = [])
-    {
-        // Start session for messages
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // Process section media uploads BEFORE processing post data
-        if (!empty($_FILES)) {
-            foreach ($_FILES as $key => $file) {
-                // Check if it's a section media upload (e.g., "section_media_0")
-                if (strpos($key, 'section_media_') === 0 && $file['error'] === UPLOAD_ERR_OK) {
-                    $sectionIndex = (int)str_replace('section_media_', '', $key);
-
-                    $existingMediaId = !empty($_POST['sections'][$sectionIndex]['media_id'])
-                        ? (int)$_POST['sections'][$sectionIndex]['media_id']
-                        : null;
-
-                    $altText = $_POST['sections'][$sectionIndex]['alt_text'] ?? 'Section image';
-                    $category = 'Home/Sections'; // ← Your folder structure
-
-                    // Upload or replace
-                    if ($existingMediaId) {
-                        $result = $this->mediaService->replaceMedia(
-                            $existingMediaId,
-                            $file,
-                            $category,
-                            $altText
-                        );
-
-                        if (!$result['success']) {
-                            $_SESSION['error'] = $result['error'];
-                            header('Location: /home-update');
-                            exit;
-                        }
-                    } else {
-                        $result = $this->mediaService->uploadAndCreate(
-                            $file,
-                            $category,
-                            $altText
-                        );
-
-                        // Update POST data with new media_id and file_path
-                        if ($result['success']) {
-                            $_POST['sections'][$sectionIndex]['media_id'] = $result['media']->media_id;
-                            $_POST['sections'][$sectionIndex]['file_path'] = $result['media']->file_path;
-                        } else {
-                            $_SESSION['error'] = $result['error'];
-                            header('Location: /home-update');
-                            exit;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Continue with existing page update logic
-        $pageData = new \App\CmsModels\Page();
-        $pageData->fromPostData($_POST);
-        $success = $this->pageService->updatePage($pageData);
-
-        if ($success) {
-            $_SESSION['success'] = 'Page updated successfully!';
-        } else {
-            $_SESSION['error'] = 'Failed to update page.';
-        }
-
-        header('Location: /home-update');
-        exit;
-    }
-
-    public function testJazz($vars = [])
-    {
-        $media = new \App\CmsModels\Page();
-        $this->view('Jazz/index', ['title' => 'Test Jazz Page', 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"]);
-    }
-
     public function YummyHome($vars = [])
     {
         $this->view('Yummy/HomePage', ['id' => 1]);
+    }
+    public function imageToWebp($vars = [])
+    {
+        $inputPath = __DIR__ . '/../../public/Assets/Home/ImagePlaceholder.png';
+        $directory = __DIR__ . '/../../public/Assets/Home/';
+        $outputPath = $directory . 'ImagePlaceholder.webp';
+        if (!file_exists($inputPath)) {
+            http_response_code(404);
+            echo "Input image not found.";
+            return;
+        }
+
+        // Output headers
+        header('Content-Type: image/webp');
+
+        // Output WebP directly to browser
+        imagewebp(imagecreatefrompng($inputPath), $outputPath, 80);
+
+       
     }
 }
