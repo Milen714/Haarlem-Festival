@@ -34,8 +34,21 @@
     --home-magic-high-contrast-accent: #8B6914;
     /* Jazz section*/
     --jazz-text-primary: #ffffff; 
+    --pastel-lavender: #B389F8;
+    --pastel-pink: #F08FE6;
+    --pastel-coral: #F48E93;
+    --pastel-peach: #FDA090;
+    --pastel-yellow: #FDDA93;
     /* Yummy Section*/
-    --yummy-primary: #CC112F;
+    --yummy-primary: #49111C;
+    --yummy-primary-muted: #CC112F4D;
+    --yummy-primary-text: #FFFFFF;
+    --yummy-sec-section: #C8963E;
+    --yummy-sec-text: #49111C;
+    --yummy-sec-btn: #C8963E; 
+    --yummy-sec-btn-text:#FFFFFF;
+    --yummy-sec-hover-btn: #49111C;
+    --yummy-sec-hover-btn-text:#FFFFFF;
     
     --spacing-unit: 1rem;
     --bg-color-home-light:#F2F4F3;
@@ -135,6 +148,11 @@
         @apply text-black font-semibold p-3 rounded-[5px] shadow-[inset_0_2px_6px_0_rgba(0,0,0,0.1)] 
                    bg-white hover:bg-[#FFD600] hover:shadow-[-4px_-4px_0px_#000000CC] focus:outline-none focus:ring-2 transition-all ;
     }
+    /* Yummy Home */
+    .home_yummy_buttons{
+        @apply bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)]
+                   font-semibold p-3 rounded-[5px] focus:outline-none focus:ring-2 transition-all;
+    }
     /* CalendarHome */
     /* .calendar-coils{
         @apply relative w-full flex justify-center items-center overflow-visible;
@@ -142,6 +160,92 @@
     .calendar-coils::before{
         @apply absolute content-['']  block w-[2rem] h-[3rem] bg-[url("/Assets/Home/CalendarCoilsJazz.svg")] bg-cover bg-no-repeat bg-center right-1/2 top-1/2;
     } */
+
+/* Jazz Event Colors stuff */
+    /* Jazz Event Borders */
+    .jazz_event_border_lavender {
+        border: 4px solid var(--pastel-lavender) !important;
+    }
+
+    .jazz_event_border_pink {
+        border: 4px solid var(--pastel-pink) !important;
+    }
+
+    .jazz_event_border_coral {
+        border: 4px solid var(--pastel-coral) !important;
+    }
+
+    .jazz_event_border_yellow {
+        border: 4px solid var(--pastel-yellow) !important;
+    }
+    
+    /* Jazz Event Backgrounds */
+    .jazz_event_bg_lavender{
+        @apply bg-[var(--pastel-lavender)];
+    }
+    .jazz_event_bg_pink{
+        @apply bg-[var(--pastel-pink)];
+    }
+    .jazz_event_bg_coral{
+        @apply bg-[var(--pastel-coral)];
+    }
+    .jazz_event_bg_yellow{
+        @apply bg-[var(--pastel-yellow)];
+    }
+    
+    /* Jazz Event Text Colors */
+    .jazz_event_text_lavender{
+        @apply text-[var(--pastel-lavender)];
+    }
+    .jazz_event_text_pink{
+        @apply text-[var(--pastel-pink)];
+    }
+    .jazz_event_text_coral{
+        @apply text-[var(--pastel-coral)];
+    }
+    
+    /* Jazz Event Buttons */
+    .jazz_event_button_lavender{
+        @apply bg-[var(--pastel-lavender)] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#A378E7] transition-colors;
+    }
+    .jazz_event_button_pink{
+        @apply bg-[var(--pastel-pink)] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#DF7ED5] transition-colors;
+    }
+    .jazz_event_button_coral{
+        @apply bg-[var(--pastel-coral)] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#E37D82] transition-colors;
+    }
+    .jazz_event_button_yellow{
+        @apply bg-[var(--pastel-yellow)] text-gray-800 font-semibold py-3 px-6 rounded-lg hover:bg-[#FCD082] transition-colors;
+    }
+    .jazz_event_border_lavender {
+        border: 4px solid var(--pastel-lavender) !important;
+    }
+
+    .jazz_event_border_pink {
+        border: 4px solid var(--pastel-pink) !important;
+    }
+
+    .jazz_event_border_coral {
+        border: 4px solid var(--pastel-coral) !important;
+    }
+
+    .jazz_event_border_yellow {
+        border: 4px solid var(--pastel-yellow) !important;
+    }
+    /* Screen Reader Only - Accessibility */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+    
+    /* 
     /* MAGIC@TEYLERS */
     .magic_paragraph{
         @apply text-[#C69A4D]

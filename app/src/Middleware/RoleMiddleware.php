@@ -1,6 +1,7 @@
 <?php 
 namespace App\Middleware;
 
+use App\Controllers\HomeController;
 use ReflectionMethod;
 use App\Models\UserRole;
 use App\Models\User;
@@ -20,7 +21,7 @@ class RoleMiddleware{
 
             if (!$user || !in_array($user->role, $requiredRoles)) {
                 //$this->authService->logout("You do not have permission to access this resource. You have been logged out.");
-                header('Location: /not-authorized');
+                (new HomeController())->notFound();
                 exit();
             }
         }

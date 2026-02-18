@@ -13,6 +13,7 @@ use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use App\Controllers\HomeController;
 use App\Controllers\AccountController;
+use App\Controllers\CMS\CmsMediaController;
 use App\Services\AuthService;
 use App\Middleware\RoleMiddleware;
 
@@ -23,7 +24,6 @@ use App\Middleware\RoleMiddleware;
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
-    $r->addRoute('GET', '/cms', ['App\Controllers\HomeController', 'adminIndex']);
     $r->addRoute('POST', '/setTheme', ['App\Controllers\HomeController', 'setTheme']);
     $r->addRoute('GET', '/login', ['App\Controllers\AccountController', 'login']);
     $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);
@@ -34,17 +34,48 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/logout', ['App\Controllers\AccountController', 'logout']);
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
-    $r->addRoute('GET', '/wysiwyg-demo', ['App\Controllers\HomeController', 'wysiwygDemo']);
-    $r->addRoute('POST', '/wysiwyg-demo-post', ['App\Controllers\HomeController', 'wysiwygDemoPost']);
 
     $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
-    $r->addRoute('GET', '/home-update', ['App\Controllers\HomeController', 'updateHomePage']);
-    $r->addRoute('POST', '/home-update', ['App\Controllers\HomeController', 'updateHomePagePost']);
-    $r->addRoute('GET', '/testJazz', ['App\Controllers\HomeController', 'testJazz']);
-
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
+    $r->addRoute('GET', '/image-to-webp', ['App\Controllers\HomeController', 'imageToWebp']);
 
-    $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
+
+    /* Jazz Event Route */
+    $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
+
+    /* CMS Routes */
+    $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
+    $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);
+    $r->addRoute('POST', '/cms/page/update', ['App\Controllers\CmsPageController', 'update']);
+
+    /* CMS Media Routes (AJAX) */
+    $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
+
+    /* CMS Artist Management*/
+    $r->addRoute('GET', '/cms/artists', ['App\Controllers\ArtistController', 'index']);
+    $r->addRoute('GET', '/cms/artists/create', ['App\Controllers\ArtistController', 'create']);
+    $r->addRoute('POST', '/cms/artists/store', ['App\Controllers\ArtistController', 'store']);
+    $r->addRoute('GET', '/cms/artists/edit/{id:\d+}', ['App\Controllers\ArtistController', 'edit']);
+    $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
+    $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
+
+    /* CMS Venue Management*/
+    $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
+    $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
+    $r->addRoute('POST', '/cms/venues/store', ['App\Controllers\VenueController', 'store']);
+    $r->addRoute('GET', '/cms/venues/edit/{id:\d+}', ['App\Controllers\VenueController', 'edit']);
+    $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
+    $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
+
+    /* Legacy route for homepage (keep for backwards compatibility) */
+    $r->addRoute('GET', '/home-update', function () {
+        header('Location: /cms/page/edit/home');
+        exit;
+    });
+    $r->addRoute('POST', '/home-update', function () {
+        header('Location: /cms/page/edit/home');
+        exit;
+    });
 });
 
 
@@ -62,7 +93,7 @@ switch ($routeInfo[0]) {
     // Handle not found routes
     case FastRoute\Dispatcher::NOT_FOUND:
         http_response_code(404);
-       // (new HomeController())->notFound();
+        (new HomeController())->notFound();
         break;
     // Handle routes that were invoked with the wrong HTTP method
     case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
@@ -97,11 +128,11 @@ switch ($routeInfo[0]) {
         $controller = new $routeInfo[1][0]();
         $method = $routeInfo[1][1];
         $params = $routeInfo[2];
-        
-    //     if (session_status() === PHP_SESSION_NONE) {
-    //     session_start();
-    // }
-        
+
+        //     if (session_status() === PHP_SESSION_NONE) {
+        //     session_start();
+        // }
+
 
         $authService = new AuthService();
         $roleMiddleware = new RoleMiddleware($authService);
