@@ -43,6 +43,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/testJazz', ['App\Controllers\HomeController', 'testJazz']);
 
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
+    $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
 
 });
 

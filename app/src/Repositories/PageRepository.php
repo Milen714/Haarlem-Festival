@@ -1,14 +1,12 @@
 <?php
 namespace App\Repositories;
 
-use App\CmsModels\CmsPageModel;
 use App\CmsModels\PageSection;
 use App\CmsModels\Enums\PageType;
 use App\CmsModels\Page;
 use App\Framework\Repository;
 use App\Repositories\Interfaces\IPageRepository;
 use App\Repositories\MediaRepository;
-use App\Models\EventCategory;
 use PDO;
 use PDOException;
 
@@ -69,6 +67,53 @@ class PageRepository extends Repository implements IPageRepository
             return $pageModel;
         } catch (PDOException $e) {
             die("Error fetching page data: " . $e->getMessage());
+        }
+    }
+
+    public function getPageBySlug(string $slug): Page
+    {
+        try {
+            $pdo = $this->connect();
+            $query = "SELECT 
+                p.page_id, p.page_type, p.slug, p.title AS page_title, p.sidebar_html, p.event_category_id,
+                s.section_id, s.section_type, s.title AS section_title, s.content_html, 
+                s.media_id, s.display_order AS sec_order, s.cta_text, s.cta_url, s.gallery_id, 
+                ec.event_id AS event_category_id, ec.title AS event_category_title,
+                ec.type AS event_category_type, ec.category_description AS event_category_description, ec.slug AS event_category_slug
+            FROM PAGES p
+            LEFT JOIN EVENT_CATEGORIES ec ON p.event_category_id = ec.event_id
+            LEFT JOIN PAGE_SECTIONS s ON p.page_id = s.page_id
+            WHERE p.slug = :slug
+            ORDER BY s.display_order ASC";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $pageModel = new Page();
+            $firstResult = true;
+
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                if ($firstResult) {
+                    $pageModel->fromPDOData($row);
+                    $firstResult = false;
+                }
+                if ($row['section_id']) {
+                    $section = new PageSection();
+                    $section->fromPDOData($row);
+                    if (!empty($row['media_id'])) {
+                        $section->media = $this->mediaRepository->getMediaById((int)$row['media_id']);
+                    }
+                    
+                    if (!empty($row['gallery_id'])) {
+                        $section->gallery = $this->mediaRepository->getGalleryById((int)$row['gallery_id']);
+                    }
+                    $pageModel->addContentSection($section);
+                }
+            }
+            return $pageModel;
+        } catch (PDOException $e) {
+            die("Error: " . $e->getMessage());
         }
     }
 
