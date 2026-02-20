@@ -37,7 +37,50 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
+    $r->addRoute('GET', '/image-to-webp', ['App\Controllers\HomeController', 'imageToWebp']);
+
+    /* Magic Page Route */
+    $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
+    $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
+    /* Jazz Event Route */
+    $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
+    /* Dance Event Route */
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
+
+    /* CMS Routes */
+    $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
+    $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);
+    $r->addRoute('POST', '/cms/page/update', ['App\Controllers\CmsPageController', 'update']);
+
+    /* CMS Media Routes (AJAX) */
+    $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
+
+    /* CMS Artist Management*/
+    $r->addRoute('GET', '/cms/artists', ['App\Controllers\ArtistController', 'index']);
+    $r->addRoute('GET', '/cms/artists/create', ['App\Controllers\ArtistController', 'create']);
+    $r->addRoute('POST', '/cms/artists/store', ['App\Controllers\ArtistController', 'store']);
+    $r->addRoute('GET', '/cms/artists/edit/{id:\d+}', ['App\Controllers\ArtistController', 'edit']);
+    $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
+    $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
+
+    /* CMS Venue Management*/
+    $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
+    $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
+    $r->addRoute('POST', '/cms/venues/store', ['App\Controllers\VenueController', 'store']);
+    $r->addRoute('GET', '/cms/venues/edit/{id:\d+}', ['App\Controllers\VenueController', 'edit']);
+    $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
+    $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
+
+    /* Legacy route for homepage (keep for backwards compatibility) */
+    $r->addRoute('GET', '/home-update', function () {
+        header('Location: /cms/page/edit/home');
+        exit;
+    });
+    $r->addRoute('POST', '/home-update', function () {
+        header('Location: /cms/page/edit/home');
+        exit;
+    });
+
 });
 
 

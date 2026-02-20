@@ -3677,7 +3677,7 @@ select:focus,
 }
 
 .dark\:bg-\[var\(--text-home-high-contrast-primary\:\)\]:is(.dark *){
-  background-color: var(--text-home-high-contrast-primary);
+  background-color: var(--text-home-high-contrast-primary:);
 }
 
 .dark\:text-gray-200:is(.dark *){
