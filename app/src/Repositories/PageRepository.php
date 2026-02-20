@@ -1,14 +1,12 @@
 <?php
 namespace App\Repositories;
 
-use App\CmsModels\CmsPageModel;
 use App\CmsModels\PageSection;
 use App\CmsModels\Enums\PageType;
 use App\CmsModels\Page;
 use App\Framework\Repository;
 use App\Repositories\Interfaces\IPageRepository;
 use App\Repositories\MediaRepository;
-use App\Models\EventCategory;
 use PDO;
 use PDOException;
 
