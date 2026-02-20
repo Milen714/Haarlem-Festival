@@ -10,7 +10,8 @@ namespace App\Views\Home\Components;
     </header>
     <div class="flex flex-row justify-evenly">
         <div class="w-[45%] ">
-            <img src="/Assets/Home/HomeHero.png" alt="Haarlem Panorama"
+            <img src="<?php echo htmlspecialchars($heroSection->media->file_path) ?>"
+                alt="<?php echo htmlspecialchars($heroSection->media->alt_text) ?>"
                 class="w-full h-auto object-cover rounded-l-3xl">
         </div>
         <div class="w-[45%] flex flex-col justify-center text-lg space-y-4 text-black">

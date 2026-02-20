@@ -4,11 +4,21 @@ module.exports = {
   content: [
     "./Views/**/*.php",
     "./public/**/*.php",
+    "./src/**/*.php",
+  ],
+  safelist: [
+    "flex-col",
+    "flex-col-reverse",
+    "md:flex-row",
+    "md:flex-row-reverse",
   ],
   theme: {
     extend: {
       fontFamily: {
         montserrat: ['Montserrat', 'sans-serif'],
+        robotomono: ['Roboto Mono', 'monospace'],
+        courierprime: ['Courier Prime', 'monospace'],
+        blackopsone: ['Black Ops One', 'system-ui'],
       },
       content: {
         'arrow_right': 'url("/Assets/Nav/ArrowRightNav.svg")',
@@ -20,6 +30,7 @@ module.exports = {
         'footer_facebook': 'url("/Assets/Nav/FooterFacebook.svg")',
         'footer_instagram': 'url("/Assets/Nav/FooterInstagram.svg")',
         'footer_twitter': 'url("/Assets/Nav/FooterTwitter.svg")',
+        'magic_nav_active': 'url("/Assets/Magic/MagicNavActiveIcon.svg")',
       },
     },
   },

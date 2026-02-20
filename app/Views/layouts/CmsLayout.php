@@ -129,6 +129,29 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                     <span>Media Library</span>
                 </a>
 
+                <!-- Resources Section -->
+                <div class="pt-4">
+                    <p class="px-4 text-xs font-semibold uppercase tracking-wider" style="color: #6B7280;">Resources</p>
+                </div>
+
+                <a href="/cms/artists" class="cms-nav-link flex items-center px-4 py-2 rounded-lg"
+                    style="color: #9CA3AF;">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    </svg>
+                    <span>Artists</span>
+                </a>
+
+                <a href="/cms/venues" class="cms-nav-link flex items-center px-4 py-2 rounded-lg"
+                    style="color: #9CA3AF;">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Venues</span>
+                </a>
+
                 <!-- Users Section -->
                 <div class="pt-4">
                     <p class="px-4 text-xs font-semibold uppercase tracking-wider" style="color: #6B7280;">Users</p>

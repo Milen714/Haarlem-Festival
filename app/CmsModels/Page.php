@@ -47,5 +47,10 @@ class Page extends CmsPageModel
             $this->addContentSection($section);
         }
     }
+    public function sortSectionsByDisplayOrder(): void {
+        usort($this->content_sections, function($a, $b) {
+            return $a->display_order <=> $b->display_order;
+        });
+    }
 
 }
