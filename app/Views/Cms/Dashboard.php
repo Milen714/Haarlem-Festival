@@ -9,7 +9,7 @@ namespace App\Views\Cms;
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
+
         <!-- Page Management -->
         <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
             <div class="flex items-center mb-4">
@@ -23,6 +23,7 @@ namespace App\Views\Cms;
                 <a href="/cms/page/edit/events-dance" class="block text-blue-600 hover:underline">→ Dance Event</a>
                 <a href="/cms/page/edit/events-history" class="block text-blue-600 hover:underline">→ History Event</a>
                 <a href="/cms/page/edit/events-yummy" class="block text-blue-600 hover:underline">→ Yummy Event</a>
+                <a href="/cms/page/edit/events-magic" class="block text-blue-600 hover:underline">→ Magic Event</a>
             </div>
         </article>
 

@@ -60,20 +60,21 @@ class Artist
 	public function fromPDOData(array $data): void
 {
     $this->artist_id = isset($data['artist_id']) ? (int)$data['artist_id'] : null;
-    $this->name = $data['name'] ?? null;
-    $this->slug = $data['slug'] ?? null;
-    $this->bio = $data['bio'] ?? null;
-    $this->website = $data['website'] ?? null;
-    $this->spotify_url = $data['spotify_url'] ?? null;
-    $this->youtube_url = $data['youtube_url'] ?? null;
-    $this->soundcloud_url = $data['soundcloud_url'] ?? null;
-    $this->featured_quote = $data['featured_quote'] ?? null;
-    $this->press_quote = $data['press_quote'] ?? null;
-    $this->collaborations = $data['collaborations'] ?? null;
+		$this->name = $data['name'] ?? $data['artist_name'] ?? null;
+		$this->slug = $data['artist_slug'] ?? $data['slug'] ?? null;
+		$this->bio = $data['artist_bio'] ?? $data['bio'] ?? null;
+		$this->website = $data['artist_website'] ?? $data['website'] ?? null;
+		$this->spotify_url = $data['artist_spotify_url'] ?? $data['spotify_url'] ?? null;
+		$this->youtube_url = $data['artist_youtube_url'] ?? $data['youtube_url'] ?? null;
+		$this->soundcloud_url = $data['artist_soundcloud_url'] ?? $data['soundcloud_url'] ?? null;
+		$this->featured_quote = $data['artist_featured_quote'] ?? $data['featured_quote'] ?? null;
+		$this->press_quote = $data['artist_press_quote'] ?? $data['press_quote'] ?? null;
+		$this->collaborations = $data['artist_collaborations'] ?? $data['collaborations'] ?? null;
 
-    if (isset($data['deleted_at']) && $data['deleted_at']) {
-        $this->deleted_at = new DateTime($data['deleted_at']);
-    }
+		$deletedAt = $data['artist_deleted_at'] ?? $data['deleted_at'] ?? null;
+		if ($deletedAt) {
+			$this->deleted_at = new DateTime($deletedAt);
+		}
 
     $this->genres = $data['genres'] ?? null;
     $this->is_headliner = isset($data['is_headliner']) ? (bool)$data['is_headliner'] : null;
@@ -92,7 +93,7 @@ class Artist
         ]);
     }
 
-    if (isset($data['artist_gallery_id'])) {
+	if (isset($data['artist_gallery_id'])) {
         $this->gallery = new Gallery();
         $this->gallery->fromPDOData([
             'gallery_id' => $data['artist_gallery_id'],

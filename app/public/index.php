@@ -39,7 +39,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
     $r->addRoute('GET', '/image-to-webp', ['App\Controllers\HomeController', 'imageToWebp']);
 
-
+    /* Magic Page Route */
+    $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
+    $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
 
@@ -76,6 +78,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         header('Location: /cms/page/edit/home');
         exit;
     });
+
 });
 
 

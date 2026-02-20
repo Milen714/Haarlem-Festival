@@ -45,8 +45,6 @@ class HomeController extends BaseController
         
         $pageData = $this->pageService->getPageBySlug('home');
         $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
-
-        
         $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
     }
 
@@ -88,7 +86,7 @@ class HomeController extends BaseController
         header('Content-Type: application/json');
         $slug = ltrim($_SERVER['REQUEST_URI'], '/');
 
-        $pageData = $this->pageService->getPageBySlug('events-jazz');
+        $pageData = $this->pageService->getPageBySlug('events-magic');
         echo json_encode($pageData);
     }
     public function YummyHome($vars = [])

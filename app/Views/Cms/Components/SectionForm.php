@@ -51,6 +51,13 @@ use App\CmsModels\Enums\SectionType;
             <textarea class="tinymce"
                 name="sections[<?= $i ?>][content_html]"><?= htmlspecialchars($section->content_html ?? '') ?></textarea>
         </article>
+        <?php if (isset($section->content_html_2)): ?>
+        <article class="input_group mb-4">
+            <label class="input_label">Section Content 2:</label>
+            <textarea class="tinymce"
+                name="sections[<?= $i ?>][content_html_2]"><?= htmlspecialchars($section->content_html_2 ?? '') ?></textarea>
+        </article>
+        <?php endif; ?>
 
         <?php if (isset($section->media)): ?>
         <article class="input_group border-t pt-4">
