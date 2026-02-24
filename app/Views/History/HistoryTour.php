@@ -1,5 +1,8 @@
-<?php /** @var App\CmsModels\Page $pageData */ ?>
-<div class="bg-[#fefbf0] min-h-screen pb-16">
+<?php
+namespace App\Views\History;
+?>
+
+<div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
     
     <?php include __DIR__ . '/Components/TourHero.php'; ?>
     
