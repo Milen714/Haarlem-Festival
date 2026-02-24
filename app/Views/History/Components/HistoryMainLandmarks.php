@@ -1,40 +1,55 @@
-<section class="mt-8 space-y-8">
-    <article class="grid md:grid-cols-5 gap-6 items-start">
-        <div class="md:col-span-2">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Grote_Kerk_%28St.-Bavokerk%29_-_interior.jpg/640px-Grote_Kerk_%28St.-Bavokerk%29_-_interior.jpg" 
-                 class="w-full h-56 md:h-full object-cover rounded-lg shadow-card border border-neutral-200" alt="Church of St. Bavo" />
+<?php
+/** @var App\CmsModels\PageSection[] $landmarks */
+$card1 = $landmarks[0] ?? null;
+$card2 = $landmarks[1] ?? null;
+$card3 = $landmarks[2] ?? null;
+?>
+<section class="space-y-[3rem] mb-[5rem]">
+    <?php if ($card1): ?>
+    <article class="grid md:grid-cols-5 gap-[2rem] items-stretch">
+        <div class="md:col-span-2 order-1">
+            <img src="<?= htmlspecialchars($card1->media->file_path ?? '/Assets/Home/ImagePlaceholder.png') ?>" class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md border border-neutral-200" />
         </div>
-        <div class="md:col-span-3 p-6">
-            <h4 class="font-history-serif text-lg md:text-xl text-ink-900">Church of St.Bavo</h4>
-            <div class="mt-3 h-px w-10 bg-neutral-300"></div>
-            <p class="mt-4 text-sm leading-relaxed text-ink-700">Step inside and let the profound silence take your breath away...</p>
-            <a href="#" class="mt-3 inline-block text-brand-600 font-semibold hover:underline">Read more ...</a>
+        <div class="md:col-span-3 order-2 bg-[#fafafa] rounded-[0.5rem] border border-[#e5e5e5] p-[2rem] flex flex-col justify-center">
+            <h4 class="font-serif text-[1.25rem] text-ink-900"><?= htmlspecialchars($card1->title) ?></h4>
+            <div class="mt-[0.75rem] h-[1px] w-[3rem] bg-neutral-300"></div>
+            <div class="mt-[1rem] text-[0.875rem] leading-relaxed text-ink-700 italic prose prose-sm max-w-none">
+                <?= $card1->content_html ?>
+            </div>
+            <a href="/history/detail/<?= $card1->section_id ?>" class="mt-[1.25rem] inline-block font-semibold text-brand-600 hover:text-brand-700 transition-colors">Read more ...</a>
         </div>
     </article>
+    <?php endif; ?>
 
-    <article class="grid md:grid-cols-5 gap-6 items-start">
-        <div class="md:col-span-3  -6">
-            <h4 class="font-history-serif text-lg md:text-xl text-ink-900">Molen de Adriaan</h4>
-            <div class="mt-3 h-px w-10 bg-neutral-300"></div>
-            <p class="mt-4 text-sm leading-relaxed text-ink-700">Perched on the scenic bank of the river Spaarne...</p>
-            <a href="#" class="mt-3 inline-block text-brand-600 font-semibold hover:underline">Read more ...</a>
+    <?php if ($card2): ?>
+    <article class="grid md:grid-cols-5 gap-[2rem] items-stretch">
+        <div class="md:col-span-3 order-2 md:order-1 bg-[#fafafa] rounded-[0.5rem] border border-[#e5e5e5] p-[2rem] flex flex-col justify-center text-right md:text-left">
+            <h4 class="font-serif text-[1.25rem] text-ink-900"><?= htmlspecialchars($card2->title) ?></h4>
+            <div class="mt-[0.75rem] h-[1px] w-[3rem] bg-neutral-300 ml-auto md:ml-0"></div>
+            <div class="mt-[1rem] text-[0.875rem] leading-relaxed text-ink-700 italic prose prose-sm max-w-none">
+                <?= $card2->content_html ?>
+            </div>
+            <a href="/history/detail/<?= $card2->section_id ?>" class="mt-[1.25rem] inline-block font-semibold text-brand-600 hover:text-brand-700 transition-colors">Read more ...</a>
         </div>
         <div class="md:col-span-2 order-1 md:order-2">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Molen_De_Adriaan%2C_Haarlem.jpg/640px-Molen_De_Adriaan%2C_Haarlem.jpg" 
-                 class="w-full h-56 md:h-full object-cover rounded-lg shadow-card border border-neutral-200" alt="Molen de Adriaan" />
+            <img src="<?= htmlspecialchars($card2->media->file_path ?? '/Assets/Home/ImagePlaceholder.png') ?>" class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md border border-neutral-200" />
         </div>
     </article>
+    <?php endif; ?>
 
-    <article class="grid md:grid-cols-5 gap-6 items-start">
-        <div class="md:col-span-2">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Grote_Markt%2C_Haarlem%2C_Netherlands_-_panoramio_%281%29.jpg/640px-Grote_Markt%2C_Haarlem%2C_Netherlands_-_panoramio_%281%29.jpg" 
-                 class="w-full h-56 md:h-full object-cover rounded-lg shadow-card border border-neutral-200" alt="Grote Markt" />
+    <?php if ($card3): ?>
+    <article class="grid md:grid-cols-5 gap-[2rem] items-stretch">
+        <div class="md:col-span-2 order-1">
+            <img src="<?= htmlspecialchars($card3->media->file_path ?? '/Assets/Home/ImagePlaceholder.png') ?>" class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md border border-neutral-200" />
         </div>
-        <div class="md:col-span-3 p-6">
-            <h4 class="font-history-serif text-lg md:text-xl text-ink-900">Grote Markt</h4>
-            <div class="mt-3 h-px w-10 bg-neutral-300"></div>
-            <p class="mt-4 text-sm leading-relaxed text-ink-700">This isn’t just a square; it is the buzzing heart where the city truly comes alive...</p>
-            <a href="#" class="mt-3 inline-block text-brand-600 font-semibold hover:underline">Read more ...</a>
+        <div class="md:col-span-3 order-2 bg-[#fafafa] rounded-[0.5rem] border border-[#e5e5e5] p-[2rem] flex flex-col justify-center">
+            <h4 class="font-serif text-[1.25rem] text-ink-900"><?= htmlspecialchars($card3->title) ?></h4>
+            <div class="mt-[0.75rem] h-[1px] w-[3rem] bg-neutral-300"></div>
+            <div class="mt-[1rem] text-[0.875rem] leading-relaxed text-ink-700 italic prose prose-sm max-w-none">
+                <?= $card3->content_html ?>
+            </div>
+            <a href="/history/detail/<?= $card3->section_id ?>" class="mt-[1.25rem] inline-block font-semibold text-brand-600 hover:text-brand-700 transition-colors">Read more ...</a>
         </div>
     </article>
+    <?php endif; ?>
 </section>
