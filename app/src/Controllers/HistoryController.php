@@ -76,6 +76,7 @@ class HistoryController extends BaseController
             $tourFeatures = [];     // <-- NUEVO: Para las 4 tarjetas
             $goodToKnowItems = [];  // <-- NUEVO: Para la lista
 
+            
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
                 if ($type === 'text') {
