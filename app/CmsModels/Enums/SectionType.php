@@ -13,4 +13,6 @@ enum SectionType: string
     case hero_gallery = 'hero_gallery';
     case event_left = 'event_left';
     case event_right = 'event_right';
+    case image_bottom = 'image_bottom';
+    case article = 'article';
 }

@@ -8,4 +8,5 @@ interface IPageRepository
     public function getPageBySlug(string $slug): Page;
     public function updatePageSectionById(PageSection $section): bool;
     public function updatePage(Page $page): bool;
+    public function getPageSlugs(): array;
 }

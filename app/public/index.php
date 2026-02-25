@@ -39,9 +39,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
     $r->addRoute('GET', '/image-to-webp', ['App\Controllers\HomeController', 'imageToWebp']);
 
-
+    /* Magic Page Route */
+    $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
+    $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
+    $r->addRoute('GET', '/events-magic-lorentz-show', ['App\Controllers\MagicController', 'lorentzFormula']);
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
+    /* Dance Event Route */
+    $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
 
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
@@ -76,6 +81,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
         header('Location: /cms/page/edit/home');
         exit;
     });
+
 });
 
 

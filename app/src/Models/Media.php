@@ -21,7 +21,11 @@ class Media
     {
         $mediaId = $data['media_id'] ?? null;
         $this->media_id = ($mediaId === null || $mediaId === '') ? null : (int)$mediaId;
-        $this->file_path = $data['file_path'] ?? '';
-        $this->alt_text = $data['alt_text'] ?? '';
+        $this->file_path = array_key_exists('file_path', $data) && $data['file_path'] !== ''
+            ? (string)$data['file_path']
+            : null;
+        $this->alt_text = array_key_exists('alt_text', $data)
+            ? (string)$data['alt_text']
+            : null;
     }
 }
