@@ -19,20 +19,7 @@ use App\CmsModels\PageSection;
         <?php if (!empty($section) && !empty($section->content_html)): ?>
         <?php echo $section->content_html; ?>
         <?php else: ?>
-        <!-- <div class="accordion-item">
-            <button
-                class="accordion-header w-full px-6 py-5 border-none text-left cursor-pointer flex justify-between items-center transition-colors duration-200"
-                data-accordion-trigger="true" type="button" aria-expanded="true">
-                <span class="accordion-title text-[#d4af37] font-courierprime tracking-widest text-2xl font-medium">Arriving
-                    by Public Transport</span>
-                <span class="accordion-toggle text-[#d4af37] text-3xl font-light select-none">−</span>
-            </button>
-            <div class="accordion-content w-full overflow-hidden transition-all duration-300 block">
-                <div class="accordion-body px-6 py-5 text-white font-robotomono leading-relaxed text-lg">
-                    <p>Teylers Museum is easy to get to from the Haarlem railway station (ca 13-minute walk).</p>
-                </div>
-            </div>
-        </div> -->
+
 
         <!-- <div class="accordion-item"><button
                 class="accordion-header w-full px-6 py-5 border-none text-left cursor-pointer flex justify-between items-center transition-colors duration-200"

@@ -41,11 +41,13 @@ class HomeController extends BaseController
     {
         $eventFilter = $_GET['event']  ?? null;  
         $dateFilter = $_GET['date'] ?? null;
-
-        
-        $pageData = $this->pageService->getPageBySlug('home');
-        $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
-        $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
+        try{
+            $pageData = $this->pageService->getPageBySlug('home');
+            $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
+            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
+        } catch (\Exception $e) {
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
     }
 
     #[RequireRole([UserRole::ADMIN])]

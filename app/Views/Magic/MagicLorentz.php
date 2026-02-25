@@ -1,4 +1,4 @@
-<?php
+<?php 
 namespace App\Views\Magic;
 use App\ViewModels\Magic\MagicAccessibility;
 /** @var MagicAccessibility $pageModel */

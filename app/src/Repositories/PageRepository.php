@@ -88,7 +88,7 @@ class PageRepository extends Repository implements IPageRepository
                 $this->updatePageSectionById($section);
             }
 
-            return $stmt->rowCount() >= 0; // Returns true even if no rows changed but query succeeded
+            return $stmt->rowCount() >= 0; 
         } catch (PDOException $e) {
             die("Error updating page: " . $e->getMessage());
         }
@@ -125,9 +125,24 @@ class PageRepository extends Repository implements IPageRepository
 
             $stmt->bindParam(':section_id', $section->section_id, PDO::PARAM_INT); 
             
-            return $stmt->execute(); 
+            $stmt->execute();
+            if ($mediaId !== null) {
+                $this->mediaRepository->updateMedia($section->media);
+            }
+            return $stmt->rowCount() >= 0; 
         } catch (PDOException $e) { 
             die("Error updating section: " . $e->getMessage()); 
+        }
+    }
+    public function getPageSlugs(): array
+    {
+        try {
+            $pdo = $this->connect();
+            $query = "SELECT slug, title, page_type FROM PAGES";
+            $stmt = $pdo->query($query);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            die("Error fetching page slugs: " . $e->getMessage());
         }
     }
 }

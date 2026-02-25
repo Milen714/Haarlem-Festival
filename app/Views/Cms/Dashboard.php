@@ -1,5 +1,6 @@
 <?php
 namespace App\Views\Cms;
+$pageLinks = isset($pageSlugs) ? $pageSlugs : [];
 ?>
 
 <section class="p-8 max-w-7xl mx-auto">
@@ -18,12 +19,12 @@ namespace App\Views\Cms;
             </div>
             <p class="text-gray-600 mb-4">Edit website pages and content</p>
             <div class="space-y-2">
-                <a href="/cms/page/edit/home" class="block text-blue-600 hover:underline">→ Homepage</a>
-                <a href="/cms/page/edit/events-jazz" class="block text-blue-600 hover:underline">→ Jazz Event</a>
-                <a href="/cms/page/edit/events-dance" class="block text-blue-600 hover:underline">→ Dance Event</a>
-                <a href="/cms/page/edit/events-history" class="block text-blue-600 hover:underline">→ History Event</a>
-                <a href="/cms/page/edit/events-yummy" class="block text-blue-600 hover:underline">→ Yummy Event</a>
-                <a href="/cms/page/edit/events-magic" class="block text-blue-600 hover:underline">→ Magic Event</a>
+                <?php foreach ($pageLinks as $slug): ?>
+                <a href="/cms/page/edit/<?= htmlspecialchars($slug['slug']) ?>"
+                    class="block text-blue-600 hover:underline font-semibold"> <span class="text-yellow-400">→
+                        Edit</span>
+                    <?= htmlspecialchars($slug['title']) ?></a>
+                <?php endforeach; ?>
             </div>
         </article>
 
