@@ -8,9 +8,11 @@ namespace App\Views\History;
     
     <div class="container mx-auto max-w-[1100px] px-4">
         
-        <?php include __DIR__ . '/Components/TourBreadcrumb.php'; ?>
-
         <?php include __DIR__ . '/Components/TourInfo.php'; ?>
+        
+        <?php include __DIR__ . '/Components/TourCards.php'; ?>
+
+        <?php include __DIR__ . '/Components/TourGoodToKnow.php'; ?>
         
         <?php include __DIR__ . '/Components/TourSeparator.php'; ?>
 
