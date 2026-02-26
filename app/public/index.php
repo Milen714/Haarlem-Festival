@@ -24,6 +24,7 @@ use App\Middleware\RoleMiddleware;
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
+    $r->addRoute('GET', '/getSchedule', ['App\Controllers\HomeController', 'getSchedulePartial']);
     $r->addRoute('POST', '/setTheme', ['App\Controllers\HomeController', 'setTheme']);
     $r->addRoute('GET', '/login', ['App\Controllers\AccountController', 'login']);
     $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);

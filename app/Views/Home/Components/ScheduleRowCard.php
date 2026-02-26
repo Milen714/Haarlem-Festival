@@ -59,7 +59,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
             <div class="flex flex-col gap-3 flex-grow min-w-0">
                 <div>
                     <h2 class="text-black text-lg font-semibold"><?= $scheduleItem->artist->name ?></h2>
-                    <h2 class="text-black text-lg font-semibold">Haarlem Jazz: Wicked Jazz Sounds</h2>
+
                 </div>
                 <div class="flex flex-col gap-2">
                     <div class="flex flex-row gap-2 items-center">
@@ -69,11 +69,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
                             class="text-sm text-black"><?php echo htmlspecialchars(
                             $scheduleItem->venue ? $scheduleItem->venue->name : $scheduleItem->landmark->name) ?></span>
                     </div>
-                    <div class="flex flex-row gap-2 items-center">
-                        <img src="/Assets/Home/LocationTicketHome.svg" alt="Location Icon"
-                            class="w-4 h-4 flex-shrink-0">
-                        <span class="text-sm text-black">Second Hall @ Patronaat</span>
-                    </div>
+
                     <div class="flex flex-row gap-2 items-center">
                         <img src="/Assets/Home/DurationIconHome.svg" alt="Duration Icon" class="w-4 h-4 flex-shrink-0">
                         <span class="text-sm font-bold text-black">Duration:

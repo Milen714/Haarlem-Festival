@@ -14,6 +14,7 @@ use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\MediaRepository;
 use App\Services\MediaService;
+use App\ViewModels\Home\ScheduleList;
 
 class HomeController extends BaseController
 {
@@ -44,22 +45,38 @@ class HomeController extends BaseController
         try{
             $pageData = $this->pageService->getPageBySlug('home');
             $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
-            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
+
+            $scheduleList = new ScheduleList($schedule);
+            
+            // foreach($pageData->content_sections[0]->gallery->media_items as $mediaItem){
+            //     var_dump($mediaItem->media);
+            //     echo "<br><br>";
+            //     echo "<img src='" . $mediaItem->media->file_path . "' alt='" . htmlspecialchars($mediaItem->media->alt_text) . "'><br><br>";
+            // }
+            // die();
+
+
+            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList] );
         } catch (\Exception $e) {
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
     }
 
-    #[RequireRole([UserRole::ADMIN])]
-    public function adminIndex($vars = [])
+    public function getSchedulePartial($vars = [])
     {
-        $user = $this->userService->getUserById(5);
-        if ($user) {
-            $message = "Welcome back, " . $user->fname . "!";
-        } else {
-            $message = "User not found.";
+        $eventFilter = $_GET['event']  ?? null;  
+        $dateFilter = $_GET['date'] ?? null;
+        try{
+            $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
+
+            $scheduleList = new ScheduleList($schedule);
+            // var_dump($scheduleList->eveningSchedules);
+            // die();
+
+            echo require_once '/app/Views/Home/Components/HomeSchedule.php';
+        } catch (\Exception $e) {
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
-        $this->cmsLayout('Home/Landing', ['message' => $message, 'title' => 'The Festival Home', 'user' => $user]);
     }
 
     public function setTheme($vars = [])

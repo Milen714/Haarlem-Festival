@@ -18,7 +18,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     }
 
     /**
-     * Base query with all JOINs for nested objects (no media joins)
+     * Base query with all JOINs for nested objects including media
      */
     private function getBaseQuery(): string
     {
@@ -64,6 +64,11 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 a.collaborations as artist_collaborations,
                 a.deleted_at as artist_deleted_at,
                 
+                -- Artist Media fields
+                artist_media.media_id as artist_media_id,
+                artist_media.file_path as artist_media_file_path,
+                artist_media.alt_text as artist_media_alt_text,
+                
                 -- Restaurant fields
                 r.restaurant_id,
                 r.name as restaurant_name,
@@ -75,6 +80,11 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 r.website_url as restaurant_website_url,
                 r.main_image_id as restaurant_main_image_id,
                 
+                -- Restaurant Media fields
+                restaurant_media.media_id as restaurant_media_id,
+                restaurant_media.file_path as restaurant_media_file_path,
+                restaurant_media.alt_text as restaurant_media_alt_text,
+                
                 -- Landmark fields
                 l.landmark_id,
                 l.name as landmark_name,
@@ -83,6 +93,11 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 l.has_detail_page as landmark_has_detail_page,
                 l.landmark_slug,
                 l.landmark_image_id,
+                
+                -- Landmark Media fields
+                landmark_media.media_id as landmark_media_id,
+                landmark_media.file_path as landmark_media_file_path,
+                landmark_media.alt_text as landmark_media_alt_text,
                 
                 -- Event Category fields
                 ec.event_id as event_category_id,
@@ -94,8 +109,11 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             FROM SCHEDULE s
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
+            LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
+            LEFT JOIN MEDIA restaurant_media ON r.main_image_id = restaurant_media.media_id
             LEFT JOIN LANDMARK l ON s.landmark_id = l.landmark_id
+            LEFT JOIN MEDIA landmark_media ON l.landmark_image_id = landmark_media.media_id
             LEFT JOIN EVENT_CATEGORIES ec ON s.event_id = ec.event_id
         ";
     }
@@ -232,7 +250,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     /**
      * Hydrate a Schedule object from a database row
      * All nested objects (venue, artist, restaurant, landmark) will be hydrated if data exists
-     * Media objects are fetched separately using MediaRepository
+     * Media objects are hydrated directly from the joined query results
      */
     private function hydrateSchedule(array $row): Schedule
     {
@@ -240,19 +258,31 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         $schedule->fromPDOData($row);
         $schedule->hydrateAllRelations($row);
         
-        // Hydrate media for Artist
-        if ($schedule->artist !== null && isset($row['artist_profile_image_id']) && $row['artist_profile_image_id'] !== null) {
-            $schedule->artist->profile_image = $this->mediaRepository->getMediaById((int)$row['artist_profile_image_id']);
+        // Hydrate media for Artist from joined data (no extra query needed)
+        if ($schedule->artist !== null && isset($row['artist_media_id']) && $row['artist_media_id'] !== null) {
+            $media = new \App\Models\Media();
+            $media->media_id = (int)$row['artist_media_id'];
+            $media->file_path = $row['artist_media_file_path'];
+            $media->alt_text = $row['artist_media_alt_text'];
+            $schedule->artist->profile_image = $media;
         }
         
-        // Hydrate media for Restaurant
-        if ($schedule->restaurant !== null && isset($row['restaurant_main_image_id']) && $row['restaurant_main_image_id'] !== null) {
-            $schedule->restaurant->main_image = $this->mediaRepository->getMediaById((int)$row['restaurant_main_image_id']);
+        // Hydrate media for Restaurant from joined data (no extra query needed)
+        if ($schedule->restaurant !== null && isset($row['restaurant_media_id']) && $row['restaurant_media_id'] !== null) {
+            $media = new \App\Models\Media();
+            $media->media_id = (int)$row['restaurant_media_id'];
+            $media->file_path = $row['restaurant_media_file_path'];
+            $media->alt_text = $row['restaurant_media_alt_text'];
+            $schedule->restaurant->main_image = $media;
         }
         
-        // Hydrate media for Landmark
-        if ($schedule->landmark !== null && isset($row['landmark_image_id']) && $row['landmark_image_id'] !== null) {
-            $schedule->landmark->landmark_image = $this->mediaRepository->getMediaById((int)$row['landmark_image_id']);
+        // Hydrate media for Landmark from joined data (no extra query needed)
+        if ($schedule->landmark !== null && isset($row['landmark_media_id']) && $row['landmark_media_id'] !== null) {
+            $media = new \App\Models\Media();
+            $media->media_id = (int)$row['landmark_media_id'];
+            $media->file_path = $row['landmark_media_file_path'];
+            $media->alt_text = $row['landmark_media_alt_text'];
+            $schedule->landmark->landmark_image = $media;
         }
         
         return $schedule;
