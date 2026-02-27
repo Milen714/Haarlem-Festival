@@ -35,10 +35,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/logout', ['App\Controllers\AccountController', 'logout']);
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
-
-    $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
-    $r->addRoute('GET', '/yummy-home', ['App\Controllers\HomeController', 'YummyHome']);
-    $r->addRoute('GET', '/image-to-webp', ['App\Controllers\HomeController', 'imageToWebp']);
+    $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);

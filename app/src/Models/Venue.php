@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+use App\Models\EventCategory;
 
 class Venue
 {
@@ -14,6 +15,7 @@ class Venue
     public ?string $phone = null;
     public ?string $email = null;
     public ?Media $venue_image = null;
+    public ?EventCategory $event_category = null;
 
     public function __construct(){}
 
@@ -104,6 +106,15 @@ class Venue
             'media_id' => $mediaId,
             'file_path' => $filePath,
             'alt_text' => $altText,
+        ]);
+    }
+    if (isset($data['event_id'])) {
+        $this->event_category = new EventCategory();
+        $this->event_category->fromPDOData([
+            'event_category_id' => $data['event_category_id'],
+            'event_category_title' => $data['event_category_title'] ?? null,
+            'event_category_type' => $data['event_category_type'] ?? null,
+            'event_category_slug' => $data['event_category_slug'] ?? null,
         ]);
     }
 }

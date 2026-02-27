@@ -8,13 +8,18 @@ use App\Services\ScheduleService;
 use App\Repositories\UserRepository;
 use App\Repositories\PageRepository;
 use App\Repositories\ScheduleRepository;
+use App\Repositories\VenueRepository;
+use App\Repositories\LandmarkRepository;
+use App\Services\VenueService;
 use App\Services\PageService;
+use App\Services\LandmarkService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\MediaRepository;
 use App\Services\MediaService;
 use App\ViewModels\Home\ScheduleList;
+use App\ViewModels\Home\StartingPoints;
 
 class HomeController extends BaseController
 {
@@ -22,10 +27,14 @@ class HomeController extends BaseController
     private UserRepository $userRepository;
     private PageService $pageService;
     private PageRepository $pageRepository;
+    private LandmarkService $landmarkService;
+    private LandmarkRepository $landmarkRepository;
     private MediaService $mediaService;
     private MediaRepository $mediaRepository;
     private ScheduleRepository $scheduleRepository;
     private ScheduleService $scheduleService;
+    private VenueRepository $venueRepository;
+    private VenueService $venueService;
     public function __construct()
     {
         $this->userRepository = new UserRepository();
@@ -36,6 +45,10 @@ class HomeController extends BaseController
         $this->scheduleService = new ScheduleService($this->scheduleRepository);
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
+        $this->landmarkRepository = new LandmarkRepository();
+        $this->landmarkService = new LandmarkService($this->landmarkRepository);
+        $this->venueRepository = new VenueRepository();
+        $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
     }
 
     public function index($vars = [])
@@ -47,16 +60,12 @@ class HomeController extends BaseController
             $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
 
             $scheduleList = new ScheduleList($schedule);
-            
-            // foreach($pageData->content_sections[0]->gallery->media_items as $mediaItem){
-            //     var_dump($mediaItem->media);
-            //     echo "<br><br>";
-            //     echo "<img src='" . $mediaItem->media->file_path . "' alt='" . htmlspecialchars($mediaItem->media->alt_text) . "'><br><br>";
-            // }
-            // die();
 
+            $venues = $this->venueService->getAllVenues(); 
+            $landmarks = $this->landmarkService->getAllLandmarks();
+            $startingPoints = new StartingPoints($landmarks, $venues);
 
-            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList] );
+            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
         } catch (\Exception $e) {
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
@@ -70,9 +79,7 @@ class HomeController extends BaseController
             $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
 
             $scheduleList = new ScheduleList($schedule);
-            // var_dump($scheduleList->eveningSchedules);
-            // die();
-
+            
             echo require_once '/app/Views/Home/Components/HomeSchedule.php';
         } catch (\Exception $e) {
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
@@ -100,35 +107,17 @@ class HomeController extends BaseController
         $this->view('Errors/404', ['title' => 'Page Not Found']);
     }
 
-    public function homePage($vars = [])
+    public function getStartingPoints($vars = [])
     {
-        header('Content-Type: application/json');
-        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
-
-        $pageData = $this->pageService->getPageBySlug('events-magic');
-        echo json_encode($pageData);
-    }
-    public function YummyHome($vars = [])
-    {
-        $this->view('Yummy/HomePage', ['id' => 1]);
-    }
-    public function imageToWebp($vars = [])
-    {
-        $inputPath = __DIR__ . '/../../public/Assets/Home/ImagePlaceholder.png';
-        $directory = __DIR__ . '/../../public/Assets/Home/';
-        $outputPath = $directory . 'ImagePlaceholder.webp';
-        if (!file_exists($inputPath)) {
-            http_response_code(404);
-            echo "Input image not found.";
-            return;
-        }
-
-        // Output headers
-        header('Content-Type: image/webp');
-
-        // Output WebP directly to browser
-        imagewebp(imagecreatefrompng($inputPath), $outputPath, 80);
-
        
+        try {
+            $venues = $this->venueService->getAllVenues(); 
+            $landmarks = $this->landmarkService->getAllLandmarks();
+            $startingPoints = new StartingPoints($landmarks, $venues);
+            echo require_once '/app/Views/Home/Components/HomeMap.php';
+        } catch (\Exception $e) {
+            http_response_code(500);
+            
+        }
     }
 }

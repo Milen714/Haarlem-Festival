@@ -24,7 +24,7 @@ foreach ($pageData->content_sections as $section) {
 
 ?>
 
-<section class="flex flex-col gap-6 bg_colors_home text_colors_home pt-4">
+<section class="flex flex-col gap-6 bg_colors_home text_colors_home pt-4 overflow-x-hidden">
     <?php if ($heroSection):
         include 'Components/HomeHero.php'; ?>
     <?php endif; ?>
@@ -33,8 +33,8 @@ foreach ($pageData->content_sections as $section) {
     <?php include 'Components/HomeEvents.php'; ?>
     <?php endif; ?>
 
+    <?php include 'Components/Spinner.php'; ?>
     <div id="schedule_container">
-
     </div>
     <!-- <?php if ($scheduleSection): ?>
     <?php
@@ -42,11 +42,14 @@ foreach ($pageData->content_sections as $section) {
     <?php endif; ?> -->
 
     <?php include 'Components/HomeMap.php'; ?>
+
+    <div id="map_container"></div>
 </section>
 
 
 <script>
 const scheduleContainer = document.getElementById('schedule_container');
+const spinner = document.getElementById('spinner');
 addEventListener('DOMContentLoaded', function() {
     attachScheduleFilterListeners();
     loadSchedule();
@@ -75,6 +78,8 @@ const attachScheduleFilterListeners = () => {
 
 const loadSchedule = async () => {
     scheduleContainer.innerHTML = '';
+    // Show spinner while loading
+    spinner.classList.remove('hidden');
     try {
         // Get current filter parameters from URL
         const params = new URLSearchParams(window.location.search);
@@ -93,7 +98,21 @@ const loadSchedule = async () => {
         scheduleContainer.innerHTML =
             '<p class="text-red-500">Failed to load schedule. Please try again later.</p>';
     } finally {
+        spinner.classList.add('hidden');
+
         console.log('Schedule load attempt finished.');
+    }
+}
+
+const loadMap = async () => {
+    try {
+        const response = await fetch('/starting-points');
+        const html = await response.text();
+        document.getElementById('map_container').innerHTML = html;
+    } catch (error) {
+        console.error('Error fetching map:', error);
+        document.getElementById('map_container').innerHTML =
+            '<p class="text-red-500">Failed to load map. Please try again later.</p>';
     }
 }
 </script>

@@ -3,6 +3,7 @@ namespace App\Models\History;
 
 use App\Models\Media;
 use App\Models\Gallery;
+use App\Models\EventCategory;
 
 class Landmark
 {
@@ -19,6 +20,7 @@ class Landmark
     public ?string $detail_history_content = null;
     public ?Gallery $gallery = null;
     public ?int $display_order = null;
+    public ?EventCategory $event_category = null;
 
     public function __construct() {}
 
@@ -44,6 +46,16 @@ class Landmark
                 'file_path' => $data['landmark_image_path'] ?? null,
                 'alt_text' => $data['landmark_image_alt'] ?? null,
             ]);
+        }
+        // Hydrate event category if available
+        if (isset($data['event_category_id']) && $data['event_category_id'] !== null) {
+            $this->event_category = new EventCategory();
+            $this->event_category->fromPDOData([
+            'event_category_id' => $data['event_category_id'],
+            'event_category_title' => $data['event_category_title'] ?? null,
+            'event_category_type' => $data['event_category_type'] ?? null,
+            'event_category_slug' => $data['event_category_slug'] ?? null,
+        ]);
         }
     }
 }

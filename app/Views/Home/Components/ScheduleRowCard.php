@@ -45,12 +45,14 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
 
 
 
-<article class="flex flex-row w-full rounded-lg overflow-hidden shadow-md">
-    <div class="calendar-coils w-[0.75rem] <?= $cardStyles['side'] ?> text-transparent flex-shrink-0">hh</div>
+<article class="flex flex-col md:flex-row w-full rounded-lg overflow-hidden shadow-md border border-gray-200">
+    <div class="calendar-coils md:w-[0.65rem]  <?= $cardStyles['side'] ?> text-transparent flex-shrink-0">
+        hh
+    </div>
     <div class="flex flex-col flex-grow">
-        <div class="flex flex-row gap-4 p-4 flex-grow">
+        <div class="flex flex-col md:flex-row gap-4 p-4 flex-grow">
             <div class="flex flex-col items-center justify-center gap-4 py-8">
-                <div class="w-fit px-4 py-4 <?= $cardStyles['muted'] ?> rounded-md flex-shrink-0">
+                <div class="w-[90%] md:w-fit px-4 py-4 <?= $cardStyles['muted'] ?> rounded-md flex-shrink-0">
                     <h1 class="font-bold text-2xl text-black text-center">
                         <?= $scheduleItem->start_time?->format('H:i') ?> –
                         <?= $scheduleItem->end_time?->format('H:i') ?></h1>
@@ -89,5 +91,5 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
     </div>
     <img loading="lazy" src="<?php echo htmlspecialchars($cardImage->file_path); ?>"
         alt="<?php echo htmlspecialchars($cardImage->alt_text); ?>"
-        class="h-auto w-48 object-cover flex-shrink-0 rounded-r-lg">
+        class="h-full md:h-auto w-full md:w-48 object-cover flex-shrink-0 md:rounded-r-lg">
 </article>

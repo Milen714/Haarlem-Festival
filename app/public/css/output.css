@@ -792,6 +792,21 @@ select:focus,
   background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1));
 }
 
+/* SPINNER 🔄*/
+
+#spinner:not(.hidden) {
+  display: flex;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ddd;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 /* BUTTONS */
 
 .home_history_button{
@@ -1358,6 +1373,14 @@ select:focus,
   transform: translateY(-0.12rem);
 }
 
+/* KEYFRAME ANIMATIONS */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .sr-only{
   position: absolute;
   width: 1px;
@@ -1765,10 +1788,6 @@ select:focus,
   width: 2rem;
 }
 
-.w-\[0\.75rem\]{
-  width: 0.75rem;
-}
-
 .w-\[18\.75rem\]{
   width: 18.75rem;
 }
@@ -1783,10 +1802,6 @@ select:focus,
 
 .w-\[30\%\]{
   width: 30%;
-}
-
-.w-\[40\%\]{
-  width: 40%;
 }
 
 .w-\[45\%\]{
@@ -1811,11 +1826,6 @@ select:focus,
 
 .w-\[95\%\]{
   width: 95%;
-}
-
-.w-fit{
-  width: -moz-fit-content;
-  width: fit-content;
 }
 
 .w-full{
@@ -1977,10 +1987,6 @@ select:focus,
 
 .flex-row{
   flex-direction: row;
-}
-
-.flex-row-reverse{
-  flex-direction: row-reverse;
 }
 
 .flex-col{
@@ -2194,11 +2200,6 @@ select:focus,
 .rounded-l-3xl{
   border-top-left-radius: 1.5rem;
   border-bottom-left-radius: 1.5rem;
-}
-
-.rounded-r-lg{
-  border-top-right-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
 }
 
 .rounded-t{
@@ -3739,6 +3740,10 @@ select:focus,
     display: none;
   }
 
+  .md\:h-auto{
+    height: auto;
+  }
+
   .md\:w-1\/3{
     width: 33.333333%;
   }
@@ -3747,12 +3752,33 @@ select:focus,
     width: 7rem;
   }
 
+  .md\:w-48{
+    width: 12rem;
+  }
+
+  .md\:w-\[0\.65rem\]{
+    width: 0.65rem;
+  }
+
   .md\:w-\[30\%\]{
     width: 30%;
   }
 
+  .md\:w-\[40\%\]{
+    width: 40%;
+  }
+
   .md\:w-auto{
     width: auto;
+  }
+
+  .md\:w-fit{
+    width: -moz-fit-content;
+    width: fit-content;
+  }
+
+  .md\:w-\[45\%\]{
+    width: 45%;
   }
 
   .md\:grid-cols-2{
@@ -3811,6 +3837,16 @@ select:focus,
     --tw-space-x-reverse: 0;
     margin-right: calc(2rem * var(--tw-space-x-reverse));
     margin-left: calc(2rem * calc(1 - var(--tw-space-x-reverse)));
+  }
+
+  .md\:rounded-r-lg{
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+  }
+
+  .md\:rounded-l-3xl{
+    border-top-left-radius: 1.5rem;
+    border-bottom-left-radius: 1.5rem;
   }
 
   .md\:border-0{

@@ -1,14 +1,11 @@
 <?php
 namespace App\Views\Home\Components;
+use App\Models\History\Landmark;
+use App\Models\Venue;
+use App\ViewModels\Home\StartingPoints;
+/** @var StartingPoints $startingPoints */
 
-// Mock venue data - Replace with actual data from repository when available
-$venues = [
-    (object)['name' => 'Grote Markt', 'venue_type' => 'Jazz'],
-    (object)['name' => 'Café de Roemer', 'venue_type' => 'Yummy'],
-    (object)['name' => 'St Bavo Church', 'venue_type' => 'History'],
-    (object)['name' => 'Caprera Openluchttheater', 'venue_type' => 'Dance'],
-    (object)['name' => 'Tylers Museum', 'venue_type' => 'Magic'],
-];
+
 ?>
 <section class="flex flex-row items-start justify-center p-5 w-[90%] mx-auto mb-10" aria-labelledby="map-heading">
 
@@ -25,7 +22,7 @@ $venues = [
             <h1 class="text-4xl font-bold">Starting points</h1>
         </header>
         <ul class="flex flex-col items-center gap-2">
-            <?php foreach ($venues as $venue): ?>
+            <?php foreach ($startingPoints->startingPoints as $point): ?>
             <?php include __DIR__ . '/StartingPoint.php'; ?>
             <?php endforeach; ?>
         </ul>
