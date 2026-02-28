@@ -12,14 +12,3 @@
         </div>
     </div>
 </section>
-
- <!-- <nav aria-label="Breadcrumb" class="flex items-center gap-2 py-6 text-sm text-ink-500">
-    <a href="/history" class="inline-flex items-center gap-2 text-ink-900 hover:text-brand-600 transition-colors">
-        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m15 19-7-7 7-7"/></svg>
-        Back
-    </a>
-    <span class="mx-2 text-neutral-400">|</span>
-    <a href="/" class="hover:text-brand-600 transition-colors">Home</a>
-    <span class="mx-2 text-neutral-400">/</span>
-    <span class="text-ink-700 font-medium">Haarlem History Tour</span>
-</nav>-->

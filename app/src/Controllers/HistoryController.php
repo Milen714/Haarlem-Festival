@@ -2,15 +2,17 @@
 namespace App\Controllers;
 
 use App\Services\Interfaces\IPageService;
+use App\Services\PageService;          
+use App\Repositories\PageRepository;
 
 class HistoryController extends BaseController
 {
-    private IPageService $pageService;
+    private PageService $pageService;
     const HISTORY_SLUG = 'events-history'; 
 
-    public function __construct(IPageService $pageService)
+    public function __construct()
     {
-        $this->pageService = $pageService;
+        $this->pageService = new PageService(new PageRepository());
     }
 
     public function index($vars = [])
@@ -28,28 +30,32 @@ class HistoryController extends BaseController
 
             // Extraemos y clasificamos las secciones
             $sections = $pageData->content_sections ?? [];
+            $hero = null;
             $welcome = null;
-            $cta = null;
+            $bookTour = null;
             $landmarks = [];
 
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
-                if ($type === 'text') {
+                if ($type === 'welcome') {
                     $welcome = $s;
                 } elseif ($type === 'landmark') {
                     $landmarks[] = $s;
-                } elseif ($type === 'cta_block') {
-                    $cta = $s;
+                } elseif ($type === 'bookTour') {
+                    $bookTour = $s;
+                }
+                elseif ($type === 'hero_picture') { // <--- 2. Atrapamos el Hero
+                    $hero = $s;
                 }
             }
 
             // Pasamos los datos empaquetados a la vista
             $this->view('History/HistoryHomepage', [
                 'pageData'  => $pageData,
-                'title'     => $title,
+                'hero'      => $hero,
                 'welcome'   => $welcome,
                 'landmarks' => $landmarks,
-                'cta'       => $cta
+                'bookTour'  => $bookTour
             ]);
 
         } catch (\Exception $e) {
@@ -74,7 +80,7 @@ class HistoryController extends BaseController
             $cta = null;
             $tickets = null;
             $tourFeatures = [];     // <-- NUEVO: Para las 4 tarjetas
-            $goodToKnowItems = [];  // <-- NUEVO: Para la lista
+            $goodToKnow= null;  // <-- NUEVO: Para la lista
 
             
             foreach ($sections as $s) {
@@ -85,11 +91,12 @@ class HistoryController extends BaseController
                     $cta = $s;
                 } elseif ($type === 'article') {
                     $tickets = $s;
-                } elseif ($type === 'tour_feature') {
+                } elseif ($type === 'tour_features') {
                     $tourFeatures[] = $s; // <-- Atrapamos las tarjetas
-                } elseif ($type === 'tour_rule') {
-                    $goodToKnowItems[] = $s; // <-- Atrapamos las reglas
+                } elseif ($type === 'good_to_know') {
+                    $goodToKnow = $s; // <-- Atrapamos las reglas
                 }
+                
             }
 
             $this->view('History/HistoryTour', [
@@ -99,7 +106,7 @@ class HistoryController extends BaseController
                 'cta'             => $cta,
                 'tickets'         => $tickets,
                 'tourFeatures'    => $tourFeatures,    // Pasamos a la vista
-                'goodToKnowItems' => $goodToKnowItems  // Pasamos a la vista
+                'goodToKnow' => $goodToKnow  // Pasamos a la vista
             ]);
 
         } catch (\Exception $e) {
@@ -107,5 +114,5 @@ class HistoryController extends BaseController
             $this->internalServerError();
         }
     }
-    }
 }
+

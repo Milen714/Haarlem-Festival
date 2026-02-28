@@ -1,14 +1,17 @@
-<?php /** @var App\CmsModels\PageSection[] $goodToKnowItems */ ?>
+<?php /** @var App\CmsModels\PageSection $goodToKnow */ ?>
+
+<?php if ($goodToKnow): ?>
 <div class="border-t border-[#e5e5e5] px-6 py-8">
-    <h3 class="text-lg font-semibold text-ink-900">Good to know</h3>
+    <h3 class="text-lg font-semibold text-ink-900">
+        <?= htmlspecialchars($goodToKnow->title ?? 'Good to know') ?>
+    </h3>
     
-    <ul class="mt-4 space-y-3 text-sm leading-relaxed text-ink-700">
-        <?php foreach ($goodToKnowItems as $item): ?>
-            <li class="flex items-start gap-3">
-                <span class="mt-1 text-brand-600 text-[0.6rem]">●</span>
+    <div class="mt-4 text-sm leading-relaxed text-ink-700 
+                [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-3 
+                marker:text-brand-600 marker:text-xs">
                 
-                <span><?= $item->content_html, '<b><strong><i><em>'?></span>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+        <?= $goodToKnow->content_html ?>
+        
+    </div>
 </div>
+<?php endif; ?>
