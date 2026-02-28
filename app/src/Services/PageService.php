@@ -26,4 +26,8 @@ class PageService implements IPageService
     {
         return $this->pageRepository->updatePage($page);
     }
+    public function getPageSlugs(): array
+    {
+        return $this->pageRepository->getPageSlugs();
+    }
 }

@@ -35,13 +35,13 @@ class BaseController
     protected function notFound()
     {
         http_response_code(404);
-        $this->view('Errors/404', ['title' => 'Page Not Found'], 'layouts/ErrorLayout');
+        $this->view('Errors/404', ['title' => 'Page Not Found']);
         exit();
     }
     protected function internalServerError($error = null)
     {
         http_response_code(500);
-        $this->view('Errors/500', ['title' => 'Server Error', 'error' => $error], 'layouts/ErrorLayout');
+        $this->view('Errors/500', ['title' => 'Server Error', 'error' => $error]);
         exit();
     }
     protected function forbidden()

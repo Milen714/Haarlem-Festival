@@ -53,8 +53,8 @@ class JazzController extends BaseController
                 return;
             }
             
-            $artists = $this->artistService->getArtistsByEventId(self::JAZZ_EVENT_ID);
-            $venues = $this->venueService->getVenuesByEventId(self::JAZZ_EVENT_ID);
+            $artists = $this->artistService->getArtistsByEventId($pageData->event_category->event_id);
+            $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             
             $this->view('Jazz/index', [
                 'title' => $pageData->title ?? 'Jazz Event',

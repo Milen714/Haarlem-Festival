@@ -35,7 +35,12 @@ class MediaRepository extends Repository implements IMediaRepository
     {
         try {
             $pdo = $this->connect();
-            // Removed updated_at and media_type - not in your schema
+
+            if ($media->media_id !== null && ($media->file_path === null || $media->file_path === '')) {
+                $existingMedia = $this->getMediaById($media->media_id);
+                $media->file_path = $existingMedia->file_path;
+            }
+
             $query = 'UPDATE MEDIA 
                       SET file_path = :file_path, alt_text = :alt_text
                       WHERE media_id = :id';
@@ -53,7 +58,7 @@ class MediaRepository extends Repository implements IMediaRepository
     {
         try {
             $pdo = $this->connect();
-            // Removed created_at, updated_at, media_type - not in your schema
+            
             $query = 'INSERT INTO MEDIA (file_path, alt_text) 
                       VALUES (:file_path, :alt_text)';
             $stmt = $pdo->prepare($query);

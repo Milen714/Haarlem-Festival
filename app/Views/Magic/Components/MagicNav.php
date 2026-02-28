@@ -4,7 +4,7 @@ $activeStyle = 'magic-nav-button-active';
 ?>
 
 <nav class="magic-border magic-nav bg-[var(--magic-bg-nav-muted)]">
-    <ul class="font-blackopsone text-xl flex flex-col md:flex-row gap-2 md:gap-3 justify-center items-center py-6 ">
+    <ul class="font-blackopsone text-xl flex flex-col lg:flex-row gap-2 md:gap-3 justify-center items-center py-6 ">
         <li><a href="/events-magic"
                 class="<?= htmlspecialchars($pageModel->page->slug === 'events-magic' ? $activeStyle : '') ?>">THE
                 STORY</a></li>
