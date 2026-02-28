@@ -1,10 +1,9 @@
-<?php 
+<?php
 
-namespace App\Repositories\Interfaces;
-
+namespace App\Services\Interfaces;
 use App\Models\Restaurant;
 
-interface IRestaurantRepository
+interface IRestaurantService
 {
     public function getAllRestaurants(): array;
     public function getRestaurantById(int $id): ?Restaurant;

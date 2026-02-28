@@ -91,7 +91,7 @@ class HomeController extends BaseController
     }
     public function YummyHome($vars = [])
     {
-        $this->view('Yummy/HomePage', ['id' => 1]);
+        $this->view('Yummy/index', ['id' => 1]);
     }
     public function imageToWebp($vars = [])
     {
