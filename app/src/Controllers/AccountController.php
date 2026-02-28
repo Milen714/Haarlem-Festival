@@ -68,29 +68,53 @@ class AccountController extends BaseController {
     {
         $this->view('Account/Signup', ['title' => 'Signup Page'] );
     }
+    public function validateCaptcha($vars = []) {
+        header('Content-Type: application/json; charset=utf-8');
+        $secretKey = $_ENV['RECAPTCHA_SECRET_KEY'];
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $token = $_POST['recaptcha_token'] ?? '';
+        try {
+            $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
+            $request = file_get_contents($url);
+            $response = json_decode($request);        
+            if ((!$response->success && !$response->score >= 0.5)) {
+                throw new \Exception("reCAPTCHA verification failed.".$token);
+            }
+            echo json_encode(['success' => true]);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
     public function signupPost($vars = [])
     {
+        header('Content-Type: application/json; charset=utf-8');
+        
+        $data = json_decode(file_get_contents('php://input'), true);
         $user = new User();
-        $user = $user->fromPost();
+        $user = $user->fromArray($data);
         try {
             // Check if email already exists
             $existingUser = $this->userService->getUserByEmail($user->email);
             if ($existingUser) {
                 throw new \Exception("This email is already in use.");
             }
-            
+            // Generate verification token and send verification email
             $token = $this->generateVerificationToken($user);
             $verificationLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            // Save the user to the database
             $this->userService->createUser($user);
             $this->mailService->accountVerificationMail($user->email, $verificationLink);
-            $this->view('Account/Login', ['success' => "Signup successful for " . htmlspecialchars($user->fname) . " with email " . htmlspecialchars($user->email) . ".", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            // Return success response
+            echo json_encode(['success' => true, 'message' => 'Signup successful. Please check your email to verify your account.']);
         } catch (\Exception $e) {
             if(str_contains($e->getMessage(), 'email')) {
                 $errorMsg = "This email is already in use.";
+                echo json_encode(['success' => false, 'message' => $errorMsg]);
             } else {
-                $errorMsg = $e->getMessage();
+                $errorMsg = "An error occurred during signup: " . $e->getMessage();
+                echo json_encode(['success' => false, 'message' => $errorMsg]);
             }
-            $this->view('Account/Signup', ['title' => 'Signup Page', 'userModel' => $user, 'error' => $errorMsg] );
+            
         }
     }
     public function forgotPassword() {

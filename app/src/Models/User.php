@@ -33,4 +33,17 @@ class User {
         $user->is_verified = false;
         return $user;
     }
+    public function fromArray($data): User{
+        $user = new User();
+        $user->email = $data['email'] ?? '';
+        $user->password_hash = password_hash($data['password'] ?? '', PASSWORD_BCRYPT);
+        $user->fname = $data['fname'] ?? null;
+        $user->lname = $data['lname'] ?? null;
+        $user->role = UserRole::CUSTOMER;
+        $user->address = $data['address'] ?? null;
+        $user->phone = $data['phone'] ?? null;
+        $user->is_active = true;
+        $user->is_verified = false;
+        return $user;
+    }
 }
