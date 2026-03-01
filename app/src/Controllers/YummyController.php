@@ -14,6 +14,7 @@ use App\Services\VenueService;
 class YummyController extends BaseController
 {
     private PageService $pageService;
+    private PageRepository $pageRepository;
     private VenueService $venueService;
     private RestaurantService $restaurantService;
 
@@ -25,18 +26,22 @@ class YummyController extends BaseController
     {
         $mediaRepository = new MediaRepository();
         $mediaService = new MediaService($mediaRepository);
-        $pageRepository = new PageRepository();
-        $this->pageService = new PageService($pageRepository);
+
+        $this->pageRepository = new PageRepository();
+        $this->pageService = new PageService($this->pageRepository);
+
         $venueRepository = new VenueRepository();
         $this->venueService = new VenueService($venueRepository, $mediaService);
+
         $restaurantRepository = new RestaurantRepository();
         $this->restaurantService = new RestaurantService($restaurantRepository);
 
     }
     public function index()
     {
+        error_log('YummyController::index called');
+        try {
             $slug = self::YUMMY_SLUG;
-                
             $pageData = $this->pageService->getPageBySlug($slug);
             
             if (!$pageData) {
@@ -45,15 +50,19 @@ class YummyController extends BaseController
                 return;
             }
             
-            $venues = $this->venueService->getVenuesByEventId(self::YUMMY_EVENT_ID);
-            $restaurants = $this->restaurantService->getRestaurantsByEventId(self::YUMMY_EVENT_ID);
+            $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
+            $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
             
             $this->view('Yummy/index', [
                 'title' => $pageData->title ?? 'Yummy Event',
                 'pageData' => $pageData,
+                'sections' => $pageData->content_sections,
                 'venues' => $venues,
-                'section' => $pageData->content_sections ?? [],
-                'restaurants' => $restaurants
+                'restaurants' => $restaurants,
             ]);
+        } catch (\Exception $e) {
+            error_log("Error in YummyController index method: " . $e->getMessage());
+            $this->notFound();
+        }
     }
 }

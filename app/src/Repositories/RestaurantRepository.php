@@ -12,7 +12,9 @@ use PDOException;
 
 class RestaurantRepository extends Repository implements IRestaurantRepository
 {
+    
     public function getAllRestaurants(): array{
+        $pdo = $this->connect();
         $sql = "
             SELECT 
             r.restaurant_id,
@@ -53,7 +55,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             ORDER BY r.restaurant_id;
         ";
         try {
-            $stmt = $this->pdo->query($sql);
+            $stmt = $pdo->query($sql);
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             $restaurants = [];
@@ -71,6 +73,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
 
     }
     public function getRestaurantById(int $id): ?Restaurant{
+        $pdo = $this->connect();
         $sql = "
             SELECT 
             r.restaurant_id,
@@ -97,7 +100,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ";
 
         try {
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
 
             $restaurants = [];
 
@@ -135,7 +138,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     }
 
     public function getRestaurantBySlug(string $slug): ?Restaurant{
-        $sql = "
+    $pdo = $this->connect();    
+    $sql = "
             SELECT 
             r.restaurant_id,
             r.event_id,
@@ -161,7 +165,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             LIMIT 1
         ";
         try{
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -182,7 +186,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     }
 
     public function getRestaurantsByEventId(int $eventId): array{
-        
+        $pdo = $this->connect();
         $sql = "
         SELECT 
             r.restaurant_id,
@@ -214,7 +218,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ";
 
         try {
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':event_id', $eventId, PDO::PARAM_INT);
             $stmt->execute();
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -234,7 +238,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     }
 
     public function createRestaurant(Restaurant $restaurant): int{
-       $sql = "
+    $pdo = $this->connect();   
+    $sql = "
             INSERT INTO restaurant (
                 name, 
                 short_description, 
@@ -263,7 +268,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ";
 
         try {
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':name', $restaurant->name, PDO::PARAM_STR);
             $stmt->bindValue(':short_description', $restaurant->short_description, PDO::PARAM_STR);
             $stmt->bindValue(':welcome_text', $restaurant->welcome_text, PDO::PARAM_STR);
@@ -277,7 +282,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             $stmt->bindValue(':head_chef_id', $restaurant->head_chef_id ?? null, PDO::PARAM_INT);
 
             if ($stmt->execute()) {
-                return (int)$this->pdo->lastInsertId();
+                return (int)$pdo->lastInsertId();
             } else {
                 throw new \Exception("Failed to create restaurant");
             }
@@ -288,7 +293,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         } 
     }
     public function updateRestaurant( Restaurant $restaurant): bool{
-        //should add slug to database and update it here as well     
+        //should add slug to database and update it here as well  
+        $pdo = $this->connect();   
         $sql = "
             UPDATE restaurant
             SET 
@@ -307,7 +313,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             ";
 
         try {
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':name', $restaurant->name, PDO::PARAM_STR);
             $stmt->bindValue(':short_description', $restaurant->short_description, PDO::PARAM_STR);
             $stmt->bindValue(':welcome_text', $restaurant->welcome_text, PDO::PARAM_STR);
@@ -328,8 +334,9 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     }
     public function deleteRestaurant(int $id): bool{
         try {
+            $pdo = $this->connect();
             $sql = "UPDATE restaurant SET deleted_at = NOW() WHERE restaurant_id = :restaurant_id";
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':restaurant_id', $id, PDO::PARAM_INT);
             return $stmt->execute([':restaurant_id' => $id]);
         } catch (PDOException $e) {
