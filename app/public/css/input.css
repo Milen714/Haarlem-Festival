@@ -49,6 +49,12 @@
     --yummy-sec-btn-text:#FFFFFF;
     --yummy-sec-hover-btn: #49111C;
     --yummy-sec-hover-btn-text:#FFFFFF;
+    /* Dance Section */
+    --dance-bg: #0A0D16;
+    --dance-button-color: #FDDA93;
+    --dance-tag-color-1: #FDA090;
+    --dance-tag-color-2: #B389F8;
+    --dance-text-primary: #FFFFFF;
 
     /* Magic Section */
     --magic-header-font: Courier Prime, monospace;
@@ -264,6 +270,19 @@
         border-width: 0;
     }
     
+    /* Dance Section */
+    .dance-bg {
+        background-color: var(--dance-bg);
+    }
+    .dance-text {
+        color: var(--dance-text-primary);
+    }
+    .dance-color-tag-1 {
+        color: var(--dance-tag-color-1);
+    }
+    .dance-color-tag-2 {
+        color: var(--dance-tag-color-2);
+    }
     /* 
     /* MAGIC@TEYLERS */
     .magic-strong {
