@@ -20,4 +20,6 @@ interface IArtistRepository
     public function update(Artist $artist): bool;
  
     public function delete(int $artistId): bool;
+
+    public function isArtistInEvent(int $artistId, int $eventId): bool;
 }

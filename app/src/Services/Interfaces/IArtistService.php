@@ -19,4 +19,6 @@ interface IArtistService
     public function updateFromRequest(int $artistId, array $postData, array $files): Artist;
 
     public function deleteArtist(int $artistId): bool;
+
+    public function isArtistInEvent(int $artistId, int $eventId): bool;
 }

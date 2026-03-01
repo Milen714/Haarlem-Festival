@@ -117,6 +117,8 @@ class ArtistService implements IArtistService
         $artist->spotify_url = !empty($data['spotify_url']) ? trim($data['spotify_url']) : null;
         $artist->youtube_url = !empty($data['youtube_url']) ? trim($data['youtube_url']) : null;
         $artist->soundcloud_url = !empty($data['soundcloud_url']) ? trim($data['soundcloud_url']) : null;
+        $artist->press_quote    = !empty($data['press_quote'])    ? trim($data['press_quote'])    : null;
+        $artist->collaborations = !empty($data['collaborations']) ? trim($data['collaborations']) : null;
         
         return $artist;
     }
@@ -131,6 +133,9 @@ class ArtistService implements IArtistService
         $artist->spotify_url = !empty($data['spotify_url']) ? trim($data['spotify_url']) : null;
         $artist->youtube_url = !empty($data['youtube_url']) ? trim($data['youtube_url']) : null;
         $artist->soundcloud_url = !empty($data['soundcloud_url']) ? trim($data['soundcloud_url']) : null;
+        $artist->press_quote    = !empty($data['press_quote'])    ? trim($data['press_quote'])    : null;
+        $artist->collaborations = !empty($data['collaborations']) ? trim($data['collaborations']) : null;
+        
         
         return $artist;
     }
@@ -169,10 +174,16 @@ class ArtistService implements IArtistService
         return $artist;
     }
 
+
     private function generateSlug(string $text): string
     {
         $text = strtolower($text);
         $text = preg_replace('/[^a-z0-9]+/', '-', $text);
         return trim($text, '-');
+    }
+
+    public function isArtistInEvent(int $artistId, int $eventId): bool
+    {
+        return $this->artistRepository->isArtistInEvent($artistId, $eventId);
     }
 }

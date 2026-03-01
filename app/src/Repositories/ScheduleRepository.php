@@ -75,14 +75,23 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 r.website_url as restaurant_website_url,
                 r.main_image_id as restaurant_main_image_id,
                 
-                -- Landmark fields
+               
+                -- Landmark fields (DB-compatible + keeps expected aliases)
                 l.landmark_id,
                 l.name as landmark_name,
-                l.landmark_title,
+
+                -- LANDMARK table has intro_title (not landmark_title)
+                l.intro_title as landmark_title,
+
                 l.short_description as landmark_short_description,
-                l.has_detail_page as landmark_has_detail_page,
+
+                -- LANDMARK table has no has_detail_page, so return a safe default
+                1 as landmark_has_detail_page,
+
                 l.landmark_slug,
-                l.landmark_image_id,
+
+                -- LANDMARK table uses main_image_id
+                l.main_image_id as landmark_image_id,
                 
                 -- Event Category fields
                 ec.event_id as event_category_id,
