@@ -1,5 +1,8 @@
 <?php 
 namespace App\Views\Yummy\Components;
+/**
+ * @var object|null $havenSection 
+ * */
 
 ?>
 
@@ -7,26 +10,21 @@ namespace App\Views\Yummy\Components;
       <div class="container mx-auto grid md:grid-cols-2 gap-10 items-center">
         <div>
           <h2 class="text-2xl font-bold text-[var(--yummy-section)] mb-4">
-            Haven for foodies!
+            <?= $havenSection->title ?? 'Haven for foodies!' ?>
           </h2>
-          <p class="text-gray-200 mb-6 leading-relaxed">
-            Take a trip through the wonderful city of Haarlem, where you can enjoy some of the best local food in town. 
-            The Yummy Haarlem festival brings you an unforgettable journey with each dish
-            telling its own story, rooted in rich history and culture.
-          </p>
-          <p class="text-gray-200 mb-8 leading-relaxed">
-            Dine in some of the city's most beautiful restaurants and experience culinary passion like never before.
-          </p>
+          <?= $havenSection->content_html ?? '' ?>
+          
+          <?= $havenSection->content_html_2 ?? "Dine in some of the city's most beautiful restaurants and experience culinary passion like never before." ?>
           <a
-            href="#restaurants"
+            href="<?= htmlspecialchars($havenSection->cta_url ?? '#restaurants') ?>"
             class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] font-semibold px-5 py-2 rounded"
           >
-            View Restaurants
+            <?= $havenSection->cta_text ?? 'View Restaurants' ?>
           </a>
         </div>
         <img
-          src="../Assets/Yummy/Home/Haven_img.png"
-          alt="Meal in Haarlem"
+          src="..<?= htmlspecialchars($havenSection->media->file_path ?? '/Assets/Yummy/Home_hero.webp') ?>"
+          alt="<?= htmlspecialchars($havenSection->media->imageAlt ?? 'Meal in Haarlem') ?>"
           class="rounded-lg shadow-lg"
         />
       </div>

@@ -1417,6 +1417,10 @@ select:focus,
   visibility: hidden;
 }
 
+.static{
+  position: static;
+}
+
 .fixed{
   position: fixed;
 }
@@ -1520,6 +1524,10 @@ select:focus,
 
 .z-50{
   z-index: 50;
+}
+
+.col-span-3{
+  grid-column: span 3 / span 3;
 }
 
 .col-span-full{
@@ -1939,10 +1947,6 @@ select:focus,
 
 .max-w-sm{
   max-width: 24rem;
-}
-
-.max-w-xl{
-  max-width: 36rem;
 }
 
 .max-w-xs{
@@ -3766,7 +3770,7 @@ select:focus,
 }
 
 .dark\:bg-\[var\(--text-home-high-contrast-primary\:\)\]:is(.dark *){
-  background-color: var(--text-home-high-contrast-primary);
+  background-color: var(--text-home-high-contrast-primary:);
 }
 
 .dark\:text-gray-200:is(.dark *){

@@ -109,6 +109,33 @@ class HomeController extends BaseController
 
     public function getStartingPoints($vars = [])
     {
+        header('Content-Type: application/json');
+        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
+
+        $pageData = $this->pageService->getPageBySlug('events-magic');
+        echo json_encode($pageData);
+    }
+    public function YummyHome($vars = [])
+    {
+        $this->view('Yummy/index', ['id' => 1]);
+    }
+    public function imageToWebp($vars = [])
+    {
+        $inputPath = __DIR__ . '/../../public/Assets/Home/ImagePlaceholder.png';
+        $directory = __DIR__ . '/../../public/Assets/Home/';
+        $outputPath = $directory . 'ImagePlaceholder.webp';
+        if (!file_exists($inputPath)) {
+            http_response_code(404);
+            echo "Input image not found.";
+            return;
+        }
+
+        // Output headers
+        header('Content-Type: image/webp');
+
+        // Output WebP directly to browser
+        imagewebp(imagecreatefrompng($inputPath), $outputPath, 80);
+
        
         try {
             $venues = $this->venueService->getAllVenues(); 
