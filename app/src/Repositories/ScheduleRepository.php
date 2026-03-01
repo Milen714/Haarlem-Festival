@@ -88,11 +88,11 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 -- Landmark fields
                 l.landmark_id,
                 l.name as landmark_name,
-                l.landmark_title,
+                l.name as landmark_title,
                 l.short_description as landmark_short_description,
-                l.has_detail_page as landmark_has_detail_page,
+                -- l.has_detail_page as landmark_has_detail_page, (column removed from DB)
                 l.landmark_slug,
-                l.landmark_image_id,
+                l.main_image_id,
                 
                 -- Landmark Media fields
                 landmark_media.media_id as landmark_media_id,
@@ -113,7 +113,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
             LEFT JOIN MEDIA restaurant_media ON r.main_image_id = restaurant_media.media_id
             LEFT JOIN LANDMARK l ON s.landmark_id = l.landmark_id
-            LEFT JOIN MEDIA landmark_media ON l.landmark_image_id = landmark_media.media_id
+            LEFT JOIN MEDIA landmark_media ON l.main_image_id = landmark_media.media_id
             LEFT JOIN EVENT_CATEGORIES ec ON s.event_id = ec.event_id
         ";
     }

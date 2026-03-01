@@ -10,7 +10,7 @@ class Landmark
     public ?int $landmark_id = null;
     public ?int $event_id = null;
     public ?string $name = null;
-    public ?string $landmark_title = null;
+    //public ?string $landmark_title = null;
     public ?string $short_description = null;
     public ?Media $landmark_image = null;
     public ?bool $has_detail_page = null;
@@ -29,7 +29,7 @@ class Landmark
         $this->landmark_id = isset($data['landmark_id']) ? (int)$data['landmark_id'] : null;
         $this->event_id = isset($data['event_id']) ? (int)$data['event_id'] : null;
         $this->name = $data['name'] ?? $data['landmark_name'] ?? null;
-        $this->landmark_title = $data['landmark_title'] ?? null;
+        //$this->landmark_title = $data['landmark_title'] ?? null;
         $this->short_description = $data['short_description'] ?? $data['landmark_short_description'] ?? null;
         $this->has_detail_page = isset($data['has_detail_page']) ? (bool)$data['has_detail_page'] : false;
         $this->landmark_slug = $data['landmark_slug'] ?? null;

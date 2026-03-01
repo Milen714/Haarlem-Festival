@@ -26,7 +26,7 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                 ec.type as event_category_type,
                 ec.slug as event_category_slug
             FROM LANDMARK l
-            LEFT JOIN MEDIA m ON l.landmark_image_id = m.media_id
+            LEFT JOIN MEDIA m ON l.main_image_id = m.media_id
             LEFT JOIN EVENT_CATEGORIES ec ON l.event_category_id = ec.event_category_id
             WHERE l.landmark_id = :id';
             $stmt = $pdo->prepare($query);
@@ -57,7 +57,7 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                 ec.type as event_category_type,
                 ec.slug as event_category_slug
             FROM LANDMARK l
-            LEFT JOIN MEDIA m ON l.landmark_image_id = m.media_id
+            LEFT JOIN MEDIA m ON l.main_image_id = m.media_id
             LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
             ORDER BY l.display_order ASC';
             $stmt = $pdo->prepare($query);

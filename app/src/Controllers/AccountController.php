@@ -68,23 +68,25 @@ class AccountController extends BaseController {
     {
         $this->view('Account/Signup', ['title' => 'Signup Page'] );
     }
-    public function validateCaptcha($vars = []) {
-        header('Content-Type: application/json; charset=utf-8');
-        $secretKey = $_ENV['RECAPTCHA_SECRET_KEY'];
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $token = $_POST['recaptcha_token'] ?? '';
-        try {
-            $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
-            $request = file_get_contents($url);
-            $response = json_decode($request);        
-            if ((!$response->success && !$response->score >= 0.5)) {
-                throw new \Exception("reCAPTCHA verification failed.".$token);
-            }
-            echo json_encode(['success' => true]);
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-        }
+    private function validateCaptchaToken($token) {
+    if (empty($token)) {
+        throw new \Exception("reCAPTCHA token is missing.");
     }
+
+    $secretKey = $_ENV['RECAPTCHA_SECRET_KEY'];
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
+    
+    $request = file_get_contents($url);
+    $response = json_decode($request);        
+    
+    // Check if it failed OR if the score is too low
+    if (!$response->success || $response->score < 0.5) {
+        throw new \Exception("reCAPTCHA verification failed. Are you a bot?");
+    }
+    
+    return true;
+}
     public function signupPost($vars = [])
     {
         header('Content-Type: application/json; charset=utf-8');
@@ -92,7 +94,10 @@ class AccountController extends BaseController {
         $data = json_decode(file_get_contents('php://input'), true);
         $user = new User();
         $user = $user->fromArray($data);
+
         try {
+            $token = $data['recaptcha'] ?? ''; 
+            $this->validateCaptchaToken($token);
             // Check if email already exists
             $existingUser = $this->userService->getUserByEmail($user->email);
             if ($existingUser) {

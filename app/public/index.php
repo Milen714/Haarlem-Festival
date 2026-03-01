@@ -30,7 +30,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);
     $r->addRoute('GET', '/signup', ['App\Controllers\AccountController', 'signup']);
     $r->addRoute('POST', '/signup', ['App\Controllers\AccountController', 'signupPost']);
-    $r->addRoute('POST', '/capcha', ['App\Controllers\AccountController', 'validateCaptcha']);
+    //$r->addRoute('POST', '/capcha', ['App\Controllers\AccountController', 'validateCaptcha']);
     $r->addRoute('GET', '/forgot-password', ['App\Controllers\AccountController', 'forgotPassword']);
     $r->addRoute('POST', '/forgot-password', ['App\Controllers\AccountController', 'forgotPasswordPost']);
     $r->addRoute('POST', '/logout', ['App\Controllers\AccountController', 'logout']);

@@ -56,9 +56,7 @@ if (isset($userModel)) {
             <input class="form_input" type="tel" id="phone" name="phone"
                 value="<?php echo htmlspecialchars($user->phone ?? ''); ?>">
         </article>
-        <article class="input_group">
-            <input type="hidden" name="recaptcha_token" id="recaptcha_token">
-        </article>
+
         <button id="submit-button" class="button_primary" type="submit">Signup</button>
 
         <?php include __DIR__ . '/../Home/Components/Spinner.php'; ?>
@@ -136,7 +134,7 @@ if (isset($userModel)) {
         return new Promise((resolve, reject) => {
             grecaptcha.ready(function() {
                 grecaptcha.execute('<?php echo $_ENV['RECAPTCHA_SITE_KEY'] ?>', {
-                    action: 'captcha'
+                    action: 'signup'
                 }).then(function(token) {
                     resolve(token);
                     console.log('reCAPTCHA token obtained:', token);
