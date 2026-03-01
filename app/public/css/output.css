@@ -1804,10 +1804,6 @@ select:focus,
   width: 30%;
 }
 
-.w-\[45\%\]{
-  width: 45%;
-}
-
 .w-\[50\%\]{
   width: 50%;
 }
@@ -1947,12 +1943,12 @@ select:focus,
   animation: bounce 1s infinite;
 }
 
-.cursor-pointer{
-  cursor: pointer;
-}
-
 .cursor-not-allowed{
   cursor: not-allowed;
+}
+
+.cursor-pointer{
+  cursor: pointer;
 }
 
 .select-none{
@@ -2199,11 +2195,6 @@ select:focus,
 
 .rounded-xl{
   border-radius: 0.75rem;
-}
-
-.rounded-l-3xl{
-  border-top-left-radius: 1.5rem;
-  border-bottom-left-radius: 1.5rem;
 }
 
 .rounded-t{
@@ -3231,16 +3222,16 @@ select:focus,
   opacity: 0.4;
 }
 
+.opacity-50{
+  opacity: 0.5;
+}
+
 .opacity-60{
   opacity: 0.6;
 }
 
 .opacity-80{
   opacity: 0.8;
-}
-
-.opacity-50{
-  opacity: 0.5;
 }
 
 .shadow{
@@ -3776,6 +3767,10 @@ select:focus,
     width: 40%;
   }
 
+  .md\:w-\[45\%\]{
+    width: 45%;
+  }
+
   .md\:w-auto{
     width: auto;
   }
@@ -3783,10 +3778,6 @@ select:focus,
   .md\:w-fit{
     width: -moz-fit-content;
     width: fit-content;
-  }
-
-  .md\:w-\[45\%\]{
-    width: 45%;
   }
 
   .md\:grid-cols-2{
@@ -3847,14 +3838,14 @@ select:focus,
     margin-left: calc(2rem * calc(1 - var(--tw-space-x-reverse)));
   }
 
-  .md\:rounded-r-lg{
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem;
-  }
-
   .md\:rounded-l-3xl{
     border-top-left-radius: 1.5rem;
     border-bottom-left-radius: 1.5rem;
+  }
+
+  .md\:rounded-r-lg{
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
   }
 
   .md\:border-0{
