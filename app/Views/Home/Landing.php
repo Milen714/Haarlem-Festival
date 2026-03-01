@@ -34,12 +34,14 @@ foreach ($pageData->content_sections as $section) {
     <?php endif; ?>
 
     <?php include 'Components/Spinner.php'; ?>
-    <div id="schedule_container">
-    </div>
-    <!-- <?php if ($scheduleSection): ?>
+
+    <!-- <div id="schedule_container">
+    </div> -->
+
+    <?php if ($scheduleSection): ?>
     <?php
         include 'Components/HomeSchedule.php'; ?>
-    <?php endif; ?> -->
+    <?php endif; ?>
 
     <?php include 'Components/HomeMap.php'; ?>
 
@@ -49,16 +51,18 @@ foreach ($pageData->content_sections as $section) {
 
 <script>
 const scheduleContainer = document.getElementById('schedule_container');
+const scheduleFilterContainer = document.getElementById('schedule-filter-container');
 const spinner = document.getElementById('spinner');
+
 addEventListener('DOMContentLoaded', function() {
-    attachScheduleFilterListeners();
     loadSchedule();
+    attachScheduleFilterListeners();
 });
 
 const attachScheduleFilterListeners = () => {
     // Use event delegation on the schedule container
     // This listener will work for all current and future filter links
-    scheduleContainer.addEventListener('click', (e) => {
+    scheduleFilterContainer.addEventListener('click', (e) => {
         const filterLink = e.target.closest('.schedule-filter-link');
         if (!filterLink) return;
 
@@ -93,13 +97,27 @@ const loadSchedule = async () => {
         const response = await fetch(url);
         const html = await response.text();
         scheduleContainer.innerHTML = html;
+        // Re-select the new filter container after AJAX load
+        const newFilterContainer = document.getElementById('schedule-filter-container');
+        if (newFilterContainer) {
+            newFilterContainer.addEventListener('click', (e) => {
+                const filterLink = e.target.closest('.schedule-filter-link');
+                if (!filterLink) return;
+                e.preventDefault();
+                const eventFilter = filterLink.dataset.event || '';
+                const dateFilter = filterLink.dataset.date || '';
+                const newUrl =
+                    `/?event=${encodeURIComponent(eventFilter)}&date=${encodeURIComponent(dateFilter)}`;
+                window.history.pushState({}, '', newUrl);
+                loadSchedule();
+            });
+        }
     } catch (error) {
         console.error('Error fetching schedule:', error);
         scheduleContainer.innerHTML =
             '<p class="text-red-500">Failed to load schedule. Please try again later.</p>';
     } finally {
         spinner.classList.add('hidden');
-
         console.log('Schedule load attempt finished.');
     }
 }

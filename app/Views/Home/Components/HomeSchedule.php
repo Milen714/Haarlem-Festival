@@ -21,7 +21,7 @@ $isDateActive = fn($date) => $dateFilter === $date;
         }?>
 
     </section>
-    <div class="flex flex-col gap-4">
+    <!-- <div id="schedule-filter-container" class="flex flex-col gap-4">
         <nav>
             <ul class="flex flex-row flex-wrap gap-4 items-center justify-center schedule-filter-event">
                 <li class="mb-2">
@@ -83,123 +83,9 @@ $isDateActive = fn($date) => $dateFilter === $date;
                 </li>
             </ul>
         </nav>
+    </div> -->
+
+    <div id="schedule_container" class="w-full">
+        <?php include 'ScheduleList.php'; ?>
     </div>
-
-
-
-    <?php if (isset($scheduleList->allDaySchedules) && !empty($scheduleList->allDaySchedules)): ?>
-    <div class="w-full flex flex-col items-center justify-center gap-3">
-        <header class="flex flex-row gap-3 items-center justify-center mb-4 w-full">
-            <div class="flex flex-col items-center justify-center p-5 bg-[var(--text-home-primary)] 
-                dark:bg-[var(--text-home-high-contrast-primary:)] rounded-lg flex-shrink-0">
-                <h2 class="text-white text-2xl font-bold mb-1">All Day</h2>
-                <p class="text-white">10:00 - 17:00</p>
-            </div>
-            <div class="flex-grow border-b-2 border-[var(--home-gold-accent)]"></div>
-        </header>
-        <?php
-        if (isset($scheduleList->allDaySchedules) && !empty($scheduleList->allDaySchedules)) {
-            /** @var \App\Models\Schedule $scheduleItem */
-            foreach ($scheduleList->allDaySchedules as $scheduleItem) {
-                include 'ScheduleRowCard.php';
-            }
-        } else {
-            echo "<p class='text-gray-500'>No schedule available.</p>";
-        }
-        ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if (isset($scheduleList->morningSchedules) && !empty($scheduleList->morningSchedules)): ?>
-    <div class="w-full flex flex-col items-center justify-center gap-3">
-        <header class="flex flex-row gap-3 items-center justify-center mb-4 w-full">
-            <div class="flex flex-col items-center justify-center p-5 bg-[var(--text-home-primary)] 
-                dark:bg-[var(--text-home-high-contrast-primary:)] rounded-lg flex-shrink-0">
-                <h2 class="text-white text-2xl font-bold mb-1">Morning</h2>
-                <p class="text-white">10:00 - 13:00</p>
-            </div>
-            <div class="flex-grow border-b-2 border-[var(--home-gold-accent)]"></div>
-        </header>
-        <?php
-        if (isset($scheduleList->morningSchedules) && !empty($scheduleList->morningSchedules)) {
-            /** @var \App\Models\Schedule $scheduleItem */
-            foreach ($scheduleList->morningSchedules as $scheduleItem) {
-                include 'ScheduleRowCard.php';
-            }
-        } else {
-            echo "<p class='text-gray-500'>No schedule available.</p>";
-        }
-        ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if (isset($scheduleList->afternoonSchedules) && !empty($scheduleList->afternoonSchedules)): ?>
-    <div class="w-full flex flex-col items-center justify-center gap-3">
-        <header class="flex flex-row gap-3 items-center justify-center mb-4 w-full">
-            <div class="flex flex-col items-center justify-center p-5 bg-[var(--text-home-primary)] 
-                dark:bg-[var(--text-home-high-contrast-primary:)] rounded-lg flex-shrink-0">
-                <h2 class="text-white text-2xl font-bold mb-1">Afternoon</h2>
-                <p class="text-white">13:00 - 17:00</p>
-            </div>
-            <div class="flex-grow border-b-2 border-[var(--home-gold-accent)]"></div>
-        </header>
-        <?php
-        if (isset($scheduleList->afternoonSchedules) && !empty($scheduleList->afternoonSchedules)) {
-            /** @var \App\Models\Schedule $scheduleItem */
-            foreach ($scheduleList->afternoonSchedules as $scheduleItem) {
-                include 'ScheduleRowCard.php';
-            }
-        } else {
-            echo "<p class='text-gray-500'>No schedule available.</p>";
-        }
-        ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if (isset($scheduleList->eveningSchedules) && !empty($scheduleList->eveningSchedules)): ?>
-    <div class="w-full flex flex-col items-center justify-center gap-3">
-        <header class="flex flex-row gap-3 items-center justify-center mb-4 w-full">
-            <div class="flex flex-col items-center justify-center p-5 bg-[var(--text-home-primary)] 
-                dark:bg-[var(--text-home-high-contrast-primary:)] rounded-lg flex-shrink-0">
-                <h2 class="text-white text-2xl font-bold mb-1">Evening</h2>
-                <p class="text-white">17:00 - 21:00</p>
-            </div>
-            <div class="flex-grow border-b-2 border-[var(--home-gold-accent)]"></div>
-        </header>
-        <?php
-        if (isset($scheduleList->eveningSchedules) && !empty($scheduleList->eveningSchedules)) {
-            /** @var \App\Models\Schedule $scheduleItem */
-            foreach ($scheduleList->eveningSchedules as $scheduleItem) {
-                include 'ScheduleRowCard.php';
-            }
-        } else {
-            echo "<p class='text-gray-500'>No schedule available.</p>";
-        }
-        ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if (isset($scheduleList->nightSchedules) && !empty($scheduleList->nightSchedules)): ?>
-    <div class="w-full flex flex-col items-center justify-center gap-3">
-        <header class="flex flex-row gap-3 items-center justify-center mb-4 w-full">
-            <div class="flex flex-col items-center justify-center p-5 bg-[var(--text-home-primary)] 
-                dark:bg-[var(--text-home-high-contrast-primary:)] rounded-lg flex-shrink-0">
-                <h2 class="text-white text-2xl font-bold mb-1">Night</h2>
-                <p class="text-white">21:00 - 02:00</p>
-            </div>
-            <div class="flex-grow border-b-2 border-[var(--home-gold-accent)]"></div>
-        </header>
-        <?php
-        if (isset($scheduleList->nightSchedules) && !empty($scheduleList->nightSchedules)) {
-            /** @var \App\Models\Schedule $scheduleItem */
-            foreach ($scheduleList->nightSchedules as $scheduleItem) {
-                include 'ScheduleRowCard.php';
-            }
-        } else {
-            echo "<p class='text-gray-500'>No schedule available.</p>";
-        }
-        ?>
-    </div>
-    <?php endif; ?>
-
 </div>

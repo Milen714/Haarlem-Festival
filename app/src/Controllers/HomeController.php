@@ -57,6 +57,7 @@ class HomeController extends BaseController
         $dateFilter = $_GET['date'] ?? null;
         try{
             $pageData = $this->pageService->getPageBySlug('home');
+            
             $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
 
             $scheduleList = new ScheduleList($schedule);
@@ -80,9 +81,9 @@ class HomeController extends BaseController
 
             $scheduleList = new ScheduleList($schedule);
             
-            echo require_once '/app/Views/Home/Components/HomeSchedule.php';
+            echo require_once '/app/Views/Home/Components/ScheduleList.php';
         } catch (\Exception $e) {
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+            $this->internalServerError("Error loading schedule: " . $e->getMessage());
         }
     }
 
@@ -117,7 +118,7 @@ class HomeController extends BaseController
             echo require_once '/app/Views/Home/Components/HomeMap.php';
         } catch (\Exception $e) {
             http_response_code(500);
-            
+            echo json_encode(['error' => $e->getMessage()]);
         }
     }
 }
