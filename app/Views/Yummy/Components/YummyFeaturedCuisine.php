@@ -1,14 +1,14 @@
 <?php
 namespace App\Views\Yummy\Components;
 /**
- * @var object|null $heroSection
+ * @var object|null $featuredCuisineSection
  * @var array|null $galleryItems
  */
 ?>
 
 <section class="bg-[var(--yummy-sec-section)] text-[#FFFFFF] py-16 pt-4 pb-4 gap-6">
       <h2 class="text-center text-[var(--yummy-primary)] text-2xl font-bold mb-10">
-        <?= htmlspecialchars($heroSection->title ?? 'Featured Cuisines') ?>
+        <?= $featuredCuisineSection->title ?? 'Featured Cuisines' ?>
       </h2>
       <div class="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-6">
          <?php if (!empty($galleryItems)) : ?>

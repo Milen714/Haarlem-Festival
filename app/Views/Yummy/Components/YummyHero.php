@@ -5,7 +5,7 @@ namespace App\Views\Yummy\Components;
 
 <section class="relative bg-[var(--yummy-primary)] text-white">
     <div class="absolute inset-0">
-        <img src="..<?= htmlspecialchars($heroSection->media->file_path ?? '../Assets/Yummy/Home/hero.webp') ?>"
+        <img src="..<?=$heroSection->media->file_path ?? '../Assets/Yummy/Home/hero.webp' ?>"
             alt="<?= htmlspecialchars($heroSection->media->imageAlt ?? 'Hero image for Yummy Haarlem Festival') ?>"
             class="w-full h-full object-cover opacity-60" />
     </div>

@@ -1,14 +1,11 @@
 <?php
 namespace App\Views\Yummy;
 // echo isset($id) ? "ID is set: " . $id : "ID is not set";
-        // var_dump($slug);
-        // var_dump($pageData);
-        // die(); 
 
 ?>
 
 <?php foreach ($sections as $section): ?>
-<?php
+    <?php
        
         $componentTitle = strtolower($section->title);
 
@@ -41,6 +38,5 @@ namespace App\Views\Yummy;
             include 'Components/YummyEventsSection.php';
         }
     ?>
-<!-- 
 
 <?php endforeach; ?>

@@ -17,6 +17,7 @@ module.exports = {
       fontFamily: {
         montserrat: ['Montserrat', 'sans-serif'],
         robotomono: ['Roboto Mono', 'monospace'],
+        roboto: ['Roboto', 'sans-serif'],
         courierprime: ['Courier Prime', 'monospace'],
         blackopsone: ['Black Ops One', 'system-ui'],
       },
