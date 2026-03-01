@@ -33,7 +33,7 @@ foreach ($pageData->content_sections as $section) {
     <?php include 'Components/HomeEvents.php'; ?>
     <?php endif; ?>
 
-    <?php include 'Components/Spinner.php'; ?>
+
 
     <!-- <div id="schedule_container">
     </div> -->
