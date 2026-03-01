@@ -24,19 +24,19 @@ use App\Middleware\RoleMiddleware;
  */
 $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/', ['App\Controllers\HomeController', 'index']);
-    $r->addRoute('GET', '/getSchedule', ['App\Controllers\HomeController', 'getSchedulePartial']);
     $r->addRoute('POST', '/setTheme', ['App\Controllers\HomeController', 'setTheme']);
     $r->addRoute('GET', '/login', ['App\Controllers\AccountController', 'login']);
     $r->addRoute('POST', '/login', ['App\Controllers\AccountController', 'loginPost']);
     $r->addRoute('GET', '/signup', ['App\Controllers\AccountController', 'signup']);
     $r->addRoute('POST', '/signup', ['App\Controllers\AccountController', 'signupPost']);
-    //$r->addRoute('POST', '/capcha', ['App\Controllers\AccountController', 'validateCaptcha']);
     $r->addRoute('GET', '/forgot-password', ['App\Controllers\AccountController', 'forgotPassword']);
     $r->addRoute('POST', '/forgot-password', ['App\Controllers\AccountController', 'forgotPasswordPost']);
     $r->addRoute('POST', '/logout', ['App\Controllers\AccountController', 'logout']);
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
-    $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
+
+    $r->addRoute('GET', '/home', ['App\Controllers\HomeController', 'homePage']);
+    $r->addRoute('GET', '/image-to-webp', ['App\Controllers\HomeController', 'imageToWebp']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
@@ -47,6 +47,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     /* Dance Event Route */
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
 
+    /* Yummy event page */
+    //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
+    $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
+    
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
     $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);
