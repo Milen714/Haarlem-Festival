@@ -151,6 +151,7 @@ class VenueRepository extends Repository implements IVenueRepository
         error_log("Error fetching all venues: " . $e->getMessage());
         throw new \RuntimeException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
     }
+    }
 
     /**
      * Create new venue
