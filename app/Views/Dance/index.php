@@ -2,7 +2,7 @@
 namespace App\Views\Dance;
 ?>
 
-<section class="flex flex-col gap-6 bg-gray-50 text-gray-900 pt-4">
+<section class="flex flex-col gap-6 font-roboto dance-bg">
     <?php include __DIR__ . '/Components/dance-hero.php'; ?>
     <?php include __DIR__ . '/Components/dance-artist.php'; ?>
     <?php include __DIR__ . '/Components/dance-special.php'; ?>
