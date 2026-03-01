@@ -28,8 +28,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.stars AS restaurant_stars,
             r.review_count AS restaurant_review_count,
             r.website_url AS restaurant_website_url,
-            r.course_details_html,
-            r.special_notes_html,
             r.deleted_at,
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
@@ -42,14 +40,14 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             gm.media_id AS gallery_media_id,
             gm.file_path AS gallery_image_path,
             gm.alt_text AS gallery_image_alt
-            FROM restaurant r
-            LEFT JOIN media m 
+            FROM RESTAURANT r
+            LEFT JOIN MEDIA m 
                 ON r.main_image_id = m.media_id
-            LEFT JOIN venue v 
+            LEFT JOIN VENUE v 
                 ON r.venue_id = v.venue_id
-            LEFT JOIN gallery g 
+            LEFT JOIN GALLERY g 
                 ON r.restaurant_id = g.restaurant_id
-            LEFT JOIN media gm 
+            LEFT JOIN MEDIA gm 
                 ON g.media_id = gm.media_id
             WHERE r.deleted_at IS NULL
             ORDER BY r.restaurant_id;
@@ -87,14 +85,12 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.stars AS restaurant_stars,
             r.review_count AS restaurant_review_count,
             r.website_url AS restaurant_website_url,
-            r.course_details_html,
-            r.special_notes_html,
             r.deleted_at,
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
             m.alt_text AS restaurant_image_alt
-        FROM restaurant r
-        LEFT JOIN media m ON r.main_image_id = m.media_id
+        FROM RESTAURANT r
+        LEFT JOIN MEDIA m ON r.main_image_id = m.media_id
         WHERE r.restaurant_id = :restaurant_id
         AND r.deleted_at IS NULL
         ";
@@ -152,14 +148,12 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.stars AS restaurant_stars,
             r.review_count AS restaurant_review_count,
             r.website_url AS restaurant_website_url,
-            r.course_details_html,
-            r.special_notes_html,
             r.deleted_at,
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
             m.alt_text AS restaurant_image_alt
-            FROM restaurant r
-            LEFT JOIN media m ON r.main_image_id = m.media_id
+            FROM RESTAURANT r
+            LEFT JOIN MEDIA m ON r.main_image_id = m.media_id
             WHERE r.slug = :slug
             AND r.deleted_at IS NULL
             LIMIT 1
@@ -239,7 +233,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     public function createRestaurant(Restaurant $restaurant): int{
     $pdo = $this->connect();   
     $sql = "
-            INSERT INTO restaurant (
+            INSERT INTO RESTAURANT (
                 name, 
                 short_description, 
                 welcome_text, 
@@ -295,7 +289,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         //should add slug to database and update it here as well  
         $pdo = $this->connect();   
         $sql = "
-            UPDATE restaurant
+            UPDATE RESTAURANT
             SET 
                 name = :name,
                 short_description = :short_description,
@@ -334,7 +328,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     public function deleteRestaurant(int $id): bool{
         try {
             $pdo = $this->connect();
-            $sql = "UPDATE restaurant SET deleted_at = NOW() WHERE restaurant_id = :restaurant_id";
+            $sql = "UPDATE RESTAURANT SET deleted_at = NOW() WHERE restaurant_id = :restaurant_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':restaurant_id', $id, PDO::PARAM_INT);
             return $stmt->execute([':restaurant_id' => $id]);

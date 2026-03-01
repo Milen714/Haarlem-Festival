@@ -1,6 +1,8 @@
 <?php
 namespace App\Views\Yummy\Components;
-/**@var object|null $heroSection */
+/**
+ * @var object|null $discoverSection 
+ * */
 ?>
 
 <section>
@@ -8,10 +10,10 @@ namespace App\Views\Yummy\Components;
       <div class="container mx-auto grid md:grid-cols-2 gap-10 items-center">
         <div>
           <h2 class="text-2xl text-[var(--yummy-sec-section)] font-bold mb-4">
-            <?= htmlspecialchars($heroSection->title ?? 'Discover Haarlem') ?>
+            <?= $discoverSection->title ?? 'Discover Haarlem' ?>
           </h2>
-          <?= htmlspecialchars($heroSection->content_html ?? '') ?>
-          <?= htmlspecialchars($heroSection->content_html_2 ?? '') ?>
+          <?= $discoverSection->content_html ?? '' ?>
+          <?= $discoverSection->content_html_2 ?? '' ?>
           <!-- <div class="flex  text-white space-x-8 mt-4">
             <div class="bg-[var(--yummy-sec-section)] w-30 rounded-lg">
               <h3 class="text-2xl font-bold">800+</h3>
@@ -24,8 +26,8 @@ namespace App\Views\Yummy\Components;
           </div> -->
         </div>
         <img
-          src="<?= htmlspecialchars($heroSection->media->file_path ?? '../Assets/Yummy/Home/discoverHaarlem.webp') ?>"
-          alt="<?= htmlspecialchars($heroSection->media->imageAlt ?? 'Grote Houtstraat Haarlem') ?>"
+          src="<?= htmlspecialchars($discoverSection->media->file_path ?? '../Assets/Yummy/Home/discoverHaarlem.webp') ?>"
+          alt="<?= htmlspecialchars($discoverSection->media->imageAlt ?? 'Grote Houtstraat Haarlem') ?>"
           class="rounded-lg shadow-lg"
         />
       </div>
