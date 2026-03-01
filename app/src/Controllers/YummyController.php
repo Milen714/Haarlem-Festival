@@ -1,48 +1,61 @@
 <?php 
 
 namespace App\Controllers;
+
 use App\Controllers\BaseController;
-use App\Repositories\MediaRepository;
+use App\Services\UserService;
+use App\Services\ScheduleService;
+use App\Repositories\UserRepository;
 use App\Repositories\PageRepository;
-use App\Repositories\VenueRepository;
+use App\Repositories\ScheduleRepository;
 use App\Repositories\RestaurantRepository;
-use App\Services\MediaService;
-use App\Services\PageService;
+use App\Repositories\VenueRepository;
 use App\Services\RestaurantService;
+use App\Services\PageService;
 use App\Services\VenueService;
+use App\Models\User;
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
+use App\Repositories\MediaRepository;
+use App\Services\MediaService;
 
 class YummyController extends BaseController
 {
+    private UserService $userService;
+    private UserRepository $userRepository;
     private PageService $pageService;
     private PageRepository $pageRepository;
-    private VenueService $venueService;
+    private MediaService $mediaService;
+    private MediaRepository $mediaRepository;
+    private ScheduleRepository $scheduleRepository;
+    private ScheduleService $scheduleService;
     private RestaurantService $restaurantService;
-
-    private const YUMMY_EVENT_ID = 1;
-    private const YUMMY_SLUG = 'events-yummy';
+    private RestaurantRepository $restaurantRepository;
+    private VenueService $venueService;
+    private VenueRepository $venueRepository;
 
     
     public function __construct()
     {
-        $mediaRepository = new MediaRepository();
-        $mediaService = new MediaService($mediaRepository);
-
+        $this->userRepository = new UserRepository();
+        $this->userService = new UserService($this->userRepository);
         $this->pageRepository = new PageRepository();
         $this->pageService = new PageService($this->pageRepository);
-
-        $venueRepository = new VenueRepository();
-        $this->venueService = new VenueService($venueRepository, $mediaService);
-
-        $restaurantRepository = new RestaurantRepository();
-        $this->restaurantService = new RestaurantService($restaurantRepository);
-
+        $this->scheduleRepository = new ScheduleRepository();
+        $this->scheduleService = new ScheduleService($this->scheduleRepository);
+        $this->mediaRepository = new MediaRepository();
+        $this->mediaService = new MediaService($this->mediaRepository);
+        $this->restaurantRepository = new RestaurantRepository();
+        $this->restaurantService = new RestaurantService($this->restaurantRepository);
+        $this->venueRepository = new VenueRepository();
+        $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
     }
     public function index()
     {
-        error_log('YummyController::index called');
+        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
         try {
-            $slug = self::YUMMY_SLUG;
-            $pageData = $this->pageService->getPageBySlug($slug);
+            $pageData = $this->pageService->getPageBySlug('events-yummy');
+            
             
             if (!$pageData) {
                 error_log("Yummy page data not found for slug: {$slug}");
@@ -63,6 +76,36 @@ class YummyController extends BaseController
         } catch (\Exception $e) {
             error_log("Error in YummyController index method: " . $e->getMessage());
             $this->notFound();
+        }
+    }
+    public function yummy()
+    {
+        //$slug = ltrim($_SERVER['REQUEST_URI'], '/');
+        try {
+            $pageData = $this->pageService->getPageBySlug('events-yummy');
+            
+            
+            // if (!$pageData) {
+            //     error_log("Yummy page data not found for slug: {$slug}");
+            //     $this->notFound();
+            //     return;
+            // }
+            // var_dump($pageData->event_category->event_id);
+            // die();
+            
+            $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
+            $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
+            
+            $this->view('Yummy/index', [
+                'title' => $pageData->title ?? 'Yummy Event',
+                'pageData' => $pageData,
+                'sections' => $pageData->content_sections,
+                'venues' => $venues,
+                'restaurants' => $restaurants,
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in YummyController index method: " . $e->getMessage());
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
     }
 }
