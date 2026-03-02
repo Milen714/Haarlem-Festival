@@ -57,6 +57,7 @@ class HomeController extends BaseController
         $dateFilter = $_GET['date'] ?? null;
         try{
             $pageData = $this->pageService->getPageBySlug('home');
+            
             $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
 
             $scheduleList = new ScheduleList($schedule);
@@ -80,9 +81,9 @@ class HomeController extends BaseController
 
             $scheduleList = new ScheduleList($schedule);
             
-            echo require_once '/app/Views/Home/Components/HomeSchedule.php';
+            echo require_once '/app/Views/Home/Components/ScheduleList.php';
         } catch (\Exception $e) {
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+            $this->internalServerError("Error loading schedule: " . $e->getMessage());
         }
     }
 
@@ -109,33 +110,6 @@ class HomeController extends BaseController
 
     public function getStartingPoints($vars = [])
     {
-        header('Content-Type: application/json');
-        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
-
-        $pageData = $this->pageService->getPageBySlug('events-magic');
-        echo json_encode($pageData);
-    }
-    public function YummyHome($vars = [])
-    {
-        $this->view('Yummy/index', ['id' => 1]);
-    }
-    public function imageToWebp($vars = [])
-    {
-        $inputPath = __DIR__ . '/../../public/Assets/Home/ImagePlaceholder.png';
-        $directory = __DIR__ . '/../../public/Assets/Home/';
-        $outputPath = $directory . 'ImagePlaceholder.webp';
-        if (!file_exists($inputPath)) {
-            http_response_code(404);
-            echo "Input image not found.";
-            return;
-        }
-
-        // Output headers
-        header('Content-Type: image/webp');
-
-        // Output WebP directly to browser
-        imagewebp(imagecreatefrompng($inputPath), $outputPath, 80);
-
        
         try {
             $venues = $this->venueService->getAllVenues(); 
@@ -144,7 +118,7 @@ class HomeController extends BaseController
             echo require_once '/app/Views/Home/Components/HomeMap.php';
         } catch (\Exception $e) {
             http_response_code(500);
-            
+            echo json_encode(['error' => $e->getMessage()]);
         }
     }
 }
