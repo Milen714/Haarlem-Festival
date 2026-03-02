@@ -56,7 +56,6 @@ class YummyController extends BaseController
         try {
             $pageData = $this->pageService->getPageBySlug('events-yummy');
             
-            
             if (!$pageData) {
                 error_log("Yummy page data not found for slug: {$slug}");
                 $this->notFound();
@@ -85,13 +84,13 @@ class YummyController extends BaseController
             $pageData = $this->pageService->getPageBySlug('events-yummy');
             
             
-            // if (!$pageData) {
-            //     error_log("Yummy page data not found for slug: {$slug}");
-            //     $this->notFound();
-            //     return;
-            // }
-            // var_dump($pageData->event_category->event_id);
-            // die();
+            if (!$pageData) {
+                error_log("Yummy page data not found for slug: events-yummy");
+                $this->notFound();
+                return;
+            }
+            //var_dump($pageData->event_category->event_id);
+            //die();
             
             $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);

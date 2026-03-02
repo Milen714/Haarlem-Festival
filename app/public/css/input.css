@@ -49,6 +49,7 @@
     --yummy-sec-btn-text:#FFFFFF;
     --yummy-sec-hover-btn: #49111C;
     --yummy-sec-hover-btn-text:#FFFFFF;
+    
     /* Dance Section */
     --dance-bg: #0A0D16;
     --dance-button-color: #FDDA93;
@@ -177,6 +178,9 @@
     .home_yummy_buttons{
         @apply bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)]
                    font-semibold p-3 rounded-[5px] focus:outline-none focus:ring-2 transition-all;
+    }
+    .hisBlock{
+        @apply w-96 h-28 bg-[var(--yummy-sec-section)] dark:bg-[var(--home-yummy-high-contrast-accent)] rounded-lg shadow-[-7px_-7px_0px_#FFD93E] hover:shadow-[-4px_-4px_0px_#FFD93E] transition-all;
     }
     /* CalendarHome */
     /* .calendar-coils{
