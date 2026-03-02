@@ -34,7 +34,7 @@ $color = $colors[$cardIndex % 4];
             </p>
         </div>
         
-        <a href="/artist/<?= htmlspecialchars($artist->slug ?? '') ?>" 
+        <a href="/events-jazz/artist/<?= htmlspecialchars($artist->slug ?? '')?>" 
            class="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-900 hover:text-white transition-all font-bold text-sm"
            style="margin-top: auto;"
            aria-label="View more information about <?= htmlspecialchars($artist->name ?? 'artist') ?>">

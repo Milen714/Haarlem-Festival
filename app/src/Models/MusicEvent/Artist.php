@@ -22,6 +22,9 @@ class Artist
 	public ?string $collaborations = null;
 	public ?DateTime $deleted_at = null;
 
+	public array $albums = [];
+    public array $artistGenres = [];
+	
 	// Displays the  properties for event listings
 	public ?string $genres = null;
 	public ?bool $is_headliner = null;

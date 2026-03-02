@@ -7,27 +7,27 @@ namespace App\Views\Dance\Components;
         
         <div class="w-full lg:w-1/2 relative group">
             <div class="absolute -inset-1 bg-gradient-to-r from-[#f08a8a] to-[#eeb44f] rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-            <div class="relative bg-black rounded-lg overflow-hidden border border-white/10">
-                <?php if ($venueSection && $venueSection->media): ?>
-                    <img src="<?= $venueSection->media->file_path ?>" alt="Festival Map" class="w-full h-auto grayscale hover:grayscale-0 transition duration-700">
-                <?php else: ?>
-                    <img src="/assets/img/map-placeholder.jpg" alt="Map" class="w-full h-auto opacity-80">
+            <div class="relative rounded-lg overflow-hidden border border-white/10">
+                <?php if ($venueSection->media): ?>
+                    <img src="<?= $venueSection->media->file_path ?>" alt="Festival Map" class="w-full h-auto">
                 <?php endif; ?>
             </div>
         </div>
 
         <div class="w-full lg:w-1/2 text-left">
-            <h2 class="inline-block text-[#f08a8a] text-2xl font-bold uppercase tracking-[0.2em] border-b-2 border-[#f08a8a] mb-8 pb-2">
+            <h2 class="inline-block text-[var(--dance-tag-color-1)] text-2xl font-bold uppercase tracking-[0.2em] border-b-2 border-[var(--dance-tag-color-1)] mb-8 pb-2">
                 <?= htmlspecialchars($venueSection->section_title ?? 'The City is Your Dancefloor') ?>
             </h2>
             
-            <div class="prose prose-invert prose-p:text-gray-400 prose-p:leading-relaxed max-w-none mb-10">
-                <?= $venueSection?->content_html ?? '<p class="text-white">From the industrial vibes of the Melkweg to the open skies of Gashouder, our festival spans across Amsterdam\'s most iconic locations.</p>' ?>
+            <?php if ($venueSection?->content_html): ?>
+            <div class="prose prose-invert text-white prose-p:text-gray-400 prose-p:leading-relaxed max-w-none mb-10">
+                <?= $venueSection?->content_html ?>
             </div>
+            <?php endif; ?>
 
             <?php if ($venueSection?->cta_url): ?>
-                <a href="<?= $venueSection->cta_url ?>" class="inline-block bg-[#eeb44f] hover:bg-white text-black font-bold py-3 px-8 rounded-full transition-all uppercase tracking-widest text-xs">
-                    <?= $venueSection->cta_text ?? 'View All Locations' ?>
+                <a href="<?= $venueSection->cta_url ?>" class="inline-block bg-[var(--dance-button-color)] hover:bg-white text-black font-bold py-3 px-8 rounded-full transition-all uppercase tracking-widest text-xs">
+                    <?= $venueSection->cta_text?>
                 </a>
             <?php endif; ?>
         </div>

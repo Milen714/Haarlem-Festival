@@ -1,6 +1,6 @@
 <?php
 namespace App\Views\Home\Components;
-$reverseStyle = isset($isReverse) && $isReverse ? "flex-row-reverse" : "flex-row";
+$reverseStyle = isset($isReverse) && $isReverse ? "flex-col md:flex-row-reverse" : "flex-col md:flex-row";
 $borderClass = "";
 $buttonStyle = "";
 switch ($section->title)
@@ -29,12 +29,12 @@ switch ($section->title)
 
 ?>
 
-<article class="flex <?php echo $reverseStyle ?> w-full justify-around items-center">
+<article class="flex <?php echo $reverseStyle ?> w-full justify-around items-center overflow-x-hidden">
 
-    <img class=" w-[40%] mr-5 h-auto object-cover rounded-xl border-4 <?php echo $borderClass ?> shadow-md"
+    <img class="w-full max-w-full md:w-[40%] mr-5 h-auto object-cover rounded-xl border-4 <?php echo $borderClass ?> shadow-md"
         src="<?php echo $section->media->file_path ?>" alt="St. Bavo Church">
 
-    <div class="flex flex-col w-[30%] items-center gap-4">
+    <div class="flex flex-col w-full md:w-[30%] min-w-0 items-center gap-4">
         <div class="flex flex-col items-center text-center">
             <?php echo $section->content_html ?>
         </div>

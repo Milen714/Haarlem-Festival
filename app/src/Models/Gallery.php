@@ -20,8 +20,8 @@ class Gallery {
     }
     public function fromPDOData(array $data): void 
     { 
-        $this->gallery_id = isset($data['gallery_id']) ? (int)$data['gallery_id'] : null; 
-        $this->title = $data['gallery_title'] ?? null; 
-        $this->created_at = isset($data['created_at']) ? new DateTime($data['created_at']) : null; 
+        $this->gallery_id = (int)$data['gallery_id'] ?? (int)$data['section_gallery_id'] ?? null; 
+        $this->title = $data['gallery_title'] ?? $data['section_gallery_title'] ?? null; 
+        //$this->created_at = isset($data['created_at']) ? new DateTime($data['created_at']) : null; 
     }
 }

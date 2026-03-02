@@ -11,8 +11,8 @@ class GalleryMedia
 
     public function fromPDOData(array $data): void
     {
-        $this->gallery_id = isset($data['gallery_id']) ? (int)$data['gallery_id'] : null;
-        $this->order = isset($data['display_order']) ? (int)$data['display_order'] : null;
+        $this->gallery_id = $data['gallery_id'] ?? (int)$data['section_gallery_id'] ?? null;
+        $this->order = $data['display_order'] ?? (int)$data['gallery_media_display_order'] ?? null;
     }
 
 }

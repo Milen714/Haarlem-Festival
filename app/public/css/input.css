@@ -49,6 +49,12 @@
     --yummy-sec-btn-text:#FFFFFF;
     --yummy-sec-hover-btn: #49111C;
     --yummy-sec-hover-btn-text:#FFFFFF;
+    /* Dance Section */
+    --dance-bg: #0A0D16;
+    --dance-button-color: #FDDA93;
+    --dance-tag-color-1: #FDA090;
+    --dance-tag-color-2: #B389F8;
+    --dance-text-primary: #FFFFFF;
 
     /* Magic Section */
     --magic-header-font: Courier Prime, monospace;
@@ -90,7 +96,7 @@
 
 @layer components{
     body{
-        @apply font-montserrat ;
+        @apply font-montserrat;
     }
     .text_colors_nav{
         @apply text-[var(--text-color-nav-primary)] dark:text-black;
@@ -127,6 +133,21 @@
         @apply block w-min rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700;
     }
 
+
+    /* SPINNER 🔄*/
+
+    #spinner:not(.hidden) {
+  display: flex;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ddd;
+  border-top: 4px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
     /* BUTTONS */
     .home_history_button{
@@ -262,6 +283,19 @@
         border-width: 0;
     }
     
+    /* Dance Section */
+    .dance-bg {
+        background-color: var(--dance-bg);
+    }
+    .dance-text {
+        color: var(--dance-text-primary);
+    }
+    .dance-color-tag-1 {
+        color: var(--dance-tag-color-1);
+    }
+    .dance-color-tag-2 {
+        color: var(--dance-tag-color-2);
+    }
     /* 
     /* MAGIC@TEYLERS */
     .magic-strong {
@@ -315,6 +349,41 @@
     .magic_article_image_big{
         @apply w-[23%] md:w-[60%];
     }
+
+
+    /* HISTORY */
+    .history-hero-title {
+        font-family: 'Libre Baskerville', serif;
+        font-weight: 700;
+        color: #fbf7e5;
+        font-size: 3.4rem; 
+        line-height: 5.1rem; 
+        letter-spacing: 0.034rem;
+        text-shadow: 0.25rem 0.25rem 0.25rem #000000ed;
+        -webkit-text-stroke: 0.06rem #fbf8e5;
+    }
+
+    .btn-history-book {
+        background-color: #d0ec91;
+        border: 0.12rem solid #5f7135;
+        border-radius: 0.9rem;
+        padding: 0.75rem 2rem;
+        font-family: 'Nobile', sans-serif;
+        font-weight: 500;
+        font-size: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-history-book:hover {
+        background-color: #b8d67a;
+        transform: translateY(-0.12rem);
+    }
+
+
+    /* KEYFRAME ANIMATIONS */
+    @keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 /**/
   .max-w-content {

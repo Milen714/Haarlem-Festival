@@ -1,25 +1,27 @@
 <?php
 namespace App\Views\Home\Components;
+use App\Models\EventCategory;
+use App\Models\Enums\EventType;
 $buttonIcon = '/Assets/Home/MapJazzIcon.svg';
 $iconAlt = 'Default Icon';
-switch ($venue->venue_type) {
-    case 'Jazz':
+switch ($point->event_category?->type) {
+    case EventType::Jazz:
         $buttonIcon = '/Assets/Home/MapJazzIcon.svg';
         $iconAlt = 'Jazz Icon';
         break;
-    case 'Yummy':
+    case EventType::Yummy:
         $buttonIcon = '/Assets/Home/MapYummyIcon.svg';
         $iconAlt = 'Food Icon';
         break;
-    case 'History':
+    case EventType::History:
         $buttonIcon = '/Assets/Home/MapHistoryIcon.svg';
         $iconAlt = 'History Icon';
         break;
-    case 'Dance':
+    case EventType::Dance:
         $buttonIcon = '/Assets/Home/MapDanceIcon.svg';
         $iconAlt = 'Dance Icon';
         break;
-    case 'Magic':
+    case EventType::Magic:
         $buttonIcon = '/Assets/Home/MapMagicIcon.svg';
         $iconAlt = 'Magic Icon';
         break;
@@ -36,10 +38,10 @@ switch ($venue->venue_type) {
         aria-controls="interactive-map">
         <span class="flex flex-row gap-1" aria-hidden="true">
             <img src="<?= $buttonIcon ?>" alt="<?= $iconAlt ?>">
-            <span class="location-title"><?= htmlspecialchars($venue->name) ?></span>
+            <span class="location-title"><?= htmlspecialchars($point->name) ?></span>
         </span>
         <span class="text-content flex flex-col items-start ">
-            <span class="location-desc"><?= htmlspecialchars($venue->venue_type) ?></span>
+            <span class="location-desc"><?= htmlspecialchars($point->event_category->type->value ) ?></span>
         </span>
     </button>
 </li>

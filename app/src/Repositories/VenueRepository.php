@@ -14,7 +14,7 @@ class VenueRepository extends Repository implements IVenueRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = "
                 SELECT DISTINCT
                     v.venue_id,
@@ -40,16 +40,16 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':event_id', $eventId, PDO::PARAM_INT);
             $stmt->execute();
-            
+
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             $venues = [];
             foreach ($results as $row) {
                 $venue = new Venue();
                 $venue->fromPDOData($row);
                 $venues[] = $venue;
             }
-            
+
             return $venues;
         } catch (PDOException $e) {
             error_log("Error fetching venues by event: " . $e->getMessage());
@@ -61,7 +61,7 @@ class VenueRepository extends Repository implements IVenueRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = "
                 SELECT 
                     v.*,
@@ -77,13 +77,13 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':venue_id', $venueId, PDO::PARAM_INT);
             $stmt->execute();
-            
+
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$result) {
                 return null;
             }
-            
+
             $venue = new Venue();
             $venue->fromPDOData($result);
             return $venue;
@@ -97,12 +97,12 @@ class VenueRepository extends Repository implements IVenueRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             // Hard delete since VENUE table doesn't have deleted_at column
             $query = "DELETE FROM VENUE WHERE venue_id = :venue_id";
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':venue_id', $venueId, PDO::PARAM_INT);
-            
+
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error deleting venue: " . $e->getMessage());
@@ -111,41 +111,47 @@ class VenueRepository extends Repository implements IVenueRepository
     }
 
     public function getAllVenues(): array
-{
-    try {
-        $pdo = $this->connect();
-        
-        $query = "
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
             SELECT 
                 v.*,
                 v.venue_image_id,
                 m.media_id,
                 m.file_path as image_path,
                 m.alt_text as image_alt,
-                COUNT(DISTINCT s.schedule_id) as event_count
+                COUNT(DISTINCT s.schedule_id) as event_count,
+                ec.event_id as event_category_id,
+                ec.title as event_category_title,
+                ec.type as event_category_type,
+                ec.slug as event_category_slug
             FROM VENUE v
             LEFT JOIN MEDIA m ON v.venue_image_id = m.media_id
             LEFT JOIN SCHEDULE s ON v.venue_id = s.venue_id
+            LEFT JOIN EVENT_CATEGORIES ec ON v.event_id = ec.event_id
             GROUP BY v.venue_id
             ORDER BY v.name ASC
         ";
 
-        $stmt = $pdo->query($query);
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        $venues = [];
-        foreach ($results as $row) {
-            $venue = new Venue();
-            $venue->fromPDOData($row);
-            $venues[] = $venue;
-        }
-        
+            $stmt = $pdo->query($query);
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $venues = [];
+            foreach ($results as $row) {
+                $venue = new Venue();
+                $venue->fromPDOData($row);
+                $venues[] = $venue;
+            }
+
+             
         return $venues;
     } catch (PDOException $e) {
         error_log("Error fetching all venues: " . $e->getMessage());
-        throw new \RuntimeException("Failed to fetch venues", 0, $e);
+        throw new \RuntimeException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
     }
-}
+    }
 
     /**
      * Create new venue
@@ -154,7 +160,7 @@ class VenueRepository extends Repository implements IVenueRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = "
                 INSERT INTO VENUE (
                     name,
@@ -191,16 +197,16 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt->bindValue(':capacity', $venue->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':phone', $venue->phone);
             $stmt->bindValue(':email', $venue->email);
-            
+
             $venueImageId = $venue->venue_image?->media_id ?? null;
             $stmt->bindValue(':venue_image_id', $venueImageId, PDO::PARAM_INT);
-            
+
             $result = $stmt->execute();
-            
+
             if ($result) {
                 $venue->venue_id = (int)$pdo->lastInsertId();
             }
-            
+
             return $result;
         } catch (PDOException $e) {
             error_log("Error creating venue: " . $e->getMessage());
@@ -215,7 +221,7 @@ class VenueRepository extends Repository implements IVenueRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = "
                 UPDATE VENUE SET
                     name = :name,
@@ -242,10 +248,10 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt->bindValue(':capacity', $venue->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':phone', $venue->phone);
             $stmt->bindValue(':email', $venue->email);
-            
+
             $venueImageId = $venue->venue_image?->media_id ?? null;
             $stmt->bindValue(':venue_image_id', $venueImageId, PDO::PARAM_INT);
-            
+
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error updating venue: " . $e->getMessage());
