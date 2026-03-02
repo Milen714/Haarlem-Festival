@@ -22,7 +22,14 @@ class FileUploadService
             return $this->error('Invalid file type. Only JPG, PNG, and WebP allowed');
         }
 
-        $filename = $this->generateFilename($file['name']);
+        $mimeType = $this->getMimeType($file['tmp_name']);
+        if ($mimeType === false) {
+            return $this->error('Failed to detect file type');
+        }
+
+        $shouldConvertToWebP = in_array($mimeType, ['image/jpeg', 'image/jpg', 'image/png'], true);
+
+        $filename = $this->generateFilename($file['name'], $shouldConvertToWebP ? 'webp' : null);
         $targetDir = self::UPLOAD_DIR . $category . '/';
         $relativePath = '/Assets/' . $category . '/' . $filename;
 
@@ -30,11 +37,49 @@ class FileUploadService
             return $this->error('Failed to create upload directory');
         }
 
-        if (!move_uploaded_file($file['tmp_name'], $targetDir . $filename)) {
+        $destinationPath = $targetDir . $filename;
+
+        if ($shouldConvertToWebP) {
+            $conversionResult = $this->convertToWebP($file['tmp_name'], $destinationPath, $mimeType);
+            if (!$conversionResult['success']) {
+                return $conversionResult;
+            }
+        } elseif (!move_uploaded_file($file['tmp_name'], $destinationPath)) {
             return $this->error('Failed to save file');
         }
 
         return ['success' => true, 'file_path' => $relativePath, 'error' => null];
+    }
+
+    private function convertToWebP(string $sourcePath, string $destinationPath, string $mimeType): array
+    {
+        try {
+            $image = null;
+
+            switch ($mimeType) {
+                case 'image/jpeg':
+                case 'image/jpg':
+                    $image = imagecreatefromjpeg($sourcePath);
+                    break;
+                case 'image/png':
+                    $image = imagecreatefrompng($sourcePath);
+                    break;
+                default:
+                    return $this->error('Unsupported file type');
+            }
+
+            if (!$image) {
+                return $this->error('Failed to create image resource');
+            }
+
+            if (!imagewebp($image, $destinationPath)) {
+                return $this->error('Failed to convert to WebP');
+            }
+
+            return ['success' => true, 'file_path' => null, 'error' => null];
+        } catch (\Exception $e) {
+            return $this->error('Conversion error: ' . $e->getMessage());
+        }
     }
 
     public function delete(string $filePath): bool
@@ -50,17 +95,22 @@ class FileUploadService
 
     private function isValidFileType(string $tmpPath): bool
     {
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimeType = finfo_file($finfo, $tmpPath);
-        // Removed finfo_close() - deprecated in PHP 8.5
-        // The finfo resource is automatically freed
-
+        $mimeType = $this->getMimeType($tmpPath);
+        if ($mimeType === false) {
+            return false;
+        }
         return in_array($mimeType, self::ALLOWED_TYPES);
     }
 
-    private function generateFilename(string $originalName): string
+    private function getMimeType(string $path): string|false
     {
-        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        return finfo_file($finfo, $path);
+    }
+
+    private function generateFilename(string $originalName, ?string $forcedExtension = null): string
+    {
+        $extension = $forcedExtension ?? strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
         return uniqid() . '_' . time() . '.' . $extension;
     }
 

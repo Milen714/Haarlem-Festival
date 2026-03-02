@@ -71,6 +71,7 @@ tinymce.init({
     menubar: false,
     plugins: 'autoresize link lists image',
     toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link | image',
+    extended_valid_elements: 'button[type|class|data-accordion-trigger|aria-expanded],div[class|data-accordion-root],span[class]',
     block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2',
     min_height: 150,
     max_height: 700,

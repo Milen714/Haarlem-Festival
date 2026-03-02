@@ -122,10 +122,15 @@ class VenueRepository extends Repository implements IVenueRepository
                 m.media_id,
                 m.file_path as image_path,
                 m.alt_text as image_alt,
-                COUNT(DISTINCT s.schedule_id) as event_count
+                COUNT(DISTINCT s.schedule_id) as event_count,
+                ec.event_id as event_category_id,
+                ec.title as event_category_title,
+                ec.type as event_category_type,
+                ec.slug as event_category_slug
             FROM VENUE v
             LEFT JOIN MEDIA m ON v.venue_image_id = m.media_id
             LEFT JOIN SCHEDULE s ON v.venue_id = s.venue_id
+            LEFT JOIN EVENT_CATEGORIES ec ON v.event_id = ec.event_id
             GROUP BY v.venue_id
             ORDER BY v.name ASC
         ";
@@ -140,11 +145,12 @@ class VenueRepository extends Repository implements IVenueRepository
                 $venues[] = $venue;
             }
 
-            return $venues;
-        } catch (PDOException $e) {
-            error_log("Error fetching all venues: " . $e->getMessage());
-            throw new \RuntimeException("Failed to fetch venues", 0, $e);
-        }
+             
+        return $venues;
+    } catch (PDOException $e) {
+        error_log("Error fetching all venues: " . $e->getMessage());
+        throw new \RuntimeException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
+    }
     }
 
     /**

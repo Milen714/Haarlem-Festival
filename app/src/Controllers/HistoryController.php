@@ -15,13 +15,13 @@ class HistoryController extends BaseController
         $this->pageService = new PageService(new PageRepository());
     }
 
-    public function index($vars = [])
-    {
-        $pageData = $this->pageService->getPageData(PageType::homepage); 
+    // public function index($vars = [])
+    // {
+    //     $pageData = $this->pageService->getPageData(PageType::homepage); 
 
-        $this->view('History/HistoryHomepage', [
-            'title' => 'Haarlem History',
-            'pageData' => $pageData
-        ]);
-    }
+    //     $this->view('History/HistoryHomepage', [
+    //         'title' => 'Haarlem History',
+    //         'pageData' => $pageData
+    //     ]);
+    // }
 }

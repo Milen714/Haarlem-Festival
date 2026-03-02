@@ -8,12 +8,18 @@ use App\Services\ScheduleService;
 use App\Repositories\UserRepository;
 use App\Repositories\PageRepository;
 use App\Repositories\ScheduleRepository;
+use App\Repositories\VenueRepository;
+use App\Repositories\LandmarkRepository;
+use App\Services\VenueService;
 use App\Services\PageService;
+use App\Services\LandmarkService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\MediaRepository;
 use App\Services\MediaService;
+use App\ViewModels\Home\ScheduleList;
+use App\ViewModels\Home\StartingPoints;
 
 class HomeController extends BaseController
 {
@@ -21,10 +27,14 @@ class HomeController extends BaseController
     private UserRepository $userRepository;
     private PageService $pageService;
     private PageRepository $pageRepository;
+    private LandmarkService $landmarkService;
+    private LandmarkRepository $landmarkRepository;
     private MediaService $mediaService;
     private MediaRepository $mediaRepository;
     private ScheduleRepository $scheduleRepository;
     private ScheduleService $scheduleService;
+    private VenueRepository $venueRepository;
+    private VenueService $venueService;
     public function __construct()
     {
         $this->userRepository = new UserRepository();
@@ -35,31 +45,46 @@ class HomeController extends BaseController
         $this->scheduleService = new ScheduleService($this->scheduleRepository);
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
+        $this->landmarkRepository = new LandmarkRepository();
+        $this->landmarkService = new LandmarkService($this->landmarkRepository);
+        $this->venueRepository = new VenueRepository();
+        $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
     }
 
     public function index($vars = [])
     {
         $eventFilter = $_GET['event']  ?? null;  
         $dateFilter = $_GET['date'] ?? null;
+        try{
+            $pageData = $this->pageService->getPageBySlug('home');
+            
+            $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
 
-        
-        $pageData = $this->pageService->getPageBySlug('home');
-        $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
+            $scheduleList = new ScheduleList($schedule);
 
-        
-        $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'schedule' => $schedule] );
+            $venues = $this->venueService->getAllVenues(); 
+            $landmarks = $this->landmarkService->getAllLandmarks();
+            $startingPoints = new StartingPoints($landmarks, $venues);
+
+            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
+        } catch (\Exception $e) {
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
     }
 
-    #[RequireRole([UserRole::ADMIN])]
-    public function adminIndex($vars = [])
+    public function getSchedulePartial($vars = [])
     {
-        $user = $this->userService->getUserById(5);
-        if ($user) {
-            $message = "Welcome back, " . $user->fname . "!";
-        } else {
-            $message = "User not found.";
+        $eventFilter = $_GET['event']  ?? null;  
+        $dateFilter = $_GET['date'] ?? null;
+        try{
+            $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
+
+            $scheduleList = new ScheduleList($schedule);
+            
+            echo require_once '/app/Views/Home/Components/ScheduleList.php';
+        } catch (\Exception $e) {
+            $this->internalServerError("Error loading schedule: " . $e->getMessage());
         }
-        $this->cmsLayout('Home/Landing', ['message' => $message, 'title' => 'The Festival Home', 'user' => $user]);
     }
 
     public function setTheme($vars = [])
@@ -83,101 +108,17 @@ class HomeController extends BaseController
         $this->view('Errors/404', ['title' => 'Page Not Found']);
     }
 
-    public function homePage($vars = [])
+    public function getStartingPoints($vars = [])
     {
-        header('Content-Type: application/json');
-        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
-
-        $pageData = $this->pageService->getPageBySlug('events-jazz');
-        echo json_encode($pageData);
-    }
-
-    public function updateHomePage($vars = [])
-    {
-
-        $pageData = $this->pageService->getPageBySlug('home');
-        $this->cmsLayout('Cms/UpdateHomepage', ['pageData' => $pageData, 'title' => 'Edit Home Page']);
-    }
-
-    public function updateHomePagePost($vars = [])
-    {
-        // Start session for messages
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+       
+        try {
+            $venues = $this->venueService->getAllVenues(); 
+            $landmarks = $this->landmarkService->getAllLandmarks();
+            $startingPoints = new StartingPoints($landmarks, $venues);
+            echo require_once '/app/Views/Home/Components/HomeMap.php';
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
         }
-
-        // Process section media uploads BEFORE processing post data
-        if (!empty($_FILES)) {
-            foreach ($_FILES as $key => $file) {
-                // Check if it's a section media upload (e.g., "section_media_0")
-                if (strpos($key, 'section_media_') === 0 && $file['error'] === UPLOAD_ERR_OK) {
-                    $sectionIndex = (int)str_replace('section_media_', '', $key);
-
-                    $existingMediaId = !empty($_POST['sections'][$sectionIndex]['media_id'])
-                        ? (int)$_POST['sections'][$sectionIndex]['media_id']
-                        : null;
-
-                    $altText = $_POST['sections'][$sectionIndex]['alt_text'] ?? 'Section image';
-                    $category = 'Home/Sections'; // ← Your folder structure
-
-                    // Upload or replace
-                    if ($existingMediaId) {
-                        $result = $this->mediaService->replaceMedia(
-                            $existingMediaId,
-                            $file,
-                            $category,
-                            $altText
-                        );
-
-                        if (!$result['success']) {
-                            $_SESSION['error'] = $result['error'];
-                            header('Location: /home-update');
-                            exit;
-                        }
-                    } else {
-                        $result = $this->mediaService->uploadAndCreate(
-                            $file,
-                            $category,
-                            $altText
-                        );
-
-                        // Update POST data with new media_id and file_path
-                        if ($result['success']) {
-                            $_POST['sections'][$sectionIndex]['media_id'] = $result['media']->media_id;
-                            $_POST['sections'][$sectionIndex]['file_path'] = $result['media']->file_path;
-                        } else {
-                            $_SESSION['error'] = $result['error'];
-                            header('Location: /home-update');
-                            exit;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Continue with existing page update logic
-        $pageData = new \App\CmsModels\Page();
-        $pageData->fromPostData($_POST);
-        $success = $this->pageService->updatePage($pageData);
-
-        if ($success) {
-            $_SESSION['success'] = 'Page updated successfully!';
-        } else {
-            $_SESSION['error'] = 'Failed to update page.';
-        }
-
-        header('Location: /home-update');
-        exit;
-    }
-
-    public function testJazz($vars = [])
-    {
-        $media = new \App\CmsModels\Page();
-        $this->view('Jazz/index', ['title' => 'Test Jazz Page', 'message' => "asdaksjfhlkasfj;asjd;kasjklas;LASJDF;ALS"]);
-    }
-
-    public function YummyHome($vars = [])
-    {
-        $this->view('Yummy/HomePage', ['id' => 1]);
     }
 }
