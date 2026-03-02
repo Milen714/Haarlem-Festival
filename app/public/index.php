@@ -47,10 +47,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
     /* Dance Event Route */
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
+    
     /* History Event Route */
     $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
-
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
+    $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
 
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
@@ -75,6 +76,18 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/venues/edit/{id:\d+}', ['App\Controllers\VenueController', 'edit']);
     $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
     $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
+
+    /*Landmark cms*/
+    $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
+
+    $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
+    $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
+
+    $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
+    $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
+    $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
+
+
 
     /* Legacy route for homepage (keep for backwards compatibility) */
     $r->addRoute('GET', '/home-update', function () {

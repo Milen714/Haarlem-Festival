@@ -1,5 +1,5 @@
 <?php
-namespace App\Models\History;
+namespace App\Models;
 
 use App\Models\Media;
 use App\Models\Gallery;

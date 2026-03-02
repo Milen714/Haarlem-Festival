@@ -23,6 +23,18 @@ class LandmarkController extends BaseController
         }
     }
 
+    #[RequireRole([UserRole::ADMIN])]
+    public function index(): void {
+        $this->startSession();
+        
+        $landmarks = $this->landmarkService->getAllLandmarks();
+    
+        $this->cmsLayout('Cms/Landmarks/Index', [
+            'title' => 'Manage Landmarks',
+            'landmarks' => $landmarks
+        ]);
+    }
+
     #[RequireRole([UserRole::ADMIN])] //show the view for the user 
     public function create($vars = []): void
     {

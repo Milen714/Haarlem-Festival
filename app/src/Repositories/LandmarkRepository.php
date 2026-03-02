@@ -2,16 +2,20 @@
 
 namespace App\Repositories;
 
-use App\Models\History\Landmark;
+use App\Models\Landmark;
 use App\Framework\Repository;
 use PDO;
 
 class LandmarkRepository extends Repository 
 {
+    public function __construct() {
+        $this->pdo = $this->connect();
+    }
+
     /** @return Landmark[] */
     public function getAll(): array
     {
-        $sql = "SELECT * FROM landmarks ORDER BY display_order ASC";
+        $sql = "SELECT * FROM LANDMARK ORDER BY display_order ASC";
         
         $stmt = $this->pdo->query($sql); 
         
@@ -27,7 +31,7 @@ class LandmarkRepository extends Repository
 
     public function getBySlug(string $slug): ?Landmark
     {
-        $sql = "SELECT * FROM landmarks WHERE landmark_slug = :slug LIMIT 1";
+        $sql = "SELECT * FROM LANDMARK WHERE landmark_slug = :slug LIMIT 1";
         
         $stmt = $this->pdo->prepare($sql);
         
@@ -48,7 +52,7 @@ class LandmarkRepository extends Repository
 
     public function insert(Landmark $landmark): Landmark
     {
-        $sql = "INSERT INTO landmarks (
+        $sql = "INSERT INTO LANDMARK (
                     event_id, name, short_description, landmark_slug, 
                     intro_title, intro_content, why_visit_title, why_visit_content, 
                     detail_history_title, detail_history_content, display_order
@@ -81,7 +85,7 @@ class LandmarkRepository extends Repository
 
     public function update(Landmark $landmark): Landmark
     {
-        $sql = "UPDATE landmarks SET 
+        $sql = "UPDATE LANDMARK SET 
                     event_id = :event_id,
                     name = :name,
                     short_description = :short_description,
@@ -117,7 +121,7 @@ class LandmarkRepository extends Repository
 
     public function delete(int $id): bool
     {
-        $sql = "DELETE FROM landmarks WHERE landmark_id = :id";
+        $sql = "DELETE FROM LANDMARK WHERE landmark_id = :id";
         $stmt = $this->pdo->prepare($sql);
         
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);

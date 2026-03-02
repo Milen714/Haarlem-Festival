@@ -25,10 +25,8 @@ class HistoryController extends BaseController
                 return;
             }
 
-            // Título de la página
             $title = $pageData->title; 
 
-            // Extraemos y clasificamos las secciones
             $sections = $pageData->content_sections ?? [];
             $hero = null;
             $welcome = null;
@@ -44,12 +42,12 @@ class HistoryController extends BaseController
                 } elseif ($type === 'bookTour') {
                     $bookTour = $s;
                 }
-                elseif ($type === 'hero_picture') { // <--- 2. Atrapamos el Hero
+                elseif ($type === 'hero_picture') { 
                     $hero = $s;
                 }
             }
 
-            // Pasamos los datos empaquetados a la vista
+            
             $this->view('History/HistoryHomepage', [
                 'pageData'  => $pageData,
                 'hero'      => $hero,
@@ -79,8 +77,8 @@ class HistoryController extends BaseController
             $tourInfo = null;
             $cta = null;
             $tickets = null;
-            $tourFeatures = [];     // <-- NUEVO: Para las 4 tarjetas
-            $goodToKnow= null;  // <-- NUEVO: Para la lista
+            $tourFeatures = [];     
+            $goodToKnow= null; 
 
             
             foreach ($sections as $s) {
@@ -92,9 +90,9 @@ class HistoryController extends BaseController
                 } elseif ($type === 'article') {
                     $tickets = $s;
                 } elseif ($type === 'tour_features') {
-                    $tourFeatures[] = $s; // <-- Atrapamos las tarjetas
+                    $tourFeatures[] = $s; 
                 } elseif ($type === 'good_to_know') {
-                    $goodToKnow = $s; // <-- Atrapamos las reglas
+                    $goodToKnow = $s; 
                 }
                 
             }
@@ -105,8 +103,8 @@ class HistoryController extends BaseController
                 'tourInfo'        => $tourInfo,
                 'cta'             => $cta,
                 'tickets'         => $tickets,
-                'tourFeatures'    => $tourFeatures,    // Pasamos a la vista
-                'goodToKnow' => $goodToKnow  // Pasamos a la vista
+                'tourFeatures'    => $tourFeatures,    
+                'goodToKnow' => $goodToKnow  
             ]);
 
         } catch (\Exception $e) {
@@ -114,5 +112,7 @@ class HistoryController extends BaseController
             $this->internalServerError();
         }
     }
+
 }
+
 

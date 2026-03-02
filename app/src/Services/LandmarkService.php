@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Repositories\LandmarkRepository;
 use App\Services\MediaService; 
-use App\Models\History\Landmark;
+use App\Models\Landmark;
 
 class LandmarkService
 {
@@ -96,7 +96,7 @@ class LandmarkService
             throw new \Exception("Landmark not found.");
         }
 
-        $this->landmarkRepository->delete($existingLandmark->id);
+        $this->landmarkRepository->delete($existingLandmark->landmark_id);
     }
 
     //convert a normal name into a landmark slug
