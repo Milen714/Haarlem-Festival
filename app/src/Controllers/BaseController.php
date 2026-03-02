@@ -15,7 +15,8 @@ class BaseController
         $content = ob_get_clean();
         
         // Load the layout with the content
-        extract(array_merge($vars, ['content' => $content]));
+        $layoutVars = array_merge($vars, ['content' => $content]);
+        extract($layoutVars);
         require __DIR__ . '/../../Views/' . $layout . '.php';
         // The layout will use the $content variable to display the view content in the main tag 
         //Layout is foooter and header around the content
@@ -61,7 +62,8 @@ class BaseController
         $content = ob_get_clean();
         
         // Load the layout with the content
-        extract(array_merge($vars, ['content' => $content]));
+        $layoutVars = array_merge($vars, ['content' => $content]);
+        extract($layoutVars);
         require __DIR__ . '/../../Views/' . $layout . '.php';
         // The layout will use the $content variable to display the view content in the main tag 
         //Layout is foooter and header around the content
