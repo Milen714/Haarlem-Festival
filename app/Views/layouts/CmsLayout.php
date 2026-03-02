@@ -14,8 +14,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
     <title><?php echo $title ?? 'CMS Dashboard'; ?></title>
     <link rel="icon" type="image/svg+xml" href="/Assets/Favicon.svg">
     <link rel="stylesheet" href="/css/output.css">
-    <script src="https://cdn.tiny.cloud/1/<?php echo $_ENV['TINYMCE_API_KEY']; ?>/tinymce/8/tinymce.min.js"
-        referrerpolicy="origin" crossorigin="anonymous"></script>
+    <script src="/vendor/tinymce/tinymce/tinymce.min.js"></script>
     <style>
     .cms-nav-link:hover {
         background-color: #374151;
