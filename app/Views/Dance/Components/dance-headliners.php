@@ -4,12 +4,12 @@
 ?>
 <section class="mb-24">
     <h2 class="inline-block text-[var(--dance-tag-color-1)] text-2xl font-bold uppercase tracking-widest border-b-2 border-[#FFB8B8] mb-8 pb-2">
-        <?= htmlspecialchars($headLinerSection[0]->title ?? 'Headliners') ?>
+        <?= htmlspecialchars($headLinerSection->title ?? 'Headliners') ?>
     </h2>
     
-    <?php if (isset($headLinerSection[0]) && $headLinerSection[0]->content_html): ?>
-    <div class="text-gray-300 max-w-4xl mb-12 leading-relaxed font-roboto">
-        <?= $headLinerSection[0]->content_html ?>
+    <?php if ($headLinerSection->content_html): ?>
+    <div class="mb-12">
+        <?= $headLinerSection->content_html ?>
     </div>
     <?php endif; ?>
     
