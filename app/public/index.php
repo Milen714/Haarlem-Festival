@@ -42,8 +42,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
     $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
     $r->addRoute('GET', '/events-magic-lorentz-show', ['App\Controllers\MagicController', 'lorentzFormula']);
+
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
+    $r->addRoute('GET', '/events-jazz/artist/{slug}', ['App\Controllers\JazzArtistController', 'detail']);
+   
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
 
