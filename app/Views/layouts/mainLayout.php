@@ -1,6 +1,7 @@
 <?php
 $theme = $_COOKIE['theme'] ?? 'light';
 $darkClass = $theme === 'dark' ? 'dark' : '';
+$content = $content ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="<?php echo $darkClass ?>">
