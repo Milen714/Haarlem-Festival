@@ -17,7 +17,5 @@ namespace App\Views\History;
         <?php include __DIR__ . '/Components/TourReadMore.php'; ?>
 
 
-        <?php include __DIR__ . '/Components/TourTickets.php'; ?>
-
     </div>
 </div>

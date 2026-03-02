@@ -1,14 +1,17 @@
-<?php /** @var string $title */ ?>
-<section class="relative w-full overflow-hidden">
-    <div class="absolute inset-0">
-        <img src="/Assets/History/History_Hero_Tour.png" alt="Tour Hero" class="w-full h-[46vh] min-h-[320px] object-cover object-center"/>
-        <div class="absolute inset-0 bg-black/40"></div>
-    </div>
-    <div class="relative z-10 mx-auto flex h-[46vh] min-h-[320px] max-w-[1100px] items-center px-4">
-        <div>
-            <h1 class="font-serif text-white text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-md">
-                <?= htmlspecialchars($title) ?>
-            </h1>
-        </div>
+<?php
+/** @var App\CmsModels\PageSection $hero */ // <--- Declaramos la variable
+?>
+
+<section class="relative w-full bg-black overflow-hidden">
+    <img src="<?= htmlspecialchars($hero->media->file_path) ?>" 
+         alt="Haarlem History Hero" 
+         class="w-full h-auto block object-cover" />
+
+    <div class="absolute inset-0 z-10" style="background-color: rgba(0, 0, 0, 0.4);"></div>
+
+    <div class="absolute inset-0 z-20 flex flex-col items-center justify-center p-4">
+        <h1 class="text-white text-center font-serif text-4xl md:text-5xl lg:text-6xl drop-shadow-md history-hero-title">
+            <?= htmlspecialchars($hero->title) ?>
+        </h1>
     </div>
 </section>

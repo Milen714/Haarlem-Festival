@@ -44,7 +44,7 @@ class HistoryController extends BaseController
                     $welcome = $s;
                 } elseif ($type === 'landmark') {
                     $landmarks[] = $s;
-                } elseif ($type === 'bookTour') {
+                } elseif ($type === 'book_tour') {
                     $bookTour = $s;
                 }
                 elseif ($type === 'hero_picture') { 
@@ -79,6 +79,7 @@ class HistoryController extends BaseController
             }
 
             $sections = $pageData->content_sections ?? [];
+            $hero = null;
             $tourInfo = null;
             $cta = null;
             $tickets = null;
@@ -88,6 +89,9 @@ class HistoryController extends BaseController
             
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
+                if ($type === 'hero_picture') { 
+                    $hero = $s;
+                }
                 if ($type === 'text') {
                     $tourInfo = $s;
                 } elseif ($type === 'cta_block') {
@@ -104,7 +108,7 @@ class HistoryController extends BaseController
 
             $this->view('History/HistoryTour', [
                 'pageData'        => $pageData,
-                'title'           => $pageData->title,
+                'hero'            => $hero,
                 'tourInfo'        => $tourInfo,
                 'cta'             => $cta,
                 'tickets'         => $tickets,

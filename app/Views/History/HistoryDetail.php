@@ -10,21 +10,20 @@ $introImage = '/Assets/Home/ImagePlaceholder.png';
 $historyImage = '/Assets/Home/ImagePlaceholder.png';
 $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
 
+
 if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
-    
-    // Imagen 1 para la Introducción (Índice 0)
-    if (isset($landmark->gallery->media_items[0]) && !empty($landmark->gallery->media_items[0]->media)) {
-        $introImage = '/' . $landmark->gallery->media_items[0]->media->file_path;
+    $items = array_values($landmark->gallery->media_items);
+
+    if (isset($items[0]) && !empty($items[0]->media)) {
+        $introImage = '/' . ltrim($items[0]->media->file_path, '/');
     }
 
-    // Imagen 2 para la Historia (Índice 1)
-    if (isset($landmark->gallery->media_items[1]) && !empty($landmark->gallery->media_items[1]->media)) {
-        $historyImage = '/' . $landmark->gallery->media_items[1]->media->file_path;
+    if (isset($items[1]) && !empty($items[1]->media)) {
+        $historyImage = '/' . ltrim($items[1]->media->file_path, '/');
     }
     
-    // Imagen 3 para Why to visit (Índice 2)
-    if (isset($landmark->gallery->media_items[2]) && !empty($landmark->gallery->media_items[2]->media)) {
-        $whyVisitImage = '/' . $landmark->gallery->media_items[2]->media->file_path;
+    if (isset($items[2]) && !empty($items[2]->media)) {
+        $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
     }
 }
 ?>
