@@ -103,6 +103,7 @@ $eventType = $eventType ?? null;
 tinymce.init({
     selector: '.tinymce',
     menubar: false,
+    license: 'gpl',
     plugins: 'autoresize link lists image',
     toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link | image',
     extended_valid_elements: 'button[type|class|data-accordion-trigger|aria-expanded],div[class|data-accordion-root],span[class]',

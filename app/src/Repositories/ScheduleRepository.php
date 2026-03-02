@@ -85,7 +85,13 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 restaurant_media.file_path as restaurant_media_file_path,
                 restaurant_media.alt_text as restaurant_media_alt_text,
                 
-                -- Landmark fields
+                -- Restaurant Media fields
+                restaurant_media.media_id as restaurant_media_id,
+                restaurant_media.file_path as restaurant_media_file_path,
+                restaurant_media.alt_text as restaurant_media_alt_text,
+                
+               
+                -- Landmark fields (DB-compatible + keeps expected aliases)
                 l.landmark_id,
                 l.name as landmark_name,
                 l.name as landmark_title,

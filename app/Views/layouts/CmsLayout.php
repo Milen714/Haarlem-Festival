@@ -1,4 +1,7 @@
 <?php
+namespace App\Views\Layouts;
+$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+$dotenv->safeLoad();
 $theme = $_COOKIE['theme'] ?? 'light';
 $darkClass = $theme === 'dark' ? 'dark' : '';
 ?>
@@ -11,8 +14,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
     <title><?php echo $title ?? 'CMS Dashboard'; ?></title>
     <link rel="icon" type="image/svg+xml" href="/Assets/Favicon.svg">
     <link rel="stylesheet" href="/css/output.css">
-    <script src="https://cdn.tiny.cloud/1/izaw3cfuhwr9o3hizpp56ktag8lop5clrfm2dilay7rrctej/tinymce/8/tinymce.min.js"
-        referrerpolicy="origin" crossorigin="anonymous"></script>
+    <script src="/vendor/tinymce/tinymce/tinymce.min.js"></script>
     <style>
     .cms-nav-link:hover {
         background-color: #374151;
