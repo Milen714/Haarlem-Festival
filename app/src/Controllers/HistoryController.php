@@ -4,15 +4,20 @@ namespace App\Controllers;
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;          
 use App\Repositories\PageRepository;
+use App\Controllers\BaseController;
+use App\Services\LandmarkService;
 
 class HistoryController extends BaseController
 {
     private PageService $pageService;
+    private LandmarkService $landmarkService;
+
     const HISTORY_SLUG = 'events-history'; 
 
     public function __construct()
     {
         $this->pageService = new PageService(new PageRepository());
+        $this->landmarkService = new LandmarkService();
     }
 
     public function index($vars = [])
@@ -111,6 +116,24 @@ class HistoryController extends BaseController
             error_log("History Tour error: " . $e->getMessage());
             $this->internalServerError();
         }
+    }
+
+    /** @param array $vars */
+    public function detail(array $vars): void
+    {
+        $slug = $vars['slug'] ?? '';
+        
+        $landmark = $this->landmarkService->getLandmarkBySlug($slug);
+
+        if (!$landmark) {
+            $this->notFound(); 
+            return;
+        }
+
+        $this->view('History/HistoryDetail', [
+            'title' => $landmark->name . ' - Haarlem History',
+            'landmark' => $landmark
+        ]);
     }
 
 }

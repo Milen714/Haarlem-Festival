@@ -11,16 +11,20 @@ $historyImage = '/Assets/Home/ImagePlaceholder.png';
 $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
 
 if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
+    
+    // Imagen 1 para la Introducción (Índice 0)
     if (isset($landmark->gallery->media_items[0]) && !empty($landmark->gallery->media_items[0]->media)) {
-        $introImage = $landmark->gallery->media_items[0]->media->file_path;
+        $introImage = '/' . $landmark->gallery->media_items[0]->media->file_path;
     }
 
-    if (isset($landmark->gallery->media_items[1]) && !empty($landmark->gallery->media_items[0]->media)) {
-        $historyImage = $landmark->gallery->media_items[0]->media->file_path;
+    // Imagen 2 para la Historia (Índice 1)
+    if (isset($landmark->gallery->media_items[1]) && !empty($landmark->gallery->media_items[1]->media)) {
+        $historyImage = '/' . $landmark->gallery->media_items[1]->media->file_path;
     }
     
-    if (isset($landmark->gallery->media_items[2]) && !empty($landmark->gallery->media_items[1]->media)) {
-        $whyVisitImage = $landmark->gallery->media_items[1]->media->file_path;
+    // Imagen 3 para Why to visit (Índice 2)
+    if (isset($landmark->gallery->media_items[2]) && !empty($landmark->gallery->media_items[2]->media)) {
+        $whyVisitImage = '/' . $landmark->gallery->media_items[2]->media->file_path;
     }
 }
 ?>
@@ -42,9 +46,6 @@ if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
             <h1 class="text-5xl md:text-6xl font-bold text-ink-900 font-history-serif mb-2">
                 <?= htmlspecialchars($landmark->name ?? '') ?>
             </h1>
-            <p class="text-xl md:text-2xl text-brand-600 font-semibold">
-                <?= htmlspecialchars($landmark->short_description ?? '') ?>
-            </p>
         </div>
     </div>
 
