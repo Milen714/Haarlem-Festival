@@ -53,7 +53,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
     $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
-    
+    $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
+    $r->addRoute('GET', '/events-yummy/restaurants/{slug}', ['App\Controllers\YummyController', 'restaurantDetail']);
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
     $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);

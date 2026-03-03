@@ -15,9 +15,9 @@ class RestaurantService implements IRestaurantService
         $this->restaurantRepository = $restaurantRepository;
     }
 
-    public function getAllRestaurants(): array
+    public function getAllRestaurants(int $eventId, ?int $cuisineId = null): array
     {
-        return $this->restaurantRepository->getAllRestaurants();
+        return $this->restaurantRepository->getAllRestaurants($eventId, $cuisineId);
     }
 
     public function getRestaurantById(int $id): ?Restaurant

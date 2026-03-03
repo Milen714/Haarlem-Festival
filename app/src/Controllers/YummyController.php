@@ -18,6 +18,8 @@ use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\MediaRepository;
 use App\Services\MediaService;
+use App\Src\Repositories\CuisineRepository;
+use App\Src\Services\CuisineService;
 
 class YummyController extends BaseController
 {
@@ -34,6 +36,9 @@ class YummyController extends BaseController
     private VenueService $venueService;
     private VenueRepository $venueRepository;
 
+    private CuisineService $cuisineService;
+
+    private CuisineRepository $cuisineRepository;
     
     public function __construct()
     {
@@ -49,6 +54,8 @@ class YummyController extends BaseController
         $this->restaurantService = new RestaurantService($this->restaurantRepository);
         $this->venueRepository = new VenueRepository();
         $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
+        $this->cuisineRepository = new CuisineRepository();
+        $this->cuisineService = new CuisineService($this->cuisineRepository);
     }
     public function index()
     {
@@ -107,4 +114,52 @@ class YummyController extends BaseController
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
     }
+
+    public function displayRestaurants(){
+        try{
+            $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants');
+            
+            
+            if (!$pageData) {
+                error_log("Yummy page data not found for slug: events-yummy-restaurants");
+                $this->notFound();
+                return;
+            }
+
+            $eventId = $pageData->event_category->event_id;
+            $cuisineId = isset($_GET['cuisine']) ? (int)$_GET['cuisine'] : null;
+            $restaurants = $this->restaurantService->getAllRestaurants($eventId, $cuisineId);
+            $cuisines = $this->cuisineService->getCuisines();
+            $this->view('Yummy/restaurants', [
+                'restaurants' => $restaurants,
+                'cuisines' => $cuisines,
+                'selectedCuisine' => $cuisineId
+            ]);
+
+             
+        }
+        catch(\Exception $e){
+            error_log("Error in YummyController index method: " . $e->getMessage());
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
+    }
+
+    // public function restaurantDetail(){
+    //     try{
+    //         $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants-restaurant');
+            
+            
+    //         if (!$pageData) {
+    //             error_log("Yummy page data not found for slug: events-yummy-restaurants");
+    //             $this->notFound();
+    //             return;
+    //         }
+
+    //          $cuisines = $this->cuisineService->getCuisineByRestaurant($restaurantId);
+    //     }
+    //     catch(\Exception $e){
+    //         error_log("Error in YummyController index method: " . $e->getMessage());
+    //         $this->internalServerError("Error loading homepage: " . $e->getMessage());
+    //     }
+    // }
 }

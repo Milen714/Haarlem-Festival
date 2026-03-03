@@ -13,54 +13,94 @@ use PDOException;
 class RestaurantRepository extends Repository implements IRestaurantRepository
 {
     
-    public function getAllRestaurants(): array{
+    public function getAllRestaurants(int $eventId, ?int $cuisineId = null): array{
         $pdo = $this->connect();
         $sql = "
             SELECT 
-            r.restaurant_id,
-            r.event_id,
-            r.venue_id,
-            r.head_chef_id,
-            r.name AS restaurant_name,
-            r.short_description AS restaurant_short_description,
-            r.welcome_text AS restaurant_welcome_text,
-            r.price_category AS restaurant_price_category,
-            r.stars AS restaurant_stars,
-            r.review_count AS restaurant_review_count,
-            r.website_url AS restaurant_website_url,
-            r.deleted_at,
-            m.media_id AS main_image_id,
-            m.file_path AS restaurant_image_path,
-            m.alt_text AS restaurant_image_alt,
-            v.venue_id AS venue_id,
-            v.name AS venue_name,
-            v.address AS venue_address,
-            v.city AS venue_city,
-            v.postal_code AS venue_postal_code,
-            gm.media_id AS gallery_media_id,
-            gm.file_path AS gallery_image_path,
-            gm.alt_text AS gallery_image_alt
+                r.restaurant_id,
+                r.event_id,
+                r.venue_id,
+                r.head_chef_id,
+                r.name AS restaurant_name,
+                r.short_description AS restaurant_short_description,
+                r.welcome_text AS restaurant_welcome_text,
+                r.price_category AS restaurant_price_category,
+                r.stars AS restaurant_stars,
+                r.review_count AS restaurant_review_count,
+                r.website_url AS restaurant_website_url,
+                r.deleted_at,
+
+                -- Main Image
+                m.media_id AS main_image_id,
+                m.file_path AS restaurant_image_path,
+                m.alt_text AS restaurant_image_alt,
+
+                -- Venue
+                v.venue_id AS venue_id,
+                v.name AS venue_name,
+                v.address AS venue_address,
+                v.city AS venue_city,
+                v.postal_code AS venue_postal_code,
+
+                -- Cuisine
+                c.cuisine_id,
+                c.name AS cuisine_name
+
             FROM RESTAURANT r
+
             LEFT JOIN MEDIA m 
                 ON r.main_image_id = m.media_id
+
             LEFT JOIN VENUE v 
                 ON r.venue_id = v.venue_id
-            LEFT JOIN GALLERY g 
-                ON r.restaurant_id = g.restaurant_id
-            LEFT JOIN MEDIA gm 
-                ON g.media_id = gm.media_id
-            WHERE r.deleted_at IS NULL
-            ORDER BY r.restaurant_id;
-        ";
-        try {
-            $stmt = $pdo->query($sql);
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            $restaurants = [];
-            foreach ($results as $row) {
-                $restaurant = new Restaurant();
-                $restaurant->fromPDOData($row);
-                $restaurants[] = $restaurant;
+            LEFT JOIN RESTAURANT_CUISINE rc
+                ON r.restaurant_id = rc.restaurant_id
+
+            LEFT JOIN CUISINE_TYPE c
+                ON rc.cuisine_id = c.cuisine_id
+
+            WHERE r.event_id = :event_id
+            AND r.deleted_at IS NULL
+        ";
+
+        if ($cuisineId !== null) {
+            $sql .= " AND rc.cuisine_id = :cuisine_id";
+        }
+
+        $sql .= " ORDER BY r.restaurant_id";
+            try {
+                $stmt = $pdo->query($sql);
+                $params = ['event_id' => $eventId];
+
+                if($cuisineId !== null){
+                    $params['cuisine_id'] = $cuisineId;
+                }
+
+                $stmt->execute($params);
+                
+                $restaurants = [];
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+
+                $id = $row['restaurant_id'];
+
+                if (!isset($restaurants[$id])) {
+
+                    $restaurant = new Restaurant();
+                    $restaurant->fromPDOData($row);
+
+                    $restaurant->cuisines = [];
+
+                    $restaurants[$id] = $restaurant;
+                }
+
+                // Add cuisines (avoid duplicates)
+                if (!empty($row['cuisine_id'])) {
+                    $restaurants[$id]->cuisines[$row['cuisine_id']] = [
+                        'id' => $row['cuisine_id'],
+                        'name' => $row['cuisine_name']
+                    ];
+                }
             }
             return $restaurants;
         } catch (PDOException $e) {
@@ -70,10 +110,13 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
 
     }
+
+    
     public function getRestaurantById(int $id): ?Restaurant{
         $pdo = $this->connect();
         $sql = "
             SELECT 
+           
             r.restaurant_id,
             r.event_id,
             r.venue_id,
@@ -86,32 +129,77 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.review_count AS restaurant_review_count,
             r.website_url AS restaurant_website_url,
             r.deleted_at,
+
+            
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
-            m.alt_text AS restaurant_image_alt
-        FROM RESTAURANT r
-        LEFT JOIN MEDIA m ON r.main_image_id = m.media_id
-        WHERE r.restaurant_id = :restaurant_id
-        AND r.deleted_at IS NULL
+            m.alt_text AS restaurant_image_alt,
+
+            
+            v.venue_id,
+            v.name AS venue_name,
+            v.address AS venue_address,
+            v.city AS venue_city,
+            v.postal_code AS venue_postal_code,
+
+            
+            c.cuisine_id,
+            c.name AS cuisine_name,
+
+            
+            gm.media_id AS gallery_media_id,
+            gm.file_path AS gallery_image_path,
+            gm.alt_text AS gallery_image_alt
+
+            FROM RESTAURANT r
+
+            LEFT JOIN MEDIA m 
+                ON r.main_image_id = m.media_id
+
+            LEFT JOIN VENUE v 
+                ON r.venue_id = v.venue_id
+
+            LEFT JOIN RESTAURANT_CUISINE rc
+                ON r.restaurant_id = rc.restaurant_id
+
+            LEFT JOIN CUISINE_TYPE c
+                ON rc.cuisine_id = c.cuisine_id
+
+            LEFT JOIN GALLERY g
+                ON r.restaurant_id = g.restaurant_id
+
+            LEFT JOIN MEDIA gm
+                ON g.media_id = gm.media_id
+
+            WHERE r.restaurant_id = :restaurant_id
+            AND r.deleted_at IS NULL
         ";
 
         try {
             $stmt = $pdo->prepare($sql);
 
-            $restaurants = [];
+            $restaurant = null;
 
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                 $id = $row['restaurant_id'];
-                if (!isset($restaurants[$id])) {
+                if ($restaurant === null || $restaurant->restaurant_id !== $id) {
                     $restaurant = new Restaurant();
                     $restaurant->fromPDOData($row);
 
-                    $restaurant->gallery = new Gallery();
-                    $restaurant->gallery->media_items = [];
-                    $restaurants[$id] = $restaurant;
+                    $restaurant->cuisines = [];
+                    $galleryItems = [];
+                }
+                //adds cusines
+                if(!empty($row['cuisine_id'])){
+                    $restaurant->cuisines[$row['cuisine_id']] = [
+                        'id' => $row['cuisine_id'],
+                        'name' => $row['cuisine_name'],
+                        'icon' => $row['']
+                    ];
                 }
 
-                if ($row['main_image_id']) {
+                //adds gallery
+                if ($row['gallery_media_id']) {
                      $media = new Media();
                     $media->fromPDOData([
                         'media_id' => $row['gallery_media_id'],
@@ -119,11 +207,16 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                         'alt_text' => $row['gallery_image_alt'],
                     ]);
 
-                    $restaurants[$id]->gallery->media_items[] = $media;
+                    $galleryItems[$row['gallery_media_id']] = $media;
+                }
+
+                if($restaurant){
+                    $restaurant->cuisines = array_values($restaurant->cuisines);
+                    
                 }
             }
 
-            return $restaurants[$id] ?? null;
+            return $restaurant;
 
         } catch (PDOException $e) {
             // Log error or handle as needed

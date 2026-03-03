@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Media;
 use App\Models\Gallery;
 use App\Models\Venue;
+use App\Models\Cuisine;
 
 class Restaurant
 {
@@ -20,6 +21,7 @@ class Restaurant
     public ?int $review_count = null;
     public ?Media $main_image = null;
     public ?Gallery $gallery = null;
+    public ?array $cuisines = [];
     public ?string $course_details_html = null;
     public ?string $special_notes_html = null;
     public ?string $website_url = null;
@@ -58,6 +60,18 @@ class Restaurant
                 'file_path' => $data['restaurant_image_path'] ?? null,
                 'alt_text' => $data['restaurant_image_alt'] ?? null,
             ]);
+        }
+
+        if (isset($data['cuisine_id']) && $data['cuisine_id'] !== null) {
+            $cuisine = new Cuisine();
+            $cuisine->fromPDOData([
+                'cuisine_id' => $data['cuisine_id'],
+                'name' => $data['cuisine_name'] ?? null,
+                'description' => $data['cuisine_description'] ?? null,
+                'icon_url' => $data['cuisine_icon_url'] ?? null
+            ]);
+
+            $this->cuisines[$data['cuisine_id']] = $cuisine;
         }
     }
 
