@@ -122,8 +122,15 @@ class HomeController extends BaseController
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
-    public function test($vars = [])
+    public function getScheduleDates($vars = [])
     {
-        $this->view('Cms/CmsPreviewTest', ['title' => 'Test Page']);
+        header('Content-Type: application/json');
+        try {
+            $dates = $this->scheduleService->getAvailableDates();
+            echo json_encode(['success' => true, 'dates' => $dates], JSON_PRETTY_PRINT);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }

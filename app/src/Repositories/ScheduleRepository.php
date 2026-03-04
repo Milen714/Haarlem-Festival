@@ -293,4 +293,20 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         
         return $schedule;
     }
+    public function getAvailableDates(): array
+    {
+        try {
+            $pdo = $this->connect();
+            
+            $query = "SELECT DISTINCT date FROM SCHEDULE WHERE date >= CURDATE() ORDER BY date ASC";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute();
+            
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return array_map(fn($row) => $row['date'], $rows);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching available dates: " . $e->getMessage());
+        }
+    }
 }
