@@ -126,6 +126,9 @@ class UserController extends BaseController
 
             $user->is_active = isset($_POST['is_active']);
             $user->is_verified = isset($_POST['is_verified']);
+            if (!empty($data['password'])) {
+                $user->password_hash = password_hash($data['password'], PASSWORD_BCRYPT);
+            }
             $user->fname = $data['fname'] ?? $user->fname;
             $user->lname = $data['lname'] ?? $user->lname;
             $user->phone = $data['phone'] ?? $user->phone;

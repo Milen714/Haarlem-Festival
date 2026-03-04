@@ -92,10 +92,4 @@ use App\CmsModels\Enums\SectionType;
         </article>
         <?php endif; ?>
     </div>
-
-    <?php
-    if ($section->section_type === SectionType::event_left || $section->section_type === SectionType::event_right) {
-        $isReverse = $section->section_type === SectionType::event_right;
-        include __DIR__ . '/../../Home/Components/EventCard.php';
-    } ?>
 </section>
