@@ -80,6 +80,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
     $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
 
+    /* CMS User Management*/
+    $r->addRoute('GET', '/cms/users', ['App\Controllers\UserController', 'index']);
+    $r->addRoute('GET', '/cms/users/create', ['App\Controllers\UserController', 'create']);
+    $r->addRoute('POST', '/cms/users/store', ['App\Controllers\UserController', 'store']);
+    $r->addRoute('GET', '/cms/users/edit/{id:\d+}', ['App\Controllers\UserController', 'edit']);
+    $r->addRoute('POST', '/cms/users/update/{id:\d+}', ['App\Controllers\UserController', 'update']);
+    $r->addRoute('POST', '/cms/users/delete/{id:\d+}', ['App\Controllers\UserController', 'delete']);
+
     /* Legacy route for homepage (keep for backwards compatibility) */
     $r->addRoute('GET', '/home-update', function () {
         header('Location: /cms/page/edit/home');
