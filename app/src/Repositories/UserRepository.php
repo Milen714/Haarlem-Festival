@@ -51,8 +51,16 @@ class UserRepository extends Repository implements IUserRepository{
 	}
 	
 	public function getAllUsers(): array {
-		
-		return [];
+		try{
+            $pdo = $this->connect();
+            $query = 'SELECT * FROM users';
+            $stmt = $pdo->query($query);
+            $usersData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return array_map([$this, 'mapUser'], $usersData);
+        }catch(PDOException $e){
+            die("Error fetching users: " . $e->getMessage());
+        }
 	}
 	
 	public function getUserByEmail(string $email): ?User {
@@ -126,4 +134,16 @@ class UserRepository extends Repository implements IUserRepository{
             throw new \Exception("Error updating user: " . $e->getMessage());
         }
 	}
+
+    public function deleteUser(int $id): bool {
+        try {
+            $pdo = $this->connect();
+            $query = 'DELETE FROM users WHERE id = :id';
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new \Exception("Error deleting user: " . $e->getMessage());
+        }
+    }
 }

@@ -36,4 +36,7 @@ class UserService implements IUserService{
     public function updateUser(User $user): bool {
         return $this->userRepository->updateUser($user);
     }
+    public function deleteUser(int $id): bool {
+        return $this->userRepository->deleteUser($id);
+    }
 }

@@ -79,9 +79,11 @@ class DanceController extends BaseController
             $headLinerSection = array_filter($pageData->content_sections ?? [], function($section) {
                 return stripos($section->title, 'The 2025 Headliners') !== false;
                 });
+            $headLinerSection = array_shift($headLinerSection);
             $schedulesSection = array_filter($pageData->content_sections ?? [], function($section) {
                 return stripos($section->title, 'Schedule') !== false;
             });
+            $schedulesSection = array_shift($schedulesSection);
 
             $viewModel = new \App\ViewModels\Dance\LineupViewModel($pageData);
             $this->view('Dance/lineup', [

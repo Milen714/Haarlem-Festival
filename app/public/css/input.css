@@ -121,7 +121,13 @@
         @apply block w-min rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700;
     }
 
-
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
     /* SPINNER 🔄*/
 
     #spinner:not(.hidden) {

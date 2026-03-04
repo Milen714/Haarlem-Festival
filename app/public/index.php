@@ -37,13 +37,17 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
+    $r->addRoute('GET', '/getScheduleDates', ['App\Controllers\HomeController', 'getScheduleDates']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
     $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
     $r->addRoute('GET', '/events-magic-lorentz-show', ['App\Controllers\MagicController', 'lorentzFormula']);
+
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
+    $r->addRoute('GET', '/events-jazz/artist/{slug}', ['App\Controllers\JazzArtistController', 'detail']);
+   
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
     $r->addRoute('GET', '/events-dance/lineup', ['App\Controllers\DanceController', 'lineUp']);
@@ -75,6 +79,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/venues/edit/{id:\d+}', ['App\Controllers\VenueController', 'edit']);
     $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
     $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
+
+    /* CMS User Management*/
+    $r->addRoute('GET', '/cms/users', ['App\Controllers\UserController', 'index']);
+    $r->addRoute('GET', '/cms/users/create', ['App\Controllers\UserController', 'create']);
+    $r->addRoute('POST', '/cms/users/store', ['App\Controllers\UserController', 'store']);
+    $r->addRoute('GET', '/cms/users/edit/{id:\d+}', ['App\Controllers\UserController', 'edit']);
+    $r->addRoute('POST', '/cms/users/update/{id:\d+}', ['App\Controllers\UserController', 'update']);
+    $r->addRoute('POST', '/cms/users/delete/{id:\d+}', ['App\Controllers\UserController', 'delete']);
 
     /* Legacy route for homepage (keep for backwards compatibility) */
     $r->addRoute('GET', '/home-update', function () {

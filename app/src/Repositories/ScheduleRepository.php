@@ -85,7 +85,13 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 restaurant_media.file_path as restaurant_media_file_path,
                 restaurant_media.alt_text as restaurant_media_alt_text,
                 
-                -- Landmark fields
+                -- Restaurant Media fields
+                restaurant_media.media_id as restaurant_media_id,
+                restaurant_media.file_path as restaurant_media_file_path,
+                restaurant_media.alt_text as restaurant_media_alt_text,
+                
+               
+                -- Landmark fields (DB-compatible + keeps expected aliases)
                 l.landmark_id,
                 l.name as landmark_name,
                 l.name as landmark_title,
@@ -286,5 +292,21 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
         
         return $schedule;
+    }
+    public function getAvailableDates(): array
+    {
+        try {
+            $pdo = $this->connect();
+            
+            $query = "SELECT DISTINCT date FROM SCHEDULE WHERE date >= CURDATE() ORDER BY date ASC";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute();
+            
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return array_map(fn($row) => $row['date'], $rows);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching available dates: " . $e->getMessage());
+        }
     }
 }
