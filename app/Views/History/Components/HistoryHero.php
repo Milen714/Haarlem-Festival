@@ -1,10 +1,11 @@
 <?php
-/** @var App\CmsModels\PageSection $hero */ // <--- Declaramos la variable
+/** @var App\CmsModels\PageSection|null $hero */ 
 ?>
 
+<?php if ($hero): ?>
 <section class="relative w-full bg-black overflow-hidden">
     <img src="<?= htmlspecialchars($hero->media->file_path ?? '/Assets/History/History_Hero_Homepage.png') ?>" 
-         alt="Haarlem History Hero" 
+         alt="<?= htmlspecialchars($hero->title ?? 'Haarlem History') ?>" 
          class="w-full h-auto block object-cover" />
 
     <div class="absolute inset-0 z-10" style="background-color: rgba(0, 0, 0, 0.4);"></div>
@@ -15,5 +16,4 @@
         </h1>
     </div>
 </section>
-
-        
+<?php endif; ?>

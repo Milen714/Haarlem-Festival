@@ -89,10 +89,8 @@ class HistoryController extends BaseController
             
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
-                if ($type === 'hero_picture') { 
-                    $hero = $s;
-                }
-                if ($type === 'text') {
+                
+                  if ($type === 'text') {
                     $tourInfo = $s;
                 } elseif ($type === 'cta_block') {
                     $cta = $s;
@@ -102,6 +100,9 @@ class HistoryController extends BaseController
                     $tourFeatures[] = $s; 
                 } elseif ($type === 'good_to_know') {
                     $goodToKnow = $s; 
+                }
+                elseif ($type === 'hero_picture') { 
+                    $hero = $s;
                 }
                 
             }
