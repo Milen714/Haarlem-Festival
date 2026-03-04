@@ -66,7 +66,8 @@ class HomeController extends BaseController
             $landmarks = $this->landmarkService->getAllLandmarks();
             $startingPoints = new StartingPoints($landmarks, $venues);
 
-            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
+            //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
+            $this->view('Home/Landing',['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
         } catch (\Exception $e) {
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
@@ -120,5 +121,9 @@ class HomeController extends BaseController
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
         }
+    }
+    public function test($vars = [])
+    {
+        $this->view('Cms/CmsPreviewTest', ['title' => 'Test Page']);
     }
 }

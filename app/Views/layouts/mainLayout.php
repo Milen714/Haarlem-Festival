@@ -36,7 +36,7 @@ $content = $content ?? '';
 
         </ul>
     </nav> -->
-    <nav class="bg_colors_home  w-full z-20 top-0 start-0 border-b border-[#2C3233]">
+    <nav id="main-nav" class="bg_colors_home  w-full z-20 top-0 start-0 border-b border-[#2C3233]">
 
         <div class="nav-ul-container  max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto p-4">
             <!-- Logo and Brand Name -->
@@ -222,7 +222,7 @@ $content = $content ?? '';
         <?php echo $content; ?>
     </main>
 
-    <footer class="flex flex-col gap-4 px-4 py-6 bg_colors_home">
+    <footer id="footer-main" class="flex flex-col gap-4 px-4 py-6 bg_colors_home">
         <div class="flex flex-row justify-around flex-wrap gap-8 border-b-2  border-[#B18132] pb-4">
             <article class="flex flex-col">
                 <img src="/Assets/Nav/FestivalLogo.svg" alt="FestivalLogo" class="w-32">
