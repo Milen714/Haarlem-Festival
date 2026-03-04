@@ -1965,6 +1965,18 @@ select:focus,
   width: 2.75rem;
 }
 
+.w-\[16rem\]{
+  width: 16rem;
+}
+
+.w-\[40\%\]{
+  width: 40%;
+}
+
+.w-\[60\%\]{
+  width: 60%;
+}
+
 .min-w-0{
   min-width: 0px;
 }
@@ -2150,6 +2162,10 @@ select:focus,
 
 .flex-row{
   flex-direction: row;
+}
+
+.flex-row-reverse{
+  flex-direction: row-reverse;
 }
 
 .flex-col{
