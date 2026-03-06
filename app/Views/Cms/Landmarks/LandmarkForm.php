@@ -67,9 +67,9 @@ $action = $action ?? '/cms/landmarks/store';
 
             <div class="mb-6">
                 <label class="block text-gray-700 font-semibold mb-2">Practical Info Title</label>
-                <input type="text" name="practical_info_title" value="<?= htmlspecialchars($landmark->practical_info_title ?? 'Practical Information') ?>"
+                <input type="text" name="why_visit_title" value="<?= htmlspecialchars($landmark->why_visit_title ?? 'Practical Information') ?>"
                        class="w-full px-4 py-2 mb-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
-                <textarea name="practical_info_content" class="tinymce-editor"><?= htmlspecialchars($landmark->practical_info_content ?? '') ?></textarea>
+                <textarea name="why_visit_content" class="tinymce-editor"><?= htmlspecialchars($landmark->why_visit_content ?? '') ?></textarea>
             </div>
         </div>
 

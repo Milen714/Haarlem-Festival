@@ -29,6 +29,27 @@ class LandmarkRepository extends Repository
         return $landmarks;
     }
 
+    public function getById(int $id): ?Landmark
+    {
+        $sql = "SELECT * FROM LANDMARK WHERE landmark_id = :id LIMIT 1";
+        
+        $stmt = $this->pdo->prepare($sql);
+        
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$row) {
+            return null;
+        }
+
+        $landmark = new Landmark();
+        $landmark->fromPDOData($row);
+        
+        return $landmark;
+    }
+
     public function getBySlug(string $slug): ?Landmark
     {
         $sql = "SELECT * FROM LANDMARK WHERE landmark_slug = :slug LIMIT 1";

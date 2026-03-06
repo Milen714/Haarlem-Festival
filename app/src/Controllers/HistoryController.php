@@ -107,6 +107,7 @@ class HistoryController extends BaseController
                 
             }
 
+            
             $this->view('History/HistoryTour', [
                 'pageData'        => $pageData,
                 'hero'            => $hero,

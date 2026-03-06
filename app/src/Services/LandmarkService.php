@@ -22,6 +22,11 @@ class LandmarkService
         return $this->landmarkRepository->getAll();
     }
 
+    public function getLandmarkById(int $id): ?Landmark
+    {
+        return $this->landmarkRepository->getById($id);
+    }
+
     public function getLandmarkBySlug(string $slug)
     {
         return $this->landmarkRepository->getBySlug($slug);
@@ -34,6 +39,7 @@ class LandmarkService
         }
 
         $landmark->name = trim($postData['name']);
+        $landmark->event_id = isset($postData['event_id']) ? (int)$postData['event_id'] : 2; //default event id to 2 if not provided
         $landmark->landmark_slug = $slug;
         $landmark->short_description = $postData['short_description'] ?? null;
         
@@ -47,6 +53,7 @@ class LandmarkService
         $landmark->display_order = isset($postData['display_order']) ? (int)$postData['display_order'] : 0;
 
         return $landmark;
+
     }
 
     public function createLandmark(array $postData, array $filesData): Landmark
@@ -67,10 +74,10 @@ class LandmarkService
         return $this->landmarkRepository->insert($landmark);
     }
 
-    public function updateLandmark(string $slug, array $postData, array $filesData): Landmark
+    public function updateLandmark(int $id, array $postData, array $filesData): Landmark
     {
         //search the existing landmark
-        $existingLandmark = $this->landmarkRepository->getBySlug($slug);
+        $existingLandmark = $this->landmarkRepository->getById($id);
 
         if (!$existingLandmark) {
             throw new \Exception("Landmark not found.");
@@ -81,22 +88,16 @@ class LandmarkService
             throw new \Exception("The landmark name is required.");
         }
 
-        $newSlug = $slug; 
+        $newSlug = $this->generateSlug($postData['name']); 
 
-        $updatedLandmark = $this->mapLandmarkData($postData, $slug, $existingLandmark);
+        $updatedLandmark = $this->mapLandmarkData($postData, $newSlug, $existingLandmark);
 
         return $this->landmarkRepository->update($updatedLandmark);
     }
 
-    public function deleteLandmark(string $slug): void
-    {
-        $existingLandmark = $this->landmarkRepository->getBySlug($slug);
-        
-        if (!$existingLandmark) {
-            throw new \Exception("Landmark not found.");
-        }
-
-        $this->landmarkRepository->delete($existingLandmark->landmark_id);
+    public function deleteLandmark(int $id): void
+    {        
+        $this->landmarkRepository->delete($id);
     }
 
     //convert a normal name into a landmark slug

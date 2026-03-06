@@ -40,7 +40,7 @@ class LandmarkController extends BaseController
     {
         $this->startSession();
         
-        $this->cmsLayout('Cms/Landmarks/Form', [
+        $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
             'title' => 'Create New Landmark',
             'landmark' => null, 
             'action' => '/cms/landmarks/store' 
@@ -54,9 +54,10 @@ class LandmarkController extends BaseController
 
         try {
             // Pasamos $_POST (textos) y $_FILES (imágenes) al servicio
-            $landmark = $this->landmarkService->createLandmark($_POST, $_FILES);
+            $this->landmarkService->createLandmark($_POST, $_FILES);
                         
             $this->redirect('/cms/landmarks');
+            exit();
             
         } 
         catch (\Exception $e) {
@@ -69,10 +70,10 @@ class LandmarkController extends BaseController
     {
         $this->startSession();
       
-        $slug = $vars['slug'] ?? '';
+        $id = $vars['id'] ?? '';
 
         try {
-            $landmark = $this->landmarkService->getLandmarkBySlug($slug);
+            $landmark = $this->landmarkService->getLandmarkById($id);           
 
             if (!$landmark) {
                 $this->redirect('/cms/landmarks');
@@ -80,10 +81,10 @@ class LandmarkController extends BaseController
             }
 
             // Reutilizamos la MISMA vista del formulario, pero le pasamos los datos
-            $this->cmsLayout('Cms/Landmarks/Form', [
+            $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
                 'title' => 'Edit Landmark: ' . $landmark->name,
                 'landmark' => $landmark,
-                'action' => "/cms/landmarks/update/{$slug}"
+                'action' => "/cms/landmarks/update/{$landmark->landmark_id}"
             ]);
 
 
@@ -98,34 +99,36 @@ class LandmarkController extends BaseController
     {
         $this->startSession();
 
-        $slug = $vars['slug'] ?? '';
+        $id = $vars['id'] ?? '';
 
         try {
-            $landmark = $this->landmarkService->updateLandmark($slug, $_POST, $_FILES);
+            $landmark = $this->landmarkService->updateLandmark($id, $_POST, $_FILES);
             
             $this->redirect('/cms/landmarks');
             
         } 
         catch (\Exception $e) {
             error_log("Landmark update error: " . $e->getMessage());
+            die("An error occurred while updating the landmark: " . $e->getMessage());
         }
     }
 
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void //delete landmark 
     {
-        $this->startSession();
-        $slug = $vars['slug'] ?? '';
+       $this->startSession();
+    // Cambiar 'slug' por 'id' para que coincida con la ruta {id:\d+}
+    $id = $vars['id'] ?? ''; 
 
-        try {
-            $this->landmarkService->deleteLandmark($slug);
-                        
-        } 
-        catch (\Exception $e) {
-            error_log("Landmark delete error: " . $e->getMessage());
-        }
+    try {
+        // Llamar al servicio usando el ID
+        $this->landmarkService->deleteLandmark($id);
+    } 
+    catch (\Exception $e) {
+        error_log("Landmark delete error: " . $e->getMessage());
+    }
 
-        $this->redirect('/cms/landmarks');
+    $this->redirect('/cms/landmarks');
     }
 
 }
