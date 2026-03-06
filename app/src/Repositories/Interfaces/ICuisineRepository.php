@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Src\Repositories\Interfaces;
+namespace App\Repositories\Interfaces;
 
 interface ICuisineRepository{
 

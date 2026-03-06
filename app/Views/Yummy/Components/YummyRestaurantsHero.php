@@ -1,4 +1,7 @@
+<?php 
+namespace App\Views\Yummy\Components;
 
+?>
 
 
   <section class="text-center py-20 px-6 bg-gradient-to-b from-[#1a0505] via-[#350a0a] to-[#4d0d0d]">

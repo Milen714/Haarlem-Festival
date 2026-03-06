@@ -13,13 +13,14 @@ use App\Repositories\VenueRepository;
 use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\VenueService;
+use App\Models\Yummy\RestaurantListViewModel;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\MediaRepository;
 use App\Services\MediaService;
-use App\Src\Repositories\CuisineRepository;
-use App\Src\Services\CuisineService;
+use App\Repositories\CuisineRepository;
+use App\Services\CuisineService;
 
 class YummyController extends BaseController
 {
@@ -128,12 +129,19 @@ class YummyController extends BaseController
 
             $eventId = $pageData->event_category->event_id;
             $cuisineId = isset($_GET['cuisine']) ? (int)$_GET['cuisine'] : null;
+         
             $restaurants = $this->restaurantService->getAllRestaurants($eventId, $cuisineId);
             $cuisines = $this->cuisineService->getCuisines();
+
+            $viewModel = new RestaurantListViewModel(
+                $pageData,
+                $restaurants,
+                $cuisines,
+                $cuisineId
+            );
+
             $this->view('Yummy/restaurants', [
-                'restaurants' => $restaurants,
-                'cuisines' => $cuisines,
-                'selectedCuisine' => $cuisineId
+                'viewModel' => $viewModel
             ]);
 
              

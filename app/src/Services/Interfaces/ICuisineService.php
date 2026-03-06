@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Src\Service\Interfaces;
+namespace App\Services\Interfaces;
 
 interface ICuisineService{
 

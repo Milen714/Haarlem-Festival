@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Src\Repositories;
+namespace App\Repositories;
 
-use App\Src\Repositories\Interfaces\ICuisineRepository;
+use App\Repositories\Interfaces\ICuisineRepository;
 use App\Framework\Repository;
 use App\Models\Cuisine;
 use PDOException;

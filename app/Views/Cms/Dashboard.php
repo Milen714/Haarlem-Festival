@@ -41,6 +41,23 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             </div>
         </article>
 
+        <!-- Restaurant Management -->
+        <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center mb-4">
+                <span class="text-4xl mr-4">🍽️</span>
+                <h2 class="text-2xl font-bold">Restaurants</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Manage Restaurants & Extensions</p>
+            <div class="space-y-2">
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Restaurants</a>
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Sessions</a>
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Cuisine</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Restaurant</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Session</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Cuisine</a>
+            </div>
+        </article>
+
         <!-- Venue Management -->
         <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
             <div class="flex items-center mb-4">

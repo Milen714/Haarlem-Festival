@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Src\Services;
+namespace App\Services;
 
-use App\Src\Service\Interfaces\ICuisineService;
-use App\Src\Repositories\Interfaces\ICuisineRepository;
+use App\Services\Interfaces\ICuisineService;
+use App\Repositories\Interfaces\ICuisineRepository;
 
 class CuisineService implements ICuisineService{
 
