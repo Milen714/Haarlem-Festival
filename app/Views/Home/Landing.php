@@ -49,36 +49,32 @@ foreach ($pageData->content_sections as $section) {
 </section>
 
 
+<script src="/Js/ScheduleDateButtons.js"></script>
 <script>
 const scheduleContainer = document.getElementById('schedule_container');
 const scheduleFilterContainer = document.getElementById('schedule-filter-container');
 const spinner = document.getElementById('spinner');
 
-addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     loadSchedule();
-    attachScheduleFilterListeners();
-});
 
-const attachScheduleFilterListeners = () => {
-    // Use event delegation on the schedule container
-    // This listener will work for all current and future filter links
-    scheduleFilterContainer.addEventListener('click', (e) => {
-        const filterLink = e.target.closest('.schedule-filter-link');
-        if (!filterLink) return;
+    // ONE listener, works forever
+    scheduleContainer.addEventListener('click', (e) => {
+        const link = e.target.closest('.schedule-filter-link');
+        if (!link) return;
 
         e.preventDefault();
 
-        const eventFilter = filterLink.dataset.event || '';
-        const dateFilter = filterLink.dataset.date || '';
+        const eventFilter = link.dataset.event || '';
+        const dateFilter = link.dataset.date || '';
 
-        // Update URL without navigation using history.pushState
-        const newUrl = `/?event=${encodeURIComponent(eventFilter)}&date=${encodeURIComponent(dateFilter)}`;
-        window.history.pushState({}, '', newUrl);
+        const newUrl =
+            `/?event=${encodeURIComponent(eventFilter)}&date=${encodeURIComponent(dateFilter)}`;
+        history.pushState({}, '', newUrl);
 
-        // Load schedule with new filters
         loadSchedule();
     });
-};
+});
 
 const loadSchedule = async () => {
     scheduleContainer.innerHTML = '';
@@ -97,20 +93,9 @@ const loadSchedule = async () => {
         const response = await fetch(url);
         const html = await response.text();
         scheduleContainer.innerHTML = html;
-        // Re-select the new filter container after AJAX load
-        const newFilterContainer = document.getElementById('schedule-filter-container');
-        if (newFilterContainer) {
-            newFilterContainer.addEventListener('click', (e) => {
-                const filterLink = e.target.closest('.schedule-filter-link');
-                if (!filterLink) return;
-                e.preventDefault();
-                const eventFilter = filterLink.dataset.event || '';
-                const dateFilter = filterLink.dataset.date || '';
-                const newUrl =
-                    `/?event=${encodeURIComponent(eventFilter)}&date=${encodeURIComponent(dateFilter)}`;
-                window.history.pushState({}, '', newUrl);
-                loadSchedule();
-            });
+
+        if (window.displayDateButtons) {
+            await window.displayDateButtons();
         }
     } catch (error) {
         console.error('Error fetching schedule:', error);

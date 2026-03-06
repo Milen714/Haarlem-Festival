@@ -17,11 +17,11 @@ use App\ViewModels\Home\StartingPoints;
             src="https://www.google.com/maps/d/u/0/embed?mid=1ezQjCFX3T3Jib7ooF9p-_d3gStB5oE4&ehbc=2E312F&noprof=1"
             width="640" height="480"></iframe>
     </article>
-    <article class="flex flex-col gap-2 items-center ml-5">
+    <article class="flex flex-col gap-2 items-center ml-5 h-full overflow-hidden">
         <header class="headers_home pb-5">
             <h1 class="text-4xl font-bold">Starting points</h1>
         </header>
-        <ul class="flex flex-col items-center gap-2">
+        <ul class="flex flex-col items-center gap-2 overflow-x-hidden no-scrollbar">
             <?php foreach ($startingPoints->startingPoints as $point): ?>
             <?php include __DIR__ . '/StartingPoint.php'; ?>
             <?php endforeach; ?>

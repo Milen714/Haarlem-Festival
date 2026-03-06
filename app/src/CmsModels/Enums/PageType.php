@@ -10,4 +10,6 @@ enum PageType: string
     case shopping_cart = 'shopping_cart';
     case event_landing = 'event_landing';
     case performer_detail = 'performer_detail';
+    case restaurants = 'restaurants';
+    case restaurant_detail = 'restaurant_detail';
 }

@@ -28,6 +28,8 @@ interface IScheduleService
 
      public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array;
 
+     public function getAvailableDates(): array;
+
  
    
 }

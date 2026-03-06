@@ -37,6 +37,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
+    $r->addRoute('GET', '/getScheduleDates', ['App\Controllers\HomeController', 'getScheduleDates']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
@@ -49,6 +50,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
    
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
+    $r->addRoute('GET', '/events-dance/lineup', ['App\Controllers\DanceController', 'lineUp']);
 
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
@@ -84,6 +86,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/venues/edit/{id:\d+}', ['App\Controllers\VenueController', 'edit']);
     $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
     $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
+
+    /* CMS User Management*/
+    $r->addRoute('GET', '/cms/users', ['App\Controllers\UserController', 'index']);
+    $r->addRoute('GET', '/cms/users/create', ['App\Controllers\UserController', 'create']);
+    $r->addRoute('POST', '/cms/users/store', ['App\Controllers\UserController', 'store']);
+    $r->addRoute('GET', '/cms/users/edit/{id:\d+}', ['App\Controllers\UserController', 'edit']);
+    $r->addRoute('POST', '/cms/users/update/{id:\d+}', ['App\Controllers\UserController', 'update']);
+    $r->addRoute('POST', '/cms/users/delete/{id:\d+}', ['App\Controllers\UserController', 'delete']);
 
     /*Landmark cms*/
     $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);

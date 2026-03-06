@@ -18,7 +18,7 @@ use App\CmsModels\Enums\SectionType;
             </h3>
         </div>
 
-        <article class="flex flex-row gap-2 justify-between mb-4">
+        <article class="flex flex-row flex-wrap gap-2 justify-between mb-4">
             <article class="input_group flex-1">
                 <label class="input_label">Section Title:</label>
                 <input class="form_input" type="text" name="sections[<?= $i ?>][title]"
@@ -32,7 +32,7 @@ use App\CmsModels\Enums\SectionType;
         </article>
 
         <?php if (isset($section->cta_text)): ?>
-        <article class="flex flex-row gap-2 justify-between mb-4">
+        <article class="flex flex-row flex-wrap gap-2 justify-between mb-4">
             <article class="input_group flex-1">
                 <label class="input_label">CTA Text:</label>
                 <input class="form_input" type="text" name="sections[<?= $i ?>][cta_text]"
@@ -67,11 +67,11 @@ use App\CmsModels\Enums\SectionType;
 
             <!-- Show current image if exists -->
             <?php if ($section->media && $section->media->file_path): ?>
-            <div class="mb-3 p-3 bg-gray-50 rounded border">
+            <div class="w-[16rem] mb-3 p-3 bg-gray-50 rounded border">
                 <p class="text-sm font-semibold mb-2">Current Image:</p>
                 <img src="<?= htmlspecialchars($section->media->file_path) ?>"
                     alt="<?= htmlspecialchars($section->media->alt_text ?? 'Section Media') ?>"
-                    class="max-w-sm rounded shadow">
+                    class="w-full rounded shadow">
                 <p class="text-xs text-gray-600 mt-2">
                     <?= htmlspecialchars($section->media->file_path) ?>
                 </p>
@@ -92,10 +92,4 @@ use App\CmsModels\Enums\SectionType;
         </article>
         <?php endif; ?>
     </div>
-
-    <?php
-    if ($section->section_type === SectionType::event_left || $section->section_type === SectionType::event_right) {
-        $isReverse = $section->section_type === SectionType::event_right;
-        include __DIR__ . '/../../Home/Components/EventCard.php';
-    } ?>
 </section>
