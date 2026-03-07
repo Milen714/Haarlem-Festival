@@ -88,6 +88,18 @@ class LandmarkService
             throw new \Exception("The landmark name is required.");
         }
 
+        // 2. Procesamos la galería PRIMERO (si existe y hay archivos)
+    // Usamos la relación del modelo: $existingLandmark->gallery
+    // Procesar las 3 imágenes específicas si el landmark tiene galería
+    if ($existingLandmark->gallery) {
+        $this->galleryService->handleSectionUploads(
+            $existingLandmark->gallery->gallery_id, 
+            $postData, 
+            $filesData
+        );
+    }
+    
+
         $newSlug = $this->generateSlug($postData['name']); 
 
         $updatedLandmark = $this->mapLandmarkData($postData, $newSlug, $existingLandmark);

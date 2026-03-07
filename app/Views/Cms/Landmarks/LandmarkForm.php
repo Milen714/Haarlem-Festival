@@ -81,6 +81,43 @@ $action = $action ?? '/cms/landmarks/store';
                 Cancel
             </a>
         </div>
+
+        <div class="bg-white border rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-bold mb-4 border-b pb-2">Content Images</h2>
+    <p class="text-sm text-gray-600 mb-6">Assign a specific image for each section. Existing images will be replaced upon new upload.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <?php 
+        $slots = [
+            0 => ['label' => 'Introduction', 'name' => 'img_intro'],
+            1 => ['label' => 'History', 'name' => 'img_history'],
+            2 => ['label' => 'Practical Info', 'name' => 'img_practical']
+        ];
+
+        foreach ($slots as $index => $slot): 
+            // Buscamos si existe imagen en esta posición del array gallery_media
+            $media = $landmark->gallery_media[$index] ?? null;
+        ?>
+            <div class="border rounded-lg p-4 bg-gray-50 flex flex-col">
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-2"><?= $slot['label'] ?> Image</label>
+                
+                <div class="mb-3 aspect-video bg-white border rounded overflow-hidden flex items-center justify-center">
+                    <?php if ($media): ?>
+                        <img src="<?= htmlspecialchars($media->file_path) ?>" class="w-full h-full object-cover">
+                        <input type="hidden" name="<?= $slot['name'] ?>_id" value="<?= $media->media_id ?>">
+                    <?php else: ?>
+                        <span class="text-gray-300 text-[10px]">No image uploaded</span>
+                    <?php endif; ?>
+                </div>
+
+                <input type="file" name="<?= $slot['name'] ?>" accept="image/*" class="text-[10px] w-full">
+                <?php if ($media): ?>
+                    <p class="text-[9px] text-blue-600 mt-1 italic">Uploading a new file will delete the current one.</p>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
     </form>
 </section>
 
