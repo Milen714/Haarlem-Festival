@@ -73,15 +73,6 @@ $action = $action ?? '/cms/landmarks/store';
             </div>
         </div>
 
-        <div class="flex gap-4">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
-                <?= $isEdit ? 'Update Landmark' : 'Create Landmark' ?>
-            </button>
-            <a href="/cms/landmarks" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold transition">
-                Cancel
-            </a>
-        </div>
-
         <div class="bg-white border rounded-lg p-6 mb-6">
     <h2 class="text-xl font-bold mb-4 border-b pb-2">Content Images</h2>
     <p class="text-sm text-gray-600 mb-6">Assign a specific image for each section. Existing images will be replaced upon new upload.</p>
@@ -118,6 +109,17 @@ $action = $action ?? '/cms/landmarks/store';
         <?php endforeach; ?>
     </div>
 </div>
+
+        <div class="flex gap-4">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                <?= $isEdit ? 'Update Landmark' : 'Create Landmark' ?>
+            </button>
+            <a href="/cms/landmarks" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold transition">
+                Cancel
+            </a>
+        </div>
+
+       
     </form>
 </section>
 
