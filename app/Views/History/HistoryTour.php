@@ -14,8 +14,8 @@ namespace App\Views\History;
 
         <?php include __DIR__ . '/Components/TourGoodToKnow.php'; ?>
         
-        <?php include __DIR__ . '/Components/TourReadMore.php'; ?>
+        <?php //include __DIR__ . '/Components/TourReadMore.php'; ?>
 
-
+        <?php include __DIR__ . '/Components/HistoryBookTour.php'; ?>
     </div>
 </div>

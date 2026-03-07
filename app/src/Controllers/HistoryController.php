@@ -81,41 +81,38 @@ class HistoryController extends BaseController
             $sections = $pageData->content_sections ?? [];
             $hero = null;
             $tourInfo = null;
-            $cta = null;
+            $bookTour = null;
             $tickets = null;
             $tourFeatures = [];     
-            $goodToKnow= null; 
+            $goodToKnow = null; 
 
-            
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
                 
-                  if ($type === 'text') {
+                // CORRECCIONES AQUÍ: Usamos los valores exactos del Enum
+                if ($type === 'tour_info') { 
                     $tourInfo = $s;
-                } elseif ($type === 'cta_block') {
-                    $cta = $s;
-                } elseif ($type === 'article') {
+                } elseif ($type === 'tour_tickets') { 
                     $tickets = $s;
                 } elseif ($type === 'tour_features') {
                     $tourFeatures[] = $s; 
                 } elseif ($type === 'good_to_know') {
                     $goodToKnow = $s; 
-                }
-                elseif ($type === 'hero_picture') { 
+                } elseif ($type === 'hero_picture') { 
                     $hero = $s;
+                } elseif ($type === 'book_tour') { 
+                    $bookTour = $s;
                 }
-                
             }
 
-            
             $this->view('History/HistoryTour', [
                 'pageData'        => $pageData,
                 'hero'            => $hero,
                 'tourInfo'        => $tourInfo,
-                'cta'             => $cta,
+                'bookTour'             => $bookTour,
                 'tickets'         => $tickets,
                 'tourFeatures'    => $tourFeatures,    
-                'goodToKnow' => $goodToKnow  
+                'goodToKnow'      => $goodToKnow  
             ]);
 
         } catch (\Exception $e) {

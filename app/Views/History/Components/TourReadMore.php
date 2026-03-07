@@ -12,10 +12,7 @@
             <a href="<?= htmlspecialchars($cta->cta_url ?? '/history') ?>" class="mt-6 inline-flex items-center rounded-md border border-brand-600 bg-brand-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-brand-700 transition-colors">
                 <?= htmlspecialchars($cta->cta_text ?? 'Read our History') ?>
             </a>
-        <?php else: ?>
-             <p class="text-ink-700">Do you want to know more about the city before your visit?</p>
-             <p class="text-ink-700">Check some of our incredible locations’ history.</p>
-             <a href="/history" class="mt-6 inline-flex items-center rounded-md bg-brand-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-brand-700 transition-colors">Read our History</a>
+        
         <?php endif; ?>
     </section>
 
