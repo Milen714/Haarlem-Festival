@@ -2,19 +2,28 @@
 
 namespace App\Services;
 
+use App\Models\Gallery;
 use App\Repositories\LandmarkRepository;
 use App\Services\MediaService; 
 use App\Models\Landmark;
+use App\Services\GalleryService;
+use App\Repositories\GalleryRepository;
+use App\Repositories\MediaRepository;
 
 class LandmarkService
 {
     private LandmarkRepository $landmarkRepository;
     private MediaService $mediaService;
+    private GalleryService $galleryService;
+    private GalleryRepository $galleryRepository;
 
     public function __construct()
     {
         $this->landmarkRepository = new LandmarkRepository();
-        //$this->mediaService = new MediaService(); 
+        $this->galleryRepository = new GalleryRepository();
+        $this->mediaService = new MediaService(new MediaRepository());
+        $this->galleryService = new GalleryService($this->mediaService, $this->galleryRepository);
+    
     }
 
     public function getAllLandmarks(): array
@@ -31,7 +40,7 @@ class LandmarkService
     {
         return $this->landmarkRepository->getBySlug($slug);
     }
-    
+
     private function mapLandmarkData(array $postData, string $slug, ?Landmark $landmark = null): Landmark
     {
         if ($landmark === null) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Services;
 
 use App\Services\Interfaces\IMediaService;
 use App\Repositories\GalleryRepository;
