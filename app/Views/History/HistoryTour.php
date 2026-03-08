@@ -4,7 +4,7 @@ namespace App\Views\History;
 
 <div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
     
-    <?php include __DIR__ . '/Components/TourHero.php'; ?>
+    <?php include __DIR__ . '/Components/HistoryHero.php'; ?>
     
     <div class="container mx-auto max-w-[1100px] px-4">
         

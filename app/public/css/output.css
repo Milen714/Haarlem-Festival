@@ -1880,6 +1880,11 @@ select:focus,
   height: 2.25rem;
 }
 
+.size-full{
+  width: 100%;
+  height: 100%;
+}
+
 .h-10{
   height: 2.5rem;
 }

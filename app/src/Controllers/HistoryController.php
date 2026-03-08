@@ -89,7 +89,6 @@ class HistoryController extends BaseController
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
                 
-                // CORRECCIONES AQUÍ: Usamos los valores exactos del Enum
                 if ($type === 'tour_info') { 
                     $tourInfo = $s;
                 } elseif ($type === 'tour_tickets') { 
@@ -109,7 +108,7 @@ class HistoryController extends BaseController
                 'pageData'        => $pageData,
                 'hero'            => $hero,
                 'tourInfo'        => $tourInfo,
-                'bookTour'             => $bookTour,
+                'bookTour'        => $bookTour,
                 'tickets'         => $tickets,
                 'tourFeatures'    => $tourFeatures,    
                 'goodToKnow'      => $goodToKnow  
