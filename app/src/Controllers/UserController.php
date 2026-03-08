@@ -7,15 +7,19 @@ use App\Services\UserService;
 use App\Models\User;
 use App\Repositories\UserRepository;
 use App\Middleware\RequireRole;
+use App\Services\Interfaces\IAuthService;
+use App\Services\AuthService;
 
 
 class UserController extends BaseController
 {
     private UserService $userService;
+    private IAuthService $authService;
     public function __construct()
     {
         $userRepository = new UserRepository();
         $this->userService = new UserService($userRepository);
+        $this->authService = new AuthService();
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -127,6 +131,11 @@ class UserController extends BaseController
             $user->is_active = isset($_POST['is_active']);
             $user->is_verified = isset($_POST['is_verified']);
             if (!empty($data['password'])) {
+                $passwordValidation = $this->authService->validatePassword($user->password_hash);
+                if (!$passwordValidation['valid']) {
+                    $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
+                    throw new \Exception($errorMsg);
+                }
                 $user->password_hash = password_hash($data['password'], PASSWORD_BCRYPT);
             }
             $user->fname = $data['fname'] ?? $user->fname;

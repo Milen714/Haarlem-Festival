@@ -6,7 +6,8 @@ use App\Models\Restaurant;
 
 interface IRestaurantRepository
 {
-    public function getAllRestaurants(): array;
+    public function getAllRestaurants(int $eventId, ?int $cuisineId = null): array;
+    public function showAllRestaurants(): array;
     public function getRestaurantById(int $id): ?Restaurant;
 
     public function getRestaurantBySlug(string $slug): ?Restaurant;
