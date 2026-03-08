@@ -42,7 +42,6 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
 
     public function getBySlug(string $slug): ?Landmark
     {
-        // Esta consulta sí tiene los JOINs, pero solo se ejecuta cuando tú lo pidas
         $sql = "SELECT landmark.*, 
                        media.media_id, media.file_path, media.alt_text, 
                        gm.display_order
@@ -113,7 +112,6 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
         $landmark = new Landmark();
         $landmark->fromPDOData($rows[0]);
 
-        // Construir la Galería correctamente
         if (!empty($rows[0]['gallery_id'])) {
             $gallery = new \App\Models\Gallery();
             $gallery->gallery_id = $rows[0]['gallery_id'];
@@ -127,7 +125,6 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
                         'alt_text'  => $row['alt_text'] ?? ''
                     ]);
                     
-                    // Envolvemos el Media en un GalleryMedia
                     $galleryMedia = new \App\Models\GalleryMedia();
                     $galleryMedia->media = $media;
                     $galleryMedia->order = $row['display_order'] ?? 0;

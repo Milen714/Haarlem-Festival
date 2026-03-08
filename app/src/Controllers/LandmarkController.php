@@ -53,7 +53,6 @@ class LandmarkController extends BaseController
         $this->startSession();
 
         try {
-            // Pasamos $_POST (textos) y $_FILES (imágenes) al servicio
             $this->landmarkService->createLandmark($_POST, $_FILES);
                         
             $this->redirect('/cms/landmarks');
@@ -80,7 +79,6 @@ class LandmarkController extends BaseController
                 return;
             }
 
-            // Reutilizamos la MISMA vista del formulario, pero le pasamos los datos
             $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
                 'title' => 'Edit Landmark: ' . $landmark->name,
                 'landmark' => $landmark,
@@ -117,18 +115,16 @@ class LandmarkController extends BaseController
     public function delete($vars = []): void //delete landmark 
     {
        $this->startSession();
-    // Cambiar 'slug' por 'id' para que coincida con la ruta {id:\d+}
-    $id = $vars['id'] ?? ''; 
+        $id = $vars['id'] ?? ''; 
 
-    try {
-        // Llamar al servicio usando el ID
-        $this->landmarkService->deleteLandmark($id);
-    } 
-    catch (\Exception $e) {
-        error_log("Landmark delete error: " . $e->getMessage());
-    }
+        try {
+            $this->landmarkService->deleteLandmark($id);
+        } 
+        catch (\Exception $e) {
+            error_log("Landmark delete error: " . $e->getMessage());
+        }
 
-    $this->redirect('/cms/landmarks');
+        $this->redirect('/cms/landmarks');
     }
 
 }

@@ -135,12 +135,11 @@ class HistoryController extends BaseController
             return;
         }
 
-       // 1. Definimos las imágenes por defecto
         $introImage = '/Assets/Home/ImagePlaceholder.png';
         $historyImage = '/Assets/Home/ImagePlaceholder.png';
         $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
 
-        // 2. Extraemos las imágenes si la galería existe
+        //if gallery exists and has the media items, the media items are taken out and assigned to variables for the view
         if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
             $items = array_values($landmark->gallery->media_items);
 
@@ -155,7 +154,7 @@ class HistoryController extends BaseController
             }
         }
 
-        // 3. Pasamos las variables limpias a la Vista
+        //pass the images to the view as well
         $this->view('History/HistoryDetail', [
             'title' => $landmark->name . ' - Haarlem History',
             'landmark' => $landmark,
