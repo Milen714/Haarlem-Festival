@@ -53,9 +53,9 @@ namespace App\Views\Jazz;
     // Generic content section (fallback)
     else {
         if (!empty($section->content_html)) {
-            echo '<div class="container mx-auto px-4 py-8">';
+            echo '<section class="container mx-auto px-4 py-8">';
             echo $section->content_html;
-            echo '</div>';
+            echo '</section>';
         }
     }
     ?>

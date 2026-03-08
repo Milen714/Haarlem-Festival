@@ -26,8 +26,21 @@ interface IScheduleService
      */
     public function getSchedulesByEventId(int $eventId): array;
 
-     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array;
+    public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array;
 
- 
-   
+    public function createFromRequest(array $postData): \App\Models\Schedule;
+
+    public function updateFromRequest(int $scheduleId, array $postData): \App\Models\Schedule;
+
+    public function deleteSchedule(int $scheduleId): bool;
+
+    public function getAllEventCategories(): array;
+
+    public function getAllVenues(): array;
+
+    public function getAllArtists(): array;
+
+    public function getAllRestaurants(): array;
+
+    public function getAllLandmarks(): array;
 }

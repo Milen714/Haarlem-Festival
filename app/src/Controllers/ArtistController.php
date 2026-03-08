@@ -71,7 +71,8 @@ class ArtistController extends BaseController
         $artistId = (int)($vars['id'] ?? 0);
 
         try {
-            $artist = $this->artistService->getArtistById($artistId);
+            
+            $artist = $this->artistService->getArtistByIdWithGallery($artistId);
 
             if (!$artist) {
                 $this->handleError('Artist not found');
@@ -98,10 +99,15 @@ class ArtistController extends BaseController
 
         try {
             $artist = $this->artistService->updateFromRequest($artistId, $_POST, $_FILES);
-            
+
+            if (!empty($_FILES['gallery_images']['name'])) {
+                $artistWithGallery = $this->artistService->getArtistByIdWithGallery($artistId);
+                $this->artistService->uploadGalleryImages($artistId, $artistWithGallery, $_FILES['gallery_images']);
+            }
+
             $_SESSION['success'] = "Artist '{$artist->name}' updated successfully!";
-            $this->redirect('/cms/artists');
-            
+            $this->redirect("/cms/artists/edit/{$artistId}");
+
         } catch (\Exception $e) {
             error_log("Artist update error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
@@ -133,6 +139,27 @@ class ArtistController extends BaseController
         }
 
         $this->redirect('/cms/artists');
+    }
+
+    /**
+     * Removes just a single image from the  artist's gallery making it a m to m or a 1 to 1 relationship???.
+    */
+    #[RequireRole([UserRole::ADMIN])]
+    public function removeGalleryImage($vars = []): void
+    {
+        $this->startSession();
+        $artistId = (int)($vars['artistId'] ?? 0);
+        $mediaId  = (int)($vars['mediaId']  ?? 0);
+
+        try {
+            $this->artistService->removeGalleryImage($artistId, $mediaId);
+            $_SESSION['success'] = 'Gallery image removed.';
+        } catch (\Exception $e) {
+            error_log("Remove gallery image error: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to remove image: ' . $e->getMessage();
+        }
+
+        $this->redirect("/cms/artists/edit/{$artistId}");
     }
 
     private function startSession(): void

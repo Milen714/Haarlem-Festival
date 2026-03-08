@@ -7,17 +7,24 @@ use App\Services\PageService;
 use App\Services\ArtistService;
 use App\Services\VenueService;
 use App\Services\MediaService;
+use App\Services\ScheduleService;
+use App\Services\RestaurantService;
+use App\Services\LandmarkService;
 use App\Repositories\PageRepository;
 use App\Repositories\ArtistRepository;
 use App\Repositories\VenueRepository;
 use App\Repositories\MediaRepository;
+use App\Repositories\ScheduleRepository;
+use App\Repositories\RestaurantRepository;
+use App\Repositories\LandmarkRepository;
 
 class JazzController extends BaseController
 {
     private PageService $pageService;
     private ArtistService $artistService;
     private VenueService $venueService;
-    
+    private ScheduleService $scheduleService;
+
     private const JAZZ_EVENT_ID = 3;
     private const JAZZ_SLUG = 'events-jazz';  
     
@@ -38,6 +45,15 @@ class JazzController extends BaseController
         // Venue Service (reusing the same $mediaService)
         $venueRepository = new VenueRepository();
         $this->venueService = new VenueService($venueRepository, $mediaService);
+
+        // Schedule Service
+        $this->scheduleService = new ScheduleService(
+            new ScheduleRepository(),
+            $this->venueService,
+            $this->artistService,
+            new RestaurantService(new RestaurantRepository()),
+            new LandmarkService(new LandmarkRepository())
+        );
     }
 
     public function index($vars = [])
@@ -67,6 +83,30 @@ class JazzController extends BaseController
             
         } catch (\Exception $e) {
             error_log("Jazz page error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            $this->internalServerError();
+        }
+    }
+
+    public function schedule($vars = []): void
+    {
+        try {
+            $schedules = $this->scheduleService->getSchedulesByEventId(self::JAZZ_EVENT_ID);
+
+            // Group Schedule objects by date
+            $scheduleByDate = [];
+            foreach ($schedules as $schedule) {
+                $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
+                $scheduleByDate[$dateKey][] = $schedule;
+            }
+            ksort($scheduleByDate);
+
+            $this->view('Jazz/schedule', [
+                'title'          => 'Jazz Festival Schedule',
+                'scheduleByDate' => $scheduleByDate,
+            ]);
+        } catch (\Exception $e) {
+            error_log("Jazz schedule page error: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             $this->internalServerError();
         }

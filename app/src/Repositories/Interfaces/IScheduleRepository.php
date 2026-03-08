@@ -25,4 +25,24 @@ interface IScheduleRepository
      * @return Schedule[]
      */
     public function getScheduleByEventId(int $eventId): array;
+
+    /**
+     * Create a new schedule record
+     */
+    public function create(Schedule $schedule): bool;
+
+    /**
+     * Update an existing schedule record
+     */
+    public function update(Schedule $schedule): bool;
+
+    /**
+     * Delete a schedule by ID
+     */
+    public function delete(int $scheduleId): bool;
+
+    /**
+     * Get all event categories for dropdowns
+     */
+    public function getAllEventCategories(): array;
 }

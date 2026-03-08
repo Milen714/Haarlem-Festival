@@ -18,12 +18,10 @@
             $alt  = $item->media->alt_text ?? ($artist->name . ' photo');
         ?>
         <li class="rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow">
-            <figure>
-                <img src="<?= htmlspecialchars($path) ?>"
-                     alt="<?= htmlspecialchars($alt) ?>"
-                     class="w-full h-56 object-cover"
-                     loading="lazy" />
-            </figure>
+            <img src="<?= htmlspecialchars($path) ?>"
+                 alt="<?= htmlspecialchars($alt) ?>"
+                 class="w-full h-56 object-cover"
+                 loading="lazy" />
         </li>
         <?php endforeach; ?>
     </ul>

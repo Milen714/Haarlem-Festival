@@ -186,4 +186,95 @@ class ArtistService implements IArtistService
     {
         return $this->artistRepository->isArtistInEvent($artistId, $eventId);
     }
+
+    public function getArtistByIdWithGallery(int $artistId): ?Artist
+    {
+        return $this->artistRepository->getArtistByIdWithGallery($artistId);
+    }
+
+    /**
+     * Upload one or more gallery images for an artist.
+     * Creates a gallery for the artist if they don't have one yet.
+     *
+     * @param int         $artistId
+     * @param Artist|null $artist   The current artist (must have gallery_id if it already has a gallery)
+     * @param array       $files    The $_FILES['gallery_images'] array (multi-file)
+     */
+    public function uploadGalleryImages(int $artistId, ?Artist $artist, array $files): void
+    {
+        // Normalise the multi-file upload array so every entry is a single-file array
+        $uploads = $this->normaliseMultiFileArray($files);
+
+        if (empty($uploads)) {
+            return;
+        }
+
+        // Ensure the artist has a gallery row; create one if not
+        $galleryId = $artist?->gallery?->gallery_id;
+        if (!$galleryId) {
+            $galleryId = $this->artistRepository->createGalleryForArtist(
+                $artistId,
+                ($artist?->name ?? 'Artist') . ' Gallery'
+            );
+        }
+
+        foreach ($uploads as $file) {
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            $altText = $artist?->name ? $artist->name . ' gallery image' : 'Gallery image';
+            $result  = $this->mediaService->uploadAndCreate($file, 'Jazz/Artists', $altText);
+
+            if ($result['success']) {
+                $order = $this->artistRepository->getNextGalleryOrder($galleryId);
+                $this->artistRepository->addMediaToGallery($galleryId, $result['media']->media_id, $order);
+            } else {
+                error_log("Gallery image upload failed: " . ($result['error'] ?? 'unknown'));
+            }
+        }
+    }
+
+    /**
+     * Remove a gallery image from an artist's gallery (unlinks from gallery, keeps MEDIA record).
+     */
+    public function removeGalleryImage(int $artistId, int $mediaId): bool
+    {
+        $artist = $this->artistRepository->getArtistByIdWithGallery($artistId);
+
+        if (!$artist || !$artist->gallery?->gallery_id) {
+            return false;
+        }
+
+        return $this->artistRepository->removeMediaFromGallery($artist->gallery->gallery_id, $mediaId);
+    }
+
+    /**
+     * Convert PHP's multi-file upload array structure into a simple list of single-file arrays.
+     */
+    private function normaliseMultiFileArray(array $files): array
+    {
+        if (!isset($files['name'])) {
+            return [];
+        }
+
+        if (is_string($files['name'])) {
+            return [$files];
+        }
+
+        $result = [];
+        foreach ($files['name'] as $i => $name) {
+            if (empty($name)) {
+                continue;
+            }
+            $result[] = [
+                'name'     => $name,
+                'type'     => $files['type'][$i],
+                'tmp_name' => $files['tmp_name'][$i],
+                'error'    => $files['error'][$i],
+                'size'     => $files['size'][$i],
+            ];
+        }
+        return $result;
+    }
 }

@@ -242,6 +242,20 @@
     .jazz_event_button_yellow{
         @apply bg-[var(--pastel-yellow)] text-gray-800 font-semibold py-3 px-6 rounded-lg hover:bg-[#FCD082] transition-colors;
     }
+
+    /* Jazz Event Pill Buttons (schedule page) */
+    .jazz_event_pill_lavender{
+        @apply bg-[var(--pastel-lavender)] text-white font-semibold text-sm px-4 py-2 rounded-full hover:opacity-80 transition-opacity whitespace-nowrap;
+    }
+    .jazz_event_pill_pink{
+        @apply bg-[var(--pastel-pink)] text-white font-semibold text-sm px-4 py-2 rounded-full hover:opacity-80 transition-opacity whitespace-nowrap;
+    }
+    .jazz_event_pill_coral{
+        @apply bg-[var(--pastel-coral)] text-white font-semibold text-sm px-4 py-2 rounded-full hover:opacity-80 transition-opacity whitespace-nowrap;
+    }
+    .jazz_event_pill_yellow{
+        @apply bg-[var(--pastel-yellow)] text-gray-800 font-semibold text-sm px-4 py-2 rounded-full hover:opacity-80 transition-opacity whitespace-nowrap;
+    }
     .jazz_event_border_lavender {
         border: 4px solid var(--pastel-lavender) !important;
     }

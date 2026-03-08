@@ -418,4 +418,198 @@ class ArtistRepository extends Repository implements IArtistRepository
         return false;
     }
 }
+
+    /**
+     * Fetch an artist by ID including their gallery and media items.
+     */
+    public function getArtistByIdWithGallery(int $artistId): ?Artist
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT
+                    a.*,
+                    m.media_id,
+                    m.file_path,
+                    m.alt_text
+                FROM ARTIST a
+                LEFT JOIN MEDIA m ON a.profile_image_id = m.media_id
+                WHERE a.artist_id = :artist_id
+                AND a.deleted_at IS NULL
+                LIMIT 1
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':artist_id', $artistId, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$result) {
+                return null;
+            }
+
+            $artist = new Artist();
+            $artist->fromPDOData($result);
+
+            // Fetch gallery if artist has one
+            $galleryId = $result['gallery_id'] ?? null;
+            if ($galleryId) {
+                $galleryQuery = "
+                    SELECT
+                        g.gallery_id,
+                        g.title AS gallery_title,
+                        g.created_at,
+                        m.media_id,
+                        m.file_path,
+                        m.alt_text,
+                        gm.display_order
+                    FROM GALLERY g
+                    LEFT JOIN GALLERY_MEDIA gm ON g.gallery_id = gm.gallery_id
+                    LEFT JOIN MEDIA m ON gm.media_id = m.media_id
+                    WHERE g.gallery_id = :gallery_id
+                    ORDER BY gm.display_order ASC
+                ";
+
+                $gStmt = $pdo->prepare($galleryQuery);
+                $gStmt->bindParam(':gallery_id', $galleryId, PDO::PARAM_INT);
+                $gStmt->execute();
+                $galleryRows = $gStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                if ($galleryRows) {
+                    $gallery = new Gallery();
+                    $gallery->fromPDOData([
+                        'gallery_id'    => $galleryRows[0]['gallery_id'],
+                        'gallery_title' => $galleryRows[0]['gallery_title'],
+                        'created_at'    => $galleryRows[0]['created_at'],
+                    ]);
+
+                    foreach ($galleryRows as $row) {
+                        if (empty($row['media_id'])) {
+                            continue;
+                        }
+                        $media = new Media();
+                        $media->fromPDOData([
+                            'media_id'  => $row['media_id'],
+                            'file_path' => $row['file_path'],
+                            'alt_text'  => $row['alt_text'],
+                        ]);
+                        $galleryMedia = new GalleryMedia();
+                        $galleryMedia->fromPDOData([
+                            'gallery_id'    => $row['gallery_id'],
+                            'display_order' => $row['display_order'],
+                        ]);
+                        $galleryMedia->media = $media;
+                        $gallery->addGalleryMedia($galleryMedia);
+                    }
+
+                    $artist->gallery = $gallery;
+                } else {
+                    
+                    $artist->gallery = new Gallery();
+                    $artist->gallery->fromPDOData([
+                        'gallery_id'    => $galleryId,
+                        'gallery_title' => null,
+                        'created_at'    => null,
+                    ]);
+                }
+            }
+
+            return $artist;
+        } catch (PDOException $e) {
+            error_log("Error fetching artist with gallery: " . $e->getMessage());
+            throw new \RuntimeException("Failed to fetch artist by ID: {$artistId}", 0, $e);
+        }
+    }
+
+    /**
+     * Create a new GALLERY row and link it to the artist.
+     * Returns the new gallery_id.
+     */
+    public function createGalleryForArtist(int $artistId, string $title = 'Artist Gallery'): int
+    {
+        try {
+            $pdo = $this->connect();
+
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("INSERT INTO GALLERY (title) VALUES (:title)");
+            $stmt->bindValue(':title', $title);
+            $stmt->execute();
+            $galleryId = (int) $pdo->lastInsertId();
+
+            $stmt2 = $pdo->prepare("UPDATE ARTIST SET gallery_id = :gallery_id WHERE artist_id = :artist_id");
+            $stmt2->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt2->bindValue(':artist_id', $artistId, PDO::PARAM_INT);
+            $stmt2->execute();
+
+            $pdo->commit();
+
+            return $galleryId;
+        } catch (PDOException $e) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Error creating gallery for artist: " . $e->getMessage());
+            throw new \RuntimeException("Failed to create gallery for artist {$artistId}", 0, $e);
+        }
+    }
+
+    /**
+     * Insert a media item into a gallery at the given display order.
+     */
+    public function addMediaToGallery(int $galleryId, int $mediaId, int $displayOrder): bool
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "INSERT INTO GALLERY_MEDIA (gallery_id, media_id, display_order) VALUES (:gallery_id, :media_id, :display_order)"
+            );
+            $stmt->bindValue(':gallery_id',    $galleryId,    PDO::PARAM_INT);
+            $stmt->bindValue(':media_id',      $mediaId,      PDO::PARAM_INT);
+            $stmt->bindValue(':display_order', $displayOrder, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error adding media to gallery: " . $e->getMessage());
+            throw new \RuntimeException("Failed to add media to gallery", 0, $e);
+        }
+    }
+
+    /**
+     * Remove a specific media item from a gallery.
+     */
+    public function removeMediaFromGallery(int $galleryId, int $mediaId): bool
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "DELETE FROM GALLERY_MEDIA WHERE gallery_id = :gallery_id AND media_id = :media_id"
+            );
+            $stmt->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt->bindValue(':media_id',   $mediaId,   PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error removing media from gallery: " . $e->getMessage());
+            throw new \RuntimeException("Failed to remove media from gallery", 0, $e);
+        }
+    }
+
+    /**
+     * Get the next display_order value for a gallery (max + 1).
+     */
+    public function getNextGalleryOrder(int $galleryId): int
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT COALESCE(MAX(display_order), 0) + 1 FROM GALLERY_MEDIA WHERE gallery_id = :gallery_id"
+            );
+            $stmt->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt->execute();
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error getting next gallery order: " . $e->getMessage());
+            return 1;
+        }
+    }
 }

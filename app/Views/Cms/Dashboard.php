@@ -54,5 +54,18 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             </div>
         </article>
 
+        <!-- Schedule Management -->
+        <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center mb-4">
+                <span class="text-4xl mr-4">📅</span>
+                <h2 class="text-2xl font-bold">Schedules</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Manage event time slots and capacity</p>
+            <div class="space-y-2">
+                <a href="/cms/schedules" class="block text-blue-600 hover:underline font-semibold">→ View All Schedules</a>
+                <a href="/cms/schedules/create" class="block text-green-600 hover:underline">+ Add New Schedule</a>
+            </div>
+        </article>
+
     </div>
 </section>
