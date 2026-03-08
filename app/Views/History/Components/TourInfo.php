@@ -1,12 +1,13 @@
 <?php /** @var App\CmsModels\PageSection $tourInfo */ ?>
-<section class="rounded-xl bg-white shadow-md border border-[#e5e5e5] overflow-hidden">
+<section class="p-[2rem] md:p-[3rem] mb-10 flex flex-col justify-center">
     <?php if ($tourInfo): ?>
-    <div class="flex items-center justify-between border-b border-[#e5e5e5] px-6 py-4">
-        <h2 class="text-lg sm:text-xl font-semibold text-ink-900"><?= htmlspecialchars($tourInfo->title ?? 'The Tour') ?></h2>
-    </div>
+        <h2 class="font-history-serif text-[1.75rem] md:text-[2.25rem] text-ink-900">
+            <?= htmlspecialchars($tourInfo->title ?? 'The Tour') ?>
+        </h2>
+        <div class="underline-history"></div>
 
-<div class="text-ink-700 leading-relaxed prose prose-sm max-w-none">
-    <?= $tourInfo->content_html ?>
-</div>
-<?php endif; ?>
+        <div class="text-[0.875rem] md:text-base text-ink-700 leading-relaxed italic prose prose-sm max-w-none">
+            <?= $tourInfo->content_html ?>
+        </div>
+    <?php endif; ?>
 </section>

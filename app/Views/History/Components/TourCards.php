@@ -1,14 +1,14 @@
 <?php /** @var App\CmsModels\PageSection[] $tourFeatures */ ?>
-<div class="grid grid-cols-2 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
     <?php foreach ($tourFeatures as $feature): ?>
-        <div class="rounded-lg border border-[#e5e5e5] bg-[#fdf8eb] p-4">
+        <div class="rounded-lg border border-[#FFF0C2] bg-[#FFF0C2] p-4">
             <div class="flex items-center gap-3">
-                <div class="inline-flex size-9 items-center justify-center rounded-md bg-white text-brand-600 shadow-sm">
+                <div class="inline-flex size-9 items-center justify-center rounded-md  text-brand-600 shadow-sm">
                     <img src="<?= htmlspecialchars($feature->media->file_path ?? 'Icon') ?>" 
                         alt="<?= htmlspecialchars($feature->title) ?>" class="size-full object-cover">
                 </div>
                 <div>
-                    <div class="text-xs uppercase tracking-wide text-ink-500"><?= htmlspecialchars($feature->title) ?></div>
+                    <div class="text-xs uppercase tracking-wide text-ink-900"><?= htmlspecialchars($feature->title) ?></div>
                     <div class="font-medium text-ink-900 leading-tight"><?= strip_tags($feature->content_html) ?></div>
                 </div>
             </div>

@@ -635,6 +635,7 @@ video {
   --color-ink-600: #4a4a4a;
   --color-ink-500: #6b6b6b;
   --color-bg-history: #fefbf0;
+  --color-underline-history: #84642F;
 }
 
 .container{
@@ -1455,6 +1456,15 @@ select:focus,
   background-color: var(--color-brand-600);
 }
 
+.underline-history
+  {
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  height: 1px;
+  width: 4rem;
+  background-color: var(--color-underline-history);
+}
+
 .sr-only{
   position: absolute;
   width: 1px;
@@ -1705,6 +1715,10 @@ select:focus,
   margin-bottom: 2rem;
 }
 
+.mb-\[1\.5rem\]{
+  margin-bottom: 1.5rem;
+}
+
 .mb-\[5rem\]{
   margin-bottom: 5rem;
 }
@@ -1755,6 +1769,10 @@ select:focus,
 
 .mt-1{
   margin-top: 0.25rem;
+}
+
+.mt-10{
+  margin-top: 2.5rem;
 }
 
 .mt-12{
@@ -2058,6 +2076,10 @@ select:focus,
   width: 40%;
 }
 
+.w-\[4rem\]{
+  width: 4rem;
+}
+
 .w-\[50\%\]{
   width: 50%;
 }
@@ -2088,10 +2110,6 @@ select:focus,
 
 .min-w-0{
   min-width: 0px;
-}
-
-.min-w-\[200px\]{
-  min-width: 200px;
 }
 
 .min-w-\[220px\]{
@@ -2426,10 +2444,6 @@ select:focus,
   border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
 }
 
-.self-start{
-  align-self: flex-start;
-}
-
 .overflow-hidden{
   overflow: hidden;
 }
@@ -2589,6 +2603,11 @@ select:focus,
 .border-\[\#FFB8B8\]{
   --tw-border-opacity: 1;
   border-color: rgb(255 184 184 / var(--tw-border-opacity, 1));
+}
+
+.border-\[\#FFF0C2\]{
+  --tw-border-opacity: 1;
+  border-color: rgb(255 240 194 / var(--tw-border-opacity, 1));
 }
 
 .border-\[\#e5e5e5\]{
@@ -2784,14 +2803,14 @@ select:focus,
   background-color: rgb(255 85 0 / var(--tw-bg-opacity, 1));
 }
 
+.bg-\[\#FFF0C2\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 240 194 / var(--tw-bg-opacity, 1));
+}
+
 .bg-\[\#fafafa\]{
   --tw-bg-opacity: 1;
   background-color: rgb(250 250 250 / var(--tw-bg-opacity, 1));
-}
-
-.bg-\[\#fdf8eb\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(253 248 235 / var(--tw-bg-opacity, 1));
 }
 
 .bg-\[var\(--color-bg-history\)\]{
@@ -3374,6 +3393,14 @@ select:focus,
   font-size: 1.25rem;
 }
 
+.text-\[1\.5rem\]{
+  font-size: 1.5rem;
+}
+
+.text-\[1\.75rem\]{
+  font-size: 1.75rem;
+}
+
 .text-\[10px\]{
   font-size: 10px;
 }
@@ -3873,30 +3900,8 @@ select:focus,
   font-family: Roboto;
 }
 
-.marker\:text-brand-600 *::marker {
-  color: var(--color-brand-600);
-}
-
-.marker\:text-brand-600::marker {
-  color: var(--color-brand-600);
-}
-
 .hover\:text-ink-700:hover {
   color: var(--color-ink-700);
-}
-
-.hover\:text-brand-600:hover {
-  color: var(--color-brand-600);
-}
-
-.marker\:text-xs *::marker{
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.marker\:text-xs::marker{
-  font-size: 0.75rem;
-  line-height: 1rem;
 }
 
 .before\:mr-1::before{
@@ -4290,11 +4295,6 @@ select:focus,
   .sm\:grid-cols-3{
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
-  .sm\:text-xl{
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-  }
 }
 
 @media (min-width: 768px){
@@ -4476,6 +4476,10 @@ select:focus,
     padding: 1.25rem;
   }
 
+  .md\:p-\[3rem\]{
+    padding: 3rem;
+  }
+
   .md\:px-0{
     padding-left: 0px;
     padding-right: 0px;
@@ -4523,6 +4527,14 @@ select:focus,
   .md\:text-6xl{
     font-size: 3.75rem;
     line-height: 1;
+  }
+
+  .md\:text-\[2\.25rem\]{
+    font-size: 2.25rem;
+  }
+
+  .md\:text-\[2rem\]{
+    font-size: 2rem;
   }
 
   .md\:text-base{
@@ -4619,12 +4631,11 @@ select:focus,
   list-style-type: disc;
 }
 
-.\[\&\>ul\]\:space-y-3>ul > :not([hidden]) ~ :not([hidden]){
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
-}
-
 .\[\&\>ul\]\:pl-5>ul{
   padding-left: 1.25rem;
 }
+
+
+
+
+    

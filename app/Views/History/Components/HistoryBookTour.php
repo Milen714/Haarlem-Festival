@@ -6,7 +6,7 @@
             <div class="mt-3 max-w-2xl mx-auto text-ink-700 prose prose-sm max-w-none">
                 <?= $bookTour->content_html ?>
             </div>
-            <a href="<?= htmlspecialchars($bookTour->cta_url ?? '#') ?>" 
+            <a href="<?= htmlspecialchars($bookTour->cta_url) ?>" 
                class="mt-6 inline-flex items-center justify-center rounded-md bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 text-base font-semibold shadow-md transition-all">
                 <?= htmlspecialchars($bookTour->cta_text ?? 'Book now') ?>
             </a>
