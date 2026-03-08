@@ -179,11 +179,17 @@ class AccountController extends BaseController {
         $email = $_POST['email'] ?? '';
         $newPassword = $_POST['password'] ?? '';
         $repeatPassword = $_POST['repeatPassword'] ?? '';
+        // Validate passwords Match
         if ($newPassword !== $repeatPassword) {
-            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => "Passwords do not match.",
-                        "email" => $email, "token" => $token]);
-            return;
+            throw new \Exception("Passwords do not match. Please try again.");
         }
+        // validate password strength
+            $passwordValidation = $this->authService->validatePassword($newPassword);
+            if (!$passwordValidation['valid']) {
+                $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
+                throw new \Exception($errorMsg);
+            }
+            
         try {
             $user = $this->userService->getUserByEmail($email);
             if (!$user || $user->reset_token !== $token) {
@@ -202,7 +208,8 @@ class AccountController extends BaseController {
             // Redirect to login with success message
             $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
         } catch (\Exception $e) {
-            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage()]);
+            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage(),
+                        "email" => $email, "token" => $token]);
         }
     }
 }
