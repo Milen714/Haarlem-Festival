@@ -121,6 +121,9 @@ class HistoryController extends BaseController
         }
     }
 
+
+    const HISTORY_DETAIL_SLUG = 'detail'; 
+
     /** @param array $vars */
     public function detail(array $vars): void
     {
