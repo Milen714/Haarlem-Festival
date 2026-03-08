@@ -136,10 +136,35 @@ class HistoryController extends BaseController
             return;
         }
 
+       // 1. Definimos las imágenes por defecto
+        $introImage = '/Assets/Home/ImagePlaceholder.png';
+        $historyImage = '/Assets/Home/ImagePlaceholder.png';
+        $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
+
+        // 2. Extraemos las imágenes si la galería existe
+        if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
+            $items = array_values($landmark->gallery->media_items);
+
+            if (isset($items[0]) && !empty($items[0]->media)) {
+                $introImage = '/' . ltrim($items[0]->media->file_path, '/');
+            }
+            if (isset($items[1]) && !empty($items[1]->media)) {
+                $historyImage = '/' . ltrim($items[1]->media->file_path, '/');
+            }
+            if (isset($items[2]) && !empty($items[2]->media)) {
+                $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
+            }
+        }
+
+        // 3. Pasamos las variables limpias a la Vista
         $this->view('History/HistoryDetail', [
             'title' => $landmark->name . ' - Haarlem History',
-            'landmark' => $landmark
+            'landmark' => $landmark,
+            'introImage' => $introImage,
+            'historyImage' => $historyImage,
+            'whyVisitImage' => $whyVisitImage
         ]);
+    
     }
 
 }

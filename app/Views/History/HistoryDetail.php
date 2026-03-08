@@ -4,28 +4,10 @@ namespace App\Views\History;
 use App\Models\History\Landmark;
 
 /** @var Landmark $landmark */
+/** @var string $introImage */
+/** @var string $historyImage */
+/** @var string $whyVisitImage */
 $landmark = $landmark ?? null;
-
-$introImage = '/Assets/Home/ImagePlaceholder.png';
-$historyImage = '/Assets/Home/ImagePlaceholder.png';
-$whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
-
-
-if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
-    $items = array_values($landmark->gallery->media_items);
-
-    if (isset($items[0]) && !empty($items[0]->media)) {
-        $introImage = '/' . ltrim($items[0]->media->file_path, '/');
-    }
-
-    if (isset($items[1]) && !empty($items[1]->media)) {
-        $historyImage = '/' . ltrim($items[1]->media->file_path, '/');
-    }
-    
-    if (isset($items[2]) && !empty($items[2]->media)) {
-        $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
-    }
-}
 ?>
 
 <div class="antialiased text-ink-800 bg-[var(--color-bg-history)] min-h-screen">

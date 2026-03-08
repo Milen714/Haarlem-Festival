@@ -31,24 +31,59 @@ class LandmarkRepository extends Repository
 
     public function getById(int $id): ?Landmark
     {
-        $sql = "SELECT * FROM LANDMARK WHERE landmark_id = :id LIMIT 1";
+        $sql = "SELECT landmark.*, media.file_path, media.media_id as img_id 
+            FROM LANDMARK landmark
+            LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
+            LEFT JOIN MEDIA media ON gm.media_id = media.media_id
+            WHERE landmark.landmark_id = :id";
         
         $stmt = $this->pdo->prepare($sql);
         
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
         
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if (!$row) {
-            return null;
-        }
-
-        $landmark = new Landmark();
-        $landmark->fromPDOData($row);
-        
-        return $landmark;
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (!$rows) {
+        return null;
     }
+    
+    $landmark = new Landmark();
+    $landmark->fromPDOData($rows[0]);
+    $landmark->gallery_media = [];
+
+    // 4. Recorremos todas las filas para extraer las imágenes
+    foreach ($rows as $row) {
+        // Solo agregamos si realmente hay una imagen (evita fallos si la galería está vacía por el LEFT JOIN)
+        if (!empty($row['media_id'])) {
+            $media = new \App\Models\Media();
+            
+            // Mapeamos los datos de la fila al modelo Media
+            // Usamos los alias de la consulta SQL
+            $media->fromPDOData([
+                'media_id' => $row['media_id'],
+                'file_path' => $row['file_path'],
+                'alt_text'  => $row['alt_text']
+            ]);
+            
+            $landmark->gallery_media[] = $media;
+        }
+    }
+        return $landmark;
+    
+    }
+
+    // app/src/Repositories/LandmarkRepository.php
+
+public function addMediaToGallery(int $galleryId, int $mediaId): bool
+{
+    $sql = "INSERT INTO GALLERY_MEDIA (gallery_id, media_id) VALUES (:gallery_id, :media_id)";
+    $stmt = $this->pdo->prepare($sql);
+    return $stmt->execute([
+        'gallery_id' => $galleryId,
+        'media_id' => $mediaId
+    ]);
+}
 
     public function getBySlug(string $slug): ?Landmark
     {
