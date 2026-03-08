@@ -85,16 +85,23 @@ $action = $action ?? '/cms/landmarks/store';
             2 => ['label' => 'Practical Info', 'name' => 'img_practical']
         ];
 
+        // 1. Extraemos los items de la galería (la nueva estructura)
+        $mediaItems = [];
+        if ($landmark !== null && !empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
+            // array_values asegura que los índices sean 0, 1, 2 sin importar el display_order real
+            $mediaItems = array_values($landmark->gallery->media_items);
+        }
+
         foreach ($slots as $index => $slot): 
-            // Buscamos si existe imagen en esta posición del array gallery_media
-            $media = $landmark->gallery_media[$index] ?? null;
+            // 2. Buscamos si existe imagen en esta posición (0, 1 o 2)
+            $media = isset($mediaItems[$index]) ? $mediaItems[$index]->media : null;
         ?>
             <div class="border rounded-lg p-4 bg-gray-50 flex flex-col">
                 <label class="block text-xs font-bold uppercase text-gray-500 mb-2"><?= $slot['label'] ?> Image</label>
                 
                 <div class="mb-3 aspect-video bg-white border rounded overflow-hidden flex items-center justify-center">
-                    <?php if ($media): ?>
-                        <img src="<?= htmlspecialchars($media->file_path) ?>" class="w-full h-full object-cover">
+                    <?php if ($media && !empty($media->file_path)): ?>
+                        <img src="<?= htmlspecialchars('/' . ltrim($media->file_path, '/')) ?>" class="w-full h-full object-cover">
                         <input type="hidden" name="<?= $slot['name'] ?>_id" value="<?= $media->media_id ?>">
                     <?php else: ?>
                         <span class="text-gray-300 text-[10px]">No image uploaded</span>
@@ -108,7 +115,6 @@ $action = $action ?? '/cms/landmarks/store';
             </div>
         <?php endforeach; ?>
     </div>
-</div>
 
         <div class="flex gap-4">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">

@@ -29,51 +29,6 @@ class LandmarkRepository extends Repository
         return $landmarks;
     }
 
-    public function getById(int $id): ?Landmark
-    {
-        $sql = "SELECT landmark.*, media.file_path, media.media_id as img_id 
-            FROM LANDMARK landmark
-            LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
-            LEFT JOIN MEDIA media ON gm.media_id = media.media_id
-            WHERE landmark.landmark_id = :id";
-        
-        $stmt = $this->pdo->prepare($sql);
-        
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    if (!$rows) {
-        return null;
-    }
-    
-    $landmark = new Landmark();
-    $landmark->fromPDOData($rows[0]);
-    $landmark->gallery_media = [];
-
-    // 4. Recorremos todas las filas para extraer las imágenes
-    foreach ($rows as $row) {
-        // Solo agregamos si realmente hay una imagen (evita fallos si la galería está vacía por el LEFT JOIN)
-        if (!empty($row['media_id'])) {
-            $media = new \App\Models\Media();
-            
-            // Mapeamos los datos de la fila al modelo Media
-            // Usamos los alias de la consulta SQL
-            $media->fromPDOData([
-                'media_id' => $row['media_id'],
-                'file_path' => $row['file_path'],
-                'alt_text'  => $row['alt_text']
-            ]);
-            
-            $landmark->gallery_media[] = $media;
-        }
-    }
-        return $landmark;
-    
-    }
-
-    // app/src/Repositories/LandmarkRepository.php
 
 public function addMediaToGallery(int $galleryId, int $mediaId): bool
 {
@@ -87,21 +42,101 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
 
     public function getBySlug(string $slug): ?Landmark
     {
-        $sql = "SELECT * FROM LANDMARK WHERE landmark_slug = :slug LIMIT 1";
+        // Esta consulta sí tiene los JOINs, pero solo se ejecuta cuando tú lo pidas
+        $sql = "SELECT landmark.*, 
+                       media.media_id, media.file_path, media.alt_text, 
+                       gm.display_order
+                FROM LANDMARK landmark
+                LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
+                LEFT JOIN MEDIA media ON gm.media_id = media.media_id
+                WHERE landmark.landmark_slug = :slug
+                ORDER BY gm.display_order ASC";
         
         $stmt = $this->pdo->prepare($sql);
-        
         $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
         $stmt->execute();
         
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        if (!$row) {
-            return null;
-        }
+        if (!$rows) return null;
 
         $landmark = new Landmark();
-        $landmark->fromPDOData($row);
+        $landmark->fromPDOData($rows[0]);
+        
+        if (!empty($rows[0]['gallery_id'])) {
+            $gallery = new \App\Models\Gallery();
+            $gallery->gallery_id = $rows[0]['gallery_id'];
+
+            foreach ($rows as $row) {
+                if (!empty($row['media_id'])) {
+                    $media = new \App\Models\Media();
+                    $media->fromPDOData([
+                        'media_id'  => $row['media_id'],
+                        'file_path' => $row['file_path'],
+                        'alt_text'  => $row['alt_text'] ?? ''
+                    ]);
+                    
+                    $galleryMedia = new \App\Models\GalleryMedia();
+                    $galleryMedia->media = $media;
+                    $galleryMedia->order = $row['display_order'] ?? 0;
+                    
+                    $gallery->addGalleryMedia($galleryMedia);
+                }
+            }
+            $landmark->gallery = $gallery;
+        }
+        
+        return $landmark;
+    }
+
+    public function getById(int $id): ?Landmark
+    {
+        $sql = "SELECT landmark.*, 
+                       media.media_id, media.file_path, media.alt_text, 
+                       gm.display_order
+                FROM LANDMARK landmark
+                LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
+                LEFT JOIN MEDIA media ON gm.media_id = media.media_id
+                WHERE landmark.landmark_id = :id
+                ORDER BY gm.display_order ASC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        if (!$rows) {
+            return null;
+        }
+        
+        $landmark = new Landmark();
+        $landmark->fromPDOData($rows[0]);
+
+        // Construir la Galería correctamente
+        if (!empty($rows[0]['gallery_id'])) {
+            $gallery = new \App\Models\Gallery();
+            $gallery->gallery_id = $rows[0]['gallery_id'];
+
+            foreach ($rows as $row) {
+                if (!empty($row['media_id'])) {
+                    $media = new \App\Models\Media();
+                    $media->fromPDOData([
+                        'media_id'  => $row['media_id'],
+                        'file_path' => $row['file_path'],
+                        'alt_text'  => $row['alt_text'] ?? ''
+                    ]);
+                    
+                    // Envolvemos el Media en un GalleryMedia
+                    $galleryMedia = new \App\Models\GalleryMedia();
+                    $galleryMedia->media = $media;
+                    $galleryMedia->order = $row['display_order'] ?? 0;
+                    
+                    $gallery->addGalleryMedia($galleryMedia);
+                }
+            }
+            $landmark->gallery = $gallery;
+        }
         
         return $landmark;
     }

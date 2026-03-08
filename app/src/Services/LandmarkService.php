@@ -31,7 +31,7 @@ class LandmarkService
     {
         return $this->landmarkRepository->getBySlug($slug);
     }
-
+    
     private function mapLandmarkData(array $postData, string $slug, ?Landmark $landmark = null): Landmark
     {
         if ($landmark === null) {
