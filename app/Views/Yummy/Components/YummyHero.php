@@ -1,6 +1,8 @@
 <?php
 namespace App\Views\Yummy\Components;
-/**@var object|null $heroSection */
+/**@var 
+ * object|null $heroSection 
+ * */
 ?>
 
 <section class="relative bg-[var(--yummy-primary)] text-white">
@@ -13,7 +15,7 @@ namespace App\Views\Yummy\Components;
         <h1 class="text-4xl font-semibold mb-4"><?= $heroSection->title ?? 'Yummy!' ?></h1>
         <?= $heroSection->content_html ?? 'Welcome to the Yummy Haarlem Festival, where culinary delights await you! Explore the vibrant food scene of Haarlem and indulge in a gastronomic adventure like no other.' ?>
 
-        <a href="<?= htmlspecialchars($heroSection->cta_url ?? '#restaurants') ?>"
+        <a href="<?= htmlspecialchars($heroSection->cta_url ?? '/events-yummy/restaurants') ?>"
             class="bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)] border border-[var(--yummy-sec-section)] font-semibold px-6 py-3 rounded">
             <?= htmlspecialchars($heroSection->cta_text ?? 'View Restaurants') ?>
         </a>
