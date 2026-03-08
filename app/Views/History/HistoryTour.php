@@ -13,6 +13,8 @@ namespace App\Views\History;
         <?php include __DIR__ . '/Components/TourCards.php'; ?>
 
         <?php include __DIR__ . '/Components/TourGoodToKnow.php'; ?>
+
+        <?php include __DIR__ . '/Components/TourRoute.php'; ?>
         
         <?php //include __DIR__ . '/Components/TourReadMore.php'; ?>
 
