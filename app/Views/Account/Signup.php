@@ -33,10 +33,6 @@ if (isset($userModel)) {
                 value="<?php echo htmlspecialchars($user->email ?? ''); ?>" required>
         </article>
         <article class="input_group">
-            <label class="input_label" for="password">Password:</label>
-            <input class="form_input" type="password" id="password" name="password" required>
-        </article>
-        <article class="input_group">
             <label class="input_label" for="fname">First Name:</label>
             <input class="form_input" type="text" id="fname" name="fname"
                 value="<?php echo htmlspecialchars($user->fname ?? ''); ?>" required>
@@ -56,6 +52,10 @@ if (isset($userModel)) {
             <input class="form_input" type="tel" id="phone" name="phone"
                 value="<?php echo htmlspecialchars($user->phone ?? ''); ?>">
         </article>
+        <article class="input_group password-group">
+            <label class="input_label" for="password">Password:</label>
+            <input class="form_input" type="password" id="password" name="password" required>
+        </article>
 
         <button id="submit-button" class="button_primary" type="submit">Signup</button>
 
@@ -70,13 +70,22 @@ if (isset($userModel)) {
 
 
     <script>
+    const passwordChecklist = document.querySelectorAll('.password-strength p');
     const submitButton = document.getElementById('submit-button');
     const spinner = document.getElementById('spinner');
     const signUpForm = document.getElementById("signupForm");
     const autoLoginForm = document.getElementById("autoLoginForm");
     const hiddenEmail = document.getElementById("hidden-email");
     const hiddenPassword = document.getElementById("hidden-password");
+
+
     signUpForm.addEventListener('submit', async function(event) {
+        if (!checkPasswordStrength()) {
+            showError('Password does not meet the strength requirements.');
+            event.preventDefault();
+            return;
+        }
+
         event.preventDefault();
         submitButton.disabled = true;
         submitButton.classList.add('opacity-50', 'cursor-not-allowed');
@@ -142,4 +151,43 @@ if (isset($userModel)) {
             });
         });
     }
+
+
+    const passwordInput = document.getElementById("password");
+
+    function checkPasswordStrength() {
+        const password = passwordInput.value;
+
+        const checks = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /\d/.test(password),
+            special: /[\W_]/.test(password)
+        };
+
+        document.getElementById("length").classList.toggle("valid", checks.length);
+        document.getElementById("uppercase").classList.toggle("valid", checks.uppercase);
+        document.getElementById("lowercase").classList.toggle("valid", checks.lowercase);
+        document.getElementById("number").classList.toggle("valid", checks.number);
+        document.getElementById("special").classList.toggle("valid", checks.special);
+
+        return Object.values(checks).every(Boolean);
+    }
+    passwordInput.addEventListener("input", checkPasswordStrength);
+
+    function displayPasswordStrength() {
+        const passwordGroup = document.querySelector('.password-group');
+        const container = document.createElement('div');
+        container.classList.add('password-strength');
+        container.innerHTML = `
+            <p id="length" class="valid">At least 8 characters</p>
+            <p id="uppercase" class="valid">Contains an uppercase letter</p>
+            <p id="lowercase" class="valid">Contains a lowercase letter</p>
+            <p id="number" class="valid">Contains a number</p>
+            <p id="special" class="valid">Contains a special character</p>
+        `;
+        passwordGroup.appendChild(container);
+    }
+    displayPasswordStrength();
     </script>
