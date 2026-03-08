@@ -9,11 +9,12 @@ class RestaurantListViewModel{
     /**
      * @var Restaurant[]
      */
-    public array $restaurants = [];
+    public array $restaurants;
+    //public ?Gallery $gallery = null;
 
     /**
      * @var Cuisine[]
-     */
+     */ 
     public array $cuisines = [];
     public object $pageData;
     public ?int $selectedCuisineId = null;

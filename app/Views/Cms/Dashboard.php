@@ -50,11 +50,11 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             <p class="text-gray-600 mb-4">Manage Restaurants & Extensions</p>
             <div class="space-y-2">
                 <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Restaurants</a>
-                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Sessions</a>
-                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Cuisine</a>
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Sessions (Pending)</a>
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Cuisine (Pending)</a>
                 <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Restaurant</a>
-                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Session</a>
-                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Cuisine</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Session (Pending)</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Cuisine (Pending)</a>
             </div>
         </article>
 
