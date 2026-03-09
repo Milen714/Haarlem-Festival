@@ -7,7 +7,7 @@ $items = $vm->breadcrumbs;
     <div class="max-w-7xl mx-auto px-6">
         <?php include __DIR__ . '/Components/breadcrumb.php'; ['items' => $items]; ?>
         <div class="mb-20">
-            <?= $pageData->sidebar_html ?>
+            <?= $vm->pageData->sidebar_html ?>
         </div>
 
         <?php include 'Components/dance-headliners.php'; ?>

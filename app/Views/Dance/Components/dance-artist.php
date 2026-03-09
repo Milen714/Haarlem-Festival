@@ -20,7 +20,7 @@ namespace App\Views\Dance\Components;
         
        <div class="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 gap-4 max-w-4xl mx-auto auto-rows-fr">
             <?php foreach ($artists as $artist): ?>
-                <a href="/dance/artist/<?= $artist->slug ?>" class="flex flex-col items-center group cursor-pointer h-full">
+                <a href="/events-dance/artist/<?= $artist->slug ?>" class="flex flex-col items-center group cursor-pointer h-full">
                     
                     <div class="relative w-full aspect-square overflow-hidden bg-gray-900">
                         <img src="<?= $artist->profile_image->file_path ?? '' ?>" 
