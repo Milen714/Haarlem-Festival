@@ -57,6 +57,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
     $r->addRoute('GET', '/events-yummy/restaurants/{slug}', ['App\Controllers\YummyController', 'restaurantDetail']);
+    
+    $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
+    
+    /* History Event Route */
+    $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
+    $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
+    $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
+
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
     $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);
@@ -96,6 +104,18 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/users/edit/{id:\d+}', ['App\Controllers\UserController', 'edit']);
     $r->addRoute('POST', '/cms/users/update/{id:\d+}', ['App\Controllers\UserController', 'update']);
     $r->addRoute('POST', '/cms/users/delete/{id:\d+}', ['App\Controllers\UserController', 'delete']);
+
+    /*Landmark cms*/
+    $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
+
+    $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
+    $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
+
+    $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
+    $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
+    $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
+
+
 
     /* Legacy route for homepage (keep for backwards compatibility) */
     $r->addRoute('GET', '/home-update', function () {

@@ -1,0 +1,23 @@
+<?php
+namespace App\Views\History;
+?>
+
+<div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
+    
+    <?php include __DIR__ . '/Components/HistoryHero.php'; ?>
+    
+    <div class="container mx-auto max-w-[1100px] px-4">
+        
+        <?php include __DIR__ . '/Components/TourInfo.php'; ?>
+        
+        <?php include __DIR__ . '/Components/TourCards.php'; ?>
+
+        <?php include __DIR__ . '/Components/TourGoodToKnow.php'; ?>
+
+        <?php include __DIR__ . '/Components/TourRoute.php'; ?>
+        
+        <?php //include __DIR__ . '/Components/TourReadMore.php'; ?>
+
+        <?php include __DIR__ . '/Components/HistoryBookTour.php'; ?>
+    </div>
+</div>

@@ -20,6 +20,8 @@ module.exports = {
         roboto: ['Roboto', 'sans-serif'],
         courierprime: ['Courier Prime', 'monospace'],
         blackopsone: ['Black Ops One', 'system-ui'],
+        sans: ['ui-sans-serif','system-ui','Segoe UI','Roboto','Helvetica','Arial','sans-serif'],
+        serif: ['Georgia','Cambria','Times New Roman','Times','serif']
       },
       content: {
         'arrow_right': 'url("/Assets/Nav/ArrowRightNav.svg")',

@@ -7,6 +7,8 @@ use App\Models\Enums\UserRole;
 use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Services\MailService;
+use App\Services\Interfaces\IAuthService;
+use App\Services\AuthService;
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 $dotenv->safeLoad();
 
@@ -14,10 +16,12 @@ class AccountController extends BaseController {
     private UserService $userService;
     private UserRepository $userRepository;
     private MailService $mailService;
+    private IAuthService $authService;
     public function __construct() {
         $this->userRepository = new UserRepository();
         $this->userService = new UserService($this->userRepository);
         $this->mailService = new MailService();
+        $this->authService = new AuthService();
     }
     public function login($vars = [])
     {
@@ -96,6 +100,14 @@ class AccountController extends BaseController {
         $user = $user->fromArray($data);
 
         try {
+            // validate password strength
+            $passwordValidation = $this->authService->validatePassword($user->password_hash);
+            if (!$passwordValidation['valid']) {
+                $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
+                throw new \Exception($errorMsg);
+            }
+
+            // Validate reCAPTCHA token
             $token = $data['recaptcha'] ?? ''; 
             $this->validateCaptchaToken($token);
             // Check if email already exists
@@ -104,7 +116,7 @@ class AccountController extends BaseController {
                 throw new \Exception("This email is already in use.");
             }
             // Generate verification token and send verification email
-            $token = $this->generateVerificationToken($user);
+            $token = $this->authService->generateVerificationToken($user);
             $verificationLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Save the user to the database
             $this->userService->createUser($user);
@@ -132,7 +144,7 @@ class AccountController extends BaseController {
             if (!$user) {
                 throw new \Exception("No user found with that email address.");
             }
-            $token = $this->generatePasswordResetToken($user);
+            $token = $this->authService->generatePasswordResetToken($user);
             $resetLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
@@ -167,11 +179,17 @@ class AccountController extends BaseController {
         $email = $_POST['email'] ?? '';
         $newPassword = $_POST['password'] ?? '';
         $repeatPassword = $_POST['repeatPassword'] ?? '';
+        // Validate passwords Match
         if ($newPassword !== $repeatPassword) {
-            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => "Passwords do not match.",
-                        "email" => $email, "token" => $token]);
-            return;
+            throw new \Exception("Passwords do not match. Please try again.");
         }
+        // validate password strength
+            $passwordValidation = $this->authService->validatePassword($newPassword);
+            if (!$passwordValidation['valid']) {
+                $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
+                throw new \Exception($errorMsg);
+            }
+            
         try {
             $user = $this->userService->getUserByEmail($email);
             if (!$user || $user->reset_token !== $token) {
@@ -190,33 +208,8 @@ class AccountController extends BaseController {
             // Redirect to login with success message
             $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
         } catch (\Exception $e) {
-            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage()]);
-        }
-    }
-    
-    private function generateSecureToken(int $length = 32): string {
-        $str = bin2hex(random_bytes($length));
-        return base64_encode($str);
-    }
-    private function generatePasswordResetToken(User $user): string {
-        try {
-        $token = $this->generateSecureToken();
-        $user->reset_token = $token;
-        $user->reset_token_expiry = new \DateTime('+1 hour'); // Token valid for 1 hour
-        $this->userService->updateUser($user);
-        return $token;
-        } catch (\Exception $e) {
-            die("Error generating password reset token: " . $e->getMessage());
-        }
-    }
-    private function generateVerificationToken(User $user): string {
-        try {
-        $token = $this->generateSecureToken();
-        $user->verification_token = $token;
-        
-        return $token;
-        } catch (\Exception $e) {
-            die("Error generating verification token: " . $e->getMessage());
+            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage(),
+                        "email" => $email, "token" => $token]);
         }
     }
 }
