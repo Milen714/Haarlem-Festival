@@ -72,7 +72,7 @@ $user = $user ?? null;
 
         </form>
 
-        <div class="mt-12 pt-8 border-t border-[#CAA359]">
+        <div class="mt-12 pt-8">
             <div class="flex justify-between items-center">
                 <div>
                     <h3 class="font-history-serif text-xl font-bold text-ink-900">Password</h3>
@@ -83,6 +83,20 @@ $user = $user ?? null;
                 </a>
             </div>
         </div>
+
+        <div class="mt-12 pt-8">
+        <!--change the url-->
+            <a href="/" class="px-5 py-2 bg-[#FFF0C2] border border-[#CAA359] text-ink-900 rounded-md hover:bg-[#FFE598] font-semibold transition-colors shadow-sm">
+                My personal program
+            </a>
+
+            <a href="/" class="ml-2 px-5 py-2 bg-[#FFF0C2] border border-[#CAA359] text-ink-900 rounded-md hover:bg-[#FFE598] font-semibold transition-colors shadow-sm">
+                Validate my account
+            </a>
+            
+        </div>
+        
+
 
     </div>
 </section>
