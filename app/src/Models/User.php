@@ -46,4 +46,15 @@ class User {
         $user->is_verified = false;
         return $user;
     }
+
+    public function mapUser(array $data): void {
+        if (isset($data['fname'])) $this->fname = $data['fname'];
+        if (isset($data['lname'])) $this->lname = $data['lname'];
+        if (isset($data['email'])) $this->email = $data['email'];
+        if (isset($data['phone'])) $this->phone = $data['phone'];
+        if (isset($data['address'])) $this->address = $data['address'];
+        if (isset($data['password']) && !empty($data['password'])) {
+            $this->password_hash = password_hash($data['password'], PASSWORD_BCRYPT);
+        }
+    }
 }

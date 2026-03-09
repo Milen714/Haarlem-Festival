@@ -212,4 +212,38 @@ class AccountController extends BaseController {
                         "email" => $email, "token" => $token]);
         }
     }
+    
+    public function settings($vars = []) {
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+        $loggedUser = $_SESSION['loggedInUser'];
+        $user = $this->userService->getUserById($loggedUser->id);
+
+        $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+    }
+
+    public function update($vars = []) {
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+
+        try {
+            $loggedUser = $_SESSION['loggedInUser'];
+            $user = $this->userService->getUserById($loggedUser->id);
+
+            $user->mapUser($_POST);
+            $this->userService->updateUser($user);
+
+            $_SESSION['loggedInUser'] = $user;
+
+            header("Location: /settings");
+            exit(); 
+
+        } catch (\Exception $e) {
+            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => $e->getMessage()]);
+        }
+    }
 }

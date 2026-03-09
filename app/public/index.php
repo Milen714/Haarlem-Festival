@@ -116,6 +116,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
     $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
 
+    $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
+    $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
 
 
     /* Legacy route for homepage (keep for backwards compatibility) */
