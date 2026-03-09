@@ -4,8 +4,10 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\Interfaces\ILandmarkService;
+use App\Services\LandmarkService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
+use App\Models\Landmark;
 
 class LandmarkController extends BaseController
 {
@@ -13,7 +15,7 @@ class LandmarkController extends BaseController
 
     public function __construct()
     {        
-        $this->landmarkService = new ILandmarkService();
+        $this->landmarkService = new LandmarkService();
     }
     
     private function startSession(): void
@@ -39,12 +41,40 @@ class LandmarkController extends BaseController
     public function create($vars = []): void
     {
         $this->startSession();
+
+        $images = $this->prepareImages();
         
         $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
             'title' => 'Create New Landmark',
             'landmark' => null, 
-            'action' => '/cms/landmarks/store' 
+            'action' => '/cms/landmarks/store',
+            'images' => $images
         ]);
+    }
+
+    private function prepareImages(?Landmark $landmark = null): array
+    {
+    $slotsSchema = [
+        ['label' => 'Introduction', 'name' => 'img_intro'],
+        ['label' => 'History',      'name' => 'img_history'],
+        ['label' => 'Practical Info', 'name' => 'img_practical']
+    ];
+
+    $mediaItems = [];
+    if ($landmark !== null && !empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
+        $mediaItems = array_values($landmark->gallery->media_items);
+    }
+
+    $imageSlots = [];
+    foreach ($slotsSchema as $index => $slot) {
+        $imageSlots[] = [
+            'label' => $slot['label'],
+            'name'  => $slot['name'],
+            'media' => $mediaItems[$index]->media ?? null,
+        ];
+    }
+
+    return $imageSlots;
     }
 
     #[RequireRole([UserRole::ADMIN])] //post the creation of the landmark
@@ -72,7 +102,9 @@ class LandmarkController extends BaseController
         $id = $vars['id'] ?? '';
 
         try {
-            $landmark = $this->landmarkService->getLandmarkById($id);           
+            $landmark = $this->landmarkService->getLandmarkById($id);
+
+            $images = $this->prepareImages($landmark);       
 
             if (!$landmark) {
                 $this->redirect('/cms/landmarks');
@@ -82,7 +114,8 @@ class LandmarkController extends BaseController
             $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
                 'title' => 'Edit Landmark: ' . $landmark->name,
                 'landmark' => $landmark,
-                'action' => "/cms/landmarks/update/{$landmark->landmark_id}"
+                'action' => "/cms/landmarks/update/{$landmark->landmark_id}",
+                'images' => $images
             ]);
 
 
