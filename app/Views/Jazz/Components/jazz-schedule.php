@@ -54,7 +54,7 @@ $colorIndex = 0;
                             <?= $daySchedule['is_free'] ? 'FREE Event - Open Air' : 'From €10 • Day Pass €35' ?>
                         </p>
                         
-                        <a href="/schedule?date=<?= htmlspecialchars($dateKey) ?>" 
+                        <a href="/events-jazz/schedule?date=<?= htmlspecialchars($dateKey) ?>" 
                            class="block w-full jazz_event_bg_<?= $color ?> <?= $textColor ?> text-center py-3 rounded-lg font-semibold hover:opacity-90 transition-colors">
                             See Schedule →
                         </a>

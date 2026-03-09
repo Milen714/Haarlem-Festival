@@ -10,7 +10,11 @@ use App\Repositories\PageRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\VenueRepository;
 use App\Repositories\LandmarkRepository;
+use App\Repositories\ArtistRepository;
+use App\Repositories\RestaurantRepository;
 use App\Services\VenueService;
+use App\Services\ArtistService;
+use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\LandmarkService;
 use App\Models\User;
@@ -42,13 +46,19 @@ class HomeController extends BaseController
         $this->pageRepository = new PageRepository();
         $this->pageService = new PageService($this->pageRepository);
         $this->scheduleRepository = new ScheduleRepository();
-        $this->scheduleService = new ScheduleService($this->scheduleRepository);
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
         $this->landmarkRepository = new LandmarkRepository();
         $this->landmarkService = new LandmarkService($this->landmarkRepository);
         $this->venueRepository = new VenueRepository();
         $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
+        $this->scheduleService = new ScheduleService(
+            $this->scheduleRepository,
+            $this->venueService,
+            new ArtistService(new ArtistRepository(), $this->mediaService),
+            new RestaurantService(new RestaurantRepository()),
+            $this->landmarkService
+        );
     }
 
     public function index($vars = [])

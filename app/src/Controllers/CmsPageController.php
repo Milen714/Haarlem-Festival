@@ -249,6 +249,12 @@ class CmsPageController extends BaseController
                 'submitUrl' => '/cms/page/update',
                 'backUrl' => '/cms/page/edit/events-history',
                 'uploadCategory' => 'History/Events'
+            ],
+            'events-jazz-artist' => [
+                'pageTitle' => 'Edit Jazz Artist Detail Page',
+                'submitUrl' => '/cms/page/update',
+                'backUrl' => '/cms/page/edit/events-jazz',
+                'uploadCategory' => 'Jazz/Artists'
             ]
         ];
 
@@ -273,7 +279,8 @@ class CmsPageController extends BaseController
             'events-history' => 'History/Images',
             'events-yummy' => 'Yummy/Restaurants',
             'events-magic' => 'Magic/Shows',
-            'history-tour' => 'History/Events'
+            'history-tour' => 'History/Events',
+            'events-jazz-artist' => 'Jazz/Artists'
         ];
 
         return $categories[$slug] ?? 'Home/Content';

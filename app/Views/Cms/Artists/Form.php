@@ -140,6 +140,68 @@ $action = $action ?? '/cms/artists/store';
             </div>
         </div>
 
+        <!-- Gallery Images -->
+        <?php if ($isEdit): ?>
+        <section aria-labelledby="gallery-heading" class="bg-white border rounded-lg p-6 mb-6">
+            <h2 id="gallery-heading" class="text-xl font-bold mb-1 border-b pb-2">Gallery Images</h2>
+            <p class="text-sm text-gray-500 mb-4">These photos appear in the gallery section of the artist's page. Upload multiple images at once.</p>
+
+            <?php if ($artist->gallery && !empty($artist->gallery->media_items)): ?>
+            <p class="text-sm font-semibold text-gray-700 mb-3">
+                Current Gallery (<?= count($artist->gallery->media_items) ?> image<?= count($artist->gallery->media_items) !== 1 ? 's' : '' ?>):
+            </p>
+            <ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-5 list-none p-0">
+                <?php foreach ($artist->gallery->media_items as $imgIndex => $gm): ?>
+                <?php
+                    $imgPath  = $gm->media?->file_path ?? '';
+                    if ($imgPath && !str_starts_with($imgPath, '/')) { $imgPath = '/' . $imgPath; }
+                    $imgAlt   = $gm->media?->alt_text ?? ($artist->name . ' gallery image');
+                    $mediaId  = $gm->media?->media_id ?? null;
+                    $position = $imgIndex + 1;
+                    $total    = count($artist->gallery->media_items);
+                ?>
+                <?php if ($mediaId): ?>
+                <li class="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                    <figure class="flex flex-col h-full m-0">
+                        <span class="sr-only">Photo <?= $position ?> of <?= $total ?></span>
+                        <img src="<?= htmlspecialchars($imgPath) ?>"
+                             alt="<?= htmlspecialchars($imgAlt) ?>"
+                             class="w-full h-40 object-cover block"
+                             onerror="this.onerror=null; this.src='/Assets/Home/ImagePlaceholder.png';">
+                        <figcaption class="flex items-center justify-between px-2 py-2 bg-white border-t border-gray-100 text-xs text-gray-500">
+                            <span>#<?= $position ?> of <?= $total ?></span>
+                            <form method="POST"
+                                  action="/cms/artists/gallery-remove/<?= (int)$artist->artist_id ?>/<?= (int)$mediaId ?>"
+                                  onsubmit="return confirm('Remove photo #<?= $position ?> from the gallery?');">
+                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold hover:underline">
+                                    Remove
+                                </button>
+                            </form>
+                        </figcaption>
+                    </figure>
+                </li>
+                <?php endif; ?>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+            <p class="text-sm text-gray-400 italic mb-4">No gallery images yet. Upload some below.</p>
+            <?php endif; ?>
+
+            <fieldset class="border-0 p-0 m-0">
+                <label class="block text-gray-700 font-semibold mb-2" for="gallery_images">
+                    Add New Gallery Images
+                </label>
+                <input type="file"
+                       id="gallery_images"
+                       name="gallery_images[]"
+                       accept="image/jpeg,image/png,image/webp"
+                       multiple
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-sm text-gray-500 mt-1">You can select multiple files at once • Max 5MB each • JPG, PNG, or WebP</p>
+            </fieldset>
+        </section>
+        <?php endif; ?>
+
         <!-- Social Links -->
         <div class="bg-white border rounded-lg p-6 mb-6">
             <h2 class="text-xl font-bold mb-4 border-b pb-2">Social & Music Links</h2>

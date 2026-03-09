@@ -3,8 +3,8 @@
 /** @var string $accentColor */
 ?>
 
-<section>
-    <h2 class="text-3xl font-bold mb-6" style="font-family: 'Cormorant Garamond', serif;">
+<section aria-labelledby="schedule-heading">
+    <h2 id="schedule-heading" class="text-3xl font-bold mb-6" style="font-family: 'Cormorant Garamond', serif;">
         Performance Schedule
     </h2>
 
@@ -21,23 +21,20 @@
             $isFree    = ($slot['total_capacity'] === null || $slot['total_capacity'] === 0);
         ?>
         <li class="jazz_event_border_<?= $accentColor ?> rounded-xl bg-white overflow-hidden">
-            <div class="flex items-stretch">
+            <article class="flex items-stretch">
 
                 <!-- Date block -->
-                <div class="jazz_event_bg_<?= $accentColor ?> flex flex-col items-center justify-center px-6 py-4 text-center min-w-[80px]">
-                    <span class="text-3xl font-bold leading-none">
-                        <?= $date->format('j') ?>
-                    </span>
-                    <span class="text-sm font-semibold uppercase tracking-wide mt-1">
-                        <?= $date->format('M') ?>
-                    </span>
-                </div>
+                <time datetime="<?= $date->format('Y-m-d') ?>"
+                      class="jazz_event_bg_<?= $accentColor ?> flex flex-col items-center justify-center px-6 py-4 text-center min-w-[80px]">
+                    <span class="text-3xl font-bold leading-none"><?= $date->format('j') ?></span>
+                    <span class="text-sm font-semibold uppercase tracking-wide mt-1"><?= $date->format('M') ?></span>
+                </time>
 
                 <!-- Details -->
-                <div class="flex-1 px-6 py-4">
-                    <p class="font-bold text-gray-900 text-lg">
+                <section class="flex-1 px-6 py-4">
+                    <h3 class="font-bold text-gray-900 text-lg">
                         <?= htmlspecialchars($date->format('l') . ' - ' . ($slot['venue_name'])) ?>
-                    </p>
+                    </h3>
                     <?php if (!empty($slot['venue_address'])): ?>
                     <p class="text-sm text-gray-500 mt-1">
                         📍 <?= htmlspecialchars($slot['venue_address']) ?>
@@ -45,21 +42,21 @@
                     <?php endif; ?>
                     <?php if ($startTime instanceof \DateTime): ?>
                     <p class="text-sm text-gray-600 mt-1">
-                        🕐 <?= $startTime->format('H:i') ?>
+                        <time datetime="<?= $startTime->format('H:i') ?>"><?= $startTime->format('H:i') ?></time>
                         <?php if ($endTime instanceof \DateTime): ?>
-                            – <?= $endTime->format('H:i') ?>
+                            – <time datetime="<?= $endTime->format('H:i') ?>"><?= $endTime->format('H:i') ?></time>
                         <?php endif; ?>
                     </p>
                     <?php endif; ?>
                     <?php if (!empty($slot['venue_capacity'])): ?>
                     <p class="text-xs text-gray-400 mt-1">
-                        <?= htmlspecialchars($slot['venue_capacity']) ?> capacity
+                        <data value="<?= (int)$slot['venue_capacity'] ?>"><?= htmlspecialchars($slot['venue_capacity']) ?></data> capacity
                     </p>
                     <?php endif; ?>
-                </div>
+                </section>
 
                 <!-- Ticket button -->
-                <div class="flex items-center px-6 py-4">
+                <footer class="flex items-center px-6 py-4">
                     <?php if ($slot['is_sold_out']): ?>
                         <span class="inline-block bg-gray-200 text-gray-500 text-sm font-bold px-5 py-2 rounded-lg">
                             Sold Out
@@ -74,9 +71,9 @@
                             Buy Tickets
                         </a>
                     <?php endif; ?>
-                </div>
+                </footer>
 
-            </div>
+            </article>
         </li>
         <?php endforeach; ?>
         <?php endforeach; ?>

@@ -7,25 +7,28 @@
 
     <?php if ($artist->hasProfileImage()): ?>
         <img src="<?= htmlspecialchars($artist->getProfileImagePath()) ?>"
-             alt="<?= htmlspecialchars($artist->getProfileImageAlt()) ?>"
+             alt=""
+             aria-hidden="true"
              class="absolute inset-0 w-full h-full object-cover opacity-60" />
     <?php endif; ?>
 
-    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" aria-hidden="true"></div>
 
     <div class="relative z-10 container mx-auto px-6 py-10 flex flex-col justify-between" style="min-height: 520px;">
 
         <!-- Breadcrumb -->
         <nav class="text-sm text-white/70 mb-6" aria-label="Breadcrumb">
-            <a href="/" class="hover:text-white transition-colors">Festival</a>
-            <span class="mx-2">/</span>
-            <a href="/events-jazz" class="hover:text-white transition-colors">Jazz</a>
-            <span class="mx-2">/</span>
-            <span class="text-white font-semibold"><?= htmlspecialchars($artist->name ?? '') ?></span>
+            <ol class="flex items-center list-none p-0 m-0">
+                <li><a href="/" class="hover:text-white transition-colors">Festival</a></li>
+                <li class="mx-2" aria-hidden="true">/</li>
+                <li><a href="/events-jazz" class="hover:text-white transition-colors">Jazz</a></li>
+                <li class="mx-2" aria-hidden="true">/</li>
+                <li class="text-white font-semibold" aria-current="page"><?= htmlspecialchars($artist->name ?? '') ?></li>
+            </ol>
         </nav>
 
         <!-- Center: Artist name + genres -->
-        <div class="flex-1 flex flex-col items-center justify-center text-center">
+        <hgroup class="flex-1 flex flex-col items-center justify-center text-center">
             <h1 class="text-6xl font-bold text-white drop-shadow-lg mb-3"
                 style="font-family: 'Cormorant Garamond', serif; letter-spacing: 0.05em;">
                 <?= htmlspecialchars(strtoupper($artist->name ?? '')) ?>
@@ -36,11 +39,10 @@
                     <?= htmlspecialchars(implode(' • ', array_map('trim', explode(',', $artist->genres)))) ?>
                 </p>
             <?php endif; ?>
-        </div>
+        </hgroup>
 
         <!-- Bottom: Quick Info Panel -->
-        <div class="mt-auto">
-            <aside class="bg-white/95 rounded-xl p-5 shadow-xl text-sm inline-block min-w-[220px]">
+        <aside class="mt-auto bg-white/95 rounded-xl p-5 shadow-xl text-sm inline-block min-w-[220px]">
                 <h2 class="font-bold text-gray-800 mb-3 text-base">Quick Info</h2>
                 <ul class="space-y-2 text-gray-700">
 
@@ -89,7 +91,6 @@
 
                 </ul>
             </aside>
-        </div>
 
     </div>
 </header>

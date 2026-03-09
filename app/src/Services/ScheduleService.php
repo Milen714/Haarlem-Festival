@@ -4,15 +4,32 @@ namespace App\Services;
 
 use App\Models\Schedule;
 use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\IVenueService;
+use App\Services\Interfaces\IArtistService;
+use App\Services\Interfaces\IRestaurantService;
+use App\Services\Interfaces\ILandmarkService;
 use App\Repositories\Interfaces\IScheduleRepository;
 
 class ScheduleService implements IScheduleService
 {
     private IScheduleRepository $scheduleRepository;
+    private IVenueService $venueService;
+    private IArtistService $artistService;
+    private IRestaurantService $restaurantService;
+    private ILandmarkService $landmarkService;
 
-    public function __construct(IScheduleRepository $scheduleRepository)
-    {
-        $this->scheduleRepository = $scheduleRepository;
+    public function __construct(
+        IScheduleRepository $scheduleRepository,
+        IVenueService $venueService,
+        IArtistService $artistService,
+        IRestaurantService $restaurantService,
+        ILandmarkService $landmarkService
+    ) {
+        $this->scheduleRepository  = $scheduleRepository;
+        $this->venueService        = $venueService;
+        $this->artistService       = $artistService;
+        $this->restaurantService   = $restaurantService;
+        $this->landmarkService     = $landmarkService;
     }
 
     public function getScheduleById(int $scheduleId): ?Schedule
@@ -28,6 +45,106 @@ class ScheduleService implements IScheduleService
     public function getSchedulesByEventId(int $eventId): array
     {
         return $this->scheduleRepository->getScheduleByEventId($eventId);
+    }
+
+    public function createFromRequest(array $postData): Schedule
+    {
+        $this->validateScheduleData($postData);
+        $schedule = $this->buildScheduleFromPostData(new Schedule(), $postData);
+        $success = $this->scheduleRepository->create($schedule);
+        if (!$success) {
+            throw new \Exception('Failed to create schedule in database');
+        }
+        return $schedule;
+    }
+
+    public function updateFromRequest(int $scheduleId, array $postData): Schedule
+    {
+        $schedule = $this->scheduleRepository->getScheduleById($scheduleId);
+        if (!$schedule) {
+            throw new \Exception('Schedule not found');
+        }
+        $this->validateScheduleData($postData);
+        $schedule = $this->buildScheduleFromPostData($schedule, $postData);
+        $success = $this->scheduleRepository->update($schedule);
+        if (!$success) {
+            throw new \Exception('Failed to update schedule in database');
+        }
+        return $schedule;
+    }
+
+    public function deleteSchedule(int $scheduleId): bool
+    {
+        $schedule = $this->scheduleRepository->getScheduleById($scheduleId);
+        if (!$schedule) {
+            throw new \Exception('Schedule not found');
+        }
+        return $this->scheduleRepository->delete($scheduleId);
+    }
+
+    public function getAllEventCategories(): array
+    {
+        return $this->scheduleRepository->getAllEventCategories();
+    }
+
+    public function getAllVenues(): array
+    {
+        return $this->venueService->getAllVenues();
+    }
+
+    public function getAllArtists(): array
+    {
+        return $this->artistService->getAllArtists();
+    }
+
+    public function getAllRestaurants(): array
+    {
+        try {
+            return $this->restaurantService->getAllRestaurants();
+        } catch (\Exception $e) {
+            error_log("ScheduleService: could not load restaurants - " . $e->getMessage());
+            return [];
+        }
+    }
+
+    public function getAllLandmarks(): array
+    {
+        return $this->landmarkService->getAllLandmarks();
+    }
+
+    private function validateScheduleData(array $data): void
+    {
+        if (empty($data['event_id'])) {
+            throw new \Exception('Event category is required');
+        }
+        if (empty($data['date'])) {
+            throw new \Exception('Date is required');
+        }
+        if (empty($data['start_time'])) {
+            throw new \Exception('Start time is required');
+        }
+        if (empty($data['end_time'])) {
+            throw new \Exception('End time is required');
+        }
+        if (empty($data['total_capacity']) || (int)$data['total_capacity'] < 1) {
+            throw new \Exception('Total capacity must be at least 1');
+        }
+    }
+
+    private function buildScheduleFromPostData(Schedule $schedule, array $data): Schedule
+    {
+        $schedule->event_id       = (int)$data['event_id'];
+        $schedule->venue_id       = !empty($data['venue_id'])      ? (int)$data['venue_id']      : null;
+        $schedule->artist_id      = !empty($data['artist_id'])     ? (int)$data['artist_id']     : null;
+        $schedule->restaurant_id  = !empty($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
+        $schedule->landmark_id    = !empty($data['landmark_id'])   ? (int)$data['landmark_id']   : null;
+        $schedule->date           = !empty($data['date'])       ? new \DateTime($data['date'])       : null;
+        $schedule->start_time     = !empty($data['start_time']) ? new \DateTime($data['start_time']) : null;
+        $schedule->end_time       = !empty($data['end_time'])   ? new \DateTime($data['end_time'])   : null;
+        $schedule->total_capacity = (int)($data['total_capacity'] ?? 0);
+        $schedule->tickets_sold   = (int)($data['tickets_sold'] ?? 0);
+        $schedule->is_sold_out    = isset($data['is_sold_out']) && $data['is_sold_out'] == '1';
+        return $schedule;
     }
 
     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array

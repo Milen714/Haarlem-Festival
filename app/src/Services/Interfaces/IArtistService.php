@@ -21,4 +21,10 @@ interface IArtistService
     public function deleteArtist(int $artistId): bool;
 
     public function isArtistInEvent(int $artistId, int $eventId): bool;
+
+    public function getArtistByIdWithGallery(int $artistId): ?Artist;
+
+    public function uploadGalleryImages(int $artistId, ?Artist $artist, array $files): void;
+
+    public function removeGalleryImage(int $artistId, int $mediaId): bool;
 }

@@ -309,4 +309,119 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             throw new \RuntimeException("Error fetching available dates: " . $e->getMessage());
         }
     }
+
+    /**
+     * Create a new schedule record
+     */
+    public function create(Schedule $schedule): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                INSERT INTO SCHEDULE (event_id, venue_id, artist_id, restaurant_id, landmark_id,
+                    date, start_time, end_time, total_capacity, tickets_sold, is_sold_out)
+                VALUES (:event_id, :venue_id, :artist_id, :restaurant_id, :landmark_id,
+                    :date, :start_time, :end_time, :total_capacity, :tickets_sold, :is_sold_out)
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':event_id',       $schedule->event_id,       PDO::PARAM_INT);
+            $stmt->bindValue(':venue_id',        $schedule->venue_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':artist_id',       $schedule->artist_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':restaurant_id',   $schedule->restaurant_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':landmark_id',     $schedule->landmark_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':date',            $schedule->date?->format('Y-m-d'));
+            $stmt->bindValue(':start_time',      $schedule->start_time?->format('H:i:s'));
+            $stmt->bindValue(':end_time',        $schedule->end_time?->format('H:i:s'));
+            $stmt->bindValue(':total_capacity',  $schedule->total_capacity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold',    $schedule->tickets_sold ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out',     $schedule->is_sold_out ? 1 : 0, PDO::PARAM_INT);
+
+            $result = $stmt->execute();
+            if ($result) {
+                $schedule->schedule_id = (int)$pdo->lastInsertId();
+            }
+            return $result;
+        } catch (PDOException $e) {
+            error_log("Error creating schedule: " . $e->getMessage());
+            throw new \RuntimeException("Failed to create schedule: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update an existing schedule record
+     */
+    public function update(Schedule $schedule): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE SCHEDULE SET
+                    event_id       = :event_id,
+                    venue_id       = :venue_id,
+                    artist_id      = :artist_id,
+                    restaurant_id  = :restaurant_id,
+                    landmark_id    = :landmark_id,
+                    date           = :date,
+                    start_time     = :start_time,
+                    end_time       = :end_time,
+                    total_capacity = :total_capacity,
+                    tickets_sold   = :tickets_sold,
+                    is_sold_out    = :is_sold_out
+                WHERE schedule_id = :schedule_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':schedule_id',     $schedule->schedule_id,    PDO::PARAM_INT);
+            $stmt->bindValue(':event_id',        $schedule->event_id,       PDO::PARAM_INT);
+            $stmt->bindValue(':venue_id',        $schedule->venue_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':artist_id',       $schedule->artist_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':restaurant_id',   $schedule->restaurant_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':landmark_id',     $schedule->landmark_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':date',            $schedule->date?->format('Y-m-d'));
+            $stmt->bindValue(':start_time',      $schedule->start_time?->format('H:i:s'));
+            $stmt->bindValue(':end_time',        $schedule->end_time?->format('H:i:s'));
+            $stmt->bindValue(':total_capacity',  $schedule->total_capacity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold',    $schedule->tickets_sold ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out',     $schedule->is_sold_out ? 1 : 0, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error updating schedule: " . $e->getMessage());
+            throw new \RuntimeException("Failed to update schedule: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Delete a schedule by ID
+     */
+    public function delete(int $scheduleId): bool
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare("DELETE FROM SCHEDULE WHERE schedule_id = :schedule_id");
+            $stmt->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error deleting schedule: " . $e->getMessage());
+            throw new \RuntimeException("Failed to delete schedule: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get all event categories (for dropdowns in the cms )
+     */
+    public function getAllEventCategories(): array
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->query("SELECT event_id, type, title FROM EVENT_CATEGORIES ORDER BY title ASC");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error fetching event categories: " . $e->getMessage());
+            throw new \RuntimeException("Failed to fetch event categories: " . $e->getMessage());
+        }
+    }
 }
