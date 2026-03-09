@@ -66,14 +66,7 @@ $landmark = $landmark ?? null;
                 <img src="<?= htmlspecialchars($historyImage) ?>" 
                      alt="History of <?= htmlspecialchars($landmark->name ?? '') ?>" 
                      class="w-full h-[450px] object-cover rounded-[0.5rem] shadow-md">
-                
-                <?php if (!empty($landmark->gallery) && count($landmark->gallery->media_items) > 1): ?>
-                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                    <?php foreach ($landmark->gallery->media_items as $index => $mediaItem): ?>
-                        <span class="block w-2 h-2 rounded-full <?= $index === 0 ? 'bg-brand-600' : 'bg-white border border-[#e5e5e5]' ?> shadow-sm"></span>
-                    <?php endforeach; ?>
-                </div>
-                <?php endif; ?>
+
             </div>
         </section>
 
