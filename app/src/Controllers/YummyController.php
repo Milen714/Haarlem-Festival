@@ -52,7 +52,7 @@ class YummyController extends BaseController
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
         $this->restaurantRepository = new RestaurantRepository();
-        $this->restaurantService = new RestaurantService($this->restaurantRepository);
+        $this->restaurantService = new RestaurantService($this->restaurantRepository, $this->mediaService);
         $this->venueRepository = new VenueRepository();
         $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
         $this->cuisineRepository = new CuisineRepository();
