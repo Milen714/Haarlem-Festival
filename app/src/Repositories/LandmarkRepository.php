@@ -4,9 +4,10 @@ namespace App\Repositories;
 
 use App\Models\Landmark;
 use App\Framework\Repository;
+use App\Repositories\Interfaces\ILandmarkRepository;
 use PDO;
 
-class LandmarkRepository extends Repository 
+class LandmarkRepository extends Repository implements ILandmarkRepository
 {
     public function __construct() {
         $this->pdo = $this->connect();
@@ -30,7 +31,7 @@ class LandmarkRepository extends Repository
     }
 
 
-public function addMediaToGallery(int $galleryId, int $mediaId): bool
+/*public function addMediaToGallery(int $galleryId, int $mediaId): bool
 {
     $sql = "INSERT INTO GALLERY_MEDIA (gallery_id, media_id) VALUES (:gallery_id, :media_id)";
     $stmt = $this->pdo->prepare($sql);
@@ -38,7 +39,7 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
         'gallery_id' => $galleryId,
         'media_id' => $mediaId
     ]);
-}
+}*/
 
     public function getBySlug(string $slug): ?Landmark
     {

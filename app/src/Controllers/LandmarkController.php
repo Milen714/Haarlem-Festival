@@ -3,17 +3,17 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Services\LandmarkService;
+use App\Services\Interfaces\ILandmarkService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class LandmarkController extends BaseController
 {
-    private LandmarkService $landmarkService;
+    private ILandmarkService $landmarkService;
 
     public function __construct()
     {        
-        $this->landmarkService = new LandmarkService();
+        $this->landmarkService = new ILandmarkService();
     }
     
     private function startSession(): void

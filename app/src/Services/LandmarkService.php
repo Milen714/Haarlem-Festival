@@ -9,8 +9,9 @@ use App\Models\Landmark;
 use App\Services\GalleryService;
 use App\Repositories\GalleryRepository;
 use App\Repositories\MediaRepository;
+use App\Services\Interfaces\ILandmarkService;
 
-class LandmarkService
+class LandmarkService implements ILandmarkService
 {
     private LandmarkRepository $landmarkRepository;
     private MediaService $mediaService;
