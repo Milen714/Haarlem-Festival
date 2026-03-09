@@ -1610,6 +1610,10 @@ select:focus,
   max-width: 1536px;
 }
 
+.max-w-xl{
+  max-width: 36rem;
+}
+
 .max-w-xs{
   max-width: 20rem;
 }
@@ -2163,6 +2167,10 @@ select:focus,
 
 .border-\[var\(--magic-gold-accent-muted\)\]{
   border-color: var(--magic-gold-accent-muted);
+}
+
+.border-\[var\(--text-home-primary\)\]{
+  border-color: var(--text-home-primary);
 }
 
 .border-\[var\(--yummy-sec-section\)\]{
@@ -3035,6 +3043,11 @@ select:focus,
 
 .text-6xl{
   font-size: 3.75rem;
+  line-height: 1;
+}
+
+.text-7xl{
+  font-size: 4.5rem;
   line-height: 1;
 }
 
@@ -4848,6 +4861,21 @@ select:focus,
 
   .sm\:grid-cols-3{
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sm\:text-2xl{
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  .sm\:text-4xl{
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+
+  .sm\:text-lg{
+    font-size: 1.125rem;
+    line-height: 1.75rem;
   }
 }
 
