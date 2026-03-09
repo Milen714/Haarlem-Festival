@@ -10,8 +10,11 @@ use App\Repositories\MediaRepository;
 use App\Services\MediaService;
 use App\Services\VenueService;
 use App\Repositories\VenueRepository;
+use App\Services\RestaurantService;
+use App\Services\LandmarkService;
 use App\Services\ScheduleService;
 use App\Repositories\ScheduleRepository;
+use App\Repositories\RestaurantRepository;
 use App\ViewModels\Dance\LineupViewModel;
 
 class DanceController extends BaseController
@@ -44,7 +47,15 @@ class DanceController extends BaseController
 
         // Schedule Service
         $scheduleRepository = new ScheduleRepository();
-        $this->scheduleService = new ScheduleService($scheduleRepository);
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $this->mediaService);
+        $landmarkService = new LandmarkService();
+        $this->scheduleService = new ScheduleService(
+            $scheduleRepository,
+            $this->venueService,
+            $this->artistService,
+            $restaurantService,
+            $landmarkService
+        );
     }
 
     public function index($vars = [])

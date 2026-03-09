@@ -9,14 +9,13 @@ use App\Repositories\UserRepository;
 use App\Repositories\PageRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\VenueRepository;
-use App\Repositories\LandmarkRepository;
 use App\Repositories\ArtistRepository;
 use App\Repositories\RestaurantRepository;
-use App\Services\VenueService;
 use App\Services\ArtistService;
-use App\Services\RestaurantService;
+use App\Services\VenueService;
 use App\Services\PageService;
 use App\Services\LandmarkService;
+use App\Services\RestaurantService;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
@@ -32,7 +31,6 @@ class HomeController extends BaseController
     private PageService $pageService;
     private PageRepository $pageRepository;
     private LandmarkService $landmarkService;
-    private LandmarkRepository $landmarkRepository;
     private MediaService $mediaService;
     private MediaRepository $mediaRepository;
     private ScheduleRepository $scheduleRepository;
@@ -43,20 +41,26 @@ class HomeController extends BaseController
     {
         $this->userRepository = new UserRepository();
         $this->userService = new UserService($this->userRepository);
+
         $this->pageRepository = new PageRepository();
         $this->pageService = new PageService($this->pageRepository);
-        $this->scheduleRepository = new ScheduleRepository();
+
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
-        $this->landmarkRepository = new LandmarkRepository();
-        $this->landmarkService = new LandmarkService($this->landmarkRepository);
+
         $this->venueRepository = new VenueRepository();
         $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
+
+        $artistService = new ArtistService(new ArtistRepository(), $this->mediaService);
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $this->mediaService);
+        $this->landmarkService = new LandmarkService();
+
+        $this->scheduleRepository = new ScheduleRepository();
         $this->scheduleService = new ScheduleService(
             $this->scheduleRepository,
             $this->venueService,
-            new ArtistService(new ArtistRepository(), $this->mediaService),
-            new RestaurantService(new RestaurantRepository()),
+            $artistService,
+            $restaurantService,
             $this->landmarkService
         );
     }

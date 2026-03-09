@@ -13,7 +13,6 @@ use App\Repositories\ScheduleRepository;
 use App\Repositories\VenueRepository;
 use App\Repositories\ArtistRepository;
 use App\Repositories\RestaurantRepository;
-use App\Repositories\LandmarkRepository;
 use App\Repositories\MediaRepository;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
@@ -28,8 +27,8 @@ class ScheduleController extends BaseController
 
         $venueService      = new VenueService(new VenueRepository(), $mediaService);
         $artistService     = new ArtistService(new ArtistRepository(), $mediaService);
-        $restaurantService = new RestaurantService(new RestaurantRepository());
-        $landmarkService   = new LandmarkService(new LandmarkRepository());
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
+        $landmarkService   = new LandmarkService();
 
         $this->scheduleService = new ScheduleService(
             new ScheduleRepository(),
