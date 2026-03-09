@@ -6,7 +6,7 @@ use App\Models\EventCategory;
 use App\Models\Venue;
 use App\Models\Restaurant;
 use App\Models\MusicEvent\Artist;
-use App\Models\History\Landmark;
+use App\Models\Landmark;
 use DateTime;
 
 class Schedule
