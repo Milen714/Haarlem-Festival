@@ -288,7 +288,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $media->media_id = (int)$row['landmark_media_id'];
             $media->file_path = $row['landmark_media_file_path'];
             $media->alt_text = $row['landmark_media_alt_text'];
-            $schedule->landmark->landmark_image = $media;
+            $schedule->landmark->main_image_id = $media;
         }
         
         return $schedule;
