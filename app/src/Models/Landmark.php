@@ -3,11 +3,13 @@ namespace App\Models;
 
 use App\Models\Media;
 use App\Models\Gallery;
+use App\Models\EventCategory;
 
 class Landmark
 {
     public ?int $landmark_id = null;
     public ?int $event_id = null;
+    public ?EventCategory $event_category = null;
     public ?string $name = null;
     public ?string $short_description = null;
     public ?Media $main_image_id = null;
@@ -38,5 +40,14 @@ class Landmark
         $this->detail_history_content = $data['detail_history_content'] ?? null;
         $this->display_order = isset($data['display_order']) ? (int)$data['display_order'] : null;
 
+        if (isset($data['event_category_type'])) {
+            $this->event_category = new EventCategory();
+            $this->event_category->fromPDOData([
+                'event_category_id' => $data['event_category_id'] ?? null,
+                'event_category_title' => $data['event_category_title'] ?? null,
+                'event_category_type' => $data['event_category_type'],
+                'event_category_slug' => $data['event_category_slug'] ?? null,
+            ]);
+        }
     }
 }

@@ -15,7 +15,14 @@ class LandmarkRepository extends Repository
     /** @return Landmark[] */
     public function getAll(): array
     {
-        $sql = "SELECT * FROM LANDMARK ORDER BY display_order ASC";
+        $sql = "SELECT l.*,
+                ec.event_id as event_category_id,
+                ec.title as event_category_title,
+                ec.type as event_category_type,
+                ec.slug as event_category_slug
+            FROM LANDMARK l
+            LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
+            ORDER BY l.display_order ASC";
         
         $stmt = $this->pdo->query($sql); 
         
