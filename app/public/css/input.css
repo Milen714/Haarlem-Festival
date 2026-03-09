@@ -221,6 +221,8 @@
         @apply absolute content-['']  block w-[2rem] h-[3rem] bg-[url("/Assets/Home/CalendarCoilsJazz.svg")] bg-cover bg-no-repeat bg-center right-1/2 top-1/2;
     } */
 
+
+
 /* Jazz Event Colors stuff */
     /* Jazz Event Borders */
     .jazz_event_border_lavender {
@@ -400,6 +402,14 @@
         background-color: #b8d67a;
         transform: translateY(-0.12rem);
     }
+
+    
+  .tour-radio-btn {
+    @apply px-5 py-2 rounded-md font-medium text-ink-900 transition-colors 
+           bg-[#FAEBBD] border border-[#CAA359] 
+           hover:bg-[#FFE598] hover:border-[#CAA359] 
+           peer-checked:bg-[#A7C957] peer-checked:border-[#546A21] peer-checked:border-2;
+  }
 
 
     /* KEYFRAME ANIMATIONS */
