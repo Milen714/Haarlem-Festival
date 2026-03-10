@@ -128,15 +128,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/schedules/update/{id:\d+}', ['App\Controllers\ScheduleController', 'update']);
     $r->addRoute('POST', '/cms/schedules/delete/{id:\d+}', ['App\Controllers\ScheduleController', 'delete']);
 
-    /* Legacy route for homepage (keep for backwards compatibility) */
-    $r->addRoute('GET', '/home-update', function () {
-        header('Location: /cms/page/edit/home');
-        exit;
-    });
-    $r->addRoute('POST', '/home-update', function () {
-        header('Location: /cms/page/edit/home');
-        exit;
-    });
+    /* Payment */
+    $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
+    $r->addRoute('POST', '/payment/process', ['App\Controllers\PaymentController', 'process']);
 
 });
 
