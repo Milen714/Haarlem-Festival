@@ -8,4 +8,5 @@ interface IUserRepository {
     public function getUserByEmail(string $email): ?User;
     public function createUser(User $user): bool;
     public function updateUser(User $user): bool;
+    public function deleteUser(int $id): bool;
 }

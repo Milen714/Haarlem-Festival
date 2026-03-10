@@ -10,6 +10,9 @@ use App\Repositories\MediaRepository;
 use App\Services\MediaService;
 use App\Services\VenueService;
 use App\Repositories\VenueRepository;
+use App\Services\ScheduleService;
+use App\Repositories\ScheduleRepository;
+use App\ViewModels\Dance\LineupViewModel;
 
 class DanceController extends BaseController
 {
@@ -17,13 +20,13 @@ class DanceController extends BaseController
     private ArtistService $artistService;
     private VenueService $venueService;
     private MediaService $mediaService;
+    private ScheduleService $scheduleService;
     
     // Dance event ID constant
     private const DANCE_EVENT_ID = 4;
 
     public function __construct()
-    {
-        // Create MediaService once and reuse it
+    {   // Media Service
         $mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($mediaRepository);
         
@@ -38,6 +41,10 @@ class DanceController extends BaseController
         // Venue Service
         $venueRepository = new VenueRepository();
         $this->venueService = new VenueService($venueRepository, $this->mediaService);
+
+        // Schedule Service
+        $scheduleRepository = new ScheduleRepository();
+        $this->scheduleService = new ScheduleService($scheduleRepository);
     }
 
     public function index($vars = [])
@@ -50,7 +57,7 @@ class DanceController extends BaseController
             $venues = [];
             $sections = $pageData->content_sections ?? [];
             
-            $organizedSections = $this->organizeSections($sections);
+            $organizedSections = $this->organizeHomeSections($sections);
             
             $this->view('Dance/index', [
                 'title' => $pageData->title ?? 'Dance Event',
@@ -70,7 +77,30 @@ class DanceController extends BaseController
             $this->notFound();
         }
     }
-    private function organizeSections(array $sections): array
+
+    public function lineUp()
+    {
+        try {
+            $pageData = $this->pageService->getPageBySlug('events-dance-lineup');
+            $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
+
+            $headLinerSection = array_filter($pageData->content_sections ?? [], function($section) {
+                return stripos($section->title, 'The 2025 Headliners') !== false;
+                });
+            $headLinerSection = array_shift($headLinerSection);
+            $schedulesSection = $this->scheduleService->getSchedulesByEventId(self::DANCE_EVENT_ID);
+            $viewModel = new LineupViewModel($pageData, $artists, $headLinerSection, $schedulesSection);
+            $this->view('Dance/lineup', [
+                'title' => 'Dance Lineup',
+                'vm' => $viewModel
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in DanceController lineUp method: " . $e->getMessage());
+            $this->notFound();
+        }
+    }
+
+    private function organizeHomeSections(array $sections): array
     {
         $organized = [
             'heroSection' => null,
@@ -102,7 +132,6 @@ class DanceController extends BaseController
                     break;
             }
         }
-        
         return $organized;
     }
 

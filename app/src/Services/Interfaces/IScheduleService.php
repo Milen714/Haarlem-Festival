@@ -28,6 +28,8 @@ interface IScheduleService
 
     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array;
 
+     public function getAvailableDates(): array;
+
     public function createFromRequest(array $postData): \App\Models\Schedule;
 
     public function updateFromRequest(int $scheduleId, array $postData): \App\Models\Schedule;

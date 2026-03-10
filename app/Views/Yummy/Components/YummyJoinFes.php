@@ -6,7 +6,7 @@ namespace App\Views\Yummy\Components;
 
 <section class="bg-[var(--yummy-sec-section)] py-16 px-6 text-center gap-6">
       <h2 class="text-2xl text-[var(--yummy-primary)]  font-bold mb-6">
-        <?= $joinSection->title ?? 'Join the Yummy Festival Experience' ?>
+        <?= htmlspecialchars($joinSection->title ?? 'Join the Yummy Festival Experience') ?>
       </h2>
       <?= $joinSection->content_html ?? '' ?>
       <?= $joinSection->content_html_2 ?? '' ?>
@@ -29,3 +29,5 @@ namespace App\Views\Yummy\Components;
         </div>
       </div> -->
     </section>
+
+   

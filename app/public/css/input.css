@@ -49,6 +49,7 @@
     --yummy-sec-btn-text:#FFFFFF;
     --yummy-sec-hover-btn: #49111C;
     --yummy-sec-hover-btn-text:#FFFFFF;
+    
     /* Dance Section */
     --dance-bg: #0A0D16;
     --dance-button-color: #FDDA93;
@@ -78,6 +79,20 @@
     --bg-color-home-dark:#0F0F0F;
 
     --shadow-yellow: -7px -7px 0px #FFD93E;
+
+    /*  */
+    
+--color-brand-600: #3ea12f;
+    --color-brand-700: #2f7e26;
+    --color-gold-400: #f0b65a;
+    --color-ink-900: #121212;
+    --color-ink-800: #222222;
+    --color-ink-700: #2f2f2f;
+    --color-ink-600: #4a4a4a;
+    --color-ink-500: #6b6b6b;
+    --color-bg-history: #fefbf0;
+    --color-underline-history: #84642F;
+
   }
 }
 
@@ -120,14 +135,20 @@
         @apply block w-min rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700;
     }
 
-
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
     /* SPINNER 🔄*/
 
     #spinner:not(.hidden) {
   display: flex;
-}
+  }
 
-.loader {
+ .loader {
   width: 40px;
   height: 40px;
   border: 4px solid #ddd;
@@ -135,6 +156,17 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+    /* Signup  */
+    .password-strength {
+        @apply mt-2 text-sm font-medium;
+    }
+    .password-strength p {
+        @apply mb-1;
+    }
+    .valid {
+        @apply text-green-600;
+    }
+ }
 
     /* BUTTONS */
     .home_history_button{
@@ -178,6 +210,9 @@
         @apply bg-[var(--yummy-sec-btn)] text-[var(--yummy-sec-btn-text)] hover:bg-[var(--yummy-sec-hover-btn)] hover:text-[var(--yummy-sec-hover-btn-text)]
                    font-semibold p-3 rounded-[5px] focus:outline-none focus:ring-2 transition-all;
     }
+    .hisBlock{
+        @apply w-96 h-28 bg-[var(--yummy-sec-section)] dark:bg-[var(--home-yummy-high-contrast-accent)] rounded-lg shadow-[-7px_-7px_0px_#FFD93E] hover:shadow-[-4px_-4px_0px_#FFD93E] transition-all;
+    }
     /* CalendarHome */
     /* .calendar-coils{
         @apply relative w-full flex justify-center items-center overflow-visible;
@@ -185,6 +220,8 @@
     .calendar-coils::before{
         @apply absolute content-['']  block w-[2rem] h-[3rem] bg-[url("/Assets/Home/CalendarCoilsJazz.svg")] bg-cover bg-no-repeat bg-center right-1/2 top-1/2;
     } */
+
+
 
 /* Jazz Event Colors stuff */
     /* Jazz Event Borders */
@@ -380,10 +417,51 @@
         transform: translateY(-0.12rem);
     }
 
+    
+  .tour-radio-btn {
+    @apply px-5 py-2 rounded-md font-medium text-ink-900 transition-colors 
+           bg-[#FAEBBD] border border-[#CAA359] 
+           hover:bg-[#FFE598] hover:border-[#CAA359] 
+           peer-checked:bg-[#A7C957] peer-checked:border-[#546A21] peer-checked:border-2;
+  }
+
 
     /* KEYFRAME ANIMATIONS */
     @keyframes spin {
   to { transform: rotate(360deg); }
-}
+ }
 
-}
+ /**/
+  .max-w-content {
+    max-width: 1100px;
+    @apply mx-auto px-4;
+  }
+
+  /* Tipografía */
+  .font-history-serif {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+
+  /* Utilidades manuales para evitar configurar tailwind.config.js */
+  .text-ink-900 { color: var(--color-ink-900); }
+  .text-ink-700 { color: var(--color-ink-700); }
+  .text-ink-500 { color: var(--color-ink-500); }
+  .text-brand-600 { color: var(--color-brand-600); }
+  .text-gold-400 { color: var(--color-gold-400); }
+  .bg-brand-600 { background-color: var(--color-brand-600); }
+  .hover\:bg-brand-700:hover { background-color: var(--color-brand-700); }
+
+  .underline-history {
+    margin-top: 0.75rem;
+    margin-bottom: 1.5rem;
+    height: 1px;
+    width: 4rem;
+    background-color: var(--color-underline-history);
+  }
+
+
+
+
+
+
+    

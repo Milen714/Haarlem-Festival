@@ -37,6 +37,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/reset-password', ['App\Controllers\AccountController', 'resetPassword']);
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
+    $r->addRoute('GET', '/getScheduleDates', ['App\Controllers\HomeController', 'getScheduleDates']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
@@ -50,11 +51,22 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
    
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
+    $r->addRoute('GET', '/events-dance/lineup', ['App\Controllers\DanceController', 'lineUp']);
+    $r->addRoute('GET', '/events-dance/artist/{slug}', ['App\Controllers\DanceArtistController', 'artistDetail']);
 
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
     $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
+    $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
+    $r->addRoute('GET', '/events-yummy/restaurants/{slug}', ['App\Controllers\YummyController', 'restaurantDetail']);
     
+    $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
+    
+    /* History Event Route */
+    $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
+    $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
+    $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
+
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
     $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);
@@ -70,6 +82,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/artists/edit/{id:\d+}', ['App\Controllers\ArtistController', 'edit']);
     $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
     $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
+
+    /*CMS Restaurant Management */
+    $r->addRoute('GET', '/cms/restaurants', ['App\Controllers\RestaurantController', 'index']);
+    $r->addRoute('GET', '/cms/restaurants/create', ['App\Controllers\RestaurantController', 'create']);
+    $r->addRoute('GET', '/cms/restaurants/edit/{id:\d+}', ['App\Controllers\RestaurantController', 'edit']);
+    $r->addRoute('POST', '/cms/restaurants/update/{id:\d+}', ['App\Controllers\RestaurantController', 'update']);
+    $r->addRoute('POST', '/cms/restaurants/store', ['App\Controllers\RestaurantController', 'store']);
+    $r->addRoute('POST', '/cms/restaurants/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'delete']);
     $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
 
     /* CMS Venue Management*/
@@ -79,6 +99,26 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/venues/edit/{id:\d+}', ['App\Controllers\VenueController', 'edit']);
     $r->addRoute('POST', '/cms/venues/update/{id:\d+}', ['App\Controllers\VenueController', 'update']);
     $r->addRoute('POST', '/cms/venues/delete/{id:\d+}', ['App\Controllers\VenueController', 'delete']);
+
+    /* CMS User Management*/
+    $r->addRoute('GET', '/cms/users', ['App\Controllers\UserController', 'index']);
+    $r->addRoute('GET', '/cms/users/create', ['App\Controllers\UserController', 'create']);
+    $r->addRoute('POST', '/cms/users/store', ['App\Controllers\UserController', 'store']);
+    $r->addRoute('GET', '/cms/users/edit/{id:\d+}', ['App\Controllers\UserController', 'edit']);
+    $r->addRoute('POST', '/cms/users/update/{id:\d+}', ['App\Controllers\UserController', 'update']);
+    $r->addRoute('POST', '/cms/users/delete/{id:\d+}', ['App\Controllers\UserController', 'delete']);
+
+    /*Landmark cms*/
+    $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
+
+    $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
+    $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
+
+    $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
+    $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
+    $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
+
+
 
     /* CMS Schedule Management */
     $r->addRoute('GET', '/cms/schedules', ['App\Controllers\ScheduleController', 'index']);

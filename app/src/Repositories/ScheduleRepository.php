@@ -288,10 +288,26 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $media->media_id = (int)$row['landmark_media_id'];
             $media->file_path = $row['landmark_media_file_path'];
             $media->alt_text = $row['landmark_media_alt_text'];
-            $schedule->landmark->landmark_image = $media;
+            $schedule->landmark->main_image_id = $media;
         }
         
         return $schedule;
+    }
+    public function getAvailableDates(): array
+    {
+        try {
+            $pdo = $this->connect();
+            
+            $query = "SELECT DISTINCT date FROM SCHEDULE WHERE date >= CURDATE() ORDER BY date ASC";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute();
+            
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            return array_map(fn($row) => $row['date'], $rows);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching available dates: " . $e->getMessage());
+        }
     }
 
     /**

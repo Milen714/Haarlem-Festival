@@ -76,7 +76,8 @@ class HomeController extends BaseController
             $landmarks = $this->landmarkService->getAllLandmarks();
             $startingPoints = new StartingPoints($landmarks, $venues);
 
-            $this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
+            //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
+            $this->view('Home/Landing',['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
         } catch (\Exception $e) {
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
@@ -129,6 +130,17 @@ class HomeController extends BaseController
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+    public function getScheduleDates($vars = [])
+    {
+        header('Content-Type: application/json');
+        try {
+            $dates = $this->scheduleService->getAvailableDates();
+            echo json_encode(['success' => true, 'dates' => $dates], JSON_PRETTY_PRINT);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 }

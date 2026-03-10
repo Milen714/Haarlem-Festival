@@ -25,6 +25,11 @@ interface IScheduleRepository
      * @return Schedule[]
      */
     public function getScheduleByEventId(int $eventId): array;
+    /**
+     * Get available dates for scheduling
+     * @return string[] Array of dates in 'Y-m-d' format
+     */
+    public function getAvailableDates(): array;
 
     /**
      * Create a new schedule record

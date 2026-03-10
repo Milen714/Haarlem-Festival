@@ -41,6 +41,28 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             </div>
         </article>
 
+        <!-- Restaurant Management -->
+        <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center mb-4">
+                <span class="text-4xl mr-4">🍽️</span>
+                <h2 class="text-2xl font-bold">Restaurants</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Manage Restaurants & Extensions</p>
+            <div class="space-y-2">
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All
+                    Restaurants</a>
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Sessions
+                    (Pending)</a>
+                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Cuisine
+                    (Pending)</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Restaurant</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Session
+                    (Pending)</a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Cuisine
+                    (Pending)</a>
+            </div>
+        </article>
+
         <!-- Venue Management -->
         <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
             <div class="flex items-center mb-4">
@@ -54,6 +76,20 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             </div>
         </article>
 
+        <!--Landmark Management -->
+        <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center mb-4">
+                <span class="text-4xl mr-4">🏰</span>
+                <h2 class="text-2xl font-bold">Landmarks</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Manage landmarks</p>
+            <div class="space-y-2">
+                <a href="/cms/landmarks" class="block text-blue-600 hover:underline font-semibold">→ View All
+                    Landmarks</a>
+                <a href="/cms/landmarks/create" class="block text-green-600 hover:underline">+ Add New Landmark</a>
+            </div>
+        </article>
+
         <!-- Schedule Management -->
         <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
             <div class="flex items-center mb-4">
@@ -62,7 +98,8 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             </div>
             <p class="text-gray-600 mb-4">Manage event time slots and capacity</p>
             <div class="space-y-2">
-                <a href="/cms/schedules" class="block text-blue-600 hover:underline font-semibold">→ View All Schedules</a>
+                <a href="/cms/schedules" class="block text-blue-600 hover:underline font-semibold">→ View All
+                    Schedules</a>
                 <a href="/cms/schedules/create" class="block text-green-600 hover:underline">+ Add New Schedule</a>
             </div>
         </article>

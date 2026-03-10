@@ -9,4 +9,5 @@ interface IUserService {
     public function createUser(User $user): bool;
     public function authenticateUser(string $email, string $password): ?User;
     public function updateUser(User $user): bool;
+    public function deleteUser(int $id): bool;
 }

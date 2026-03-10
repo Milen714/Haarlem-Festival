@@ -396,21 +396,21 @@ class ArtistRepository extends Repository implements IArtistRepository
     }
 
     public function isArtistInEvent(int $artistId, int $eventId): bool
-{
-    try {
-        $pdo = $this->connect();
+    {
+        try {
+            $pdo = $this->connect();
 
-        $stmt = $pdo->prepare("
-            SELECT 1
-            FROM EVENT_ARTIST
-            WHERE event_id = :event_id
-              AND artist_id = :artist_id
-            LIMIT 1
-        ");
+            $stmt = $pdo->prepare("
+                SELECT 1
+                FROM EVENT_ARTIST
+                WHERE event_id = :event_id
+                AND artist_id = :artist_id
+                LIMIT 1
+            ");
 
-        $stmt->bindValue(':event_id', $eventId, \PDO::PARAM_INT);
-        $stmt->bindValue(':artist_id', $artistId, \PDO::PARAM_INT);
-        $stmt->execute();
+            $stmt->bindValue(':event_id', $eventId, \PDO::PARAM_INT);
+            $stmt->bindValue(':artist_id', $artistId, \PDO::PARAM_INT);
+            $stmt->execute();
 
         return (bool) $stmt->fetchColumn();
     } catch (\PDOException $e) {

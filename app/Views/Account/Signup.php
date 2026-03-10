@@ -33,10 +33,6 @@ if (isset($userModel)) {
                 value="<?php echo htmlspecialchars($user->email ?? ''); ?>" required>
         </article>
         <article class="input_group">
-            <label class="input_label" for="password">Password:</label>
-            <input class="form_input" type="password" id="password" name="password" required>
-        </article>
-        <article class="input_group">
             <label class="input_label" for="fname">First Name:</label>
             <input class="form_input" type="text" id="fname" name="fname"
                 value="<?php echo htmlspecialchars($user->fname ?? ''); ?>" required>
@@ -56,6 +52,10 @@ if (isset($userModel)) {
             <input class="form_input" type="tel" id="phone" name="phone"
                 value="<?php echo htmlspecialchars($user->phone ?? ''); ?>">
         </article>
+        <article class="input_group password-group">
+            <label class="input_label" for="password">Password:</label>
+            <input class="form_input" type="password" id="password" name="password" required>
+        </article>
 
         <button id="submit-button" class="button_primary" type="submit">Signup</button>
 
@@ -68,15 +68,25 @@ if (isset($userModel)) {
 
 
 
-
+    <script src="/Js/PasswordStrength.js"></script>
+    <script src="/Js/ShowError.js"></script>
     <script>
+    const passwordChecklist = document.querySelectorAll('.password-strength p');
     const submitButton = document.getElementById('submit-button');
     const spinner = document.getElementById('spinner');
     const signUpForm = document.getElementById("signupForm");
     const autoLoginForm = document.getElementById("autoLoginForm");
     const hiddenEmail = document.getElementById("hidden-email");
     const hiddenPassword = document.getElementById("hidden-password");
+
+
     signUpForm.addEventListener('submit', async function(event) {
+        if (!checkPasswordStrength()) {
+            showError('Password does not meet the strength requirements.');
+            event.preventDefault();
+            return;
+        }
+
         event.preventDefault();
         submitButton.disabled = true;
         submitButton.classList.add('opacity-50', 'cursor-not-allowed');
@@ -121,14 +131,7 @@ if (isset($userModel)) {
         }
     });
 
-    function showError(message) {
-        const errorContainer = document.getElementById('error-container');
-        errorContainer.innerHTML = `
-            <div class="mb-4 p-4 bg-red-300 text-red-900 border border-red-400 rounded">
-                ${message}
-            </div>
-        `;
-    }
+
 
     async function executeRecaptcha() {
         return new Promise((resolve, reject) => {

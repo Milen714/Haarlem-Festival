@@ -1,12 +1,20 @@
-<section class="container mx-auto px-6 py-16 max-w-5xl">
-    <div class="text-center space-y-6">
-        <p class="text-lg md:text-xl text-gray-700 leading-relaxed italic">
-            "Walk five minutes from the station and the modern world fades away. You are stepping onto cobblestones that have carried merchants, painters, and explorers for over 700 years..."
-        </p>
-        <div class="pt-8 border-t border-gray-100 max-w-xs mx-auto">
-            <h2 class="text-red-700 font-bold uppercase tracking-widest text-sm md:text-base">
-                Read about our most beloved landmarks
+<?php /** @var App\CmsModels\PageSection $welcome */ ?>
+<section class="container mx-auto max-w-[1100px] px-4 mt-12 mb-16">
+    <nav aria-label="Breadcrumb" class="text-sm text-ink-500 mt-6 mb-8">
+        <a href="/" class="hover:text-ink-700 transition-colors">Home</a>
+        <span class="mx-2 text-neutral-400">›</span>
+        <span class="text-ink-700 font-medium">Haarlem History</span>
+    </nav>
+
+    <?php if ($welcome): ?>
+        <div class="text-center">
+            <h2 class="font-serif text-2xl md:text-3xl text-ink-900">
+                <?= htmlspecialchars($welcome->title) ?>
             </h2>
+
+            <div class="mt-4 max-w-3xl mx-auto text-ink-700 leading-relaxed italic prose prose-sm max-w-none">
+                <?= $welcome->content_html ?>
+            </div>
         </div>
-    </div>
+    <?php endif; ?>
 </section>

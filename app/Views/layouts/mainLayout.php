@@ -1,6 +1,7 @@
 <?php
 $theme = $_COOKIE['theme'] ?? 'light';
 $darkClass = $theme === 'dark' ? 'dark' : '';
+$content = $content ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en" class="<?php echo $darkClass ?>">
@@ -35,7 +36,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
 
         </ul>
     </nav> -->
-    <nav class="bg_colors_home  w-full z-20 top-0 start-0 border-b border-[#2C3233]">
+    <nav id="main-nav" class="bg_colors_home  w-full z-20 top-0 start-0 border-b border-[#2C3233]">
 
         <div class="nav-ul-container  max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto p-4">
             <!-- Logo and Brand Name -->
@@ -80,22 +81,15 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                             Personal Plan</a>
                     </li>
                     <li class="flex items-center gap-2">
-                        <button id="themeToggle" type="button"
-                            class="p-2 rounded-full hover-color focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            title="Toggle theme">
-                            <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                            </svg>
+                        <button type="button"
+                            class="relative text_colors_nav  box-border border border-transparent  focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm p-3 focus:outline-none">
+                            <img src="Assets/Home/Shoppinsad.svg" alt="">
+                            <span class="sr-only">Shopping Cart</span>
+                            <div
+                                class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-red-700 rounded-full -top-2 -end-2">
+                                2</div>
                         </button>
                     </li>
-
 
                 </ul>
             </div>
@@ -111,12 +105,26 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                     <!-- Dropdown -->
                     <div id="accessibilityDropdown" class="absolute right-0 top-full mt-2 w-44 z-50 hidden
                        rounded-lg border border-[#2C3233]
-                       bg-[#F2F0EF] dark:bg-[#0F0F0F] shadow-lg">
-                        <ul class="py-1 text-sm text-black dark:text-white" aria-labelledby="userMenuButton">
-                            <li>
+                       bg-[#F2F0EF] text_colors_nav shadow-lg">
+                        <ul class="py-1 text-sm" aria-labelledby="userMenuButton">
+                            <li class="flex items-center gap-2">
                                 <a href="/settings" class="block px-4 py-2 hover-color rounded-md">
                                     High Contrast Mode
                                 </a>
+                                <button id="themeToggle" type="button"
+                                    class="p-2 rounded-full hover-color focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    title="Toggle theme">
+                                    <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                    </svg>
+                                </button>
                             </li>
 
                         </ul>
@@ -221,7 +229,7 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
         <?php echo $content; ?>
     </main>
 
-    <footer class="flex flex-col gap-4 px-4 py-6 bg_colors_home">
+    <footer id="footer-main" class="flex flex-col gap-4 px-4 py-6 bg_colors_home">
         <div class="flex flex-row justify-around flex-wrap gap-8 border-b-2  border-[#B18132] pb-4">
             <article class="flex flex-col">
                 <img src="/Assets/Nav/FestivalLogo.svg" alt="FestivalLogo" class="w-32">

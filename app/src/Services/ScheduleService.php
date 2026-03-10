@@ -191,4 +191,9 @@ class ScheduleService implements IScheduleService
 
         return $grouped;
     }
+
+    public function getAvailableDates(): array
+    {
+        return $this->scheduleRepository->getAvailableDates();
+    }
 }
