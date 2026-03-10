@@ -100,7 +100,7 @@ class ScheduleService implements IScheduleService
     public function getAllRestaurants(): array
     {
         try {
-            return $this->restaurantService->getAllRestaurants();
+            return $this->restaurantService->showAllRestaurants();
         } catch (\Exception $e) {
             error_log("ScheduleService: could not load restaurants - " . $e->getMessage());
             return [];

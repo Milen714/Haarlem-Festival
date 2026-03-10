@@ -8,6 +8,11 @@ use App\Services\MediaService;
 use App\Repositories\MediaRepository;
 use App\Services\ScheduleService;
 use App\Repositories\ScheduleRepository;
+use App\Services\VenueService;
+use App\Repositories\VenueRepository;
+use App\Services\RestaurantService;
+use App\Repositories\RestaurantRepository;
+use App\Services\LandmarkService;
 use App\Services\AlbumService;
 use App\Repositories\AlbumRepository;
 use App\Controllers\BaseController;
@@ -26,7 +31,18 @@ class DanceArtistController extends BaseController
     {
         $this->mediaService = new MediaService(new MediaRepository());
         $this->artistService = new ArtistService(new ArtistRepository(), $this->mediaService);
-        $this->scheduleService = new ScheduleService(new ScheduleRepository());
+
+        $venueService = new VenueService(new VenueRepository(), $this->mediaService);
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $this->mediaService);
+        $landmarkService = new LandmarkService();
+
+        $this->scheduleService = new ScheduleService(
+            new ScheduleRepository(),
+            $venueService,
+            $this->artistService,
+            $restaurantService,
+            $landmarkService
+        );
         $this->albumService = new AlbumService(new AlbumRepository());
     }
 

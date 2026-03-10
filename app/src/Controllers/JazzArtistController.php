@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Repositories\ArtistRepository;
-use App\Repositories\LandmarkRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\PageRepository;
 use App\Repositories\RestaurantRepository;
@@ -38,8 +37,8 @@ class JazzArtistController extends BaseController
             new ScheduleRepository(),
             new VenueService(new VenueRepository(), $mediaService),
             $this->artistService,
-            new RestaurantService(new RestaurantRepository()),
-            new LandmarkService(new LandmarkRepository())
+            new RestaurantService(new RestaurantRepository(), $mediaService),
+            new LandmarkService()
         );
 
         $this->pageService = new PageService(new PageRepository());
