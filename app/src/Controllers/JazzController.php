@@ -16,7 +16,6 @@ use App\Repositories\VenueRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\RestaurantRepository;
-use App\Repositories\LandmarkRepository;
 
 class JazzController extends BaseController
 {
@@ -51,8 +50,8 @@ class JazzController extends BaseController
             new ScheduleRepository(),
             $this->venueService,
             $this->artistService,
-            new RestaurantService(new RestaurantRepository()),
-            new LandmarkService(new LandmarkRepository())
+            new RestaurantService(new RestaurantRepository(), $mediaService),
+            new LandmarkService()
         );
     }
 

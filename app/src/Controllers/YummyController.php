@@ -10,9 +10,12 @@ use App\Repositories\PageRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\VenueRepository;
+use App\Repositories\ArtistRepository;
 use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\VenueService;
+use App\Services\ArtistService;
+use App\Services\LandmarkService;
 use App\Models\Yummy\RestaurantListViewModel;
 use App\Models\User;
 use App\Models\Enums\UserRole;
@@ -47,14 +50,24 @@ class YummyController extends BaseController
         $this->userService = new UserService($this->userRepository);
         $this->pageRepository = new PageRepository();
         $this->pageService = new PageService($this->pageRepository);
-        $this->scheduleRepository = new ScheduleRepository();
-        $this->scheduleService = new ScheduleService($this->scheduleRepository);
         $this->mediaRepository = new MediaRepository();
         $this->mediaService = new MediaService($this->mediaRepository);
         $this->restaurantRepository = new RestaurantRepository();
         $this->restaurantService = new RestaurantService($this->restaurantRepository, $this->mediaService);
         $this->venueRepository = new VenueRepository();
         $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
+
+        $artistService = new ArtistService(new ArtistRepository(), $this->mediaService);
+        $landmarkService = new LandmarkService();
+        $this->scheduleRepository = new ScheduleRepository();
+        $this->scheduleService = new ScheduleService(
+            $this->scheduleRepository,
+            $this->venueService,
+            $artistService,
+            $this->restaurantService,
+            $landmarkService
+        );
+
         $this->cuisineRepository = new CuisineRepository();
         $this->cuisineService = new CuisineService($this->cuisineRepository);
     }
