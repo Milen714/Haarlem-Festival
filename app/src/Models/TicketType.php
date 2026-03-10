@@ -25,7 +25,7 @@ class TicketType
 	public function fromPDOData(array $data): void
 	{
 		$this->ticket_type_id = isset($data['ticket_type_id']) ? (int)$data['ticket_type_id'] : null;
-		$this->name = $data['name'] ?? null;
+		$this->name = $data['ticket_name'] ?? $data['name'] ?? null;
 		$this->price = isset($data['price']) ? (float)$data['price'] : null;
 		$this->description = $data['description'] ?? null;
 		$this->reservation_fee = isset($data['reservation_fee']) ? (float)$data['reservation_fee'] : null;
@@ -36,5 +36,6 @@ class TicketType
 		$this->capacity = isset($data['capacity']) ? (int)$data['capacity'] : null;
 		$this->language = $data['language'] ?? null;
 		$this->special_requirements = $data['special_requirements'] ?? null;
+		$this->schedule = isset($data['schedule_id']) ? (new Schedule())->hydrateSchedule($data) : null;
 	}
 }

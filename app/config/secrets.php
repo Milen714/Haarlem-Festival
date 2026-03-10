@@ -10,10 +10,3 @@ $dotenv->safeLoad();
 $stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'] ?? '';
 // Domain URL
 $DOMAIN_URL = $_ENV['DOMAIN_URL'] ?? 'http://localhost';
-
-
-
-
-
-echo "Stripe Secret Key: " . $stripeSecretKey . "<br>";
-echo "Domain URL: " . $DOMAIN_URL . "<br>";

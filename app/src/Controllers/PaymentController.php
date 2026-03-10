@@ -23,8 +23,12 @@ use App\Repositories\MediaRepository;
 use App\Services\MediaService;
 use App\ViewModels\Home\ScheduleList;
 use App\ViewModels\Home\StartingPoints;
+use App\Services\Interfaces\ITicketService;
+use App\Services\TicketService;
+use App\Services\Interfaces\IPaymentService;
+use App\Services\PaymentService;
 
-class HomeController extends BaseController
+class PaymentController extends BaseController
 {
     private UserService $userService;
     private UserRepository $userRepository;
@@ -37,6 +41,8 @@ class HomeController extends BaseController
     private ScheduleService $scheduleService;
     private VenueRepository $venueRepository;
     private VenueService $venueService;
+    private ITicketService $ticketService;
+    private IPaymentService $paymentService;
     public function __construct()
     {
         $this->userRepository = new UserRepository();
@@ -63,11 +69,41 @@ class HomeController extends BaseController
             $restaurantService,
             $this->landmarkService
         );
+        $this->ticketService = new TicketService();
+        $this->paymentService = new PaymentService();
     }
 
     public function index()
     {
-        $this->view('ShoppingCart/wishList', [ ]);
+        $ticketType = $this->ticketService->getTicketTypeById(2); // Example schedule ID
+        //var_dump($ticketType); // Debug output to verify data retrieval
+        $this->view('ShoppingCart/ShoppingCart', ['ticketType' => $ticketType]);
+    }
+    public function checkout()
+    {
+        $this->view('ShoppingCart/PaymentPartial', []);
+    }
+
+    public function createCheckoutSession()
+    {
+       try {
+        $item = [
+            'name' => 'Test Product',
+            'amount' => 100 * 100, // amount in cents
+            'quantity' => 1,
+        ];
+        $this->paymentService->stripeCheckout((object)$item);
+        } catch (\Exception $e) {
+             error_log('Error creating checkout session: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
+        }
+        //require '../payment/checkout.php';  
+    }
+    public function return()
+    {
+        $this->view('ShoppingCart/CheckoutSuccess');
+        
     }
 
 

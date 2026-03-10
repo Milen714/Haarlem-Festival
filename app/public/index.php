@@ -130,7 +130,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /* Payment */
     $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
-    $r->addRoute('POST', '/payment/process', ['App\Controllers\PaymentController', 'process']);
+    $r->addRoute('GET', '/checkout', ['App\Controllers\PaymentController', 'checkout']);
+    $r->addRoute('GET', '/create-checkout-session', ['App\Controllers\PaymentController', 'createCheckoutSession']);
+    $r->addRoute('GET', '/return', ['App\Controllers\PaymentController', 'return']);
 
 });
 
