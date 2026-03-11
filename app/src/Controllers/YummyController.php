@@ -14,9 +14,6 @@ use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\VenueService;
 use App\Models\Yummy\RestaurantListViewModel;
-use App\Models\User;
-use App\Models\Enums\UserRole;
-use App\Middleware\RequireRole;
 use App\Repositories\MediaRepository;
 use App\Services\MediaService;
 use App\Repositories\CuisineRepository;
@@ -24,7 +21,6 @@ use App\Services\CuisineService;
 
 class YummyController extends BaseController
 {
-    private UserService $userService;
     private UserRepository $userRepository;
     private PageService $pageService;
     private PageRepository $pageRepository;
@@ -43,8 +39,6 @@ class YummyController extends BaseController
     
     public function __construct()
     {
-        $this->userRepository = new UserRepository();
-        $this->userService = new UserService($this->userRepository);
         $this->pageRepository = new PageRepository();
         $this->pageService = new PageService($this->pageRepository);
         $this->scheduleRepository = new ScheduleRepository();
