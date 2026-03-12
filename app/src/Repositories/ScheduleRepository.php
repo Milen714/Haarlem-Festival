@@ -147,7 +147,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching schedule by ID: " . $e->getMessage());
+            throw new PDOException("Error fetching schedule by ID: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -192,7 +192,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching all schedules: " . $e->getMessage());
+            throw new PDOException("Error fetching all schedules: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -223,7 +223,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching single schedule by event: " . $e->getMessage());
+            throw new PDOException("Error fetching single schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -249,7 +249,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching schedule by event: " . $e->getMessage());
+            throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -266,7 +266,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             return array_map(fn($row) => $row['date'], $rows);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching available dates: " . $e->getMessage());
+            throw new PDOException("Error fetching available dates: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -305,7 +305,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             return $result;
         } catch (PDOException $e) {
             error_log("Error creating schedule: " . $e->getMessage());
-            throw new \RuntimeException("Failed to create schedule: " . $e->getMessage());
+            throw new PDOException("Failed to create schedule: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -350,7 +350,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error updating schedule: " . $e->getMessage());
-            throw new \RuntimeException("Failed to update schedule: " . $e->getMessage());
+            throw new PDOException("Failed to update schedule: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -366,7 +366,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error deleting schedule: " . $e->getMessage());
-            throw new \RuntimeException("Failed to delete schedule: " . $e->getMessage());
+            throw new PDOException("Failed to delete schedule: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -381,7 +381,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log("Error fetching event categories: " . $e->getMessage());
-            throw new \RuntimeException("Failed to fetch event categories: " . $e->getMessage());
+            throw new PDOException("Failed to fetch event categories: " . $e->getMessage(), 0, $e);
         }
     }
 }

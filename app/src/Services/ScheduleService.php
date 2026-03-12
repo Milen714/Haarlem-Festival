@@ -133,14 +133,21 @@ class ScheduleService implements IScheduleService
 
     private function buildScheduleFromPostData(Schedule $schedule, array $data): Schedule
     {
-        $schedule->event_id       = (int)$data['event_id'];
+        $schedule->event_id       = (int)($data['event_id'] ?? 0);
         $schedule->venue_id       = !empty($data['venue_id'])      ? (int)$data['venue_id']      : null;
         $schedule->artist_id      = !empty($data['artist_id'])     ? (int)$data['artist_id']     : null;
         $schedule->restaurant_id  = !empty($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
         $schedule->landmark_id    = !empty($data['landmark_id'])   ? (int)$data['landmark_id']   : null;
-        $schedule->date           = !empty($data['date'])       ? new \DateTime($data['date'])       : null;
-        $schedule->start_time     = !empty($data['start_time']) ? new \DateTime($data['start_time']) : null;
-        $schedule->end_time       = !empty($data['end_time'])   ? new \DateTime($data['end_time'])   : null;
+        
+        // Safely create DateTime objects with error handling
+        try {
+            $schedule->date       = !empty($data['date'])       ? new \DateTime($data['date'])       : null;
+            $schedule->start_time = !empty($data['start_time']) ? new \DateTime($data['start_time']) : null;
+            $schedule->end_time   = !empty($data['end_time'])   ? new \DateTime($data['end_time'])   : null;
+        } catch (\Exception $e) {
+            throw new \Exception('Invalid date or time format: ' . $e->getMessage());
+        }
+        
         $schedule->total_capacity = (int)($data['total_capacity'] ?? 0);
         $schedule->tickets_sold   = (int)($data['tickets_sold'] ?? 0);
         $schedule->is_sold_out    = isset($data['is_sold_out']) && $data['is_sold_out'] == '1';

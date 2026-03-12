@@ -144,7 +144,7 @@ $action = $action ?? '/cms/artists/store';
         <?php if ($isEdit): ?>
         <section aria-labelledby="gallery-heading" class="bg-white border rounded-lg p-6 mb-6">
             <h2 id="gallery-heading" class="text-xl font-bold mb-1 border-b pb-2">Gallery Images</h2>
-            <p class="text-sm text-gray-500 mb-4">These photos appear in the gallery section of the artist's page. Upload multiple images at once.</p>
+            <p class="text-sm text-gray-500 mb-4">These photos appear in the gallery section of the artist's page. You can replace each existing image directly, or upload new images at the bottom.</p>
 
             <?php if ($artist->gallery && !empty($artist->gallery->media_items)): ?>
             <p class="text-sm font-semibold text-gray-700 mb-3">
@@ -170,14 +170,27 @@ $action = $action ?? '/cms/artists/store';
                              onerror="this.onerror=null; this.src='/Assets/Home/ImagePlaceholder.png';">
                         <figcaption class="flex items-center justify-between px-2 py-2 bg-white border-t border-gray-100 text-xs text-gray-500">
                             <span>#<?= $position ?> of <?= $total ?></span>
-                            <form method="POST"
-                                  action="/cms/artists/gallery-remove/<?= (int)$artist->artist_id ?>/<?= (int)$mediaId ?>"
-                                  onsubmit="return confirm('Remove photo #<?= $position ?> from the gallery?');">
-                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold hover:underline">
-                                    Remove
-                                </button>
-                            </form>
+                            <button type="submit"
+                                    formaction="/cms/artists/gallery-remove/<?= (int)$artist->artist_id ?>/<?= (int)$mediaId ?>"
+                                    formmethod="POST"
+                                    formnovalidate
+                                    onclick="return confirm('Remove photo #<?= $position ?> from the gallery?');"
+                                    class="text-red-600 hover:text-red-800 font-semibold hover:underline">
+                                Remove
+                            </button>
                         </figcaption>
+
+                        <div class="px-2 py-2 border-t border-gray-100 bg-gray-50">
+                            <label for="gallery_replace_<?= (int)$mediaId ?>" class="block text-[11px] font-semibold text-gray-700 mb-1">
+                                Replace this image
+                            </label>
+                            <input type="file"
+                                   id="gallery_replace_<?= (int)$mediaId ?>"
+                                   name="gallery_replace_<?= (int)$mediaId ?>"
+                                   accept="image/jpeg,image/png,image/webp"
+                                   class="text-[11px] w-full">
+                            <p class="text-[10px] text-blue-600 mt-1 italic">Uploading a new file replaces this image in place.</p>
+                        </div>
                     </figure>
                 </li>
                 <?php endif; ?>
