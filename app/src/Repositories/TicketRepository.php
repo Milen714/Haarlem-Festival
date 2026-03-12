@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Framework\Repository;
+use App\Models\TicketScheme;
 use App\Models\TicketType;
 use App\Repositories\Interfaces\ITicketRepository;
 use PDO;
@@ -19,17 +20,21 @@ class TicketRepository extends Repository implements ITicketRepository
             SELECT
                 tt.ticket_type_id,
                 s.schedule_id,
-                tt.name as ticket_name,
-                tt.price,
                 tt.description,
-                tt.reservation_fee,
                 tt.min_age,
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
                 tt.capacity,
-                tt.language,
                 tt.special_requirements,
+
+                -- Ticket scheme fields
+                ts.ticket_scheme_id,
+                ts.name as name,
+                ts.scheme_enum,
+                ts.price,
+                ts.fee,
+                ts.ticket_language,
 
                 s.event_id,
                 s.date,
@@ -114,6 +119,7 @@ class TicketRepository extends Repository implements ITicketRepository
 
             FROM TICKET_TYPE tt
             INNER JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
+            LEFT JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
             LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
@@ -180,45 +186,36 @@ class TicketRepository extends Repository implements ITicketRepository
             $query = "
                 INSERT INTO TICKET_TYPE (
                     schedule_id,
-                    name,
-                    price,
+                    scheme_id,
                     description,
-                    reservation_fee,
                     min_age,
                     max_age,
                     min_quantity,
                     max_quantity,
                     capacity,
-                    language,
                     special_requirements
                 ) VALUES (
                     :schedule_id,
-                    :name,
-                    :price,
+                    :scheme_id,
                     :description,
-                    :reservation_fee,
                     :min_age,
                     :max_age,
                     :min_quantity,
                     :max_quantity,
                     :capacity,
-                    :language,
                     :special_requirements
                 )
             ";
 
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':schedule_id', $ticketType->schedule?->schedule_id, PDO::PARAM_INT);
-            $stmt->bindValue(':name', $ticketType->name);
-            $stmt->bindValue(':price', $ticketType->price);
+            $stmt->bindValue(':scheme_id', $ticketType->ticket_scheme?->ticket_scheme_id, PDO::PARAM_INT);
             $stmt->bindValue(':description', $ticketType->description);
-            $stmt->bindValue(':reservation_fee', $ticketType->reservation_fee);
             $stmt->bindValue(':min_age', $ticketType->min_age, PDO::PARAM_INT);
             $stmt->bindValue(':max_age', $ticketType->max_age, PDO::PARAM_INT);
             $stmt->bindValue(':min_quantity', $ticketType->min_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':max_quantity', $ticketType->max_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':capacity', $ticketType->capacity, PDO::PARAM_INT);
-            $stmt->bindValue(':language', $ticketType->language);
             $stmt->bindValue(':special_requirements', $ticketType->special_requirements);
 
             $result = $stmt->execute();
@@ -240,16 +237,13 @@ class TicketRepository extends Repository implements ITicketRepository
             $query = "
                 UPDATE TICKET_TYPE SET
                     schedule_id = :schedule_id,
-                    name = :name,
-                    price = :price,
+                    scheme_id = :scheme_id,
                     description = :description,
-                    reservation_fee = :reservation_fee,
                     min_age = :min_age,
                     max_age = :max_age,
                     min_quantity = :min_quantity,
                     max_quantity = :max_quantity,
                     capacity = :capacity,
-                    language = :language,
                     special_requirements = :special_requirements
                 WHERE ticket_type_id = :ticket_type_id
             ";
@@ -257,16 +251,13 @@ class TicketRepository extends Repository implements ITicketRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':ticket_type_id', $ticketType->ticket_type_id, PDO::PARAM_INT);
             $stmt->bindValue(':schedule_id', $ticketType->schedule?->schedule_id, PDO::PARAM_INT);
-            $stmt->bindValue(':name', $ticketType->name);
-            $stmt->bindValue(':price', $ticketType->price);
+            $stmt->bindValue(':scheme_id', $ticketType->ticket_scheme?->ticket_scheme_id, PDO::PARAM_INT);
             $stmt->bindValue(':description', $ticketType->description);
-            $stmt->bindValue(':reservation_fee', $ticketType->reservation_fee);
             $stmt->bindValue(':min_age', $ticketType->min_age, PDO::PARAM_INT);
             $stmt->bindValue(':max_age', $ticketType->max_age, PDO::PARAM_INT);
             $stmt->bindValue(':min_quantity', $ticketType->min_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':max_quantity', $ticketType->max_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':capacity', $ticketType->capacity, PDO::PARAM_INT);
-            $stmt->bindValue(':language', $ticketType->language);
             $stmt->bindValue(':special_requirements', $ticketType->special_requirements);
 
             return $stmt->execute();
@@ -287,6 +278,149 @@ class TicketRepository extends Repository implements ITicketRepository
             return $stmt->execute();
         } catch (PDOException $e) {
             throw new \RuntimeException("Failed to delete ticket type: " . $e->getMessage());
+        }
+    }
+
+    public function getTicketSchemeById(int $ticketSchemeId): ?TicketScheme
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT
+                    ticket_scheme_id,
+                    name,
+                    scheme_enum,
+                    price,
+                    fee,
+                    ticket_language
+                FROM TICKET_SCHEME
+                WHERE ticket_scheme_id = :ticket_scheme_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':ticket_scheme_id', $ticketSchemeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return null;
+            }
+
+            return (new TicketScheme())->fromPDOData($row);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket scheme by ID: " . $e->getMessage());
+        }
+    }
+
+    public function getAllTicketSchemes(): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT
+                    ticket_scheme_id,
+                    name,
+                    scheme_enum,
+                    price,
+                    fee,
+                    ticket_language
+                FROM TICKET_SCHEME
+                ORDER BY ticket_scheme_id ASC
+            ";
+
+            $stmt = $pdo->query($query);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map(function (array $row): TicketScheme {
+                return (new TicketScheme())->fromPDOData($row);
+            }, $rows);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket schemes: " . $e->getMessage());
+        }
+    }
+
+    public function createTicketScheme(TicketScheme $ticketScheme): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                INSERT INTO TICKET_SCHEME (
+                    name,
+                    scheme_enum,
+                    price,
+                    fee,
+                    ticket_language
+                ) VALUES (
+                    :name,
+                    :scheme_enum,
+                    :price,
+                    :fee,
+                    :ticket_language
+                )
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':name', $ticketScheme->name);
+            $stmt->bindValue(':scheme_enum', $ticketScheme->scheme_enum?->value);
+            $stmt->bindValue(':price', $ticketScheme->price);
+            $stmt->bindValue(':fee', $ticketScheme->fee);
+            $stmt->bindValue(':ticket_language', $ticketScheme->ticket_language?->value);
+
+            $result = $stmt->execute();
+            if ($result) {
+                $ticketScheme->ticket_scheme_id = (int)$pdo->lastInsertId();
+            }
+
+            return $result;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to create ticket scheme: " . $e->getMessage());
+        }
+    }
+
+    public function updateTicketScheme(TicketScheme $ticketScheme): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE TICKET_SCHEME SET
+                    name = :name,
+                    scheme_enum = :scheme_enum,
+                    price = :price,
+                    fee = :fee,
+                    ticket_language = :ticket_language
+                WHERE ticket_scheme_id = :ticket_scheme_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':ticket_scheme_id', $ticketScheme->ticket_scheme_id, PDO::PARAM_INT);
+            $stmt->bindValue(':name', $ticketScheme->name);
+            $stmt->bindValue(':scheme_enum', $ticketScheme->scheme_enum?->value);
+            $stmt->bindValue(':price', $ticketScheme->price);
+            $stmt->bindValue(':fee', $ticketScheme->fee);
+            $stmt->bindValue(':ticket_language', $ticketScheme->ticket_language?->value);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update ticket scheme: " . $e->getMessage());
+        }
+    }
+
+    public function deleteTicketScheme(int $ticketSchemeId): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "DELETE FROM TICKET_SCHEME WHERE ticket_scheme_id = :ticket_scheme_id";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':ticket_scheme_id', $ticketSchemeId, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to delete ticket scheme: " . $e->getMessage());
         }
     }
 }

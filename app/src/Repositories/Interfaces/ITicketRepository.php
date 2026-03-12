@@ -1,6 +1,7 @@
 <?php
 namespace App\Repositories\Interfaces;
 
+use App\Models\TicketScheme;
 use App\Models\TicketType;
 interface ITicketRepository
 {
@@ -9,4 +10,10 @@ interface ITicketRepository
     public function create(TicketType $ticketType): bool;
     public function update(TicketType $ticketType): bool;
     public function delete(int $ticketTypeId): bool;
+
+    public function getTicketSchemeById(int $ticketSchemeId): ?TicketScheme;
+    public function getAllTicketSchemes(): array;
+    public function createTicketScheme(TicketScheme $ticketScheme): bool;
+    public function updateTicketScheme(TicketScheme $ticketScheme): bool;
+    public function deleteTicketScheme(int $ticketSchemeId): bool;
 }

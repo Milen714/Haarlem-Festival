@@ -50,17 +50,21 @@ class OrderRepository extends Repository implements IOrderRepository
                 -- Ticket Type fields
                 tt.ticket_type_id,
                 s.schedule_id,
-                tt.name as ticket_name,
-                tt.price,
                 tt.description,
-                tt.reservation_fee as ticket_reservation_fee,
                 tt.min_age,
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
                 tt.capacity,
-                tt.language,
                 tt.special_requirements,
+
+                -- Ticket scheme fields
+                ts.ticket_scheme_id,
+                ts.name as name,
+                ts.scheme_enum,
+                ts.price,
+                ts.fee,
+                ts.ticket_language,
 
                 -- Schedule fields
                 s.event_id,
@@ -132,6 +136,7 @@ class OrderRepository extends Repository implements IOrderRepository
             LEFT JOIN users u ON o.user_id = u.id
             LEFT JOIN ORDER_ITEM oi ON o.order_id = oi.order_id
             LEFT JOIN TICKET_TYPE tt ON oi.ticket_type_id = tt.ticket_type_id
+            LEFT JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
             LEFT JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
@@ -161,17 +166,21 @@ class OrderRepository extends Repository implements IOrderRepository
                 -- Ticket Type fields
                 tt.ticket_type_id,
                 s.schedule_id,
-                tt.name as ticket_name,
-                tt.price,
                 tt.description,
-                tt.reservation_fee as ticket_reservation_fee,
                 tt.min_age,
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
                 tt.capacity,
-                tt.language,
                 tt.special_requirements,
+
+                -- Ticket scheme fields
+                ts.ticket_scheme_id,
+                ts.name as name,
+                ts.scheme_enum,
+                ts.price,
+                ts.fee,
+                ts.ticket_language,
 
                 -- Schedule fields
                 s.event_id,
@@ -244,6 +253,7 @@ class OrderRepository extends Repository implements IOrderRepository
 
             FROM ORDER_ITEM oi
             LEFT JOIN TICKET_TYPE tt ON oi.ticket_type_id = tt.ticket_type_id
+            LEFT JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
             LEFT JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id

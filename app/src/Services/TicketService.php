@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Models\TicketType;
+use App\Models\TicketScheme;
 use App\Services\Interfaces\ITicketService;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\TicketRepository;
@@ -39,4 +40,30 @@ class TicketService implements ITicketService
     {
         return $this->ticketRepository->delete($ticketTypeId);
     }
+
+    public function getTicketSchemeById(int $ticketSchemeId): ?TicketScheme
+    {
+        return $this->ticketRepository->getTicketSchemeById($ticketSchemeId);
+    }
+
+    public function getAllTicketSchemes(): array
+    {
+        return $this->ticketRepository->getAllTicketSchemes();
+    }
+
+    public function createTicketScheme(TicketScheme $ticketScheme): bool
+    {
+        return $this->ticketRepository->createTicketScheme($ticketScheme);
+    }
+
+    public function updateTicketScheme(TicketScheme $ticketScheme): bool
+    {
+        return $this->ticketRepository->updateTicketScheme($ticketScheme);
+    }
+
+    public function deleteTicketScheme(int $ticketSchemeId): bool
+    {
+        return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
+    }
+
 }
