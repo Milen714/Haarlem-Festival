@@ -115,7 +115,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
                 <article class="flex-shrink-0 w-20 sm:w-24 md:w-48 pl-2 md:pl-4 border-l border-gray-200">
                     <header class="text-black">
                         <h3 class="font-semibold text-xs md:text-base mb-2">
-                            €<?= number_format($ticketType->ticket_scheme->price, 2) ?>
+                            €<?= number_format($item->subtotal, 2) ?>
                         </h3>
                     </header>
                 </article>

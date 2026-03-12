@@ -1633,22 +1633,6 @@ select:focus,
   width: min-content;
 }
 
-.w-\[65\%\]{
-  width: 65%;
-}
-
-.w-\[35\%\]{
-  width: 35%;
-}
-
-.w-\[25\%\]{
-  width: 25%;
-}
-
-.w-\[75\%\]{
-  width: 75%;
-}
-
 .min-w-0{
   min-width: 0px;
 }
@@ -2468,6 +2452,11 @@ select:focus,
   background-color: rgb(26 5 5 / var(--tw-bg-opacity, 1));
 }
 
+.bg-\[\#1e4b6e\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 75 110 / var(--tw-bg-opacity, 1));
+}
+
 .bg-\[\#2d0a0a\]{
   --tw-bg-opacity: 1;
   background-color: rgb(45 10 10 / var(--tw-bg-opacity, 1));
@@ -2586,6 +2575,10 @@ select:focus,
 .bg-\[\#fdefc4\]{
   --tw-bg-opacity: 1;
   background-color: rgb(253 239 196 / var(--tw-bg-opacity, 1));
+}
+
+.bg-\[--home-dance-accent\]{
+  background-color: var(--home-dance-accent);
 }
 
 .bg-\[var\(--color-bg-history\)\]{
@@ -2787,6 +2780,11 @@ select:focus,
   background-color: rgb(252 165 165 / var(--tw-bg-opacity, 1));
 }
 
+.bg-red-400{
+  --tw-bg-opacity: 1;
+  background-color: rgb(248 113 113 / var(--tw-bg-opacity, 1));
+}
+
 .bg-red-500{
   --tw-bg-opacity: 1;
   background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1));
@@ -2826,15 +2824,6 @@ select:focus,
 .bg-yellow-400{
   --tw-bg-opacity: 1;
   background-color: rgb(250 204 21 / var(--tw-bg-opacity, 1));
-}
-
-.bg-red-400{
-  --tw-bg-opacity: 1;
-  background-color: rgb(248 113 113 / var(--tw-bg-opacity, 1));
-}
-
-.bg-\[--home-dance-accent\]{
-  background-color: var(--home-dance-accent);
 }
 
 .bg-opacity-50{
@@ -5020,6 +5009,11 @@ select:focus,
   border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
 }
 
+.hover\:bg-\[\#1a3a5a\]:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(26 58 90 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:bg-\[\#465e10\]:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(70 94 16 / var(--tw-bg-opacity, 1));
@@ -5577,6 +5571,10 @@ select:focus,
     width: 0.65rem;
   }
 
+  .md\:w-\[25\%\]{
+    width: 25%;
+  }
+
   .md\:w-\[30\%\]{
     width: 30%;
   }
@@ -5591,6 +5589,10 @@ select:focus,
 
   .md\:w-\[55\%\]{
     width: 55%;
+  }
+
+  .md\:w-\[75\%\]{
+    width: 75%;
   }
 
   .md\:w-\[75px\]{
@@ -5608,14 +5610,6 @@ select:focus,
   .md\:w-fit{
     width: -moz-fit-content;
     width: fit-content;
-  }
-
-  .md\:w-\[75\%\]{
-    width: 75%;
-  }
-
-  .md\:w-\[25\%\]{
-    width: 25%;
   }
 
   .md\:grid-cols-2{

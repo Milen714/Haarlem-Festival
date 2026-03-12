@@ -30,6 +30,7 @@ use App\Services\Interfaces\IOrderService;
 use App\Services\PaymentService;
 use App\Services\OrderService;
 use App\config\Secrets;
+use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 class PaymentController extends BaseController
 {
     private UserService $userService;
@@ -79,9 +80,9 @@ class PaymentController extends BaseController
 
     public function index(array $params = [])
     {
-        $order = $this->orderService->getOrderById(1);
-        //var_dump($ticketType); // Debug output to verify data retrieval
-        $this->view('ShoppingCart/ShoppingCart', ['order' => $order]);
+        $order=$this->orderService->getOrderById(1);
+        $viewModel = new ShoppingCartViewModel($order);
+        $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
     public function checkout(array $params = [])
     {
@@ -127,7 +128,8 @@ class PaymentController extends BaseController
     {
         header('Content-Type: application/json');
         $order=$this->orderService->getOrderById(1);
-        echo json_encode($order, JSON_PRETTY_PRINT);   
+        $viewModel = new ShoppingCartViewModel($order);
+        echo json_encode($viewModel, JSON_PRETTY_PRINT);   
     }
 
 
