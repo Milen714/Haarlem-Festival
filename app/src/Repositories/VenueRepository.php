@@ -53,7 +53,7 @@ class VenueRepository extends Repository implements IVenueRepository
             return $venues;
         } catch (PDOException $e) {
             error_log("Error fetching venues by event: " . $e->getMessage());
-            throw new \RuntimeException("Failed to fetch venues for event {$eventId}", 0, $e);
+            throw new PDOException("Failed to fetch venues for event {$eventId}", 0, $e);
         }
     }
 
@@ -89,7 +89,7 @@ class VenueRepository extends Repository implements IVenueRepository
             return $venue;
         } catch (PDOException $e) {
             error_log("Error fetching venue by ID: " . $e->getMessage());
-            throw new \RuntimeException("Failed to fetch venue by ID: {$venueId}", 0, $e);
+            throw new PDOException("Failed to fetch venue by ID: {$venueId}", 0, $e);
         }
     }
 
@@ -106,7 +106,7 @@ class VenueRepository extends Repository implements IVenueRepository
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error deleting venue: " . $e->getMessage());
-            throw new \RuntimeException("Failed to delete venue", 0, $e);
+            throw new PDOException("Failed to delete venue", 0, $e);
         }
     }
 
@@ -149,7 +149,7 @@ class VenueRepository extends Repository implements IVenueRepository
         return $venues;
     } catch (PDOException $e) {
         error_log("Error fetching all venues: " . $e->getMessage());
-        throw new \RuntimeException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
+        throw new PDOException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
     }
     }
 
@@ -210,7 +210,7 @@ class VenueRepository extends Repository implements IVenueRepository
             return $result;
         } catch (PDOException $e) {
             error_log("Error creating venue: " . $e->getMessage());
-            throw new \RuntimeException("Failed to create venue", 0, $e);
+            throw new PDOException("Failed to create venue", 0, $e);
         }
     }
 
@@ -255,7 +255,7 @@ class VenueRepository extends Repository implements IVenueRepository
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error updating venue: " . $e->getMessage());
-            throw new \RuntimeException("Failed to update venue", 0, $e);
+            throw new PDOException("Failed to update venue", 0, $e);
         }
     }
 }

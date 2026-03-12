@@ -46,13 +46,21 @@ class ScheduleController extends BaseController
             $eventType = $_GET['event_type'] ?? null;
             $date      = $_GET['date'] ?? null;
 
+            // Sanitizes the inputs
+            if (is_string($eventType)) {
+                $eventType = trim($eventType) ?: null;
+            }
+            if (is_string($date)) {
+                $date = trim($date) ?: null;
+            }
+
             $schedules        = $this->scheduleService->getAllSchedules($eventType, $date);
             $eventCategories  = $this->scheduleService->getAllEventCategories();
 
             $this->cmsLayout('Cms/Schedules/Index', [
                 'title'          => 'Manage Schedules',
                 'schedules'      => $schedules,
-                'eventCategories'=> $eventCategories,
+                'eventCategories' => $eventCategories,
                 'filterType'     => $eventType,
                 'filterDate'     => $date,
             ]);
@@ -61,7 +69,7 @@ class ScheduleController extends BaseController
             $this->cmsLayout('Cms/Schedules/Index', [
                 'title'          => 'Manage Schedules',
                 'schedules'      => [],
-                'eventCategories'=> [],
+                'eventCategories' => [],
                 'filterType'     => null,
                 'filterDate'     => null,
                 'error'          => 'Failed to load schedules: ' . $e->getMessage(),
@@ -77,7 +85,7 @@ class ScheduleController extends BaseController
                 'title'          => 'Create New Schedule',
                 'schedule'       => null,
                 'action'         => '/cms/schedules/store',
-                'eventCategories'=> $this->scheduleService->getAllEventCategories(),
+                'eventCategories' => $this->scheduleService->getAllEventCategories(),
                 'venues'         => $this->scheduleService->getAllVenues(),
                 'artists'        => $this->scheduleService->getAllArtists(),
                 'restaurants'    => $this->scheduleService->getAllRestaurants(),
@@ -126,7 +134,7 @@ class ScheduleController extends BaseController
                 'title'          => 'Edit Schedule #' . $scheduleId,
                 'schedule'       => $schedule,
                 'action'         => "/cms/schedules/update/{$scheduleId}",
-                'eventCategories'=> $this->scheduleService->getAllEventCategories(),
+                'eventCategories' => $this->scheduleService->getAllEventCategories(),
                 'venues'         => $this->scheduleService->getAllVenues(),
                 'artists'        => $this->scheduleService->getAllArtists(),
                 'restaurants'    => $this->scheduleService->getAllRestaurants(),
