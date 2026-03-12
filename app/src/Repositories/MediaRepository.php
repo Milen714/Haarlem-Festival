@@ -27,7 +27,7 @@ class MediaRepository extends Repository implements IMediaRepository
             }
             return $mediaModel;
         } catch (PDOException $e) {
-            die("Error fetching media: " . $e->getMessage());
+            throw new PDOException("Error fetching media: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -50,7 +50,7 @@ class MediaRepository extends Repository implements IMediaRepository
             $stmt->bindParam(':alt_text', $media->alt_text);
             return $stmt->execute();
         } catch (PDOException $e) {
-            die("Error updating media: " . $e->getMessage());
+            throw new PDOException("Error updating media: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -72,7 +72,7 @@ class MediaRepository extends Repository implements IMediaRepository
 
             return $executed;
         } catch (PDOException $e) {
-            die("Error creating media: " . $e->getMessage());
+            throw new PDOException("Error creating media: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -85,7 +85,7 @@ class MediaRepository extends Repository implements IMediaRepository
             $stmt->bindParam(':id', $mediaId);
             return $stmt->execute();
         } catch (PDOException $e) {
-            die("Error deleting media: " . $e->getMessage());
+            throw new PDOException("Error deleting media: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -119,7 +119,7 @@ class MediaRepository extends Repository implements IMediaRepository
             }
             return $gallery;
         } catch (PDOException $e) {
-            die("Error fetching gallery: " . $e->getMessage());
+            throw new PDOException("Error fetching gallery: " . $e->getMessage(), 0, $e);
         }
     }
 }

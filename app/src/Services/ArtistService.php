@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApplicationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ValidationException;
 use App\Services\Interfaces\IArtistService;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Models\MusicEvent\Artist;
@@ -18,7 +21,7 @@ class ArtistService implements IArtistService
         $this->artistRepository = $artistRepository;
         $this->mediaService = $mediaService;
     }
- 
+
     public function getArtistsByEventId(int $eventId): array
     {
         return $this->artistRepository->getArtistsByEventId($eventId);
@@ -42,103 +45,123 @@ class ArtistService implements IArtistService
     public function createFromRequest(array $postData, array $files): Artist
     {
         $this->validateArtistData($postData);
-       
-        $artist = $this->buildArtistFromPostData($postData);
-        
+
+        $artist = Artist::createFromPostData($postData);
+
         $artist = $this->handleImageUpload($artist, $files);
-        
+
         $this->artistRepository->create($artist);
-        
+
         return $artist;
     }
 
     public function updateFromRequest(int $artistId, array $postData, array $files): Artist
     {
-        
+
         $artist = $this->artistRepository->getArtistById($artistId);
-        
+
         if (!$artist) {
-            throw new \Exception('Artist not found');
+            throw new ResourceNotFoundException('Artist not found.');
         }
-      
+
         $this->validateArtistData($postData);
-      
-        $artist = $this->updateArtistFromPostData($artist, $postData);
-       
+
+        $artist->applyPostData($postData);
+
         $artist = $this->handleImageUpload($artist, $files);
-        
+
         $this->artistRepository->update($artist);
-        
+
         return $artist;
+    }
+
+    /**
+     * Update artist profile and handle all gallery operations in one transaction.
+     * This consolidates all update-related business logic in the service layer.
+     *
+     * @throws ResourceNotFoundException if artist not found
+     * @throws ValidationException if data validation fails
+     * @throws ApplicationException if any operation fails
+     */
+    public function updateArtistWithGalleryFromRequest(int $artistId, array $postData, array $files): Artist
+    {
+        // Update core artist data
+        $artist = $this->updateFromRequest($artistId, $postData, $files);
+
+        // Load fresh copy with gallery for subsequent operations
+        $artistWithGallery = $this->artistRepository->getArtistByIdWithGallery($artistId);
+
+        if (!$artistWithGallery) {
+            throw new ResourceNotFoundException('Artist not found.');
+        }
+
+        // Handle gallery image replacements
+        $this->replaceGalleryImagesFromRequest($artistWithGallery, $files);
+
+        // Handle new gallery image uploads
+        if ($this->hasUploads($files['gallery_images'] ?? null)) {
+            $this->uploadGalleryImages($artistId, $artistWithGallery, $files['gallery_images']);
+        }
+
+        return $artist;
+    }
+
+    /**
+     * Check if a file input contains any uploaded files.
+     * Handles both single-file and multi-file upload arrays.
+     */
+    private function hasUploads(?array $fileInput): bool
+    {
+        if (!$fileInput || !isset($fileInput['name'])) {
+            return false;
+        }
+
+        if (is_array($fileInput['name'])) {
+            foreach ($fileInput['name'] as $name) {
+                if (!empty($name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return !empty($fileInput['name']);
     }
 
     public function deleteArtist(int $artistId): bool
     {
         $artist = $this->artistRepository->getArtistById($artistId);
-        
+
         if (!$artist) {
-            throw new \Exception('Artist not found');
+            throw new ResourceNotFoundException('Artist not found.');
         }
-        
+
         return $this->artistRepository->delete($artistId);
     }
 
     private function validateArtistData(array $data): void
     {
         if (empty($data['name'])) {
-            throw new \Exception('Artist name is required');
+            throw new ValidationException('Artist name is required.');
         }
-        
+
         if (strlen($data['name']) < 2) {
-            throw new \Exception('Artist name must be at least 2 characters');
+            throw new ValidationException('Artist name must be at least 2 characters.');
         }
-        
+
         if (strlen($data['name']) > 100) {
-            throw new \Exception('Artist name cannot exceed 100 characters');
+            throw new ValidationException('Artist name cannot exceed 100 characters.');
         }
 
         if (!empty($data['website']) && !filter_var($data['website'], FILTER_VALIDATE_URL)) {
-            throw new \Exception('Invalid website URL');
+            throw new ValidationException('Invalid website URL.');
         }
-        
+
         if (!empty($data['spotify_url']) && !filter_var($data['spotify_url'], FILTER_VALIDATE_URL)) {
-            throw new \Exception('Invalid Spotify URL');
+            throw new ValidationException('Invalid Spotify URL.');
         }
     }
 
-    private function buildArtistFromPostData(array $data): Artist
-    {
-        $artist = new Artist();
-        $artist->name = trim($data['name']);
-        $artist->slug = $this->generateSlug($artist->name);
-        $artist->bio = !empty($data['bio']) ? trim($data['bio']) : null;
-        $artist->featured_quote = !empty($data['featured_quote']) ? trim($data['featured_quote']) : null;
-        $artist->website = !empty($data['website']) ? trim($data['website']) : null;
-        $artist->spotify_url = !empty($data['spotify_url']) ? trim($data['spotify_url']) : null;
-        $artist->youtube_url = !empty($data['youtube_url']) ? trim($data['youtube_url']) : null;
-        $artist->soundcloud_url = !empty($data['soundcloud_url']) ? trim($data['soundcloud_url']) : null;
-        $artist->press_quote    = !empty($data['press_quote'])    ? trim($data['press_quote'])    : null;
-        $artist->collaborations = !empty($data['collaborations']) ? trim($data['collaborations']) : null;
-        
-        return $artist;
-    }
-
-    private function updateArtistFromPostData(Artist $artist, array $data): Artist
-    {
-        $artist->name = trim($data['name']);
-        $artist->slug = $this->generateSlug($artist->name);
-        $artist->bio = !empty($data['bio']) ? trim($data['bio']) : null;
-        $artist->featured_quote = !empty($data['featured_quote']) ? trim($data['featured_quote']) : null;
-        $artist->website = !empty($data['website']) ? trim($data['website']) : null;
-        $artist->spotify_url = !empty($data['spotify_url']) ? trim($data['spotify_url']) : null;
-        $artist->youtube_url = !empty($data['youtube_url']) ? trim($data['youtube_url']) : null;
-        $artist->soundcloud_url = !empty($data['soundcloud_url']) ? trim($data['soundcloud_url']) : null;
-        $artist->press_quote    = !empty($data['press_quote'])    ? trim($data['press_quote'])    : null;
-        $artist->collaborations = !empty($data['collaborations']) ? trim($data['collaborations']) : null;
-        
-        
-        return $artist;
-    }
 
     private function handleImageUpload(Artist $artist, array $files): Artist
     {
@@ -147,9 +170,8 @@ class ArtistService implements IArtistService
         }
 
         $isUpdate = $artist->profile_image && $artist->profile_image->media_id;
-        
+
         if ($isUpdate) {
-         
             $result = $this->mediaService->replaceMedia(
                 $artist->profile_image->media_id,
                 $files['profile_image'],
@@ -157,7 +179,6 @@ class ArtistService implements IArtistService
                 $artist->name . ' profile'
             );
         } else {
-          
             $result = $this->mediaService->uploadAndCreate(
                 $files['profile_image'],
                 'Artists',
@@ -165,23 +186,14 @@ class ArtistService implements IArtistService
             );
         }
 
-        if ($result['success']) {
+        if ($result['success'] && isset($result['media'])) {
             $artist->profile_image = $result['media'];
         } else {
-            throw new \Exception('Failed to upload image: ' . $result['error']);
+            throw new ApplicationException('Failed to upload artist image.');
         }
 
         return $artist;
     }
-
-
-    private function generateSlug(string $text): string
-    {
-        $text = strtolower($text);
-        $text = preg_replace('/[^a-z0-9]+/', '-', $text);
-        return trim($text, '-');
-    }
-
     public function isArtistInEvent(int $artistId, int $eventId): bool
     {
         return $this->artistRepository->isArtistInEvent($artistId, $eventId);
@@ -226,11 +238,51 @@ class ArtistService implements IArtistService
             $altText = $artist?->name ? $artist->name . ' gallery image' : 'Gallery image';
             $result  = $this->mediaService->uploadAndCreate($file, 'Jazz/Artists', $altText);
 
-            if ($result['success']) {
+            if ($result['success'] && isset($result['media'])) {
                 $order = $this->artistRepository->getNextGalleryOrder($galleryId);
                 $this->artistRepository->addMediaToGallery($galleryId, $result['media']->media_id, $order);
             } else {
                 error_log("Gallery image upload failed: " . ($result['error'] ?? 'unknown'));
+            }
+        }
+    }
+
+    /**
+     * Replace existing gallery images from request file inputs named gallery_replace_{mediaId}.
+     */
+    public function replaceGalleryImagesFromRequest(?Artist $artist, array $files): void
+    {
+        if (!$artist || !$artist->gallery || empty($artist->gallery->media_items) || empty($files)) {
+            return;
+        }
+
+        $allowedMediaIds = [];
+        foreach ($artist->gallery->media_items as $galleryMedia) {
+            $mediaId = (int)($galleryMedia->media->media_id ?? 0);
+            if ($mediaId > 0) {
+                $allowedMediaIds[$mediaId] = true;
+            }
+        }
+
+        foreach ($files as $key => $file) {
+            if (!is_string($key) || !str_starts_with($key, 'gallery_replace_')) {
+                continue;
+            }
+
+            $mediaId = (int)str_replace('gallery_replace_', '', $key);
+            if ($mediaId <= 0 || !isset($allowedMediaIds[$mediaId])) {
+                continue;
+            }
+
+            if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            $altText = ($artist->name ?: 'Artist') . ' gallery image';
+            $result = $this->mediaService->replaceMedia($mediaId, $file, 'Jazz/Artists', $altText);
+
+            if (!($result['success'] ?? false)) {
+                throw new ApplicationException('Failed to replace gallery image.');
             }
         }
     }
@@ -267,6 +319,12 @@ class ArtistService implements IArtistService
             if (empty($name)) {
                 continue;
             }
+            
+            // Ensure all required keys exist before accessing them
+            if (!isset($files['type'][$i], $files['tmp_name'][$i], $files['error'][$i], $files['size'][$i])) {
+                continue;
+            }
+            
             $result[] = [
                 'name'     => $name,
                 'type'     => $files['type'][$i],
