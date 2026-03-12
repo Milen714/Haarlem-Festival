@@ -124,6 +124,12 @@ class PaymentController extends BaseController
             echo json_encode(['error' => 'An error occurred while checking the payment status.']);
         }
     }
+    public function details(array $params = [])
+    {
+        $order=$this->orderService->getOrderById(1);
+        $viewModel = new ShoppingCartViewModel($order);
+        $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
+    }
     public function test(array $params = [])
     {
         header('Content-Type: application/json');

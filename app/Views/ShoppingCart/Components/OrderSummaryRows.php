@@ -6,9 +6,16 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
 ?>
 
-<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100  flex flex-col">
+<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col">
     <h3 class="font-bold text-lg border-b-2 border-[#1e4b6e] pb-2 mb-6 w-fit">Order Summary</h3>
 
+    <?php
+        foreach ($viewModel?->order->orderItems ?? [] as $item) {
+                        $scheduleItem = $item->ticket_type->schedule;
+                        $ticketType = $item->ticket_type;
+                        include __DIR__ . '/TicketItemRow.php';
+                }
+    ?>
     <dl class="space-y-4 text-xs font-medium text-gray-600 flex-grow">
         <div class="flex justify-between">
             <dt>Tickets/Reservations (<?= (int)($viewModel?->nCartItems ?? 0) ?>)</dt>

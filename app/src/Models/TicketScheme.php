@@ -17,7 +17,7 @@ class TicketScheme
     public function fromPDOData($data): self
     {
         $this->ticket_scheme_id = $data['ticket_scheme_id'] ?? null;
-        $this->name = $data['name'] ?? null;
+        $this->name = $data['ts_name'] ?? null;
         $this->scheme_enum = isset($data['scheme_enum']) ? TicketSchemeEnum::from($data['scheme_enum']) : null;
         $this->price = $data['price'] ?? null;
         $this->fee = $data['fee'] ?? null;

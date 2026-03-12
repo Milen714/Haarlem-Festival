@@ -22,8 +22,8 @@ $order = $viewModel?->order;
             include __DIR__ . '/Components/CheckoutProgress.php'; 
         
     ?>
-    <section class="flex flex-col md:flex-row gap-5">
-        <section class="flex flex-col gap-2 w-full md:w-[75%]">
+    <section class="flex flex-col md:flex-row gap-3">
+        <section class="flex flex-col gap-2 w-full md:w-[75%] bg-white p-6 rounded-lg shadow-sm border border-gray-100">
             <?php if ($order && is_array($order->orderItems) && !empty($order->orderItems)): ?>
             <?php
                     foreach ($order->orderItems as $item) {
@@ -35,7 +35,7 @@ $order = $viewModel?->order;
             <?php else: ?>
             <p class="text-gray-600">Your shopping cart is empty.</p>
             <?php endif; ?>
-            <a href="/checkout">Test Checkout</a>
+
         </section>
 
         <?php 

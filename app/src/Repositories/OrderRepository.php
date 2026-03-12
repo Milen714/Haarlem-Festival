@@ -60,7 +60,7 @@ class OrderRepository extends Repository implements IOrderRepository
 
                 -- Ticket scheme fields
                 ts.ticket_scheme_id,
-                ts.name as name,
+                ts.name as ts_name,
                 ts.scheme_enum,
                 ts.price,
                 ts.fee,
@@ -89,7 +89,15 @@ class OrderRepository extends Repository implements IOrderRepository
                 v.description_html as venue_description_html,
                 v.capacity as venue_capacity,
                 v.phone as venue_phone,
+                v.venue_image_id as venue_image_id,
                 v.email as venue_email,
+
+                -- Venue media fields
+                venue_media.media_id as venue_media_id,
+                venue_media.file_path as venue_media_file_path,
+                venue_media.alt_text as venue_media_alt_text,
+                venue_media.file_path as image_path,
+                venue_media.alt_text as image_alt,
 
                 -- Artist fields
                 a.artist_id,
@@ -139,6 +147,7 @@ class OrderRepository extends Repository implements IOrderRepository
             LEFT JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
             LEFT JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
+            LEFT JOIN MEDIA venue_media ON v.venue_image_id = venue_media.media_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
             LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
@@ -205,7 +214,15 @@ class OrderRepository extends Repository implements IOrderRepository
                 v.description_html as venue_description_html,
                 v.capacity as venue_capacity,
                 v.phone as venue_phone,
+                v.venue_image_id as venue_image_id,
                 v.email as venue_email,
+
+                --venue media fields
+                venue_media.media_id as venue_media_id,
+                venue_media.file_path as venue_media_file_path,
+                venue_media.alt_text as venue_media_alt_text,
+                venue_media.file_path as image_path,
+                venue_media.alt_text as image_alt,
 
                 -- Artist fields
                 a.artist_id,
@@ -262,6 +279,7 @@ class OrderRepository extends Repository implements IOrderRepository
             LEFT JOIN MEDIA restaurant_media ON r.main_image_id = restaurant_media.media_id
             LEFT JOIN LANDMARK l ON s.landmark_id = l.landmark_id
             LEFT JOIN MEDIA landmark_media ON l.main_image_id = landmark_media.media_id
+            LEFT JOIN MEDIA venue_media ON v.venue_image_id = venue_media.media_id
             LEFT JOIN EVENT_CATEGORIES ec ON s.event_id = ec.event_id
         ";
     }

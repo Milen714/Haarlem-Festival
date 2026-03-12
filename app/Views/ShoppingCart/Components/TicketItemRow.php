@@ -9,33 +9,35 @@ $eventLabel = '';
 $cardStyles = [];
 $cardImage = new Media();
 $scheduleRef = new Schedule();
-if (isset($scheduleItem) && !empty($scheduleItem)) {
+if (isset($item) && !empty($item)) {
     $scheduleRef = $scheduleItem; 
     $eventType = $scheduleRef->event_category?->type ?? null;
+    $eventName = $item->ticket_type->schedule->artist->name ?? '';
     switch ($eventType) {
         case EventType::Magic:
             $cardStyles = ['side' => 'bg-[var(--home-magic-accent)] dark:bg-[var(--home-magic-accent-muted)]', 'muted' => 'bg-[var(--home-magic-accent-muted)] dark:bg-[var(--home-magic-accent-muted-high-contrast)]', 'text'];
-            $cardImage = $scheduleRef->venue?->venue_image ?? new Media();
+            $cardImage = $item->ticket_type->schedule->venue->venue_image ?? new Media();
             $eventLabel = $scheduleRef->event_category?->title ?? '';
+            $eventName = $item->ticket_type->ticket_scheme->name ?? '';
             break;
         case EventType::History:
             $cardStyles = ['side' => 'bg-[var(--home-history-accent)] dark:bg-[var(--home-history-accent-muted)]', 'muted' => 'bg-[var(--home-history-accent-muted)] dark:bg-[var(--home-history-accent-muted-high-contrast)]'];
-            $cardImage = $scheduleRef->landmark?->landmark_image ?? new Media();
+            $cardImage = $item->ticket_type->schedule->landmark->landmark_image ?? new Media();
             $eventLabel = 'History';
             break;
         case EventType::Yummy:
             $cardStyles = ['side' => 'bg-[var(--home-yummy-accent)] dark:bg-[var(--home-yummy-accent-muted)]', 'muted' => 'bg-[var(--home-yummy-accent-muted)] dark:bg-[var(--home-yummy-accent-muted-high-contrast)]'];
-            $cardImage = $scheduleRef->restaurant?->main_image ?? new Media();
+            $cardImage = $item->ticket_type->schedule->restaurant->main_image ?? new Media();
             $eventLabel = 'Yummy';
             break;
         case EventType::Jazz:
             $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)] dark:bg-[var(--home-jazz-accent-muted)]', 'muted' => 'bg-[var(--home-jazz-accent-muted)] dark:bg-[var(--home-jazz-accent-muted-high-contrast)]'];
-            $cardImage = $scheduleRef->artist?->profile_image ?? new Media();
+            $cardImage = $item->ticket_type->schedule->artist->profile_image ?? new Media();
             $eventLabel = 'Jazz';
             break;
         case EventType::Dance:
             $cardStyles = ['side' => 'bg-[var(--home-dance-accent)] dark:bg-[var(--home-dance-accent-muted)]', 'muted' => 'bg-[var(--home-dance-accent-muted)] dark:bg-[var(--home-dance-accent-muted-high-contrast)]'];
-            $cardImage = $scheduleRef->artist?->profile_image ?? new Media();
+            $cardImage = $item->ticket_type->schedule->artist->profile_image ?? new Media();
             $eventLabel = 'Dance';
             break;
         default:
@@ -71,11 +73,11 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
     <div class="flex flex-col flex-grow min-w-0">
 
         <div class="flex flex-col py-1">
-            <div
+            <!-- <div
                 class="ml-2 px-3 md:px-4 py-1 md:py-2 text-center w-min <?= $cardStyles['muted'] ?> border-t border-gray-200 rounded-full">
                 <span class="text-black font-semibold text-xs md:text-md"><?= strtoupper($eventLabel) ?></span>
-            </div>
-            <div class="flex flex-row justify-between gap-3 mt-2">
+            </div> -->
+            <div class="flex flex-col lg:flex-row justify-between gap-3 mt-2">
 
 
                 <div class="flex pl-2 gap-2 items-center">
@@ -85,7 +87,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
                     </div>
                     <div class="flex flex-col">
                         <div>
-                            <h2 class="text-black text-sm md:text-lg font-semibold"><?= $scheduleItem->artist->name ?>
+                            <h2 class="text-black text-sm md:text-lg font-semibold"><?= htmlspecialchars($eventName) ?>
                             </h2>
                         </div>
                         <div class="flex flex-col gap-2">
@@ -112,7 +114,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
                     </div>
                 </div>
 
-                <article class="flex-shrink-0 w-20 sm:w-24 md:w-48 pl-2 md:pl-4 border-l border-gray-200">
+                <article class="flex-shrink-0  flex items-center mr-3 justify-center">
                     <header class="text-black">
                         <h3 class="font-semibold text-xs md:text-base mb-2">
                             €<?= number_format($item->subtotal, 2) ?>
