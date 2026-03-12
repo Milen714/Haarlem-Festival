@@ -7,7 +7,7 @@ $dotstyles = [
 ?>
 
 
-<div class="flex flex-row items-start w-full">
+<div class="flex flex-row items-start w-full mt-5">
 
     <!-- Vertical line (mobile) -->
 

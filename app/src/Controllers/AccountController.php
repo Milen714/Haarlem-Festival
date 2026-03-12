@@ -9,8 +9,8 @@ use App\Services\UserService;
 use App\Services\MailService;
 use App\Services\Interfaces\IAuthService;
 use App\Services\AuthService;
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->safeLoad();
+use App\config\Secrets;
+
 
 class AccountController extends BaseController {
     private UserService $userService;
@@ -77,7 +77,7 @@ class AccountController extends BaseController {
         throw new \Exception("reCAPTCHA token is missing.");
     }
 
-    $secretKey = $_ENV['RECAPTCHA_SECRET_KEY'];
+    $secretKey = Secrets::$reCapchaSecretKey;
     $ip = $_SERVER['REMOTE_ADDR'];
     $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
     
@@ -117,7 +117,7 @@ class AccountController extends BaseController {
             }
             // Generate verification token and send verification email
             $token = $this->authService->generateVerificationToken($user);
-            $verificationLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            $verificationLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Save the user to the database
             $this->userService->createUser($user);
             $this->mailService->accountVerificationMail($user->email, $verificationLink);
@@ -145,7 +145,7 @@ class AccountController extends BaseController {
                 throw new \Exception("No user found with that email address.");
             }
             $token = $this->authService->generatePasswordResetToken($user);
-            $resetLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            $resetLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
             $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );

@@ -1,7 +1,6 @@
 <?php
 namespace App\Views\Home;
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->safeLoad();
+use App\config\Secrets;
 
 if (isset($param)) {
         echo htmlspecialchars($param);
@@ -136,7 +135,7 @@ if (isset($userModel)) {
     async function executeRecaptcha() {
         return new Promise((resolve, reject) => {
             grecaptcha.ready(function() {
-                grecaptcha.execute('<?php echo $_ENV['RECAPTCHA_SITE_KEY'] ?>', {
+                grecaptcha.execute('<?php echo Secrets::$reCapchaSiteKey ?>', {
                     action: 'signup'
                 }).then(function(token) {
                     resolve(token);

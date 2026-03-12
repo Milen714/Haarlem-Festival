@@ -26,8 +26,10 @@ use App\ViewModels\Home\StartingPoints;
 use App\Services\Interfaces\ITicketService;
 use App\Services\TicketService;
 use App\Services\Interfaces\IPaymentService;
+use App\Services\Interfaces\IOrderService;
 use App\Services\PaymentService;
-
+use App\Services\OrderService;
+use App\config\Secrets;
 class PaymentController extends BaseController
 {
     private UserService $userService;
@@ -43,6 +45,7 @@ class PaymentController extends BaseController
     private VenueService $venueService;
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
+    private IOrderService $orderService;
     public function __construct()
     {
         $this->userRepository = new UserRepository();
@@ -71,20 +74,21 @@ class PaymentController extends BaseController
         );
         $this->ticketService = new TicketService();
         $this->paymentService = new PaymentService();
+        $this->orderService = new OrderService();
     }
 
-    public function index()
+    public function index(array $params = [])
     {
-        $ticketType = $this->ticketService->getTicketTypeById(2); // Example schedule ID
+        $order = $this->orderService->getOrderById(1);
         //var_dump($ticketType); // Debug output to verify data retrieval
-        $this->view('ShoppingCart/ShoppingCart', ['ticketType' => $ticketType]);
+        $this->view('ShoppingCart/ShoppingCart', ['order' => $order]);
     }
-    public function checkout()
+    public function checkout(array $params = [])
     {
         $this->view('ShoppingCart/PaymentPartial', []);
     }
 
-    public function createCheckoutSession()
+    public function createCheckoutSession(array $params = [])
     {
        try {
         $item = [
@@ -100,10 +104,30 @@ class PaymentController extends BaseController
         }
         //require '../payment/checkout.php';  
     }
-    public function return()
+    public function return(array $params = [])
     {
         $this->view('ShoppingCart/CheckoutSuccess');
         
+    }
+    public function status(array $params = [])
+    {
+        header('Content-Type: application/json');
+        try{
+            $jsonString = file_get_contents('php://input');
+            $jsonData = json_decode($jsonString, true);
+            $this->paymentService->stripeCheckoutStatus($jsonData);
+
+        }catch (\Exception $e) {
+             error_log('Error checking payment status: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['error' => 'An error occurred while checking the payment status.']);
+        }
+    }
+    public function test(array $params = [])
+    {
+        header('Content-Type: application/json');
+        $order=$this->orderService->getOrderById(1);
+        echo json_encode($order, JSON_PRETTY_PRINT);   
     }
 
 

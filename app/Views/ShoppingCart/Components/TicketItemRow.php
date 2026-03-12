@@ -3,6 +3,8 @@ namespace App\Views\Home\Components;
 use App\Models\Schedule;
 use App\Models\Media;
 use App\Models\Enums\EventType;
+use App\Models\Payment\OrderItem;
+/** @var OrderItem $item */
 $eventLabel = '';
 $cardStyles = [];
 $cardImage = new Media();
@@ -54,7 +56,20 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
     <img loading="lazy" src="<?php echo htmlspecialchars($cardImage->file_path); ?>"
         alt="<?php echo htmlspecialchars($cardImage->alt_text); ?>"
         class="w-20 sm:w-24 md:w-40 lg:w-48 h-auto object-cover flex-shrink-0">
+
+    <ol class="flex flex-col items-center justify-center">
+        <li class="flex-grow flex items-center px-2 bg-[--home-dance-accent]">
+            <a href="">
+                <img src="/Assets/Home/EditIcon.svg" alt="Edit Item Icon">
+            </a>
+        </li>
+        <li class="flex-grow flex items-center px-2 bg-red-400">
+            <a href=""><img src="/Assets/Home/DeleteIcon.svg" alt="Delete Item Icon"></a>
+        </li>
+    </ol>
+
     <div class="flex flex-col flex-grow min-w-0">
+
         <div class="flex flex-col py-1">
             <div
                 class="ml-2 px-3 md:px-4 py-1 md:py-2 text-center w-min <?= $cardStyles['muted'] ?> border-t border-gray-200 rounded-full">
@@ -91,7 +106,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
                                 <img src="/Assets/Home/PersonIcon.svg" alt="Duration Icon"
                                     class="w-4 h-4 flex-shrink-0">
                                 <span
-                                    class="text-sm font-bold text-black whitespace-nowrap"><?= "x " . $scheduleItem->getDurationInMinutes()?></span>
+                                    class="text-sm font-bold text-black whitespace-nowrap"><?= "x " . $item->quantity?></span>
                             </div>
                         </div>
                     </div>
