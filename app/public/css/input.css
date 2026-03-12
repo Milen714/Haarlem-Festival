@@ -30,7 +30,8 @@
     --home-magic-accent: #B18132;
     --home-magic-accent-muted: #B181324D;
     --home-magic-accent-muted-high-contrast: #8B69144D;
-
+    --payment-flow-gray-muted: #E5E7EB;
+    --payment-flow-green: #10B981;
     --home-magic-high-contrast-accent: #8B6914;
     /* Jazz section*/
     --jazz-text-primary: #ffffff; 
@@ -169,6 +170,12 @@
  }
 
     /* BUTTONS */
+    .download_tickets_button{
+        @apply bg-[var(--home-dance-accent)] text-black font-semibold py-3 px-6 rounded-lg hover:bg-[#059669] hover:text-white transition-colors;
+    }
+    .back_home_button{
+        @apply  text-[var(--text-home-primary)] font-semibold py-3 px-6 rounded-lg border-2 border-[var(--text-home-primary)] hover:bg-[var(--text-home-primary)] hover:text-white transition-colors;
+    }
     .home_history_button{
         @apply text-[#000000CC] font-semibold p-3 rounded-[5px] shadow-[-7px_-7px_0px_#FFD93E] hover:shadow-[-4px_-4px_0px_#FFD93E]
                    bg-[#A7C957] dark:bg-[var(--home-history-high-contrast-accent)]  focus:outline-none focus:ring-2 ;
@@ -220,6 +227,19 @@
     .calendar-coils::before{
         @apply absolute content-['']  block w-[2rem] h-[3rem] bg-[url("/Assets/Home/CalendarCoilsJazz.svg")] bg-cover bg-no-repeat bg-center right-1/2 top-1/2;
     } */
+     /* PAYMENT STUFF */
+     .whats_next_list p {
+        @apply before:content-ul_dot before:mr-2 text-[1.12rem];  
+     }
+     .whats_next_list h2 {
+        @apply text-xl font-semibold text-[var(--text-home-primary)];  
+     }
+     .confirmed_article header h1 {
+        @apply text-3xl font-bold text-[#008236];
+     }
+     .confirmed_article header p {
+         @apply font-semibold text-[#364153];
+     }
 
 
 

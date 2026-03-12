@@ -145,7 +145,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 return null;
             }
             
-            return $this->hydrateSchedule($row);
+            return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching schedule by ID: " . $e->getMessage(), 0, $e);
         }
@@ -190,7 +190,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            return array_map(fn($row) => $this->hydrateSchedule($row), $rows);
+            return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching all schedules: " . $e->getMessage(), 0, $e);
         }
@@ -221,7 +221,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 return null;
             }
             
-            return $this->hydrateSchedule($row);
+            return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching single schedule by event: " . $e->getMessage(), 0, $e);
         }
@@ -247,52 +247,12 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            return array_map(fn($row) => $this->hydrateSchedule($row), $rows);
+            return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
 
-    /**
-     * Hydrate a Schedule object from a database row
-     * All nested objects (venue, artist, restaurant, landmark) will be hydrated if data exists
-     * Media objects are hydrated directly from the joined query results
-     */
-    private function hydrateSchedule(array $row): Schedule
-    {
-        $schedule = new Schedule();
-        $schedule->fromPDOData($row);
-        $schedule->hydrateAllRelations($row);
-        
-        // Hydrate media for Artist from joined data (no extra query needed)
-        if ($schedule->artist !== null && isset($row['artist_media_id']) && $row['artist_media_id'] !== null) {
-            $media = new \App\Models\Media();
-            $media->media_id = (int)$row['artist_media_id'];
-            $media->file_path = $row['artist_media_file_path'];
-            $media->alt_text = $row['artist_media_alt_text'];
-            $schedule->artist->profile_image = $media;
-        }
-        
-        // Hydrate media for Restaurant from joined data (no extra query needed)
-        if ($schedule->restaurant !== null && isset($row['restaurant_media_id']) && $row['restaurant_media_id'] !== null) {
-            $media = new \App\Models\Media();
-            $media->media_id = (int)$row['restaurant_media_id'];
-            $media->file_path = $row['restaurant_media_file_path'];
-            $media->alt_text = $row['restaurant_media_alt_text'];
-            $schedule->restaurant->main_image = $media;
-        }
-        
-        // Hydrate media for Landmark from joined data (no extra query needed)
-        if ($schedule->landmark !== null && isset($row['landmark_media_id']) && $row['landmark_media_id'] !== null) {
-            $media = new \App\Models\Media();
-            $media->media_id = (int)$row['landmark_media_id'];
-            $media->file_path = $row['landmark_media_file_path'];
-            $media->alt_text = $row['landmark_media_alt_text'];
-            $schedule->landmark->main_image_id = $media;
-        }
-        
-        return $schedule;
-    }
     public function getAvailableDates(): array
     {
         try {
