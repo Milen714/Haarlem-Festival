@@ -14,12 +14,15 @@ if (isset($userModel)) {
 }
 
 
-
 ?>
 <script src="https://www.google.com/recaptcha/api.js?render=<?php echo $_ENV['RECAPTCHA_SITE_KEY'] ?? ''; ?>">
 </script>
+<?php 
+    if(isset($isSignupPage) && $isSignupPage) {
+        echo '<h1 class="text-center m-5 font-serif">Signup Page</h1>';
+    }
+    ?>
 
-<h1 class="text-center m-5 font-serif">Signup Page</h1>
 <article class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
 
     <div id="error-container">
@@ -63,11 +66,12 @@ if (isset($userModel)) {
     <form id="autoLoginForm" method='POST' action='/login'>
         <input id="hidden-email" type="hidden" name="email" value="">
         <input id="hidden-password" type="hidden" name="password" value="">
+        <input id="hidden-redirect" type="hidden" name="redirect" value="">
     </form>
 
 
 
-    <script src="/Js/PasswordStrength.js"></script>
+    <script src="/Js/PasswordStrength.js" defer></script>
     <script src="/Js/ShowError.js"></script>
     <script>
     const passwordChecklist = document.querySelectorAll('.password-strength p');
@@ -77,6 +81,7 @@ if (isset($userModel)) {
     const autoLoginForm = document.getElementById("autoLoginForm");
     const hiddenEmail = document.getElementById("hidden-email");
     const hiddenPassword = document.getElementById("hidden-password");
+    const hiddenRedirect = document.getElementById("hidden-redirect");
 
 
     signUpForm.addEventListener('submit', async function(event) {
@@ -117,7 +122,13 @@ if (isset($userModel)) {
             if (result.success) {
                 hiddenEmail.value = signUpForm.email.value;
                 hiddenPassword.value = signUpForm.password.value;
-                autoLoginForm.submit();
+                if (window.location.pathname === '/payment-details') {
+                    hiddenRedirect.value = '/payment-details';
+                } else {
+                    hiddenRedirect.value = '/';
+                }
+
+                await autoLoginAfterSignup();
             } else {
                 showError(result.message || 'Signup failed');
             }
@@ -130,6 +141,25 @@ if (isset($userModel)) {
         }
     });
 
+    async function autoLoginAfterSignup() {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: hiddenEmail.value,
+                password: hiddenPassword.value,
+                redirect: hiddenRedirect.value
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            window.location.href = result.redirect || '/';
+        } else {
+            showError(result.message || 'Login failed. Please check your credentials and try again.');
+        }
+    }
 
 
     async function executeRecaptcha() {

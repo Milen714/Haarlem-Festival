@@ -6,7 +6,7 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
 ?>
 
-<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col">
+<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-2">
     <h3 class="font-bold text-lg border-b-2 border-[#1e4b6e] pb-2 mb-6 w-fit">Order Summary</h3>
 
     <?php

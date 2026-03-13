@@ -32,31 +32,26 @@ class AccountController extends BaseController {
         $this->view('Account/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
     }
     public function loginPost($vars = [])
-    {
+    {   header('Content-Type: application/json; charset=utf-8');
         try {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $user = $this->userService->authenticateUser($email, $password);
+        $data = json_decode(file_get_contents('php://input'), true);
+            $user = $this->userService->authenticateUser($data['email'], $data['password']);
         if ($user) {
             $_SESSION['loggedInUser'] = $user;
             if($user->role === UserRole::ADMIN) {
-                header("Location: /cms");
+                $this->jsonResponse(['success' => true, 'redirect' => '/cms'] ,200);
             }else{
-                // Successful login
-            
-            header("Location: /");
-            exit();
-            
+            $this->jsonResponse(['success' => true, 'redirect' => $data['redirect']] ,200);
             }
-            
         } else {
             // Failed login
-            throw new \Exception("Invalid email or password.");
+            $this->jsonResponse(['success' => false, 'message' => 'Login failed. Please sscheck your credentials and try again.',
+            'user' => ['email' => $data['email']]], 401);
         }
         } catch (\Exception $e) {
             //header("Location: /login/" . urlencode($e->getMessage()));
-            $this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            exit();
+            //$this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            //exit();
         }
     }
     public function logout($vars = [])

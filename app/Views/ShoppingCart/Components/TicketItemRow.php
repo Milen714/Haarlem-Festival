@@ -52,12 +52,12 @@ if (isset($item) && !empty($item)) {
 <article class="flex flex-row w-full rounded-lg overflow-hidden shadow-md border border-gray-200">
     <div class="relative calendar-coils w-2 md:w-[0.65rem] <?= $cardStyles['side'] ?> text-transparent flex-shrink-0">
         hh
-        <div class="absolute w-[1rem] h-[1rem] -bottom-[-2rem] -left-2.5 bg_colors_home rounded-full hidden md:block">
+        <div class="absolute w-[1rem] h-[1rem] -bottom-[-2rem] -left-2.5 bg_colors_home rounded-full ">
         </div>
     </div>
     <img loading="lazy" src="<?php echo htmlspecialchars($cardImage->file_path); ?>"
         alt="<?php echo htmlspecialchars($cardImage->alt_text); ?>"
-        class="w-20 sm:w-24 md:w-40 lg:w-48 h-auto object-cover flex-shrink-0">
+        class="w-16 sm:w-20 md:w-30 lg:w-40 h-auto object-cover flex-shrink-0">
 
     <ol class="flex flex-col items-center justify-center">
         <li class="flex-grow flex items-center px-2 bg-[--home-dance-accent]">
