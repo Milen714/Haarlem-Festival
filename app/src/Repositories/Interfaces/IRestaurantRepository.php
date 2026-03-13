@@ -24,10 +24,10 @@ interface IRestaurantRepository
     public function getSessions(): array;  
     public function getAllSessionsTypes(): array;
     public function getSessionsByRestaurant(int $restaurantId): array;
-    public function getSessionById(int $id): ?Session;
+    public function getSessionById(int $restaurantId, int $sessionNumber): ?Session;
     public function createSession(Session $session): int;
     public function updateSession(Session $session): bool;
-    public function deleteSession(int $id): bool;
+    public function deleteSession(int $restaurantId, int $sessionNumber): bool;
 
     //Dish Crud
 

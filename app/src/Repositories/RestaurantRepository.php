@@ -3,11 +3,14 @@
 namespace App\Repositories;
 
 use App\Models\Venue;
+use App\Models\Yummy\Session;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Framework\Repository;
 use App\Models\Restaurant;
+use App\Models\Cuisine;
 use App\Models\Gallery;
 use App\Models\Media;
+use App\Models\Yummy\Dish;
 use PDO;
 use PDOException;
 
@@ -511,6 +514,302 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             error_log("Error deleting restaurant: " . $e->getMessage());
             throw new \RuntimeException("Failed to delete restaurant with ID: $id - " . $e->getMessage());
         }
+    }
+
+    //Session Crud
+    public function getSessions(): array{
+        $pdo = $this->connect();
+        $sql = "
+        SELECT rs.*, st.name AS session_type_name
+        FROM RESTAURANT_SESSION rs
+        LEFT JOIN SESSION_TYPE st
+        ON rs.session_type_id = st.session_type_id
+        ORDER BY rs.restaurant_id, rs.session_number
+        ";
+
+        $getSession = $pdo->prepare($sql);
+        $getSession->execute();
+        $sessions = [];
+        while ($row = $getSession->fetch(PDO::FETCH_ASSOC)) {
+            $session = new Session();
+            $session->fromPDOData($row);
+            $sessions[] = $session;
+        }
+        return $sessions;
+    }
+
+    public function getAllSessionsTypes(): array
+    {
+        $pdo = $this->connect();
+        $sql = "
+            SELECT * 
+            FROM SESSION_TYPE
+            ORDER BY name
+        ";
+        $getSessionType = $pdo->prepare($sql);
+        $getSessionType->execute();
+
+        return $getSessionType->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getSessionsByRestaurant(int $restaurantId): array
+    {
+        $pdo = $this->connect();
+        $sql = "
+            SELECT rs.*, st.name AS session_type_name
+            FROM RESTAURANT_SESSION rs
+            LEFT JOIN SESSION_TYPE st
+            ON rs.session_type_id = st.session_type_id   
+            WHERE rs.restaurant_id = :restauratn_id
+            ORDER BY re.session_number     
+        ";
+
+        $getSessions = $pdo->prepare($sql);
+        $getSessions->execute(['restaurant_id' => $restaurantId]);
+        $sessions = [];
+
+        while ($row = $getSessions->fetch(PDO::FETCH_ASSOC)) {
+            $session = new Session();
+            $session->fromPDOData($row);
+            $sessions[] = $session;
+        }
+        return $sessions;
+    }
+
+    public function getSessionById(int $restaurantId, int $sessionNumber): ?Session
+    {
+        $pdo = $this->connect();
+        $sql = "
+            SELECT rs.*, st.name AS session_type_name
+            FROM RESTAURANT_SESSION rs
+            LEFT JOIN SESSION_TYPE st
+            ON rs.session_type_id = st.session_type_id
+            WHERE rs.restaurant_id = :restaurant_id
+            AND rs.session_number = :session_number
+            LIMIT 1
+        ";
+
+        $getSession = $pdo->prepare($sql);
+        $getSession->execute([
+            'restaurant_id' => $restaurantId,
+            'session_number' => $sessionNumber
+        ]);
+        $row = $getSession->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }        
+        $session = new Session();
+        $session->fromPDOData($row);
+        return $session;
+    }
+
+    public function createSession(Session $session): int
+    {
+        $pdo = $this->connect();
+        $sql = "
+            INSERT INTO RESTAURANT_SESSION
+            (restaurant_id, session_type_id, start_time, end_time, session_number)
+            VALUES
+            (:restaurant_id, :session_type_id, :start_time, :end_time, :session_number)
+        ";
+        $createSession = $pdo->prepare($sql);
+        $createSession->execute([
+            'restaurant_id' => $session->restaurant,
+            'session_type_id' => $session->session_id,
+            'start_time' => $session->start_time,
+            'end_time' => $session->end_time,
+            'session_number' => $session->session_number
+        ]);
+
+        return $pdo->lastInsertId();
+    }
+
+    public function updateSession(Session $session): bool
+    {
+        $pdo = $this->connect();
+        $sql = "
+            UPDATE RESTAURANT_SESSION
+            SET session_type_id = :session_type_id, start_time = :start_time, end_time = :end_time
+            WHERE restaurant_id = :restaurant_id
+            AND session_number = :session_number
+        ";
+        $update = $pdo->prepare($sql);
+        return $update->execute([
+            'session_type_id' => $session->session_id,
+            'start_time' => $session->start_time,
+            'end_time' => $session->end_time,
+            'restaurant_id' => $session->restaurant,
+            'session_number' => $session->session_number
+        ]);
+    }
+
+    public function deleteSession(int $restaurantId, int $sessionNumber): bool
+    {
+        $pdo = $this->connect();
+        //because theres no actual id and there will be multiple per restaurant
+        $sql = "
+            DELETE FROM RESTAURANT_SESSION
+            WHERE restaurant_id = :restaurant_id
+            AND session_number = :session_number
+        ";
+        $delete = $pdo->prepare($sql);
+        return $delete->execute([
+            'restaurant_id' => $restaurantId,
+            'session_number' => $sessionNumber
+        ]);
+    }
+
+    //Dish Crud
+    public function getDishes(): array
+    {
+        $pdo =$this->connect();
+        $sql= "
+            SELECT * FROM DISH
+            WHERE deleted_at IS NULL
+            ORDER BY display_order
+        ";
+        $getDishes = $pdo->prepare($sql);
+        $getDishes->execute();
+        $dishes = [];
+        while ($row = $getDishes->fetch(PDO::FETCH_ASSOC)) {
+            $dish = new Dish();
+            $dish->fromPDOData($row);
+            $dishes[] = $dish;
+        }
+
+        return $dishes;
+    }
+
+    public function getDishessByRestaurant(int $restaurantId): array
+    {
+       $pdo =$this->connect();
+        $sql= "
+            SELECT * FROM DISH
+            WHERE restaurant_id = :restaurant_id
+            AND deleted_at IS NULL
+            ORDER BY display_order
+        ";
+        $getDishes = $pdo->prepare($sql);
+        $getDishes->execute([
+            'restaurant_id' => $restaurantId
+        ]);
+        $dishes = [];
+        while ($row = $getDishes->fetch(PDO::FETCH_ASSOC)) {
+            $dish = new Dish();
+            $dish->fromPDOData($row);
+            $dishes[] = $dish;
+        }
+
+        return $dishes;
+    }
+
+    public function getDishById(int $id): ?Dish
+    {
+        $pdo = $this->connect();
+        $sql = "
+            SELECT * FROM DISH
+            WHERE dish_id = :dish_id
+            AND deleted_at IS NULL
+            LIMIT 1
+        ";
+        $getDish = $pdo->prepare($sql);
+        $getDish->execute([
+            'dish_id' => $id
+        ]);
+        $row = $getDish->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }
+
+        $dish = new Dish();
+        $dish->fromPDOData($row);
+        return $dish;
+    }
+
+    public function createDish(Dish $dish): int
+    {
+         $pdo = $this->connect();
+         $sql = "
+            INSERT INTO DISH
+        (
+            restaurant_id,
+            name,
+            description_html,
+            is_featured,
+            display_order,
+            is_vegetarian,
+            is_vegan,
+            allergens
+        )
+        VALUES
+        (
+            :restaurant_id,
+            :name,
+            :description_html,
+            :is_featured,
+            :display_order,
+            :is_vegetarian,
+            :is_vegan,
+            :allergens
+        )
+         ";
+         $create = $pdo->prepare($sql);
+         $create->execute([
+            'restaurant_id' => $dish->restaurant,
+            'name' => $dish->name,
+            'description_html' => $dish->description_html,
+            'is_featured' => $dish->is_featured,
+            'display_order' => $dish->display_order,
+            'is_vegetarian' => $dish->is_vegetarian,
+            'is_vegan' => $dish->is_vegan,
+            'allergens' => $dish->allergens
+         ]);
+         return (int)$pdo->lastInsertId();
+    }
+
+    public function updateDish(Dish $dish): bool
+    {
+        $pdo = $this->connect();
+        $sql = "
+        UPDATE DISH
+        SET
+            name = :name,
+            description_html = :description_html,
+            is_featured = :is_featured,
+            display_order = :display_order,
+            is_vegetarian = :is_vegetarian,
+            is_vegan = :is_vegan,
+            allergens = :allergens
+        WHERE dish_id = :dish_id
+    ";
+
+    $stmt = $pdo->prepare($sql);
+
+    return $stmt->execute([
+        'dish_id' => $dish->dish_id,
+        'name' => $dish->name,
+        'description_html' => $dish->description_html,
+        'is_featured' => $dish->is_featured,
+        'display_order' => $dish->display_order,
+        'is_vegetarian' => $dish->is_vegetarian,
+        'is_vegan' => $dish->is_vegan,
+        'allergens' => $dish->allergens
+    ]);
+    }
+
+    public function deleteDish(int $id): bool
+    {
+        $pdo =$this->connect();
+        $sql = "
+            UPDATE DISH
+            SET deleted_at = NOW()
+            WHERE dish_id = :dish_id
+        ";
+
+        $delete = $pdo->prepare($sql);
+        return $delete->execute([
+            'dish_id' => $id
+        ]);
     }
     
 }
