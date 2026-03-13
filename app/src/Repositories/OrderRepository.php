@@ -22,7 +22,10 @@ class OrderRepository extends Repository implements IOrderRepository
                 o.order_id,
                 o.user_id,
                 o.order_date,
-                o.total_amount,
+                o.subtotal,
+                o.total,
+                o.serviceFee,
+                o.reservationFees,
                 o.currency,
                 o.status,
                 o.stripe_payment_intent_id,
@@ -293,7 +296,10 @@ class OrderRepository extends Repository implements IOrderRepository
                 INSERT INTO `ORDER` (
                     user_id,
                     order_date,
-                    total_amount,
+                    subtotal,
+                    total,
+                    serviceFee,
+                    reservationFees,
                     currency,
                     status,
                     stripe_payment_intent_id,
@@ -303,7 +309,10 @@ class OrderRepository extends Repository implements IOrderRepository
                 ) VALUES (
                     :user_id,
                     :order_date,
-                    :total_amount,
+                    :subtotal,
+                    :total,
+                    :serviceFee,
+                    :reservationFees,
                     :currency,
                     :status,
                     :stripe_payment_intent_id,
@@ -316,8 +325,11 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $order->user?->id, PDO::PARAM_INT);
             $stmt->bindValue(':order_date', $order->order_date?->format('Y-m-d H:i:s'));
-            $stmt->bindValue(':total_amount', $order->total_amount);
-            $stmt->bindValue(':currency', 'EUR');
+            $stmt->bindValue(':subtotal', $order->subtotal ?? 0.0);
+            $stmt->bindValue(':total', $order->total ?? 0.0);
+            $stmt->bindValue(':serviceFee', $order->serviceFee ?? 0.0);
+            $stmt->bindValue(':reservationFees', $order->reservationFees ?? 0.0);
+            $stmt->bindValue(':currency', $order->currency ?: 'EUR');
             $stmt->bindValue(':status', $order->status->value);
             $stmt->bindValue(':stripe_payment_intent_id', $order->stripe_payment_intent_id);
             $stmt->bindValue(':stripe_customer_id', $order->stripe_customer_id);

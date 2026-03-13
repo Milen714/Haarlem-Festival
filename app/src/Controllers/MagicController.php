@@ -26,8 +26,8 @@ class MagicController extends BaseController
                 //return;
                 throw new \Exception("We are sorry, but the page you are looking for cannot be found. Please check the URL and try again.");
             }
-            $pageModel = new MagicLanding($pageData);
-            $this->View('Magic/Landing', ['pageModel' => $pageModel, 'title' => $pageData->title]);
+            $pageModel = new MagicAccessibility($pageData);
+            $this->View('Magic/MagicLandingRef', ['pageModel' => $pageModel, 'title' => $pageData->title]);
         } catch (\Exception $e) {
             $this->internalServerError("Error loading page: " . $e->getMessage());
         }

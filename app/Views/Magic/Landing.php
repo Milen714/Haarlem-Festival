@@ -39,32 +39,30 @@ $closingLorentzPair = $pageModel->getClosingLorentzPair();
 
     <section
         class="flex flex-col justify-center items-center w-[90%] mx-auto magic-border py-5 bg-[var(--magic-bg-alternative)]">
-        <section class="flex flex-col lg:flex-row gap-8 items-start w-[95%] mx-auto">
-            <section class="">
+        <section class="flex flex-col lg:flex-row gap-8  ">
+            <section class="w-1/2">
                 <?php if ($closingLorentzPair['image']): ?>
                 <?php $pageModel->displayImageSection($closingLorentzPair['image']); ?>
                 <?php endif; ?>
             </section>
-
-            <section class=" ">
+            <section class="w-1/2 ">
                 <?php if ($closingLorentzPair['article']): ?>
                 <?php $section = $closingLorentzPair['article']; ?>
                 <?php include 'Components/MagicParagraph.php'; ?>
                 <?php endif; ?>
             </section>
 
-            <section class="w-full flex flex-col gap-3">
-                <?php include 'Components/LorentzScheduleCard.php'; ?>
-                <?php include 'Components/LorentzScheduleCard.php'; ?>
-                <?php include 'Components/LorentzScheduleCard.php'; ?>
-            </section>
+        </section>
+
+        <section class="flex flex-col gap-3">
+            <?php include 'Components/LorentzScheduleCard.php'; ?>
+            <?php include 'Components/LorentzScheduleCard.php'; ?>
+            <?php include 'Components/LorentzScheduleCard.php'; ?>
         </section>
     </section>
     <section
         class="flex flex-col justify-center items-center w-[90%] mx-auto magic-border py-5 bg-[var(--magic-bg-secondary-dark)]">
-        <?php include 'Components/MagicAccordion.php'; ?>
-        <?php include 'Components/MagicAccordion.php'; ?>
-        <?php include 'Components/MagicAccordion.php'; ?>
+
     </section>
 
 

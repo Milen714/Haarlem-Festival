@@ -10,6 +10,8 @@ use App\Services\MailService;
 use App\Services\Interfaces\IAuthService;
 use App\Services\AuthService;
 use App\config\Secrets;
+use App\Services\Interfaces\IOrderService;
+use App\Services\OrderService;
 
 
 class AccountController extends BaseController {
@@ -17,11 +19,13 @@ class AccountController extends BaseController {
     private UserRepository $userRepository;
     private MailService $mailService;
     private IAuthService $authService;
+    private IOrderService $orderService;
     public function __construct() {
         $this->userRepository = new UserRepository();
         $this->userService = new UserService($this->userRepository);
         $this->mailService = new MailService();
         $this->authService = new AuthService();
+        $this->orderService = new OrderService();
     }
     public function login($vars = [])
     {
@@ -38,9 +42,18 @@ class AccountController extends BaseController {
             $user = $this->userService->authenticateUser($data['email'], $data['password']);
         if ($user) {
             $_SESSION['loggedInUser'] = $user;
+            // If there's a session cart, persist it to the database and associate it with the user
+            if (!empty($_SESSION['session_cart'])) {
+                $orderId = $this->orderService->persistSessionCart($_SESSION['session_cart'], $user);
+                $_SESSION['order_id'] = $orderId;
+                unset($_SESSION['session_cart']);
+            }
+            // Successful login
+            //additionally check if user is admin and redirect to cms if so
             if($user->role === UserRole::ADMIN) {
                 $this->jsonResponse(['success' => true, 'redirect' => '/cms'] ,200);
             }else{
+                // Regular user login
             $this->jsonResponse(['success' => true, 'redirect' => $data['redirect']] ,200);
             }
         } else {

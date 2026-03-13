@@ -393,6 +393,12 @@
      .magic_paragraph p{
         @apply text-lg text-black
     }
+    .magic_game_card{
+        @apply flex flex-col md:flex-row;
+    }
+    .magic_game_card_reverse{
+        @apply flex flex-col md:flex-row-reverse;
+    }
     .magic_image_article_reverse{
         @apply flex flex-col md:flex-row-reverse ;
     }
