@@ -43,6 +43,7 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
         <span
             class="text-2xl lg:text-3xl font-bold text-black">€<?= number_format((float)($viewModel?->total ?? 0.0), 2) ?></span>
     </div>
-
+    <?php if ($showProceedButton): ?>
     <a href="/checkout" class="home_dance_button mt-auto block text-center">Proceed to Checkout</a>
+    <?php endif; ?>
 </section>

@@ -1,16 +1,31 @@
 <?php
 namespace App\Views\ShoppingCart;
+
+use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
+use function App\Views\ShoppingCart\Components\displaySteps;
+
+/** @var ShoppingCartViewModel|null $viewModel */
+$viewModel = $viewModel ?? null;
+$order = $viewModel?->order;
+
 $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../');
 $dotenv->safeLoad();
 $stripePublishableKey = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? '';
 ?>
-<section class="flex flex-col gap-6 font-roboto w-[90%] mx-auto  mt-5">
-    <?php 
-        
-        include __DIR__ . '/Components/CheckoutProgress.php'; 
+<?php 
+        include __DIR__ . '/Components/CheckoutProgress.php';
+        displaySteps(3); 
     ?>
+<section class="flex flex-col md:flex-row gap-8 w-[95%] mx-auto mt-5">
 
-    <div id="checkout"></div>
+    <section class="w-full md:w-[60%]" id="checkout"></section>
+
+    <section class="w-full md:w-[40%]">
+        <?php
+            $showProceedButton = false;
+            include __DIR__ . '/Components/OrderSummaryRows.php';
+        ?>
+    </section>
 
 </section>
 

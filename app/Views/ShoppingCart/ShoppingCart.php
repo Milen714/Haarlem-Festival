@@ -5,6 +5,8 @@ use App\Models\TicketType;
 use App\Models\Schedule;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
+use function App\Views\ShoppingCart\Components\displaySteps;
+
 /** @var TicketType $ticketType */
 $ticketType = isset($ticketType) ? $ticketType : null;
 
@@ -19,7 +21,8 @@ $order = $viewModel?->order;
 
 <section class="flex flex-col gap-6 font-roboto w-[95%] mx-auto  mt-5">
     <?php 
-            include __DIR__ . '/Components/CheckoutProgress.php'; 
+            include __DIR__ . '/Components/CheckoutProgress.php';
+            displaySteps(1); 
         
     ?>
     <section class="flex flex-col md:flex-row gap-3">
