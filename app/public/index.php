@@ -74,6 +74,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     /* CMS Media Routes (AJAX) */
     $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
 
+
     /* CMS Artist Management*/
     $r->addRoute('GET', '/cms/artists', ['App\Controllers\ArtistController', 'index']);
     $r->addRoute('GET', '/cms/artists/create', ['App\Controllers\ArtistController', 'create']);
@@ -118,6 +119,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
+
+    /* CMS Profile Management */
+    $r->addRoute('GET', '/cms/profile', ['App\Controllers\AccountController', 'settings']);
+    $r->addRoute('POST', '/cms/profile/update', ['App\Controllers\AccountController', 'update']);
 
 
     /* Legacy route for homepage (keep for backwards compatibility) */

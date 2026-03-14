@@ -221,7 +221,11 @@ class AccountController extends BaseController {
         $loggedUser = $_SESSION['loggedInUser'];
         $user = $this->userService->getUserById($loggedUser->id);
 
-        $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+        if ($user->role === UserRole::ADMIN) {
+            $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
+        } else {
+            $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+        }
     }
 
     public function update($vars = []) {
@@ -239,7 +243,11 @@ class AccountController extends BaseController {
 
             $_SESSION['loggedInUser'] = $user;
 
-            header("Location: /settings");
+            if ($user->role === UserRole::ADMIN) {
+                header("Location: /cms/profile"); 
+            } else {
+                header("Location: /settings");
+            }
             exit(); 
 
         } catch (\Exception $e) {
