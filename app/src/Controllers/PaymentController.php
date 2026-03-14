@@ -138,11 +138,18 @@ class PaymentController extends BaseController
     }
     public function test(array $params = [])
     {
-        // header('Content-Type: application/json');
-        // $order=$this->orderService->getOrderById(1);
-        // $viewModel = new ShoppingCartViewModel($order);
-        // echo json_encode($viewModel, JSON_PRETTY_PRINT);   
-        $this->view('ShoppingCart/WishlistMain', ['viewModel' => null]);
+         header('Content-Type: application/json');
+         //$order=$this->orderService->getOpenOrderByUserId(1);
+         $order=$_SESSION['session_cart'] ?? null;
+         if (!$order) {
+            echo json_encode(['message' => 'No open order found for user.']);
+            return;
+         }
+
+         $viewModel = new ShoppingCartViewModel($order);
+        
+         echo json_encode($viewModel, JSON_PRETTY_PRINT);   
+        //$this->view('ShoppingCart/WishlistMain', ['viewModel' => null]);
     }
 
     public function createTestOrder(array $params = []): void

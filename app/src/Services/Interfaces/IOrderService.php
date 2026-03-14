@@ -9,6 +9,7 @@ interface IOrderService
     public function createOrder(Order $order): bool;
     public function getOrderById(int $orderId): ?Order;
     public function getOrdersByUserId(int $userId): array;
+    public function getOpenOrderByUserId(int $userId): ?Order;
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool;
     public function addOrderItem(OrderItem $orderItem): bool;
     public function getOrderItemsByOrderId(int $orderId): array;
@@ -17,4 +18,7 @@ interface IOrderService
     public function clearSessionCart(): void;
     public function persistSessionCart(Order $order, User $user): int;
     public function addOrderItemToSessionCart(OrderItem $item): void;
+    public function hydrateSessionCart(Order $order): void;
+    public function hydrateSessionCartFormDbOnLogin(User $user): void;
+    
 }

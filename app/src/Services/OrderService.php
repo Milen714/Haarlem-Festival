@@ -30,6 +30,10 @@ class OrderService implements IOrderService
     {
         return $this->orderRepository->getOrdersByUserId($userId);
     }
+    public function getOpenOrderByUserId(int $userId): ?Order
+    {
+        return $this->orderRepository->getOpenOrderByUserId($userId);
+    }
 
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool
     {
@@ -82,10 +86,24 @@ class OrderService implements IOrderService
         $this->orderRepository->createOrder($order);  // sets $order->order_id
 
         foreach ($order->orderItems as $item) {
-            $item->order_id = $order->order_id;
-            $this->orderRepository->addOrderItem($item);
+            if ($item->order_id === null) {
+                $item->order_id = $order->order_id;
+                $this->orderRepository->addOrderItem($item);
+            }
         }
 
         return $order->order_id;
-    }   
+    }
+    public function hydrateSessionCart(Order $order): void
+    {
+        $_SESSION['session_cart'] = $order;
+    }
+    public function hydrateSessionCartFormDbOnLogin(User $user): void{
+        $dbCart = $this->getOpenOrderByUserId($user->id);
+        if ($dbCart !== null) {
+            $this->hydrateSessionCart($dbCart);
+        }
+
+    }
+
 }

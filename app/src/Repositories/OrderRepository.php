@@ -426,6 +426,45 @@ class OrderRepository extends Repository implements IOrderRepository
             throw new \RuntimeException("Error fetching orders by user ID: " . $e->getMessage());
         }
     }
+    public function getOpenOrderByUserId(int $userId): ?Order{
+        try {
+            $pdo = $this->connect();
+
+            $query = $this->getBaseQuery() . "
+                WHERE o.user_id = :user_id AND o.status = 'Pending' OR o.status = 'Confirmed'
+                ORDER BY o.order_date DESC
+                LIMIT 1
+            ";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            //$stmt->bindValue(':status', OrderStatus::Pending->value);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($rows)) {
+                return null;
+            }
+
+            // Create order from first row (order data is same across all item rows)
+            $order = new Order();
+            $order->fromPDOData($rows[0]);
+
+            // Build array of OrderItems from all rows
+            $seenItems = [];
+            foreach ($rows as $row) {
+                if (!is_null($row['orderitem_id']) && !isset($seenItems[$row['orderitem_id']])) {
+                    $seenItems[$row['orderitem_id']] = true;
+                    $orderItem = new OrderItem();
+                    $orderItem = $orderItem->fromPdo($row);
+                    $order->orderItems[] = $orderItem;
+                }
+            }
+
+            return $order;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching open order by user ID: " . $e->getMessage());
+        }
+    }
 
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool
     {

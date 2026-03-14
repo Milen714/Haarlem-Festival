@@ -45,8 +45,11 @@ class AccountController extends BaseController {
             // If there's a session cart, persist it to the database and associate it with the user
             if (!empty($_SESSION['session_cart'])) {
                 $orderId = $this->orderService->persistSessionCart($_SESSION['session_cart'], $user);
-                $_SESSION['order_id'] = $orderId;
-                unset($_SESSION['session_cart']);
+                //$_SESSION['order_id'] = $orderId;
+                //unset($_SESSION['session_cart']);
+            }else{
+                // If no session cart but user has an open order in the database, load it into the session
+                $this->orderService->hydrateSessionCartFormDbOnLogin($user);
             }
             // Successful login
             //additionally check if user is admin and redirect to cms if so
