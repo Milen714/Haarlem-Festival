@@ -85,13 +85,13 @@ class PaymentController extends BaseController
     {
         //$order=$this->orderService->getOrderById(2);
         $order= $this->orderService->createSessionCart();
-        $viewModel = new ShoppingCartViewModel($order);
+        $viewModel = new ShoppingCartViewModel($this->orderService->getOrderById(1));
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($order);
+        $viewModel = new ShoppingCartViewModel($this->orderService->getOrderById(1));
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
 

@@ -30,6 +30,7 @@ class OrderItem
         $item->quantity = isset($data['quantity']) ? (int)$data['quantity'] : 0;
         $ticketType = new TicketType();
         $ticketType->fromPDOData($data);
+        $item->ticket_type = $ticketType;
         $item->unit_price = $ticketType->ticket_scheme->price ?? null;
         $item->reservation_fee = $item->calculateReservationFee();
         $item->subtotal = $item->calculateSubtotal();
