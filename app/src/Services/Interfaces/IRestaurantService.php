@@ -16,4 +16,6 @@ interface IRestaurantService
     public function createRestaurant(Restaurant $restaurant): int;
     public function updateRestaurant( Restaurant $restaurant): bool;
     public function deleteRestaurant(int $id): bool;
+    public function createFromRequest(array $postData, array $files): Restaurant;
+    public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant;
 }

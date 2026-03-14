@@ -3,20 +3,19 @@
 namespace App\Services;
 
 use App\Services\Interfaces\IVenueService;
+use App\Services\Interfaces\IMediaService;
+use App\Repositories\VenueRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Models\Venue;
 
 class VenueService implements IVenueService
 {
     private IVenueRepository $venueRepository;
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
 
-    public function __construct(
-        IVenueRepository $venueRepository,
-        MediaService $mediaService
-    ) {
-        $this->venueRepository = $venueRepository;
-        $this->mediaService = $mediaService;
+    public function __construct() {
+        $this->venueRepository = new VenueRepository();
+        $this->mediaService = new MediaService();
     }
 
     public function getVenuesByEventId(int $eventId): array

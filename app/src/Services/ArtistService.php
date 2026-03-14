@@ -5,21 +5,20 @@ namespace App\Services;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
+use App\Repositories\ArtistRepository;
 use App\Services\Interfaces\IArtistService;
+use App\Services\Interfaces\IMediaService;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Models\MusicEvent\Artist;
 
 class ArtistService implements IArtistService
 {
     private IArtistRepository $artistRepository;
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
 
-    public function __construct(
-        IArtistRepository $artistRepository,
-        MediaService $mediaService
-    ) {
-        $this->artistRepository = $artistRepository;
-        $this->mediaService = $mediaService;
+    public function __construct() {
+        $this->artistRepository = new ArtistRepository();
+        $this->mediaService = new MediaService();
     }
 
     public function getArtistsByEventId(int $eventId): array

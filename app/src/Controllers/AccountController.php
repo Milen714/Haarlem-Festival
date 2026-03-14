@@ -1,28 +1,26 @@
 <?php
 namespace App\Controllers;
 use App\Controllers\BaseController;
-use App\Models\Mailer;
 use App\Models\User;
 use App\Models\Enums\UserRole;
-use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Services\MailService;
 use App\Services\Interfaces\IAuthService;
 use App\Services\AuthService;
 use App\config\Secrets;
 use App\Services\Interfaces\IOrderService;
+use App\Services\Interfaces\IUserService;
+use App\Services\Interfaces\IMailService;
 use App\Services\OrderService;
 
 
 class AccountController extends BaseController {
-    private UserService $userService;
-    private UserRepository $userRepository;
-    private MailService $mailService;
+    private IUserService $userService;
+    private IMailService $mailService;
     private IAuthService $authService;
     private IOrderService $orderService;
     public function __construct() {
-        $this->userRepository = new UserRepository();
-        $this->userService = new UserService($this->userRepository);
+        $this->userService = new UserService();
         $this->mailService = new MailService();
         $this->authService = new AuthService();
         $this->orderService = new OrderService();

@@ -4,17 +4,14 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Services\PageService;
 use App\Services\Interfaces\IPageService;
-use App\ViewModels\Magic\MagicLanding;
 use App\ViewModels\Magic\MagicAccessibility;
-use App\Models\Enums\UserRole;
-use App\Middleware\RequireRole;
 class MagicController extends BaseController
 {
     private IPageService $pageService;
 
     public function __construct()
     {
-        $this->pageService = new PageService(new \App\Repositories\PageRepository());
+        $this->pageService = new PageService();
     }
 
     public function index($vars = []): void

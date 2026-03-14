@@ -9,9 +9,9 @@ class GalleryService {
     private IMediaService $mediaService;
     private GalleryRepository $galleryRepository;
 
-    public function __construct(IMediaService $mediaService, GalleryRepository $galleryRepository) {
-        $this->mediaService = $mediaService;
-        $this->galleryRepository = $galleryRepository;
+    public function __construct() {
+        $this->mediaService = new MediaService();
+        $this->galleryRepository = new GalleryRepository();
     }
 
     public function handleSectionUploads(int $galleryId, array $postData, array $filesData): void {

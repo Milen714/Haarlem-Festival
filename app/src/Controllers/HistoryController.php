@@ -3,20 +3,20 @@ namespace App\Controllers;
 
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;          
-use App\Repositories\PageRepository;
 use App\Controllers\BaseController;
+use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;
 
 class HistoryController extends BaseController
 {
-    private PageService $pageService;
-    private LandmarkService $landmarkService;
+    private IPageService $pageService;
+    private ILandmarkService $landmarkService;
 
     const HISTORY_SLUG = 'events-history'; 
 
     public function __construct()
     {
-        $this->pageService = new PageService(new PageRepository());
+        $this->pageService = new PageService();
         $this->landmarkService = new LandmarkService();
     }
 

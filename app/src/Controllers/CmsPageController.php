@@ -5,21 +5,21 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Services\PageService;
 use App\Services\MediaService;
-use App\Repositories\PageRepository;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IPageService;
+use App\Services\Interfaces\IMediaService;
 use App\CmsModels\Enums\PageType;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class CmsPageController extends BaseController
 {
-    private PageService $pageService;
-    private MediaService $mediaService;
+    private IPageService $pageService;
+    private IMediaService $mediaService;
 
     public function __construct()
     {
-        $this->pageService = new PageService(new PageRepository());
-        $this->mediaService = new MediaService(new MediaRepository());
+        $this->pageService = new PageService();
+        $this->mediaService = new MediaService();
     }
 
     /**

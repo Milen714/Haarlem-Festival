@@ -4,39 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\ScheduleService;
-use App\Services\VenueService;
-use App\Services\ArtistService;
-use App\Services\RestaurantService;
-use App\Services\LandmarkService;
-use App\Services\MediaService;
-use App\Repositories\ScheduleRepository;
-use App\Repositories\VenueRepository;
-use App\Repositories\ArtistRepository;
-use App\Repositories\RestaurantRepository;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IScheduleService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class ScheduleController extends BaseController
 {
-    private ScheduleService $scheduleService;
+    private IScheduleService $scheduleService;
 
     public function __construct()
     {
-        $mediaService = new MediaService(new MediaRepository());
-
-        $venueService      = new VenueService(new VenueRepository(), $mediaService);
-        $artistService     = new ArtistService(new ArtistRepository(), $mediaService);
-        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
-        $landmarkService   = new LandmarkService();
-
-        $this->scheduleService = new ScheduleService(
-            new ScheduleRepository(),
-            $venueService,
-            $artistService,
-            $restaurantService,
-            $landmarkService
-        );
+        $this->scheduleService = new ScheduleService();
     }
 
     #[RequireRole([UserRole::ADMIN])]

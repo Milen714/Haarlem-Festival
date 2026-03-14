@@ -4,21 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\VenueService;
-use App\Services\MediaService;
-use App\Repositories\VenueRepository;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IVenueService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class VenueController extends BaseController
 {
-    private VenueService $venueService;
+    private IVenueService $venueService;
 
     public function __construct()
     {
-        $venueRepository = new VenueRepository();
-        $mediaService = new MediaService(new MediaRepository());
-        $this->venueService = new VenueService($venueRepository, $mediaService);
+        $this->venueService = new VenueService();
     }
 
     #[RequireRole([UserRole::ADMIN])]

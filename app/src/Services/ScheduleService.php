@@ -8,6 +8,7 @@ use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IArtistService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\ILandmarkService;
+use App\Repositories\ScheduleRepository;
 use App\Repositories\Interfaces\IScheduleRepository;
 
 class ScheduleService implements IScheduleService
@@ -18,18 +19,12 @@ class ScheduleService implements IScheduleService
     private IRestaurantService $restaurantService;
     private ILandmarkService $landmarkService;
 
-    public function __construct(
-        IScheduleRepository $scheduleRepository,
-        IVenueService $venueService,
-        IArtistService $artistService,
-        IRestaurantService $restaurantService,
-        ILandmarkService $landmarkService
-    ) {
-        $this->scheduleRepository  = $scheduleRepository;
-        $this->venueService        = $venueService;
-        $this->artistService       = $artistService;
-        $this->restaurantService   = $restaurantService;
-        $this->landmarkService     = $landmarkService;
+    public function __construct() {
+        $this->scheduleRepository= new ScheduleRepository();
+        $this->venueService= new VenueService();
+        $this->artistService= new ArtistService();
+        $this->restaurantService= new RestaurantService();
+        $this->landmarkService= new LandmarkService();
     }
 
     public function getScheduleById(int $scheduleId): ?Schedule

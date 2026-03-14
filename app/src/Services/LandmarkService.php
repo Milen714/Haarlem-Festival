@@ -10,11 +10,12 @@ use App\Services\GalleryService;
 use App\Repositories\GalleryRepository;
 use App\Repositories\MediaRepository;
 use App\Services\Interfaces\ILandmarkService;
+use App\Services\Interfaces\IMediaService;
 
 class LandmarkService implements ILandmarkService
 {
     private LandmarkRepository $landmarkRepository;
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
     private GalleryService $galleryService;
     private GalleryRepository $galleryRepository;
 
@@ -22,8 +23,8 @@ class LandmarkService implements ILandmarkService
     {
         $this->landmarkRepository = new LandmarkRepository();
         $this->galleryRepository = new GalleryRepository();
-        $this->mediaService = new MediaService(new MediaRepository());
-        $this->galleryService = new GalleryService($this->mediaService, $this->galleryRepository);
+        $this->mediaService = new MediaService();
+        $this->galleryService = new GalleryService();
     
     }
 
