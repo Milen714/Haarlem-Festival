@@ -124,7 +124,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/profile', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/cms/profile/update', ['App\Controllers\AccountController', 'update']);
 
-
     /* Legacy route for homepage (keep for backwards compatibility) */
     $r->addRoute('GET', '/home-update', function () {
         header('Location: /cms/page/edit/home');

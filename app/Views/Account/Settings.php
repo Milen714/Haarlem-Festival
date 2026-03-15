@@ -2,101 +2,107 @@
 $user = $user ?? null;
 ?>
 
-<section class="container mx-auto max-w-[1100px] px-4 my-24">
+<section class="container mx-auto max-w-[1200px] px-4 mt-16 mb-32 font-montserrat">
     
-    <div class="mb-12">
-        <h3 class="font-history-serif text-[1.5rem] md:text-[2rem] text-ink-900 font-bold">
+    <div class="mb-12 text-center">
+        <h2 class="text-[2rem] md:text-[2.5rem] font-bold text-[var(--text-home-primary)] mb-4 uppercase tracking-wide">
             Account Settings
-        </h3>
-        <div class="underline-history"></div> 
+        </h2>
+        <div class="h-1 w-24 bg-[var(--home-gold-accent)] mx-auto rounded-full"></div> 
     </div>
 
-    <div class="bg-white border border-[#CAA359] rounded-[0.5rem] p-6 md:p-10 shadow-sm max-w-3xl">
-        
-        <div class="flex justify-between items-center mb-8 border-b border-[#CAA359] pb-4">
-            <h2 class="font-history-serif text-2xl font-bold text-ink-900">Personal Information</h2>
+    <div class="flex flex-col lg:flex-row gap-8 items-start">
+
+        <div class="w-full lg:w-3/5 bg-white border-t-4 border-[var(--home-gold-accent)] rounded-xl p-6 md:p-10 shadow-lg h-fit">
             
-            <button type="button" id="btn-edit" class="text-[#546A21] hover:text-[#465e10] font-semibold transition-colors flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                Edit
-            </button>
+            <div class="flex justify-between items-center mb-8 border-b border-gray-200 pb-4">
+                <h2 class="text-2xl font-bold text-[var(--text-home-primary)]">Personal Information</h2>
+                
+                <button type="button" id="btn-edit" class="text-[var(--home-gold-accent)] hover:text-[var(--text-home-high-contrast-primary)] font-bold transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Edit
+                </button>
+            </div>
+
+            <form id="profile-form" action="/account/settings/update" method="POST" class="space-y-6">
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">First Name</label>
+                        <input type="text" name="fname" value="<?= htmlspecialchars($user->fname ?? '') ?>" disabled required
+                               class="profile-input block w-full bg-gray-100 py-2 px-3 rounded-md text-base text-black focus:ring-2 focus:ring-[var(--home-gold-accent)] focus:outline-none transition-all
+                                      disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-[var(--text-home-primary)] disabled:font-semibold">
+                    </div>
+
+                    <div class="w-full sm:w-1/2">
+                        <label class="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Last Name</label>
+                        <input type="text" name="lname" value="<?= htmlspecialchars($user->lname ?? '') ?>" disabled required
+                               class="profile-input block w-full bg-gray-100 py-2 px-3 rounded-md text-base text-black focus:ring-2 focus:ring-[var(--home-gold-accent)] focus:outline-none transition-all
+                                      disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-[var(--text-home-primary)] disabled:font-semibold">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Email Address</label>
+                    <input type="email" name="email" value="<?= htmlspecialchars($user->email ?? '') ?>" disabled required
+                           class="profile-input block w-full bg-gray-100 py-2 px-3 rounded-md text-base text-black focus:ring-2 focus:ring-[var(--home-gold-accent)] focus:outline-none transition-all
+                                  disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-[var(--text-home-primary)] disabled:font-semibold">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Phone Number</label>
+                    <input type="text" name="phone" value="<?= htmlspecialchars($user->phone ?? '') ?>" disabled
+                           class="profile-input block w-full bg-gray-100 py-2 px-3 rounded-md text-base text-black focus:ring-2 focus:ring-[var(--home-gold-accent)] focus:outline-none transition-all
+                                  disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-[var(--text-home-primary)] disabled:font-semibold">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-600 uppercase tracking-wider mb-2">Address</label>
+                    <input type="text" name="address" value="<?= htmlspecialchars($user->address ?? '') ?>" disabled
+                           class="profile-input block w-full bg-gray-100 py-2 px-3 rounded-md text-base text-black focus:ring-2 focus:ring-[var(--home-gold-accent)] focus:outline-none transition-all
+                                  disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-[var(--text-home-primary)] disabled:font-semibold">
+                </div>
+
+                <div id="action-buttons" class="hidden flex gap-4 pt-6 border-t border-gray-200 mt-8">
+                    <button type="submit" class="bg-[var(--text-home-primary)] hover:bg-[var(--text-home-high-contrast-primary)] text-white font-semibold py-2 px-8 rounded-md transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--text-home-primary)]">
+                        Save Changes
+                    </button>
+                    <button type="button" id="btn-cancel" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-8 rounded-md transition-colors shadow-sm">
+                        Cancel
+                    </button>
+                </div>
+
+            </form>
         </div>
 
-        <form id="profile-form" action="/settings/update" method="POST" class="space-y-6">
+        <div class="w-full lg:w-2/5 flex flex-col gap-8">
             
-            <div class="flex gap-4">
-                <div class="w-1/2">
-                    <label class="block text-sm font-bold text-ink-700 uppercase tracking-wider mb-1">First Name</label>
-                    <input type="text" name="fname" value="<?= htmlspecialchars($user->fname ?? '') ?>" disabled required
-                           class="profile-input w-full px-4 py-2 text-lg text-ink-900 bg-white border border-[#CAA359] rounded-md focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none transition-all
-                                  disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-ink-900">
-                </div>
-
-                <div class="w-1/2">
-                    <label class="block text-sm font-bold text-ink-700 uppercase tracking-wider mb-1">Last Name</label>
-                    <input type="text" name="lname" value="<?= htmlspecialchars($user->lname ?? '') ?>" disabled required
-                           class="profile-input w-full px-4 py-2 text-lg text-ink-900 bg-white border border-[#CAA359] rounded-md focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none transition-all
-                                  disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-ink-900">
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-ink-700 uppercase tracking-wider mb-1">Email Address</label>
-                <input type="email" name="email" value="<?= htmlspecialchars($user->email ?? '') ?>" disabled required
-                       class="profile-input w-full px-4 py-2 text-lg text-ink-900 bg-white border border-[#CAA359] rounded-md focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none transition-all
-                              disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-ink-900">
-            </div>
-
-            <div>
-                <label class="block text-sm font-bold text-ink-700 uppercase tracking-wider mb-1">Phone Number</label>
-                <input type="text" name="phone" value="<?= htmlspecialchars($user->phone ?? '') ?>" disabled
-                       class="profile-input w-full px-4 py-2 text-lg text-ink-900 bg-white border border-[#CAA359] rounded-md focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none transition-all
-                              disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-ink-900">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-bold text-ink-700 uppercase tracking-wider mb-1">Address</label>
-                <input type="text" name="address" value="<?= htmlspecialchars($user->address ?? '') ?>" disabled
-                       class="profile-input w-full px-4 py-2 text-lg text-ink-900 bg-white border border-[#CAA359] rounded-md focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none transition-all
-                              disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-ink-900">
-            </div>
-
-            <div id="action-buttons" class="hidden flex gap-4 pt-6 border-t border-[#CAA359] mt-8">
-                <button type="submit" class="bg-[#546A21] hover:bg-[#465e10] text-white font-semibold py-2 px-6 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#546A21]">
-                    Save Changes
-                </button>
-                <button type="button" id="btn-cancel" class="bg-[#FAEBBD] hover:bg-[#FFE598] text-ink-900 border border-[#CAA359] font-semibold py-2 px-6 rounded-md transition-colors shadow-sm">
-                    Cancel
-                </button>
-            </div>
-
-        </form>
-
-        <div class="mt-12 pt-8">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h3 class="font-history-serif text-xl font-bold text-ink-900">Password</h3>
-                    <p class="text-sm text-ink-700">Manage your password separately for security reasons.</p>
-                </div>
-                <a href="/forgot-password" class="px-5 py-2 bg-[#FFF0C2] border border-[#CAA359] text-ink-900 rounded-md hover:bg-[#FFE598] font-semibold transition-colors shadow-sm">
-                    Change
+            <div class="bg-white border-t-4 border-[var(--home-gold-accent)] rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-[var(--text-home-primary)] mb-2">Password</h3>
+                <p class="text-sm text-gray-600 mb-6">Manage your password separately for security reasons.</p>
+                
+                <a href="/forgot-password" class="inline-block w-fit px-6 py-3 border-2 border-[var(--home-gold-accent)] text-[var(--home-gold-accent)] hover:bg-[var(--home-gold-accent)] hover:text-white rounded-md font-bold transition-all">
+                    Change Password
                 </a>
             </div>
+
+            <div class="bg-white border-t-4 border-[var(--home-gold-accent)] rounded-xl p-6 shadow-lg">
+                <h3 class="text-xl font-bold text-[var(--text-home-primary)] mb-6">Quick Actions</h3>
+                
+                <div class="flex items-start gap-4">
+                    <a href="/personal-program" class="home_calendar_button_active flex justify-center items-center gap-2 px-6 py-3 w-fit">
+                        My Personal Program
+                    </a>
+
+                    <?php if (!($user->is_verified ?? false)): ?>
+                    <a href="/verify-account" class="home_calendar_button_inactive flex justify-center items-center gap-2 px-6 py-3 w-fit">
+                        Validate My Account
+                    </a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
         </div>
-
-        <div class="mt-12 pt-8">
-        <!--change the url-->
-            <a href="/" class="px-5 py-2 bg-[#FFF0C2] border border-[#CAA359] text-ink-900 rounded-md hover:bg-[#FFE598] font-semibold transition-colors shadow-sm">
-                My personal program
-            </a>
-
-            <a href="/" class="ml-2 px-5 py-2 bg-[#FFF0C2] border border-[#CAA359] text-ink-900 rounded-md hover:bg-[#FFE598] font-semibold transition-colors shadow-sm">
-                Validate my account
-            </a>
-            
-        </div>
-        
-
 
     </div>
 </section>
