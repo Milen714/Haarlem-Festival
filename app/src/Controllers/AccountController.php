@@ -247,7 +247,7 @@ class AccountController extends BaseController {
             $loggedUser = $_SESSION['loggedInUser'];
             $user = $this->userService->getUserById($loggedUser->id);
 
-            $user->mapUser($_POST);
+            $user->fromPDOData($_POST);
             $this->userService->updateUser($user);
 
             $_SESSION['loggedInUser'] = $user;
