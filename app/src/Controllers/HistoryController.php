@@ -165,6 +165,85 @@ class HistoryController extends BaseController
     
     }
 
+    // Método principal que recibe el AJAX
+    public function apiAddToCart() {
+          // 1. Leer el JSON que envía nuestro JavaScript (AJAX) - (Lecture 6)
+        $jsonData = file_get_contents('php://input');
+        $data = json_decode($jsonData, true);
+
+        // Verificar que sí llegaron datos
+        if (!$data) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'No data received']);
+            exit();
+        }
+
+        // 2. Limpiar y validar los datos (Seguridad Básica - Lecture 2)
+        $fecha = htmlspecialchars($data['fecha'] ?? '');
+        $language = htmlspecialchars($data['language'] ?? '');
+        $qtyNormal = filter_var($data['qtyNormal'] ?? 0, FILTER_VALIDATE_INT);
+        $qtyFamily = filter_var($data['qtyFamily'] ?? 0, FILTER_VALIDATE_INT);
+
+        if ($qtyNormal === 0 && $qtyFamily === 0) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid quantities.']);
+            exit();
+        }
+
+        // 3. SEGURIDAD VITAL: Definir los precios reales en el Servidor
+        // ¡Nunca confiamos en los precios que vienen de JavaScript porque pueden ser hackeados!
+        // --- RESPUESTA A TU PREGUNTA 1: Calcular en un método aparte ---
+        // Llamamos a nuestro nuevo método privado pasándole las cantidades
+        $totalCalculado = $this->calculateRealTotal($qtyNormal, $qtyFamily);
+
+        // 4. Crear el "Carrito" en la sesión si aún no existe (Lecture Sessions)
+        // --- RESPUESTA A TU PREGUNTA 2: Usar el modelo OrderItem ---
+        if (!isset($_SESSION['cart'])) {
+            $_SESSION['cart'] = [];
+        }
+
+         // 5. Armar el "Item" o producto que acaban de elegir
+        // Instanciamos tu modelo real (Asegúrate de haberle hecho 'use App\Models\OrderItem;' arriba)
+        $cartItem = new OrderItem();
+        
+        // Rellenamos el modelo con los datos
+        // (Ajusta los nombres de las propiedades según como estén en tu clase OrderItem)
+        $cartItem->eventId = 'HistoryTour'; // o el ID numérico de la BD
+        $cartItem->date = $fecha;
+        $cartItem->language = $language;
+        $cartItem->qtyNormal = $qtyNormal;
+        $cartItem->qtyFamily = $qtyFamily;
+        $cartItem->itemTotal = $totalCalculado;
+
+        // Guardamos EL OBJETO entero en la sesión del carrito
+        $_SESSION['cart'][] = $cartItem;
+
+
+        // 6. Devolver una respuesta exitosa al JavaScript en formato JSON
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true]);
+        exit();
+    }
+
+    // =========================================================
+    // MÉTODO PRIVADO PARA CALCULAR EL TOTAL Y CONSULTAR LA BD
+    // =========================================================
+    private function calculateRealTotal(int $qtyNormal, int $qtyFamily): float {
+        
+        // Aquí llamas a tu Servicio que se conecta a la Base de Datos
+        // Ejemplo: $prices = $this->ticketService->getHistoryTourPrices();
+        // $serverNormalPrice = $prices['normal'];
+        // $serverFamilyPrice = $prices['family'];
+
+        // Por ahora lo simulamos:
+        $serverNormalPrice = 17.50; 
+        $serverFamilyPrice = 60.00;
+
+        // Hacemos el cálculo
+        $total = ($qtyNormal * $serverNormalPrice) + ($qtyFamily * $serverFamilyPrice);
+
+        return $total;
+    }
 }
 
 

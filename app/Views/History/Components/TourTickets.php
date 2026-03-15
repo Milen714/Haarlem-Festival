@@ -26,7 +26,7 @@ $familyPrice = 60.00;
                             <div class="font-semibold text-ink-900">Normal Ticket</div>
                             <div class="text-sm text-ink-700">€<?= number_format($normalPrice, 2) ?> per person</div>
                         </div>
-                        <input type="number" name="qtyNormal" min="0" value="0" 
+                        <input type="number" id="qty-normal" name="qtyNormal" min="0" value="0" data-precio="<?= $normalPrice ?>"
                                class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
                     </div>
 
@@ -35,7 +35,7 @@ $familyPrice = 60.00;
                             <div class="font-semibold text-ink-900">Family Ticket</div>
                             <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($familyPrice, 2) ?> total</div>
                         </div>
-                        <input type="number" name="qtyFamily" min="0" value="0" 
+                        <input type="number" id="qty-family" name="qtyFamily" min="0" value="0" data-precio="<?= $familyPrice ?>"
                                class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
                     </div>
                 </div>
@@ -98,3 +98,5 @@ $familyPrice = 60.00;
 
     </form>
 </section>
+
+<script src="/Js/TicketHistory.js"></script>
