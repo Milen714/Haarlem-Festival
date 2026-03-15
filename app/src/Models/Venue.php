@@ -19,6 +19,27 @@ class Venue
 
     public function __construct(){}
 
+    public static function createFromPostData(array $data): self
+    {
+        $venue = new self();
+        $venue->applyPostData($data);
+
+        return $venue;
+    }
+
+    public function applyPostData(array $data): void
+    {
+        $this->name = trim($data['name']);
+        $this->street_address = trim($data['street_address']);
+        $this->city = trim($data['city'] ?? 'Haarlem');
+        $this->postal_code = self::optionalTrimmedValue($data, 'postal_code');
+        $this->country = self::optionalTrimmedValue($data, 'country') ?? 'NL';
+        $this->capacity = isset($data['capacity']) && $data['capacity'] !== '' ? (int)$data['capacity'] : null;
+        $this->phone = self::optionalTrimmedValue($data, 'phone');
+        $this->email = self::optionalTrimmedValue($data, 'email');
+        $this->description_html = self::optionalTrimmedValue($data, 'description_html');
+    }
+
     /**
      * Get full address as single string
      */
@@ -118,4 +139,13 @@ class Venue
         ]);
     }
 }
+
+    private static function optionalTrimmedValue(array $data, string $key): ?string
+    {
+        if (empty($data[$key])) {
+            return null;
+        }
+
+        return trim((string)$data[$key]);
+    }
 }

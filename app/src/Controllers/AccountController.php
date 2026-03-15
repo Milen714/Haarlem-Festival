@@ -1,27 +1,29 @@
 <?php
 namespace App\Controllers;
 use App\Controllers\BaseController;
-use App\Models\Mailer;
 use App\Models\User;
 use App\Models\Enums\UserRole;
-use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Services\MailService;
 use App\Services\Interfaces\IAuthService;
 use App\Services\AuthService;
-$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->safeLoad();
+use App\config\Secrets;
+use App\Services\Interfaces\IOrderService;
+use App\Services\Interfaces\IUserService;
+use App\Services\Interfaces\IMailService;
+use App\Services\OrderService;
+
 
 class AccountController extends BaseController {
-    private UserService $userService;
-    private UserRepository $userRepository;
-    private MailService $mailService;
+    private IUserService $userService;
+    private IMailService $mailService;
     private IAuthService $authService;
+    private IOrderService $orderService;
     public function __construct() {
-        $this->userRepository = new UserRepository();
-        $this->userService = new UserService($this->userRepository);
+        $this->userService = new UserService();
         $this->mailService = new MailService();
         $this->authService = new AuthService();
+        $this->orderService = new OrderService();
     }
     public function login($vars = [])
     {
@@ -32,31 +34,38 @@ class AccountController extends BaseController {
         $this->view('Account/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
     }
     public function loginPost($vars = [])
-    {
+    {   header('Content-Type: application/json; charset=utf-8');
         try {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $user = $this->userService->authenticateUser($email, $password);
+        $data = json_decode(file_get_contents('php://input'), true);
+            $user = $this->userService->authenticateUser($data['email'], $data['password']);
         if ($user) {
             $_SESSION['loggedInUser'] = $user;
-            if($user->role === UserRole::ADMIN) {
-                header("Location: /cms");
+            // If there's a session cart, persist it to the database and associate it with the user
+            if (!empty($_SESSION['session_cart'])) {
+                $orderId = $this->orderService->persistSessionCart($_SESSION['session_cart'], $user);
+                //$_SESSION['order_id'] = $orderId;
+                //unset($_SESSION['session_cart']);
             }else{
-                // Successful login
-            
-            header("Location: /");
-            exit();
-            
+                // If no session cart but user has an open order in the database, load it into the session
+                $this->orderService->hydrateSessionCartFormDbOnLogin($user);
             }
-            
+            // Successful login
+            //additionally check if user is admin and redirect to cms if so
+            if($user->role === UserRole::ADMIN) {
+                $this->jsonResponse(['success' => true, 'redirect' => '/cms'] ,200);
+            }else{
+                // Regular user login
+            $this->jsonResponse(['success' => true, 'redirect' => $data['redirect']] ,200);
+            }
         } else {
             // Failed login
-            throw new \Exception("Invalid email or password.");
+            $this->jsonResponse(['success' => false, 'message' => 'Login failed. Please sscheck your credentials and try again.',
+            'user' => ['email' => $data['email']]], 401);
         }
         } catch (\Exception $e) {
             //header("Location: /login/" . urlencode($e->getMessage()));
-            $this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            exit();
+            //$this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            //exit();
         }
     }
     public function logout($vars = [])
@@ -77,7 +86,7 @@ class AccountController extends BaseController {
         throw new \Exception("reCAPTCHA token is missing.");
     }
 
-    $secretKey = $_ENV['RECAPTCHA_SECRET_KEY'];
+    $secretKey = Secrets::$reCapchaSecretKey;
     $ip = $_SERVER['REMOTE_ADDR'];
     $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
     
@@ -117,7 +126,7 @@ class AccountController extends BaseController {
             }
             // Generate verification token and send verification email
             $token = $this->authService->generateVerificationToken($user);
-            $verificationLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            $verificationLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Save the user to the database
             $this->userService->createUser($user);
             $this->mailService->accountVerificationMail($user->email, $verificationLink);
@@ -145,7 +154,7 @@ class AccountController extends BaseController {
                 throw new \Exception("No user found with that email address.");
             }
             $token = $this->authService->generatePasswordResetToken($user);
-            $resetLink = $_ENV['DOMAIN_URL'] . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            $resetLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
             $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );

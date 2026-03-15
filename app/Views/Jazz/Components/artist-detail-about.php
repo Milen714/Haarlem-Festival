@@ -2,8 +2,8 @@
 /** @var \App\Models\MusicEvent\Artist $artist */
 ?>
 
-<section>
-    <h2 class="text-3xl font-bold mb-4" style="font-family: 'Cormorant Garamond', serif;">
+<section aria-labelledby="bio-heading">
+    <h2 id="bio-heading" class="text-3xl font-bold mb-4" style="font-family: 'Cormorant Garamond', serif;">
         About <?= htmlspecialchars($artist->name ?? '') ?>
     </h2>
 

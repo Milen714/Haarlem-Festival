@@ -3,15 +3,16 @@
 namespace App\Services;
 
 use App\Services\Interfaces\ICuisineService;
+use App\Repositories\CuisineRepository;
 use App\Repositories\Interfaces\ICuisineRepository;
 
 class CuisineService implements ICuisineService{
 
     private ICuisineRepository $cuisineRepository;
     
-    public function __construct(ICuisineRepository $cuisineRepository)
+    public function __construct()
     {
-        $this->cuisineRepository = $cuisineRepository;
+        $this->cuisineRepository = new CuisineRepository();
     }
 
     public function getCuisines(): array

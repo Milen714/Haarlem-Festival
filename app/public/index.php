@@ -46,6 +46,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
+    $r->addRoute('GET', '/events-jazz/schedule', ['App\Controllers\JazzController', 'schedule']);
     $r->addRoute('GET', '/events-jazz/artist/{slug}', ['App\Controllers\JazzArtistController', 'detail']);
    
     /* Dance Event Route */
@@ -90,6 +91,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/restaurants/update/{id:\d+}', ['App\Controllers\RestaurantController', 'update']);
     $r->addRoute('POST', '/cms/restaurants/store', ['App\Controllers\RestaurantController', 'store']);
     $r->addRoute('POST', '/cms/restaurants/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'delete']);
+    $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
 
     /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
@@ -124,15 +126,23 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/profile', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/cms/profile/update', ['App\Controllers\AccountController', 'update']);
 
-    /* Legacy route for homepage (keep for backwards compatibility) */
-    $r->addRoute('GET', '/home-update', function () {
-        header('Location: /cms/page/edit/home');
-        exit;
-    });
-    $r->addRoute('POST', '/home-update', function () {
-        header('Location: /cms/page/edit/home');
-        exit;
-    });
+    /* CMS Schedule Management */
+    $r->addRoute('GET', '/cms/schedules', ['App\Controllers\ScheduleController', 'index']);
+    $r->addRoute('GET', '/cms/schedules/create', ['App\Controllers\ScheduleController', 'create']);
+    $r->addRoute('POST', '/cms/schedules/store', ['App\Controllers\ScheduleController', 'store']);
+    $r->addRoute('GET', '/cms/schedules/edit/{id:\d+}', ['App\Controllers\ScheduleController', 'edit']);
+    $r->addRoute('POST', '/cms/schedules/update/{id:\d+}', ['App\Controllers\ScheduleController', 'update']);
+    $r->addRoute('POST', '/cms/schedules/delete/{id:\d+}', ['App\Controllers\ScheduleController', 'delete']);
+
+    /* Payment */
+    $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
+    $r->addRoute('GET', '/checkout', ['App\Controllers\PaymentController', 'checkout']);
+    $r->addRoute('GET', '/create-checkout-session', ['App\Controllers\PaymentController', 'createCheckoutSession']);
+    $r->addRoute('GET', '/return', ['App\Controllers\PaymentController', 'return']);
+    $r->addRoute('POST', '/payment-status', ['App\Controllers\PaymentController', 'status']);
+    $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
+    $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
+    $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
 
 });
 

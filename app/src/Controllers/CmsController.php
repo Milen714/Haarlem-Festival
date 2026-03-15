@@ -6,15 +6,15 @@ use App\Controllers\BaseController;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Services\PageService;
-use App\Repositories\PageRepository;
+use App\Services\Interfaces\IPageService;
 
 class CmsController extends BaseController
 {
-    private PageService $pageService;
+    private IPageService $pageService;
     
     public function __construct()
     {
-        $this->pageService = new PageService(new PageRepository());
+        $this->pageService = new PageService();
     }
     #[RequireRole([UserRole::ADMIN])]
     public function dashboard($vars = []): void

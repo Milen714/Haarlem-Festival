@@ -9,11 +9,11 @@ class BaseController
         // Load the view and capture output
         ob_start();
         extract($vars);
-        
+
         require __DIR__ . '/../../Views/' . $viewName . '.php';
         // ob_get_clean(); prevent double output and turns the inside of the require ^^ into a string which is stored in $content
         $content = ob_get_clean();
-        
+
         // Load the layout with the content
         $layoutVars = array_merge($vars, ['content' => $content]);
         extract($layoutVars);
@@ -30,7 +30,7 @@ class BaseController
     protected function redirect($url)
     {
         header('Location: ' . $url);
-        exit();         
+        exit();
     }
     protected function notFound()
     {
@@ -50,16 +50,16 @@ class BaseController
         echo "403 Forbidden";
         exit();
     }
-    protected function cmsLayout($viewName, $vars = [],$layout = 'layouts/CmsLayout')
+    protected function cmsLayout($viewName, $vars = [], $layout = 'layouts/CmsLayout')
     {
-         // Load the view and capture output
+        // Load the view and capture output
         ob_start();
         extract($vars);
-        
+
         require __DIR__ . '/../../Views/' . $viewName . '.php';
         // ob_get_clean(); prevent double output and turns the inside of the require ^^ into a string which is stored in $content
         $content = ob_get_clean();
-        
+
         // Load the layout with the content
         $layoutVars = array_merge($vars, ['content' => $content]);
         extract($layoutVars);

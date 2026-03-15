@@ -22,5 +22,8 @@ enum SectionType: string
     case good_to_know = 'good_to_know';
     case tour_features = 'tour_features';
     case tour_tickets = 'tour_tickets';
+    case image_left_magic = 'image_left_magic';
+    case image_right_magic = 'image_right_magic';
+    case magic_lorentz_container = 'magic_lorentz_container';
 
 }

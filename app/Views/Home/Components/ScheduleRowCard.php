@@ -14,7 +14,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
         case EventType::Magic:
             $cardStyles = ['side' => 'bg-[var(--home-magic-accent)] dark:bg-[var(--home-magic-accent-muted)]', 'muted' => 'bg-[var(--home-magic-accent-muted)] dark:bg-[var(--home-magic-accent-muted-high-contrast)]'];
             $cardImage = $scheduleRef->venue?->venue_image ?? new Media();
-            $eventLabel = 'Magic';
+            $eventLabel = $scheduleRef->event_category?->title ?? '';
             break;
         case EventType::History:
             $cardStyles = ['side' => 'bg-[var(--home-history-accent)] dark:bg-[var(--home-history-accent-muted)]', 'muted' => 'bg-[var(--home-history-accent-muted)] dark:bg-[var(--home-history-accent-muted-high-contrast)]'];

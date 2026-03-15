@@ -3,26 +3,20 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Repositories\RestaurantRepository;
-use App\Repositories\VenueRepository;
 use App\Services\RestaurantService;
-use App\Services\MediaService;
 use App\Services\VenueService;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IRestaurantService;
+use App\Services\Interfaces\IVenueService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class RestaurantController extends BaseController{
-    private RestaurantService $restaurantService;
-    private VenueService $venueService;
+    private IRestaurantService $restaurantService;
+    private IVenueService $venueService;
     public function __construct()
     {
-        $restaurantRepository = new RestaurantRepository();
-        $mediaRepository = new MediaRepository();
-        $mediaService = new MediaService($mediaRepository);
-        $venueRepository = new VenueRepository();
-        $this->venueService = new VenueService($venueRepository, $mediaService);
-        $this->restaurantService = new RestaurantService($restaurantRepository, $mediaService);
+        $this->venueService = new VenueService();
+        $this->restaurantService = new RestaurantService();
 
     }
 

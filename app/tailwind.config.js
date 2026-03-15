@@ -34,6 +34,7 @@ module.exports = {
         'footer_instagram': 'url("/Assets/Nav/FooterInstagram.svg")',
         'footer_twitter': 'url("/Assets/Nav/FooterTwitter.svg")',
         'magic_nav_active': 'url("/Assets/Magic/MagicNavActiveIcon.svg")',
+        'ul_dot': 'url("/Assets/Home/UlDot.svg")',
       },
     },
   },

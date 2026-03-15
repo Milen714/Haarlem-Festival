@@ -145,9 +145,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 return null;
             }
             
-            return $this->hydrateSchedule($row);
+            return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching schedule by ID: " . $e->getMessage());
+            throw new PDOException("Error fetching schedule by ID: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -190,9 +190,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            return array_map(fn($row) => $this->hydrateSchedule($row), $rows);
+            return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching all schedules: " . $e->getMessage());
+            throw new PDOException("Error fetching all schedules: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -221,9 +221,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 return null;
             }
             
-            return $this->hydrateSchedule($row);
+            return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching single schedule by event: " . $e->getMessage());
+            throw new PDOException("Error fetching single schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -247,52 +247,12 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            return array_map(fn($row) => $this->hydrateSchedule($row), $rows);
+            return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching schedule by event: " . $e->getMessage());
+            throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
 
-    /**
-     * Hydrate a Schedule object from a database row
-     * All nested objects (venue, artist, restaurant, landmark) will be hydrated if data exists
-     * Media objects are hydrated directly from the joined query results
-     */
-    private function hydrateSchedule(array $row): Schedule
-    {
-        $schedule = new Schedule();
-        $schedule->fromPDOData($row);
-        $schedule->hydrateAllRelations($row);
-        
-        // Hydrate media for Artist from joined data (no extra query needed)
-        if ($schedule->artist !== null && isset($row['artist_media_id']) && $row['artist_media_id'] !== null) {
-            $media = new \App\Models\Media();
-            $media->media_id = (int)$row['artist_media_id'];
-            $media->file_path = $row['artist_media_file_path'];
-            $media->alt_text = $row['artist_media_alt_text'];
-            $schedule->artist->profile_image = $media;
-        }
-        
-        // Hydrate media for Restaurant from joined data (no extra query needed)
-        if ($schedule->restaurant !== null && isset($row['restaurant_media_id']) && $row['restaurant_media_id'] !== null) {
-            $media = new \App\Models\Media();
-            $media->media_id = (int)$row['restaurant_media_id'];
-            $media->file_path = $row['restaurant_media_file_path'];
-            $media->alt_text = $row['restaurant_media_alt_text'];
-            $schedule->restaurant->main_image = $media;
-        }
-        
-        // Hydrate media for Landmark from joined data (no extra query needed)
-        if ($schedule->landmark !== null && isset($row['landmark_media_id']) && $row['landmark_media_id'] !== null) {
-            $media = new \App\Models\Media();
-            $media->media_id = (int)$row['landmark_media_id'];
-            $media->file_path = $row['landmark_media_file_path'];
-            $media->alt_text = $row['landmark_media_alt_text'];
-            $schedule->landmark->landmark_image = $media;
-        }
-        
-        return $schedule;
-    }
     public function getAvailableDates(): array
     {
         try {
@@ -306,7 +266,122 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             
             return array_map(fn($row) => $row['date'], $rows);
         } catch (PDOException $e) {
-            throw new \RuntimeException("Error fetching available dates: " . $e->getMessage());
+            throw new PDOException("Error fetching available dates: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Create a new schedule record
+     */
+    public function create(Schedule $schedule): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                INSERT INTO SCHEDULE (event_id, venue_id, artist_id, restaurant_id, landmark_id,
+                    date, start_time, end_time, total_capacity, tickets_sold, is_sold_out)
+                VALUES (:event_id, :venue_id, :artist_id, :restaurant_id, :landmark_id,
+                    :date, :start_time, :end_time, :total_capacity, :tickets_sold, :is_sold_out)
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':event_id',       $schedule->event_id,       PDO::PARAM_INT);
+            $stmt->bindValue(':venue_id',        $schedule->venue_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':artist_id',       $schedule->artist_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':restaurant_id',   $schedule->restaurant_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':landmark_id',     $schedule->landmark_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':date',            $schedule->date?->format('Y-m-d'));
+            $stmt->bindValue(':start_time',      $schedule->start_time?->format('H:i:s'));
+            $stmt->bindValue(':end_time',        $schedule->end_time?->format('H:i:s'));
+            $stmt->bindValue(':total_capacity',  $schedule->total_capacity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold',    $schedule->tickets_sold ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out',     $schedule->is_sold_out ? 1 : 0, PDO::PARAM_INT);
+
+            $result = $stmt->execute();
+            if ($result) {
+                $schedule->schedule_id = (int)$pdo->lastInsertId();
+            }
+            return $result;
+        } catch (PDOException $e) {
+            error_log("Error creating schedule: " . $e->getMessage());
+            throw new PDOException("Failed to create schedule: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Update an existing schedule record
+     */
+    public function update(Schedule $schedule): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE SCHEDULE SET
+                    event_id       = :event_id,
+                    venue_id       = :venue_id,
+                    artist_id      = :artist_id,
+                    restaurant_id  = :restaurant_id,
+                    landmark_id    = :landmark_id,
+                    date           = :date,
+                    start_time     = :start_time,
+                    end_time       = :end_time,
+                    total_capacity = :total_capacity,
+                    tickets_sold   = :tickets_sold,
+                    is_sold_out    = :is_sold_out
+                WHERE schedule_id = :schedule_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':schedule_id',     $schedule->schedule_id,    PDO::PARAM_INT);
+            $stmt->bindValue(':event_id',        $schedule->event_id,       PDO::PARAM_INT);
+            $stmt->bindValue(':venue_id',        $schedule->venue_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':artist_id',       $schedule->artist_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':restaurant_id',   $schedule->restaurant_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':landmark_id',     $schedule->landmark_id ?: null, PDO::PARAM_INT);
+            $stmt->bindValue(':date',            $schedule->date?->format('Y-m-d'));
+            $stmt->bindValue(':start_time',      $schedule->start_time?->format('H:i:s'));
+            $stmt->bindValue(':end_time',        $schedule->end_time?->format('H:i:s'));
+            $stmt->bindValue(':total_capacity',  $schedule->total_capacity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold',    $schedule->tickets_sold ?? 0, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out',     $schedule->is_sold_out ? 1 : 0, PDO::PARAM_INT);
+
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error updating schedule: " . $e->getMessage());
+            throw new PDOException("Failed to update schedule: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Delete a schedule by ID
+     */
+    public function delete(int $scheduleId): bool
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare("DELETE FROM SCHEDULE WHERE schedule_id = :schedule_id");
+            $stmt->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error deleting schedule: " . $e->getMessage());
+            throw new PDOException("Failed to delete schedule: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Get all event categories (for dropdowns in the cms )
+     */
+    public function getAllEventCategories(): array
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->query("SELECT event_id, type, title FROM EVENT_CATEGORIES ORDER BY title ASC");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error fetching event categories: " . $e->getMessage());
+            throw new PDOException("Failed to fetch event categories: " . $e->getMessage(), 0, $e);
         }
     }
 }

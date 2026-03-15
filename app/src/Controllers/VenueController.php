@@ -4,21 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\VenueService;
-use App\Services\MediaService;
-use App\Repositories\VenueRepository;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IVenueService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class VenueController extends BaseController
 {
-    private VenueService $venueService;
+    private IVenueService $venueService;
 
     public function __construct()
     {
-        $venueRepository = new VenueRepository();
-        $mediaService = new MediaService(new MediaRepository());
-        $this->venueService = new VenueService($venueRepository, $mediaService);
+        $this->venueService = new VenueService();
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -26,14 +22,13 @@ class VenueController extends BaseController
     {
         try {
             $venues = $this->venueService->getAllVenues();
-            
+
             $this->cmsLayout('Cms/Venues/Index', [
                 'title' => 'Manage Venues',
                 'venues' => $venues
             ]);
         } catch (\Exception $e) {
             error_log("Venue list error: " . $e->getMessage());
-            // Don't redirect - show error on the same page
             $this->cmsLayout('Cms/Venues/Index', [
                 'title' => 'Manage Venues',
                 'venues' => [],
@@ -58,10 +53,11 @@ class VenueController extends BaseController
 
         try {
             $venue = $this->venueService->createFromRequest($_POST, $_FILES);
-            
-            $_SESSION['success'] = "Venue '{$venue->name}' created successfully!";
+
+            if ($venue) {
+                $_SESSION['success'] = "Venue '{$venue->name}' created successfully!";
+            }
             $this->redirect('/cms/venues');
-            
         } catch (\Exception $e) {
             error_log("Venue create error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
@@ -87,7 +83,6 @@ class VenueController extends BaseController
                 'venue' => $venue,
                 'action' => "/cms/venues/update/{$venueId}"
             ]);
-
         } catch (\Exception $e) {
             error_log("Venue edit error: " . $e->getMessage());
             $this->handleError('Failed to load venue: ' . $e->getMessage());
@@ -102,10 +97,11 @@ class VenueController extends BaseController
 
         try {
             $venue = $this->venueService->updateFromRequest($venueId, $_POST, $_FILES);
-            
-            $_SESSION['success'] = "Venue '{$venue->name}' updated successfully!";
+
+            if ($venue) {
+                $_SESSION['success'] = "Venue '{$venue->name}' updated successfully!";
+            }
             $this->redirect('/cms/venues');
-            
         } catch (\Exception $e) {
             error_log("Venue update error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
@@ -121,16 +117,15 @@ class VenueController extends BaseController
 
         try {
             $venue = $this->venueService->getVenueById($venueId);
-            
+
             if (!$venue) {
                 throw new \Exception('Venue not found');
             }
 
             $venueName = $venue->name;
             $this->venueService->deleteVenue($venueId);
-            
+
             $_SESSION['success'] = "Venue '{$venueName}' deleted successfully!";
-            
         } catch (\Exception $e) {
             error_log("Venue delete error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
@@ -147,11 +142,10 @@ class VenueController extends BaseController
     }
 
 
-        private function handleError(string $message): void
+    private function handleError(string $message): void
     {
         $this->startSession();
         $_SESSION['error'] = $message;
-        // Instead of redirecting to /cms/venues, go to dashboard
         $this->redirect('/cms');
     }
 }

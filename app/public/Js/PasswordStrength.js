@@ -1,4 +1,5 @@
-const passwordInput = document.getElementById("password");
+const signupForm = document.getElementById("signupForm");
+const passwordInput = signupForm ? signupForm.querySelector('[name="password"]') : document.getElementById("password");
 
     function checkPasswordStrength() {
         const password = passwordInput.value;
@@ -11,18 +12,22 @@ const passwordInput = document.getElementById("password");
             special: /[\W_]/.test(password)
         };
 
-        document.getElementById("length").classList.toggle("valid", checks.length);
-        document.getElementById("uppercase").classList.toggle("valid", checks.uppercase);
-        document.getElementById("lowercase").classList.toggle("valid", checks.lowercase);
-        document.getElementById("number").classList.toggle("valid", checks.number);
-        document.getElementById("special").classList.toggle("valid", checks.special);
+        const scope = signupForm ?? document;
+        scope.querySelector('#length')?.classList.toggle("valid", checks.length);
+        scope.querySelector('#uppercase')?.classList.toggle("valid", checks.uppercase);
+        scope.querySelector('#lowercase')?.classList.toggle("valid", checks.lowercase);
+        scope.querySelector('#number')?.classList.toggle("valid", checks.number);
+        scope.querySelector('#special')?.classList.toggle("valid", checks.special);
 
         return Object.values(checks).every(Boolean);
     }
-    passwordInput.addEventListener("input", checkPasswordStrength);
+    passwordInput?.addEventListener("input", checkPasswordStrength);
 
     function displayPasswordStrength() {
-        const passwordGroup = document.querySelector('.password-group');
+        const passwordGroup = signupForm
+            ? signupForm.querySelector('.password-group')
+            : document.querySelector('.password-group');
+        if (!passwordGroup) return;
         const container = document.createElement('div');
         container.classList.add('password-strength');
         container.innerHTML = `
