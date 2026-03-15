@@ -627,7 +627,14 @@ video {
   --bg-color-home-light:#F2F4F3;
   --bg-color-home-dark:#0F0F0F;
   --shadow-yellow: -7px -7px 0px #FFD93E;
-  /*  */
+  /**/
+  --history-emphasis-color: #344212;
+  --history-accent-color: #5D791C;
+  --history-pale-green: #d0ec91;
+  --history-border-green: #5f7135;
+  --history-dark-brown: #4F3505;
+  --history-light-brown: #84642F;
+  --history-cream: #FAEBBD;
   --color-brand-600: #3ea12f;
   --color-brand-700: #2f7e26;
   --color-gold-400: #f0b65a;
@@ -637,7 +644,6 @@ video {
   --color-ink-600: #4a4a4a;
   --color-ink-500: #6b6b6b;
   --color-bg-history: #fefbf0;
-  --color-underline-history: #84642F;
 }
 
 .container{
@@ -2637,6 +2643,10 @@ select:focus,
   background-color: var(--dance-tag-color-1);
 }
 
+.bg-\[var\(--history-accent-color\)\]{
+  background-color: var(--history-accent-color);
+}
+
 .bg-\[var\(--home-dance-accent\)\]{
   background-color: var(--home-dance-accent);
 }
@@ -3822,6 +3832,14 @@ select:focus,
   color: rgb(133 77 14 / var(--tw-text-opacity, 1));
 }
 
+.text-\[var\(--history-accent-color\)\]{
+  color: var(--history-accent-color);
+}
+
+.text-\[var\(--history-dark-brown\)\]{
+  color: var(--history-dark-brown);
+}
+
 .underline{
   text-decoration-line: underline;
 }
@@ -4928,19 +4946,21 @@ select:focus,
   -webkit-text-stroke: 0.06rem #fbf8e5;
 }
 
-.btn-history-book {
-  background-color: #d0ec91;
-  border: 0.12rem solid #5f7135;
+.btn-history {
+  background-color: var(--history-pale-green);
+  border: 0.16rem solid var(--history-border-green);
   border-radius: 0.9rem;
   padding: 0.75rem 2rem;
+  color: #2b3613;
   font-family: 'Nobile', sans-serif;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1.25rem;
   transition: all 0.3s ease;
 }
 
-.btn-history-book:hover {
-  background-color: #b8d67a;
+.btn-history:hover {
+  background-color: #A8C369;
+  color: #20290d;
   transform: translateY(-0.12rem);
 }
 
@@ -4975,6 +4995,11 @@ select:focus,
   border-color: rgb(84 106 33 / var(--tw-border-opacity, 1));
   --tw-bg-opacity: 1;
   background-color: rgb(167 201 87 / var(--tw-bg-opacity, 1));
+}
+
+.history-emphasis {
+  color: var(--history-emphasis-color);
+  font-weight: 600;
 }
 
 /* KEYFRAME ANIMATIONS */
@@ -5036,7 +5061,7 @@ select:focus,
   margin-bottom: 1.5rem;
   height: 1px;
   width: 4rem;
-  background-color: var(--color-underline-history);
+  background-color: var(--history-light-brown);
 }
 
 .before\:mr-1::before{
@@ -6109,6 +6134,8 @@ select:focus,
 .\[\&\>ul\]\:pl-5>ul{
   padding-left: 1.25rem;
 }
+
+  
 
 
 

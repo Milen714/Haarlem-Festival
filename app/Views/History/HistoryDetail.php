@@ -92,7 +92,7 @@ $landmark = $landmark ?? null;
             <h3 class="text-2xl font-history-serif text-ink-900 mb-6">
                 Did you like what you saw? There is even more waiting
             </h3>
-            <a href="/history/tour" class="inline-flex items-center justify-center rounded-md bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 text-base font-semibold shadow-md transition-all">
+            <a href="/history/tour" class="inline-flex items-center justify-center rounded-md bg--history-accent-color hover:bg-brand-700 text-white px-8 py-3 text-base font-semibold shadow-md transition-all">
                 Book your tour now
             </a>
         </section>

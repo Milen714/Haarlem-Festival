@@ -66,7 +66,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
     $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
-    $r->addRoute('POST', '/api/tickets/add-to-cart', ['App\Controllers\HistoryController', 'apiAddToCart']);
 
 
     /* CMS Routes */
