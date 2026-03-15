@@ -14,6 +14,21 @@ class MagicAccessibility{
       /** @var PageSection[] $accessibilitySections */
     public array $accessibilitySections = [];
 
+      /** @var PageSection[] $phoneDemoSections */
+    public array $phoneDemoSections = [];
+
+      /** @var PageSection[] $secretFileSections */
+    public array $secretFileSections = [];
+
+      /** @var PageSection[] $lorentzPromoSections */
+    public array $lorentzPromoSections = [];
+
+      /** @var PageSection[] $LandingMapSections */
+    public array $LandingMapSections = [];
+
+      /** @var PageSection[] $lorentzScheduleContainer */
+    public array $lorentzScheduleContainer = [];
+
     public function __construct(Page $page)
     {
         $this->page = $page;
@@ -26,6 +41,21 @@ class MagicAccessibility{
             }
             if (str_starts_with($title, 'Accessibility')) {
                 $this->accessibilitySections[] = $section;
+            }
+            if (str_starts_with($title, 'Phone Demo')) {
+                $this->phoneDemoSections[] = $section;
+            }
+            if (str_starts_with($title, 'Secret File')) {
+                $this->secretFileSections[] = $section;
+            }
+            if (str_starts_with($title, 'Lorentz Promo')) {
+                $this->lorentzPromoSections[] = $section;
+            }
+            if (str_starts_with($title, 'Landing Map')) {
+                $this->LandingMapSections[] = $section;
+            }
+            if (str_starts_with($title, 'Lorentz Schedule Container')) {
+                $this->lorentzScheduleContainer[] = $section;
             }
         }
     }
@@ -42,6 +72,17 @@ class MagicAccessibility{
                 case SectionType::accordion_group:
                      include '../Views/Magic/Components/MagicAccordion.php';
                     break;
+                case SectionType::image_left_magic:
+                    $sectionStyle = $this->imageSectionStyle($section);
+                    include '../Views/Magic/Components/GameCard.php';
+                    break;
+                case SectionType::image_right_magic:
+                    $sectionStyle = $this->imageSectionStyle($section);
+                    include '../Views/Magic/Components/GameCard.php';
+                    break;
+                case SectionType::magic_lorentz_container:
+                    include '../Views/Magic/Components/LorentsScheduleRowsContainer.php';
+                    break;
             }
         }
     }
@@ -56,6 +97,12 @@ class MagicAccessibility{
                 break;
             case SectionType::image_left:
                 return ['cardStyle'=>"magic_image_article" ,'imageStyle'=>"magic_article_image_small"];
+                break;
+            case SectionType::image_left_magic:
+                return ['cardStyle'=>"magic_game_card"];
+                break;
+            case SectionType::image_right_magic:
+                return ['cardStyle'=>"magic_game_card_reverse"];
                 break;
             case SectionType::image_right:
                 return ['cardStyle'=>"magic_image_article_reverse" ,'imageStyle'=>"magic_article_image_small"];

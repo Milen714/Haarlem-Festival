@@ -2,6 +2,7 @@
 namespace App\Services;
 use App\CmsModels\Page;
 use App\CmsModels\PageSection;
+use App\Repositories\PageRepository;
 use App\Repositories\Interfaces\IPageRepository;
 use App\Services\Interfaces\IPageService;
 
@@ -9,9 +10,9 @@ class PageService implements IPageService
 {
     private IPageRepository $pageRepository;
 
-    public function __construct(IPageRepository $pageRepository)
+    public function __construct()
     {
-        $this->pageRepository = $pageRepository;
+        $this->pageRepository = new PageRepository();
     }
 
     public function getPageBySlug(string $slug): Page

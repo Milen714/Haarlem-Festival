@@ -9,11 +9,13 @@ use App\Models\Landmark;
 use App\Services\GalleryService;
 use App\Repositories\GalleryRepository;
 use App\Repositories\MediaRepository;
+use App\Services\Interfaces\ILandmarkService;
+use App\Services\Interfaces\IMediaService;
 
-class LandmarkService
+class LandmarkService implements ILandmarkService
 {
     private LandmarkRepository $landmarkRepository;
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
     private GalleryService $galleryService;
     private GalleryRepository $galleryRepository;
 
@@ -21,8 +23,8 @@ class LandmarkService
     {
         $this->landmarkRepository = new LandmarkRepository();
         $this->galleryRepository = new GalleryRepository();
-        $this->mediaService = new MediaService(new MediaRepository());
-        $this->galleryService = new GalleryService($this->mediaService, $this->galleryRepository);
+        $this->mediaService = new MediaService();
+        $this->galleryService = new GalleryService();
     
     }
 
@@ -97,17 +99,13 @@ class LandmarkService
             throw new \Exception("The landmark name is required.");
         }
 
-        // 2. Procesamos la galería PRIMERO (si existe y hay archivos)
-    // Usamos la relación del modelo: $existingLandmark->gallery
-    // Procesar las 3 imágenes específicas si el landmark tiene galería
-    if ($existingLandmark->gallery) {
-        $this->galleryService->handleSectionUploads(
-            $existingLandmark->gallery->gallery_id, 
-            $postData, 
-            $filesData
+        if ($existingLandmark->gallery) {
+            $this->galleryService->handleSectionUploads(
+                $existingLandmark->gallery->gallery_id, 
+                $postData, 
+                $filesData
         );
-    }
-    
+        }
 
         $newSlug = $this->generateSlug($postData['name']); 
 

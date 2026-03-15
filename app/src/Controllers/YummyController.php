@@ -5,52 +5,42 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Services\UserService;
 use App\Services\ScheduleService;
-use App\Repositories\UserRepository;
-use App\Repositories\PageRepository;
-use App\Repositories\ScheduleRepository;
-use App\Repositories\RestaurantRepository;
-use App\Repositories\VenueRepository;
 use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\VenueService;
+use App\Services\Interfaces\IUserService;
+use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\IRestaurantService;
+use App\Services\Interfaces\IPageService;
+use App\Services\Interfaces\IVenueService;
+use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\ICuisineService;
 use App\Models\Yummy\RestaurantListViewModel;
-use App\Repositories\MediaRepository;
+use App\Models\User;
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
 use App\Services\MediaService;
-use App\Repositories\CuisineRepository;
 use App\Services\CuisineService;
 
 class YummyController extends BaseController
 {
-    private UserRepository $userRepository;
-    private PageService $pageService;
-    private PageRepository $pageRepository;
-    private MediaService $mediaService;
-    private MediaRepository $mediaRepository;
-    private ScheduleRepository $scheduleRepository;
-    private ScheduleService $scheduleService;
-    private RestaurantService $restaurantService;
-    private RestaurantRepository $restaurantRepository;
-    private VenueService $venueService;
-    private VenueRepository $venueRepository;
-
-    private CuisineService $cuisineService;
-
-    private CuisineRepository $cuisineRepository;
+    private IUserService $userService;
+    private IPageService $pageService;
+    private IMediaService $mediaService;
+    private IScheduleService $scheduleService;
+    private IRestaurantService $restaurantService;
+    private IVenueService $venueService;
+    private ICuisineService $cuisineService;
     
     public function __construct()
     {
-        $this->pageRepository = new PageRepository();
-        $this->pageService = new PageService($this->pageRepository);
-        $this->scheduleRepository = new ScheduleRepository();
-        $this->scheduleService = new ScheduleService($this->scheduleRepository);
-        $this->mediaRepository = new MediaRepository();
-        $this->mediaService = new MediaService($this->mediaRepository);
-        $this->restaurantRepository = new RestaurantRepository();
-        $this->restaurantService = new RestaurantService($this->restaurantRepository, $this->mediaService);
-        $this->venueRepository = new VenueRepository();
-        $this->venueService = new VenueService($this->venueRepository, $this->mediaService);
-        $this->cuisineRepository = new CuisineRepository();
-        $this->cuisineService = new CuisineService($this->cuisineRepository);
+        $this->userService = new UserService();
+        $this->pageService = new PageService();
+        $this->mediaService = new MediaService();
+        $this->restaurantService = new RestaurantService();
+        $this->venueService = new VenueService();
+        $this->scheduleService = new ScheduleService();
+        $this->cuisineService = new CuisineService();
     }
     public function index()
     {

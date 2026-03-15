@@ -24,24 +24,20 @@ $color = $colors[$cardIndex % 4];
     </figure>
     
     <!-- Artist Info -->
-    <section class="p-4 text-center flex flex-col justify-between flex-grow">
-        <div class="mb-3">
-            <h3 class="font-bold text-base md:text-lg text-gray-900 mb-2" style="line-height: 1.3;">
-                <?= htmlspecialchars($artist->name ?? '') ?>
-            </h3>
-            <p class="text-xs md:text-sm text-gray-600" style="line-height: 1.4; min-height: 32px;">
-                <?= htmlspecialchars($artist->genres ?? '') ?>
-            </p>
-        </div>
-        
-        <a href="/events-jazz/artist/<?= htmlspecialchars($artist->slug ?? '')?>" 
-           class="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-900 hover:text-white transition-all font-bold text-sm"
-           style="margin-top: auto;"
+    <footer class="p-4 text-center flex flex-col justify-between flex-grow">
+        <h3 class="font-bold text-base md:text-lg text-gray-900 mb-2" style="line-height: 1.3;">
+            <?= htmlspecialchars($artist->name ?? '') ?>
+        </h3>
+        <p class="text-xs md:text-sm text-gray-600 mb-3" style="line-height: 1.4; min-height: 32px;">
+            <?= htmlspecialchars($artist->genres ?? '') ?>
+        </p>
+        <a href="/events-jazz/artist/<?= htmlspecialchars($artist->slug ?? '')?>"
+           class="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full border-2 border-gray-900 bg-white text-gray-900 hover:bg-gray-900 hover:text-white transition-all font-bold text-sm mt-auto"
            aria-label="View more information about <?= htmlspecialchars($artist->name ?? 'artist') ?>">
-            More Info 
+            More Info
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 3;">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
             </svg>
         </a>
-    </section>
+    </footer>
 </article>

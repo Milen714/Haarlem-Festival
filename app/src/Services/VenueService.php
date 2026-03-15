@@ -3,20 +3,19 @@
 namespace App\Services;
 
 use App\Services\Interfaces\IVenueService;
+use App\Services\Interfaces\IMediaService;
+use App\Repositories\VenueRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Models\Venue;
 
 class VenueService implements IVenueService
 {
     private IVenueRepository $venueRepository;
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
 
-    public function __construct(
-        IVenueRepository $venueRepository,
-        MediaService $mediaService
-    ) {
-        $this->venueRepository = $venueRepository;
-        $this->mediaService = $mediaService;
+    public function __construct() {
+        $this->venueRepository = new VenueRepository();
+        $this->mediaService = new MediaService();
     }
 
     public function getVenuesByEventId(int $eventId): array
@@ -38,7 +37,7 @@ class VenueService implements IVenueService
     {
         $this->validateVenueData($postData);
         
-        $venue = $this->buildVenueFromPostData($postData);
+        $venue = Venue::createFromPostData($postData);
        
         $venue = $this->handleImageUpload($venue, $files);
         
@@ -61,7 +60,7 @@ class VenueService implements IVenueService
      
         $this->validateVenueData($postData);
         
-        $venue = $this->updateVenueFromPostData($venue, $postData);
+        $venue->applyPostData($postData);
        
         $venue = $this->handleImageUpload($venue, $files);
         
@@ -114,37 +113,6 @@ class VenueService implements IVenueService
         if (!empty($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
             throw new \Exception('Invalid email address');
         }
-    }
-
-    private function buildVenueFromPostData(array $data): Venue
-    {
-        $venue = new Venue();
-        $venue->name = trim($data['name']);
-        $venue->street_address = trim($data['street_address']);
-        $venue->city = trim($data['city'] ?? 'Haarlem');
-        $venue->postal_code = !empty($data['postal_code']) ? trim($data['postal_code']) : null;
-        $venue->country = !empty($data['country']) ? trim($data['country']) : 'NL';
-        $venue->capacity = isset($data['capacity']) && $data['capacity'] !== '' ? (int)$data['capacity'] : null;
-        $venue->phone = !empty($data['phone']) ? trim($data['phone']) : null;
-        $venue->email = !empty($data['email']) ? trim($data['email']) : null;
-        $venue->description_html = !empty($data['description_html']) ? trim($data['description_html']) : null;
-        
-        return $venue;
-    }
-
-    private function updateVenueFromPostData(Venue $venue, array $data): Venue
-    {
-        $venue->name = trim($data['name']);
-        $venue->street_address = trim($data['street_address']);
-        $venue->city = trim($data['city'] ?? 'Haarlem');
-        $venue->postal_code = !empty($data['postal_code']) ? trim($data['postal_code']) : null;
-        $venue->country = !empty($data['country']) ? trim($data['country']) : 'NL';
-        $venue->capacity = isset($data['capacity']) && $data['capacity'] !== '' ? (int)$data['capacity'] : null;
-        $venue->phone = !empty($data['phone']) ? trim($data['phone']) : null;
-        $venue->email = !empty($data['email']) ? trim($data['email']) : null;
-        $venue->description_html = !empty($data['description_html']) ? trim($data['description_html']) : null;
-        
-        return $venue;
     }
 
     private function handleImageUpload(Venue $venue, array $files): Venue

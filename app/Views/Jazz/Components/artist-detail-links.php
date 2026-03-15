@@ -2,11 +2,11 @@
 /** @var \App\Models\MusicEvent\Artist $artist */
 ?>
 
-<section>
-    <h2 class="text-2xl font-bold mb-4" style="font-family: 'Cormorant Garamond', serif;">
+<section aria-labelledby="available-heading">
+    <h2 id="available-heading" class="text-2xl font-bold mb-4" style="font-family: 'Cormorant Garamond', serif;">
         Available on
     </h2>
-    <div class="flex flex-wrap gap-4">
+    <nav aria-label="Streaming and social links" class="flex flex-wrap gap-4">
 
         <?php if (!empty($artist->spotify_url)): ?>
         <a href="<?= htmlspecialchars($artist->spotify_url) ?>"
@@ -41,5 +41,5 @@
         </a>
         <?php endif; ?>
 
-    </div>
+    </nav>
 </section>

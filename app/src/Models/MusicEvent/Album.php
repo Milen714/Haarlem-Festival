@@ -23,6 +23,12 @@ class Album
         $this->release_year = $data['release_year'] ?? null;
         $this->description = $data['description'] ?? null;
         $this->spotify_url = $data['spotify_url'] ?? null;
+        if (isset($data['media_id'])) {
+            $this->cover_image = new Media();
+            $this->cover_image->media_id = (int)$data['media_id'];
+            $this->cover_image->file_path = $data['file_path'] ?? null;
+            $this->cover_image->alt_text = $data['alt_text'] ?? null;
+        }
     }
 
         

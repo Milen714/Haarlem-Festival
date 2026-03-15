@@ -71,12 +71,7 @@ $totalPages = count($pages);
             
         </div>
         <?php else: ?>
-            <div class="text-center py-16">
-                <div class="inline-block jazz_event_border_lavender rounded-2xl p-12 bg-white">
-                    <div class="text-6xl mb-4">🎺</div>
-                    <p class="text-gray-600 text-lg">No artists available at this time.</p>
-                </div>
-            </div>
+            <p class="text-center py-16 text-gray-600 text-lg">No artists available at this time.</p>
         <?php endif; ?>
     </div>
 </section>

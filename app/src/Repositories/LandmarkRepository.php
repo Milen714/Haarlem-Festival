@@ -4,9 +4,10 @@ namespace App\Repositories;
 
 use App\Models\Landmark;
 use App\Framework\Repository;
+use App\Repositories\Interfaces\ILandmarkRepository;
 use PDO;
 
-class LandmarkRepository extends Repository 
+class LandmarkRepository extends Repository implements ILandmarkRepository
 {
     public function __construct() {
         $this->pdo = $this->connect();
@@ -15,7 +16,14 @@ class LandmarkRepository extends Repository
     /** @return Landmark[] */
     public function getAll(): array
     {
-        $sql = "SELECT * FROM LANDMARK ORDER BY display_order ASC";
+        $sql = "SELECT l.*,
+                ec.event_id as event_category_id,
+                ec.title as event_category_title,
+                ec.type as event_category_type,
+                ec.slug as event_category_slug
+            FROM LANDMARK l
+            LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
+            ORDER BY l.display_order ASC";
         
         $stmt = $this->pdo->query($sql); 
         
@@ -30,7 +38,7 @@ class LandmarkRepository extends Repository
     }
 
 
-public function addMediaToGallery(int $galleryId, int $mediaId): bool
+/*public function addMediaToGallery(int $galleryId, int $mediaId): bool
 {
     $sql = "INSERT INTO GALLERY_MEDIA (gallery_id, media_id) VALUES (:gallery_id, :media_id)";
     $stmt = $this->pdo->prepare($sql);
@@ -38,11 +46,10 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
         'gallery_id' => $galleryId,
         'media_id' => $mediaId
     ]);
-}
+}*/
 
     public function getBySlug(string $slug): ?Landmark
     {
-        // Esta consulta sí tiene los JOINs, pero solo se ejecuta cuando tú lo pidas
         $sql = "SELECT landmark.*, 
                        media.media_id, media.file_path, media.alt_text, 
                        gm.display_order
@@ -113,7 +120,6 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
         $landmark = new Landmark();
         $landmark->fromPDOData($rows[0]);
 
-        // Construir la Galería correctamente
         if (!empty($rows[0]['gallery_id'])) {
             $gallery = new \App\Models\Gallery();
             $gallery->gallery_id = $rows[0]['gallery_id'];
@@ -127,7 +133,6 @@ public function addMediaToGallery(int $galleryId, int $mediaId): bool
                         'alt_text'  => $row['alt_text'] ?? ''
                     ]);
                     
-                    // Envolvemos el Media en un GalleryMedia
                     $galleryMedia = new \App\Models\GalleryMedia();
                     $galleryMedia->media = $media;
                     $galleryMedia->order = $row['display_order'] ?? 0;
