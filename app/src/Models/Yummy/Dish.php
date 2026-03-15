@@ -13,10 +13,10 @@ class Dish
     public ?string $name = null;
     public ?string $description_html = null; 
     public ?Media $image_id = null;
-    public ?int $is_featured = null;
+    public ?bool $is_featured = null;
     public ?int $display_order = null;
-    public ?float $is_vegetarian = null;
-    public ?int $is_vegan = null;
+    public ?bool $is_vegetarian = null;
+    public ?bool $is_vegan = null;
     public ?Allergens $allergens = null;
     public ?\DateTime $deleted_at = null;
 
@@ -29,16 +29,16 @@ class Dish
         $this->name = $data['name'] ?? $data['dish_name'] ?? null;
         $this->description_html = $data['description_html'] ?? $data['dish_description_html'] ?? null;
         $this->is_featured = isset($data['is_featured']) || isset($data['dish_is_featured']) 
-            ? (int)($data['is_featured'] ?? $data['dish_is_featured']) 
+            ? (bool)($data['is_featured'] ?? $data['dish_is_featured']) 
             : null;
         $this->display_order = isset($data['display_order']) || isset($data['dish_display_order']) 
         ? (int)($data['display_order'] ?? $data['dish_display_order']) 
         : null;
         $this->is_vegetarian = isset($data['is_vegetarian']) || isset($data['dish_is_vegetarian']) 
-            ? (int)($data['is_vegetarian'] ?? $data['dish_is_vegetarian']) 
+            ? (bool)($data['is_vegetarian'] ?? $data['dish_is_vegetarian']) 
             : null;
         $this->is_vegan = isset($data['is_vegan']) || isset($data['restaurant_review_count']) 
-            ? (int)($data['review_count'] ?? $data['restaurant_review_count']) 
+            ? (bool)($data['review_count'] ?? $data['restaurant_review_count']) 
             : null;
         $this->deleted_at = isset($data['deleted_at']) ? new \DateTime($data['deleted_at']) : null;
 

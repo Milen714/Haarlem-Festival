@@ -8,9 +8,12 @@ use Dom\Text;
 class Session
 {
     public ?int $session_id = null;
-    public ?Restaurant $restaurant = null;
-    public DateTime $start_time = null;
-    public DateTime $end_time = null; 
+    public ?int $restaurantId = null;
+    public ?string $session_type_name = null;
+    public ?string $name = null;
+    public ?string $icon_url = null;
+    public DateTime $start_time;
+    public DateTime $end_time; 
     public ?int $session_number = null;
 
     public function __construct() {}
@@ -18,7 +21,10 @@ class Session
     public function fromPDOData(array $data): void
     {
         $this->session_id = isset($data['session_id']) ? (int)$data['session_id'] : null;
-        $this->restaurant = isset($data['restaurant_id']) ? (int)$data['session_restaurant_id'] : null;
+        $this->restaurantId = isset($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
+        $this->session_type_name = $data['session_type_name'] ?? null;
+        $this->name = $data['session_type_name'] ?? null;
+        $this->icon_url = $data['session_type_icon'] ?? null;
         $this->start_time = isset($data['start_time']) || isset($data['session_start_time']) 
             ? new \DateTime($data['start_time'] ?? $data['session_start_time']) 
             : null;
