@@ -8,17 +8,16 @@
   </div>
 
   <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-    <figure class="bg-white/10 p-2 rounded shadow-lg overflow-hidden group">
-      <img src="dish1.jpg" alt="Pinguin dish" class="w-full h-64 object-cover">
-      <figcaption class="p-3 text-white font-serif italic text-lg text-center">Pinguin</figcaption>
-    </figure>
-    <figure class="bg-white/10 p-2 rounded shadow-lg overflow-hidden group">
-      <img src="dish2.jpg" alt="Langoustine dish" class="w-full h-64 object-cover">
-      <figcaption class="p-3 text-white font-serif italic text-lg text-center">Langoustine</figcaption>
-    </figure>
-    <figure class="bg-white/10 p-2 rounded shadow-lg overflow-hidden group">
-      <img src="dish3.jpg" alt="Wagyu A5 dish" class="w-full h-64 object-cover">
-      <figcaption class="p-3 text-white font-serif italic text-lg text-center">Wagyu A5 Japanese Beef</figcaption>
-    </figure>
+      <?php foreach ($restaurant->dishes as $dish): ?>
+        <?php if ($dish->is_featured): ?>
+          <figure class="bg-white/10 p-2 rounded shadow-lg overflow-hidden group">
+              <?php if ($dish->image_id): ?>
+                <img src="<?= htmlspecialchars($dish->image_id->file_path) ?>" 
+                alt="<?= htmlspecialchars($dish->image_id->alt_text) ?>" class="w-full h-64 object-cover">
+              <?php endif; ?>
+              <figcaption class="p-3 text-white font-serif italic text-lg text-center"><?= htmlspecialchars($dish->name) ?></figcaption>
+          </figure>
+        <?php endif; ?>
+      <?php endforeach; ?>
   </div>
 </section>
