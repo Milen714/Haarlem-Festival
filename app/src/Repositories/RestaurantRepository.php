@@ -234,6 +234,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
             m.alt_text AS restaurant_image_alt,
+            gm.display_order,
             v.venue_id,
             v.name AS venue_name,
             v.street_address AS venue_street_address,
@@ -247,9 +248,13 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
 
             LEFT JOIN VENUE v 
                 ON r.venue_id = v.venue_id
-
+            LEFT JOIN GALLERY_MEDIA gm
+                ON r.gallery_id = gm.gallery_id
+            LEFT JOIN MEDIA m
+                ON gm.media_id = m.media_id
             LEFT JOIN RESTAURANT_CUISINE rc
                 ON r.restaurant_id = rc.restaurant_id
+            
 
             LEFT JOIN CUISINE_TYPE c
                 ON rc.cuisine_id = c.cuisine_id
@@ -281,16 +286,16 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                 }
 
                 //adds gallery
-                // if ($row['gallery_media_id']) {
-                //      $media = new Media();
-                //     $media->fromPDOData([
-                //         'media_id' => $row['gallery_media_id'],
-                //         'file_path' => $row['gallery_image_path'],
-                //         'alt_text' => $row['gallery_image_alt'],
-                //     ]);
+                if ($row['gallery_media_id']) {
+                     $media = new Media();
+                    $media->fromPDOData([
+                        'media_id' => $row['gallery_media_id'],
+                        'file_path' => $row['gallery_image_path'],
+                        'alt_text' => $row['gallery_image_alt'],
+                    ]);
 
-                //     $galleryItems[$row['gallery_media_id']] = $media;
-                // }
+                    $galleryItems[$row['gallery_media_id']] = $media;
+                }
 
                 if($restaurant){
                     $restaurant->cuisines = array_values($restaurant->cuisines);
@@ -664,7 +669,10 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     {
         $pdo =$this->connect();
         $sql= "
-            SELECT * FROM DISH
+            SELECT d.*, m.media_id,
+            m.file_path,
+            m.alt_text FROM DISH d
+            JOIN MEDIA m ON m.image_id = media_id
             WHERE deleted_at IS NULL
             ORDER BY display_order
         ";
@@ -684,7 +692,10 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     {
        $pdo =$this->connect();
         $sql= "
-            SELECT * FROM DISH
+            SELECT d.*,
+            m.file_path,
+            m.alt_text FROM DISH d
+            JOIN MEDIA m ON m.image_id = media_id
             WHERE restaurant_id = :restaurant_id
             AND deleted_at IS NULL
             ORDER BY display_order
@@ -707,7 +718,9 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     {
         $pdo = $this->connect();
         $sql = "
-            SELECT * FROM DISH
+            SELECT d.*, m.file_path,
+            m.alt_text FROM DISH d
+            JOIN MEDIA m ON m.image_id = media_id
             WHERE dish_id = :dish_id
             AND deleted_at IS NULL
             LIMIT 1
