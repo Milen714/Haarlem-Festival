@@ -120,6 +120,30 @@ class HistoryController extends BaseController
         }
     }
 
+    private function getTicketPrices() {
+        // Aquí iría la lógica para obtener los precios reales de la base de datos
+        // Por ejemplo:
+        // return $this->ticketService->getHistoryTourPrices();
+
+        // Por ahora, devolvemos precios simulados
+        return [
+            'normal' => 17.50,
+            'family' => 60.00
+        ];
+    }
+
+    private function getTicketOptions() {
+        // Aquí iría la lógica para obtener las opciones de tickets disponibles desde la base de datos
+        // Por ejemplo:
+        // return $this->ticketService->getHistoryTourTicketOptions();
+
+        // Por ahora, devolvemos opciones simuladas
+        return [
+            ['type' => 'Normal', 'price' => 17.50],
+            ['type' => 'Family', 'price' => 60.00]
+        ];
+    }
+
 
     const HISTORY_DETAIL_SLUG = 'detail'; 
 
@@ -179,7 +203,7 @@ class HistoryController extends BaseController
         }
 
         // 2. Limpiar y validar los datos (Seguridad Básica - Lecture 2)
-        $fecha = htmlspecialchars($data['fecha'] ?? '');
+        $date = htmlspecialchars($data['date'] ?? '');
         $language = htmlspecialchars($data['language'] ?? '');
         $qtyNormal = filter_var($data['qtyNormal'] ?? 0, FILTER_VALIDATE_INT);
         $qtyFamily = filter_var($data['qtyFamily'] ?? 0, FILTER_VALIDATE_INT);
@@ -194,7 +218,7 @@ class HistoryController extends BaseController
         // ¡Nunca confiamos en los precios que vienen de JavaScript porque pueden ser hackeados!
         // --- RESPUESTA A TU PREGUNTA 1: Calcular en un método aparte ---
         // Llamamos a nuestro nuevo método privado pasándole las cantidades
-        $totalCalculado = $this->calculateRealTotal($qtyNormal, $qtyFamily);
+        $total = $this->calculateRealTotal($qtyNormal, $qtyFamily);
 
         // 4. Crear el "Carrito" en la sesión si aún no existe (Lecture Sessions)
         // --- RESPUESTA A TU PREGUNTA 2: Usar el modelo OrderItem ---
@@ -209,11 +233,11 @@ class HistoryController extends BaseController
         // Rellenamos el modelo con los datos
         // (Ajusta los nombres de las propiedades según como estén en tu clase OrderItem)
         $cartItem->eventId = 'HistoryTour'; // o el ID numérico de la BD
-        $cartItem->date = $fecha;
+        $cartItem->date = $date;
         $cartItem->language = $language;
         $cartItem->qtyNormal = $qtyNormal;
         $cartItem->qtyFamily = $qtyFamily;
-        $cartItem->itemTotal = $totalCalculado;
+        $cartItem->itemTotal = $total;
 
         // Guardamos EL OBJETO entero en la sesión del carrito
         $_SESSION['cart'][] = $cartItem;

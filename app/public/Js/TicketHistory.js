@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Empaquetar todo para el Backend
         let backendData = {
-            fecha: selectedDate,
+            date: selectedDate,
             language: selectedLanguage,
             qtyNormal: qtyNormal,
             qtyFamily: qtyFamily
