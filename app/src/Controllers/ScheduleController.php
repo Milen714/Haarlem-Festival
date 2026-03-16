@@ -9,17 +9,20 @@ use App\Services\ArtistService;
 use App\Services\RestaurantService;
 use App\Services\LandmarkService;
 use App\Services\MediaService;
+use App\Services\TicketService;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\VenueRepository;
 use App\Repositories\ArtistRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\MediaRepository;
+use App\Repositories\TicketRepository;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class ScheduleController extends BaseController
 {
     private ScheduleService $scheduleService;
+    private TicketService $ticketService;
 
     public function __construct()
     {
@@ -37,6 +40,8 @@ class ScheduleController extends BaseController
             $restaurantService,
             $landmarkService
         );
+
+        $this->ticketService = new TicketService(new TicketRepository());
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -90,6 +95,7 @@ class ScheduleController extends BaseController
                 'artists'        => $this->scheduleService->getAllArtists(),
                 'restaurants'    => $this->scheduleService->getAllRestaurants(),
                 'landmarks'      => $this->scheduleService->getAllLandmarks(),
+                'ticketTypes'    => [],
             ]);
         } catch (\Exception $e) {
             error_log("Schedule create form error: " . $e->getMessage());
@@ -139,6 +145,7 @@ class ScheduleController extends BaseController
                 'artists'        => $this->scheduleService->getAllArtists(),
                 'restaurants'    => $this->scheduleService->getAllRestaurants(),
                 'landmarks'      => $this->scheduleService->getAllLandmarks(),
+                'ticketTypes'    => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
         } catch (\Exception $e) {
             error_log("Schedule edit error: " . $e->getMessage());

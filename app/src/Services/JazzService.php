@@ -46,14 +46,85 @@ class JazzService implements JazzServiceInterface
     {
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
+        $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
+
+        $performancesByDate = [];
+        foreach ($allSchedules as $schedule) {
+            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
+            $performancesByDate[$dateKey][] = $schedule;
+        }
+
+        ksort($performancesByDate);
+
+        $venues = $this->venueService->getVenuesByEventId($jazzEventId);
+        $venuesFromEventQueryCount = count($venues);
+        if (empty($venues)) {
+            $venueIds = [];
+            $scheduleVenueMap = [];
+            foreach ($allSchedules as $schedule) {
+                $scheduleVenueId = (int) ($schedule->venue_id ?? 0);
+                if ($scheduleVenueId <= 0 && isset($schedule->venue?->venue_id)) {
+                    $scheduleVenueId = (int) $schedule->venue->venue_id;
+                }
+
+                if ($scheduleVenueId > 0) {
+                    $venueIds[$scheduleVenueId] = true;
+                }
+
+                if (isset($schedule->venue) && !empty($schedule->venue->name)) {
+                    $key = $scheduleVenueId > 0
+                        ? (string) $scheduleVenueId
+                        : 'name:' . strtolower(trim((string) $schedule->venue->name));
+                    $scheduleVenueMap[$key] = $schedule->venue;
+                }
+            }
+
+            foreach (array_keys($venueIds) as $venueId) {
+                $venue = $this->venueService->getVenueById((int) $venueId);
+                if ($venue !== null) {
+                    $scheduleVenueMap[(string) $venueId] = $venue;
+                }
+            }
+
+            $venues = array_values($scheduleVenueMap);
+            $venuesFromSchedulesCount = count($venues);
+
+            usort($venues, static function ($a, $b) {
+                $aName = strtolower(trim((string) ($a->name ?? '')));
+                $bName = strtolower(trim((string) ($b->name ?? '')));
+                return $aName <=> $bName;
+            });
+
+            if (empty($venues)) {
+                $allVenues = $this->venueService->getAllVenues();
+                $venues = array_values(array_filter(
+                    $allVenues,
+                    static fn($v) => (int) ($v->event_category?->event_id ?? 0) === $jazzEventId
+                ));
+
+                // Last-resort fallback to keep homepage populated while mappings are repaired.
+                if (empty($venues)) {
+                    $venues = $allVenues;
+                }
+            }
+
+            error_log(sprintf(
+                'Jazz venues fallback debug: event_id=%d, schedules=%d, event_query=%d, from_schedules=%d, final=%d',
+                $jazzEventId,
+                count($allSchedules),
+                $venuesFromEventQueryCount,
+                $venuesFromSchedulesCount,
+                count($venues)
+            ));
+        }
 
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
             'pageData' => $jazzPageData,
             'sections' => $jazzPageData->content_sections ?? [],
             'artists' => $this->artistService->getArtistsByEventId($jazzEventId),
-            'venues' => $this->venueService->getVenuesByEventId($jazzEventId),
-            'scheduleByDate' => [],
+            'venues' => $venues,
+            'scheduleByDate' => $performancesByDate,
         ];
     }
 
