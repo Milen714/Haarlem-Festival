@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Schedule;
 use App\Services\Interfaces\IScheduleService;
 use App\Repositories\ScheduleRepository;
+use App\Repositories\TicketRepository;
 use App\Services\VenueService;
 use App\Services\ArtistService;
 use App\Services\RestaurantService;
@@ -12,6 +13,7 @@ use App\Services\LandmarkService;
 class ScheduleService implements IScheduleService
 {
     private ScheduleRepository $scheduleRepository;
+    private TicketRepository $ticketRepository;
     private VenueService $venueService;
     private ArtistService $artistService;
     private RestaurantService $restaurantService;
@@ -19,6 +21,7 @@ class ScheduleService implements IScheduleService
 
     public function __construct() {
         $this->scheduleRepository = new ScheduleRepository();
+        $this->ticketRepository   = new TicketRepository();
         $this->venueService       = new VenueService();
         $this->artistService      = new ArtistService();
         $this->restaurantService  = new RestaurantService();
@@ -105,6 +108,17 @@ class ScheduleService implements IScheduleService
         return $this->landmarkService->getAllLandmarks();
     }
 
+    private function isScheduleSoldOut(?int $scheduleId): bool
+    {
+        if ($scheduleId === null) return false;
+        $ticketTypes = $this->ticketRepository->getTicketTypesByScheduleId($scheduleId);
+        return !empty($ticketTypes) && array_reduce(
+            $ticketTypes,
+            fn($carry, $tt) => $carry && $tt->is_sold_out,
+            true
+        );
+    }
+
     private function validateScheduleData(array $data): void
     {
         if (empty($data['event_id'])) {
@@ -172,6 +186,7 @@ class ScheduleService implements IScheduleService
                     : '',
                 'venue_capacity' => $s->venue?->capacity,
                 'total_capacity' => $s->total_capacity,
+                'is_sold_out'    => $this->isScheduleSoldOut($s->schedule_id),
             ];
         }
 
