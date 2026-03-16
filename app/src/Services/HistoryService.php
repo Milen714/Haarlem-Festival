@@ -18,14 +18,33 @@ class HistoryService implements IHistoryService
 
     public function getAvailableTourOptions(): TicketHistoryViewModel{
 
-        $ticketOptions = $this->historyRepository->getAvailableTourOptions();
+        $options = $this->historyRepository->getAvailableTourOptions();
+
+
         $ticketPrices = $this->historyRepository->getTourTicketPrices();
         
         $ticketHistoryViewModel = new TicketHistoryViewModel();
 
-        $ticketHistoryViewModel->availableDates = $ticketOptions['dates'] ?? [];
-        $ticketHistoryViewModel->availableTimes = $ticketOptions['times'] ?? [];
-        $ticketHistoryViewModel->availableLanguages = $ticketOptions['languages'] ?? [];
+        $dates = [];
+        $times = [];
+        $languages = [];
+
+        foreach ($options as $row) {
+            if (isset($row['date']) && !in_array($row['date'], $dates)) {
+                $dates[] = $row['date'];
+            }
+            if (isset($row['time']) && !in_array($row['time'], $times)) {
+                $times[] = $row['time'];
+            }
+            if (isset($row['language']) && !in_array($row['language'], $languages)) {
+                $languages[] = $row['language'];
+            }
+        }
+
+        $ticketHistoryViewModel->availableDates = $dates;
+        $ticketHistoryViewModel->availableTimes = $times;
+        $ticketHistoryViewModel->availableLanguages = $languages;
+        
         $ticketHistoryViewModel->normalPrice = $ticketPrices['normal'] ?? 0.00;
         $ticketHistoryViewModel->familyPrice = $ticketPrices['family'] ?? 0.00;
 

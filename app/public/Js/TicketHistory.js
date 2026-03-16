@@ -4,44 +4,94 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputNormal = document.getElementById('qty-normal');
     const inputFamily = document.getElementById('qty-family');
     const spanTotal = document.getElementById('summary-total');
+    
+    // Nuevos elementos para el resumen visual
+    const summaryDetails = document.getElementById('summary-details');
+    const summaryQtyText = document.getElementById('summary-qty-text');
+    const summaryDateText = document.getElementById('summary-date-text');
+    const summaryTimeText = document.getElementById('summary-time-text');
+    const summaryLangText = document.getElementById('summary-lang-text');
 
-    // 1. Función para calcular el precio total visualmente
-    function updateTotalPrice() {
+    // 1. Función Maestra para actualizar todo el panel derecho
+    function updateOrderOverview() {
+        // --- A. Calcular Cantidades y Precio ---
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;
-
+        
         let priceNormal = parseFloat(inputNormal.getAttribute('data-precio'));
         let priceFamily = parseFloat(inputFamily.getAttribute('data-precio'));
-
+        
         let total = (qtyNormal * priceNormal) + (qtyFamily * priceFamily);
         spanTotal.innerText = total.toFixed(2);
+
+        // Actualizar el texto de cantidad de tickets
+        let qtyTextParts = [];
+        if (qtyNormal > 0) qtyTextParts.push(`${qtyNormal}x Normal`);
+        if (qtyFamily > 0) qtyTextParts.push(`${qtyFamily}x Family`);
+        summaryQtyText.innerText = qtyTextParts.length > 0 ? qtyTextParts.join(', ') : '0';
+
+        // --- B. Obtener selecciones de los Radio Buttons ---
+        let selectedDate = document.querySelector('input[name="date"]:checked');
+        let selectedLang = document.querySelector('input[name="language"]:checked');
+        let selectedTime = document.querySelector('input[name="time"]:checked');
+
+        // Para mostrar la fecha bonita, leemos el texto del <div> hermano
+        if (selectedDate) summaryDateText.innerText = selectedDate.nextElementSibling.innerText;
+        
+        // Para el idioma, igual leemos el texto visible
+        if (selectedLang) summaryLangText.innerText = selectedLang.nextElementSibling.innerText;
+        
+        // Para la hora, igual
+        if (selectedTime) summaryTimeText.innerText = selectedTime.nextElementSibling.innerText;
+
+        // --- C. Mostrar u ocultar el panel de detalles ---
+        // Si hay al menos un ticket o alguna selección, mostramos el panel
+        if (qtyNormal > 0 || qtyFamily > 0 || selectedDate || selectedLang || selectedTime) {
+            summaryDetails.classList.remove('hidden');
+        } else {
+            summaryDetails.classList.add('hidden');
+        }
     }
 
-    // Escuchar si el usuario cambia la cantidad de tickets
-    inputNormal.addEventListener('input', updateTotalPrice);
-    inputFamily.addEventListener('input', updateTotalPrice);
+    // 2. Asignar Event Listeners (Escuchadores)
+    // Escuchar inputs numéricos
+    inputNormal.addEventListener('input', updateOrderOverview);
+    inputFamily.addEventListener('input', updateOrderOverview);
 
-    // 2. Enviar por AJAX (Fetch) cuando se hace submit en el form
+    // Escuchar los radio buttons (usamos change en el form para capturar todos los radios)
+    form.addEventListener('change', (e) => {
+        if(e.target.type === 'radio') {
+            updateOrderOverview();
+        }
+    });
+
+    // 3. Enviar por AJAX (Fetch) cuando se hace submit en el form
     form.addEventListener('submit', (e) => {
-        e.preventDefault(); // Evita que la página parpadee o se recargue
+        e.preventDefault(); 
 
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;
 
-        // Validar que hayan comprado al menos 1 ticket
+        // Validaciones antes de enviar
         if (qtyNormal === 0 && qtyFamily === 0) {
             alert("Please select at least one ticket.");
             return;
         }
 
-        // Buscar qué radio buttons seleccionó el usuario usando CSS selectors
-        let selectedDate = document.querySelector('input[name="date"]:checked').value;
-        let selectedLanguage = document.querySelector('input[name="language"]:checked').value;
+        let selectedDate = document.querySelector('input[name="date"]:checked');
+        let selectedLanguage = document.querySelector('input[name="language"]:checked');
+        let selectedTime = document.querySelector('input[name="time"]:checked');
 
-        // Empaquetar todo para el Backend
+        if (!selectedDate || !selectedLanguage || !selectedTime) {
+            alert("Please select a date, language, and time.");
+            return;
+        }
+
+        // Empaquetar todo para el Backend (Mandamos los 'value' reales, no los textos bonitos)
         let backendData = {
-            date: selectedDate,
-            language: selectedLanguage,
+            date: selectedDate.value,
+            language: selectedLanguage.value,
+            time: selectedTime.value,
             qtyNormal: qtyNormal,
             qtyFamily: qtyFamily
         };

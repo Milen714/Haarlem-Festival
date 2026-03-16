@@ -22,18 +22,18 @@
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
                             <div class="font-semibold text-ink-900">Normal Ticket</div>
-                            <div class="text-sm text-ink-700">€<?= number_format($normalPrice, 2) ?> per person</div>
+                            <div class="text-sm text-ink-700">€<?= number_format($ticketOptions->normalPrice, 2) ?> per person</div>
                         </div>
-                        <input type="number" id="qty-normal" name="qtyNormal" min="0" value="0" data-precio="<?= $normalPrice ?>"
+                        <input type="number" id="qty-normal" name="qtyNormal" min="0" value="0" data-precio="<?= $ticketOptions->normalPrice ?>"
                                class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
                     </div>
 
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
                             <div class="font-semibold text-ink-900">Family Ticket</div>
-                            <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($familyPrice, 2) ?> total</div>
+                            <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($ticketOptions->familyPrice, 2) ?> total</div>
                         </div>
-                        <input type="number" id="qty-family" name="qtyFamily" min="0" value="0" data-precio="<?= $familyPrice ?>"
+                        <input type="number" id="qty-family" name="qtyFamily" min="0" value="0" data-precio="<?= $ticketOptions->familyPrice ?>"
                                class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
                     </div>
                 </div>
@@ -42,7 +42,7 @@
             <div class="mb-8">
                 <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Date</h3>
                 <div class="flex flex-wrap gap-3">
-                    <?php foreach ($availableDates as $date): ?>
+                    <?php foreach ($ticketOptions->availableDates as $date): ?>
                         <label class="cursor-pointer">
                             <input type="radio" name="date" value="<?= htmlspecialchars($date) ?>" class="peer sr-only" required>
                             <div class="tour-radio-btn"><?= date('D, d M', strtotime($date)) ?></div>
@@ -51,24 +51,28 @@
                 </div>
             </div>
 
-            <div>
+            <div class="mb-8">
                 <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Language</h3>
-                <?php foreach ($availableLanguages as $language): ?>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="language" value="<?= htmlspecialchars($language) ?>" class="peer sr-only" required>
-                        <div class="tour-radio-btn"><?= htmlspecialchars($language) ?></div>
-                    </label>    
-                <?php endforeach; ?>
+                <div class="flex flex-wrap gap-3">
+                    <?php foreach ($ticketOptions->availableLanguages as $language): ?>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="language" value="<?= htmlspecialchars($language) ?>" class="peer sr-only" required>
+                            <div class="tour-radio-btn"><?= htmlspecialchars($language) ?></div>
+                        </label>    
+                    <?php endforeach; ?>
+                </div>
             </div>
 
-            <div>
+            <div class="mb-8">
                 <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Time</h3>
-                <?php foreach ($availableTimes as $time): ?>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="time" value="<?= htmlspecialchars($time) ?>" class="peer sr-only" required>
-                        <div class="tour-radio-btn"><?= date('H:i', strtotime($time)) ?></div>  
-                    </label>
-                <?php endforeach; ?>
+                <div class="flex flex-wrap gap-3">
+                    <?php foreach ($ticketOptions->availableTimes as $time): ?>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="time" value="<?= htmlspecialchars($time) ?>" class="peer sr-only" required>
+                            <div class="tour-radio-btn"><?= date('H:i', strtotime($time)) ?></div>  
+                        </label>
+                    <?php endforeach; ?>
+                </div>
             </div>
 
         </div>
@@ -78,6 +82,27 @@
                 Order Overview
             </h2>
             
+            <div id="summary-details" class="space-y-3 mb-6 text-ink-900 hidden">
+                <div class="flex justify-between">
+                    <span class="font-semibold">Tickets:</span>
+                    <span id="summary-qty-text" class="text-right">0</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="font-semibold">Date:</span>
+                    <span id="summary-date-text" class="text-right">-</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="font-semibold">Time:</span>
+                    <span id="summary-time-text" class="text-right">-</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="font-semibold">Language:</span>
+                    <span id="summary-lang-text" class="text-right">-</span>
+                </div>
+            </div>
             <div class="border-t border-[#CAA359] pt-4 mb-6">
                 <div class="flex justify-between items-center">
                     <h3 class="text-lg font-bold text-ink-900">Total:</h3>
