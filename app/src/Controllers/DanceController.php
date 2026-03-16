@@ -4,64 +4,42 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Services\PageService;
 use App\Services\ArtistService;
-use App\Repositories\PageRepository;
-use App\Repositories\ArtistRepository;
-use App\Repositories\MediaRepository;
 use App\Services\MediaService;
 use App\Services\VenueService;
-use App\Repositories\VenueRepository;
-use App\Services\RestaurantService;
-use App\Services\LandmarkService;
 use App\Services\ScheduleService;
-use App\Repositories\ScheduleRepository;
-use App\Repositories\RestaurantRepository;
+use App\Services\Interfaces\IPageService;
+use App\Services\Interfaces\IArtistService;
+use App\Services\Interfaces\IVenueService;
+use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\IScheduleService;
 use App\ViewModels\Dance\LineupViewModel;
 
 class DanceController extends BaseController
 {
-    private PageService $pageService;
-    private ArtistService $artistService;
-    private VenueService $venueService;
-    private MediaService $mediaService;
-    private ScheduleService $scheduleService;
+    private IPageService $pageService;
+    private IArtistService $artistService;
+    private IVenueService $venueService;
+    private IMediaService $mediaService;
+    private IScheduleService $scheduleService;
     
     // Dance event ID constant
     private const DANCE_EVENT_ID = 4;
 
     public function __construct()
-    {   // Media Service
-        $mediaRepository = new MediaRepository();
-        $this->mediaService = new MediaService($mediaRepository);
-        
-        // Page Service
-        $pageRepository = new PageRepository();
-        $this->pageService = new PageService($pageRepository);
-        
-        // Artist Service
-        $artistRepository = new ArtistRepository();
-        $this->artistService = new ArtistService($artistRepository, $this->mediaService);
-        
-        // Venue Service
-        $venueRepository = new VenueRepository();
-        $this->venueService = new VenueService($venueRepository, $this->mediaService);
-
-        // Schedule Service
-        $scheduleRepository = new ScheduleRepository();
-        $restaurantService = new RestaurantService(new RestaurantRepository(), $this->mediaService);
-        $landmarkService = new LandmarkService();
-        $this->scheduleService = new ScheduleService(
-            $scheduleRepository,
-            $this->venueService,
-            $this->artistService,
-            $restaurantService,
-            $landmarkService
-        );
+    {
+        $this->mediaService = new MediaService();
+        $this->pageService = new PageService();
+        $this->artistService = new ArtistService();
+        $this->venueService = new VenueService();
+        $this->scheduleService = new ScheduleService();
     }
 
     public function index($vars = [])
     {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $slug = ltrim($uri, '/');
         try {
-            $pageData = $this->pageService->getPageBySlug('events-dance');
+            $pageData = $this->pageService->getPageBySlug($slug);
 
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
 
@@ -91,8 +69,10 @@ class DanceController extends BaseController
 
     public function lineUp()
     {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $slug = ltrim($uri, '/');
         try {
-            $pageData = $this->pageService->getPageBySlug('events-dance-lineup');
+            $pageData = $this->pageService->getPageBySlug($slug);
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
 
             $headLinerSection = array_filter($pageData->content_sections ?? [], function($section) {

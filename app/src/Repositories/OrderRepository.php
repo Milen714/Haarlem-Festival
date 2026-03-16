@@ -22,7 +22,10 @@ class OrderRepository extends Repository implements IOrderRepository
                 o.order_id,
                 o.user_id,
                 o.order_date,
-                o.total_amount,
+                o.subtotal,
+                o.total,
+                o.serviceFee,
+                o.reservationFees,
                 o.currency,
                 o.status,
                 o.stripe_payment_intent_id,
@@ -293,7 +296,10 @@ class OrderRepository extends Repository implements IOrderRepository
                 INSERT INTO `ORDER` (
                     user_id,
                     order_date,
-                    total_amount,
+                    subtotal,
+                    total,
+                    serviceFee,
+                    reservationFees,
                     currency,
                     status,
                     stripe_payment_intent_id,
@@ -303,7 +309,10 @@ class OrderRepository extends Repository implements IOrderRepository
                 ) VALUES (
                     :user_id,
                     :order_date,
-                    :total_amount,
+                    :subtotal,
+                    :total,
+                    :serviceFee,
+                    :reservationFees,
                     :currency,
                     :status,
                     :stripe_payment_intent_id,
@@ -316,8 +325,11 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $order->user?->id, PDO::PARAM_INT);
             $stmt->bindValue(':order_date', $order->order_date?->format('Y-m-d H:i:s'));
-            $stmt->bindValue(':total_amount', $order->total_amount);
-            $stmt->bindValue(':currency', 'EUR');
+            $stmt->bindValue(':subtotal', $order->subtotal ?? 0.0);
+            $stmt->bindValue(':total', $order->total ?? 0.0);
+            $stmt->bindValue(':serviceFee', $order->serviceFee ?? 0.0);
+            $stmt->bindValue(':reservationFees', $order->reservationFees ?? 0.0);
+            $stmt->bindValue(':currency', $order->currency ?: 'EUR');
             $stmt->bindValue(':status', $order->status->value);
             $stmt->bindValue(':stripe_payment_intent_id', $order->stripe_payment_intent_id);
             $stmt->bindValue(':stripe_customer_id', $order->stripe_customer_id);
@@ -412,6 +424,45 @@ class OrderRepository extends Repository implements IOrderRepository
             return $orders;
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching orders by user ID: " . $e->getMessage());
+        }
+    }
+    public function getOpenOrderByUserId(int $userId): ?Order{
+        try {
+            $pdo = $this->connect();
+
+            $query = $this->getBaseQuery() . "
+                WHERE o.user_id = :user_id AND o.status = 'Pending' OR o.status = 'Confirmed'
+                ORDER BY o.order_date DESC
+                LIMIT 1
+            ";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            //$stmt->bindValue(':status', OrderStatus::Pending->value);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($rows)) {
+                return null;
+            }
+
+            // Create order from first row (order data is same across all item rows)
+            $order = new Order();
+            $order->fromPDOData($rows[0]);
+
+            // Build array of OrderItems from all rows
+            $seenItems = [];
+            foreach ($rows as $row) {
+                if (!is_null($row['orderitem_id']) && !isset($seenItems[$row['orderitem_id']])) {
+                    $seenItems[$row['orderitem_id']] = true;
+                    $orderItem = new OrderItem();
+                    $orderItem = $orderItem->fromPdo($row);
+                    $order->orderItems[] = $orderItem;
+                }
+            }
+
+            return $order;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching open order by user ID: " . $e->getMessage());
         }
     }
 

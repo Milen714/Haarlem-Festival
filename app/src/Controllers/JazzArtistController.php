@@ -6,10 +6,11 @@ use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Services\JazzService;
+use App\Services\Interfaces\JazzServiceInterface;
 
 class JazzArtistController extends BaseController
 {
-    private JazzService $jazzService;
+    private JazzServiceInterface $jazzService;
 
     public function __construct()
     {

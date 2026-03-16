@@ -1,27 +1,29 @@
 <?php
 namespace App\Controllers;
 use App\Controllers\BaseController;
-use App\Models\Mailer;
 use App\Models\User;
 use App\Models\Enums\UserRole;
-use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Services\MailService;
 use App\Services\Interfaces\IAuthService;
 use App\Services\AuthService;
 use App\config\Secrets;
+use App\Services\Interfaces\IOrderService;
+use App\Services\Interfaces\IUserService;
+use App\Services\Interfaces\IMailService;
+use App\Services\OrderService;
 
 
 class AccountController extends BaseController {
-    private UserService $userService;
-    private UserRepository $userRepository;
-    private MailService $mailService;
+    private IUserService $userService;
+    private IMailService $mailService;
     private IAuthService $authService;
+    private IOrderService $orderService;
     public function __construct() {
-        $this->userRepository = new UserRepository();
-        $this->userService = new UserService($this->userRepository);
+        $this->userService = new UserService();
         $this->mailService = new MailService();
         $this->authService = new AuthService();
+        $this->orderService = new OrderService();
     }
     public function login($vars = [])
     {
@@ -32,31 +34,38 @@ class AccountController extends BaseController {
         $this->view('Account/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
     }
     public function loginPost($vars = [])
-    {
+    {   header('Content-Type: application/json; charset=utf-8');
         try {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $user = $this->userService->authenticateUser($email, $password);
+        $data = json_decode(file_get_contents('php://input'), true);
+            $user = $this->userService->authenticateUser($data['email'], $data['password']);
         if ($user) {
             $_SESSION['loggedInUser'] = $user;
-            if($user->role === UserRole::ADMIN) {
-                header("Location: /cms");
+            // If there's a session cart, persist it to the database and associate it with the user
+            if (!empty($_SESSION['session_cart'])) {
+                $orderId = $this->orderService->persistSessionCart($_SESSION['session_cart'], $user);
+                //$_SESSION['order_id'] = $orderId;
+                //unset($_SESSION['session_cart']);
             }else{
-                // Successful login
-            
-            header("Location: /");
-            exit();
-            
+                // If no session cart but user has an open order in the database, load it into the session
+                $this->orderService->hydrateSessionCartFormDbOnLogin($user);
             }
-            
+            // Successful login
+            //additionally check if user is admin and redirect to cms if so
+            if($user->role === UserRole::ADMIN) {
+                $this->jsonResponse(['success' => true, 'redirect' => '/cms'] ,200);
+            }else{
+                // Regular user login
+            $this->jsonResponse(['success' => true, 'redirect' => $data['redirect']] ,200);
+            }
         } else {
             // Failed login
-            throw new \Exception("Invalid email or password.");
+            $this->jsonResponse(['success' => false, 'message' => 'Login failed. Please sscheck your credentials and try again.',
+            'user' => ['email' => $data['email']]], 401);
         }
         } catch (\Exception $e) {
             //header("Location: /login/" . urlencode($e->getMessage()));
-            $this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            exit();
+            //$this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            //exit();
         }
     }
     public function logout($vars = [])
@@ -210,6 +219,48 @@ class AccountController extends BaseController {
         } catch (\Exception $e) {
             $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage(),
                         "email" => $email, "token" => $token]);
+        }
+    }
+    
+    public function settings($vars = []) {
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+        $loggedUser = $_SESSION['loggedInUser'];
+        $user = $this->userService->getUserById($loggedUser->id);
+
+        if ($user->role === UserRole::ADMIN) {
+            $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
+        } else {
+            $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+        }
+    }
+
+    public function update($vars = []) {
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+
+        try {
+            $loggedUser = $_SESSION['loggedInUser'];
+            $user = $this->userService->getUserById($loggedUser->id);
+
+            $user->fromPDOData($_POST);
+            $this->userService->updateUser($user);
+
+            $_SESSION['loggedInUser'] = $user;
+
+            if ($user->role === UserRole::ADMIN) {
+                header("Location: /cms/profile"); 
+            } else {
+                header("Location: /settings");
+            }
+            exit(); 
+
+        } catch (\Exception $e) {
+            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => $e->getMessage()]);
         }
     }
 }

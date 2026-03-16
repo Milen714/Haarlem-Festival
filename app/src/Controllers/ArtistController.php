@@ -7,21 +7,17 @@ use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Services\ArtistService;
-use App\Services\MediaService;
-use App\Repositories\ArtistRepository;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IArtistService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class ArtistController extends BaseController
 {
-    private ArtistService $artistService;
+    private IArtistService $artistService;
 
     public function __construct()
     {
-        $artistRepository = new ArtistRepository();
-        $mediaService = new MediaService(new MediaRepository());
-        $this->artistService = new ArtistService($artistRepository, $mediaService);
+        $this->artistService = new ArtistService();
     }
 
     #[RequireRole([UserRole::ADMIN])]

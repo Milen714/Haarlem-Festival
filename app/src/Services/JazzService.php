@@ -5,12 +5,6 @@ namespace App\Services;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
-use App\Repositories\ArtistRepository;
-use App\Repositories\MediaRepository;
-use App\Repositories\PageRepository;
-use App\Repositories\RestaurantRepository;
-use App\Repositories\ScheduleRepository;
-use App\Repositories\VenueRepository;
 use App\Services\Interfaces\JazzServiceInterface;
 
 class JazzService implements JazzServiceInterface
@@ -25,18 +19,10 @@ class JazzService implements JazzServiceInterface
 
     public function __construct()
     {
-        $mediaService = new MediaService(new MediaRepository());
-
-        $this->pageService = new PageService(new PageRepository());
-        $this->artistService = new ArtistService(new ArtistRepository(), $mediaService);
-        $this->venueService = new VenueService(new VenueRepository(), $mediaService);
-        $this->scheduleService = new ScheduleService(
-            new ScheduleRepository(),
-            $this->venueService,
-            $this->artistService,
-            new RestaurantService(new RestaurantRepository(), $mediaService),
-            new LandmarkService()
-        );
+        $this->pageService = new PageService();
+        $this->artistService = new ArtistService();
+        $this->venueService = new VenueService();
+        $this->scheduleService = new ScheduleService();
     }
 
     /**

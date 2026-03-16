@@ -6,7 +6,7 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
 ?>
 
-<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100  flex flex-col">
+<section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 w-full md:w-[35%] flex flex-col">
     <h3 class="font-bold text-lg border-b-2 border-[#1e4b6e] pb-2 mb-6 w-fit">Order Summary</h3>
 
     <dl class="space-y-4 text-xs font-medium text-gray-600 flex-grow">
@@ -37,5 +37,5 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
             class="text-2xl lg:text-3xl font-bold text-black">€<?= number_format((float)($viewModel?->total ?? 0.0), 2) ?></span>
     </div>
 
-    <a href="/checkout" class="home_dance_button mt-auto block text-center">Proceed to Checkout</a>
+    <a href="/payment-details" class="home_dance_button mt-auto block text-center">Agree & Continue</a>
 </section>

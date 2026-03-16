@@ -3,17 +3,15 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\PageService;
-use App\ViewModels\Magic\MagicLanding;
+use App\Services\Interfaces\IPageService;
 use App\ViewModels\Magic\MagicAccessibility;
-use App\Models\Enums\UserRole;
-use App\Middleware\RequireRole;
 class MagicController extends BaseController
 {
-    private PageService $pageService;
+    private IPageService $pageService;
 
     public function __construct()
     {
-        $this->pageService = new PageService(new \App\Repositories\PageRepository());
+        $this->pageService = new PageService();
     }
 
     public function index($vars = []): void
@@ -26,8 +24,8 @@ class MagicController extends BaseController
                 //return;
                 throw new \Exception("We are sorry, but the page you are looking for cannot be found. Please check the URL and try again.");
             }
-            $pageModel = new MagicLanding($pageData);
-            $this->View('Magic/Landing', ['pageModel' => $pageModel, 'title' => $pageData->title]);
+            $pageModel = new MagicAccessibility($pageData);
+            $this->View('Magic/MagicLandingRef', ['pageModel' => $pageModel, 'title' => $pageData->title]);
         } catch (\Exception $e) {
             $this->internalServerError("Error loading page: " . $e->getMessage());
         }

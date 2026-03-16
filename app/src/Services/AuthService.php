@@ -4,17 +4,15 @@ require_once __DIR__ . '/../../config/config.php';
 use App\Models\UserRole;
 use App\Models\User;
 use App\Services\UserService;
-use App\Repositories\UserRepository;
+use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\IAuthService;
 class AuthService implements IAuthService {
     private ?User $user = null;
-    private UserService $userService;
-    private UserRepository $userRepository;
+    private IUserService $userService;
 
     public function __construct()
-    {   $this->userRepository = new UserRepository();
-        $this->userService = new UserService($this->userRepository);
-        
+    {
+        $this->userService = new UserService();
     }
     public function getLoggedInUser(): ?User {
         if ($this->user === null && isset($_SESSION['loggedInUser'])) {

@@ -51,7 +51,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
-    $r->addRoute('GET', '/events-dance/lineup', ['App\Controllers\DanceController', 'lineUp']);
+    $r->addRoute('GET', '/events-dance-lineup', ['App\Controllers\DanceController', 'lineUp']);
     $r->addRoute('GET', '/events-dance/artist/{slug}', ['App\Controllers\DanceArtistController', 'artistDetail']);
 
     /* Yummy event page */
@@ -74,6 +74,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /* CMS Media Routes (AJAX) */
     $r->addRoute('POST', '/cms/media/upload-tinymce', ['App\Controllers\CMS\CmsMediaController', 'uploadTinyMCE']);
+
 
     /* CMS Artist Management*/
     $r->addRoute('GET', '/cms/artists', ['App\Controllers\ArtistController', 'index']);
@@ -118,7 +119,12 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
     $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
 
+    $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
+    $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
 
+    /* CMS Profile Management */
+    $r->addRoute('GET', '/cms/profile', ['App\Controllers\AccountController', 'settings']);
+    $r->addRoute('POST', '/cms/profile/update', ['App\Controllers\AccountController', 'update']);
 
     /* CMS Schedule Management */
     $r->addRoute('GET', '/cms/schedules', ['App\Controllers\ScheduleController', 'index']);
@@ -147,6 +153,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/return', ['App\Controllers\PaymentController', 'return']);
     $r->addRoute('POST', '/payment-status', ['App\Controllers\PaymentController', 'status']);
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
+    $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
 });
 

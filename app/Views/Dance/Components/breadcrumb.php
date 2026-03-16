@@ -13,7 +13,7 @@
                     <?= htmlspecialchars($crumb['label']) ?>
                 </a>
             <?php else: ?>
-                <span class="text-gray-300"><?= htmlspecialchars($crumb['label']) ?></span>
+                <span class="text-gray-300"><?= htmlspecialchars($crumb['label'] ?? '') ?></span>
             <?php endif; ?>
 
             <?php if ($index < count($items) - 1): ?>

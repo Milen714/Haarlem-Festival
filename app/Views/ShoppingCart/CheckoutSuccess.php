@@ -1,8 +1,12 @@
 <?php
 namespace App\Views\ShoppingCart;
+
+use function App\Views\ShoppingCart\Components\displaySteps;
+
 ?>
 
-<?php include __DIR__ . '/Components/CheckoutProgress.php'; ?>
+<?php include __DIR__ . '/Components/CheckoutProgress.php'; 
+    displaySteps(4); ?>
 
 
 

@@ -16,6 +16,7 @@ use App\Repositories\ArtistRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\TicketRepository;
+use App\Services\Interfaces\IScheduleService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 

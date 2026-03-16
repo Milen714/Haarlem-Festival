@@ -17,9 +17,19 @@ $dotstyles = [
     'bg-not-completed' => 'bg-[var(--payment-flow-gray-muted)] dark:bg-[var(--payment-flow-gray-muted)] text-gray-500 dark:text-gray-400',
 ];
 
-$dotStyleClass = isset($isCompleted) && $isCompleted ? $dotstyles['bg-completed'] : $dotstyles['bg-not-completed'];
+$isCurrentActive = isset($isActive) && $isActive;
 
-$lineStyleClass = isset($isCompleted) && $isCompleted ? 'bg-[var(--payment-flow-green)] ' : 'bg-[var(--payment-flow-gray-muted)]';
+if (isset($isCompleted) && $isCompleted) {
+    $dotStyleClass = $dotstyles['bg-completed'];
+} elseif ($isCurrentActive) {
+    $dotStyleClass = $dotstyles['bg-active'];
+} else {
+    $dotStyleClass = $dotstyles['bg-not-completed'];
+}
+
+$lineStyleClass = (isset($isCompleted) && $isCompleted && !$isCurrentActive)
+    ? 'bg-[var(--payment-flow-green)]'
+    : 'bg-[var(--payment-flow-gray-muted)]';
 $hideLineClass = $step === 4 ? 'hidden' : '';
 ?>
 
@@ -42,7 +52,7 @@ $hideLineClass = $step === 4 ? 'hidden' : '';
     </div>
 
     <div
-        class="absolute top-5 md:top-[29%] left-[calc(50%+20px)] w-[calc(100%-40px)] md:left-[calc(50%+37px)] md:w-[calc(100%-74px)] h-1 md:h-2 bg-[var(--payment-flow-gray-muted)] <?= $lineStyleClass ?> <?= $hideLineClass ?>">
+        class="absolute top-5 md:top-[29%] left-[calc(50%+20px)] w-[calc(100%-40px)] md:left-[calc(50%+37px)] md:w-[calc(100%-74px)] h-1 md:h-2 <?= $lineStyleClass ?> <?= $hideLineClass ?>">
     </div>
 
 </div>

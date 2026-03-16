@@ -4,15 +4,15 @@ namespace App\Controllers\CMS;
 
 use App\Controllers\BaseController;
 use App\Services\MediaService;
-use App\Repositories\MediaRepository;
+use App\Services\Interfaces\IMediaService;
 
 class CmsMediaController extends BaseController
 {
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
 
     public function __construct()
     {
-        $this->mediaService = new MediaService(new MediaRepository());
+        $this->mediaService = new MediaService();
     }
 
     /**
