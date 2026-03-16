@@ -30,8 +30,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.artist_id,
                 s.restaurant_id,
                 s.landmark_id,
@@ -132,19 +130,19 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = $this->getBaseQuery() . " WHERE s.schedule_id = :schedule_id";
 
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':schedule_id', $scheduleId, PDO::PARAM_INT);
             $stmt->execute();
-            
+
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$row) {
                 return null;
             }
-            
+
             return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching schedule by ID: " . $e->getMessage(), 0, $e);
@@ -161,7 +159,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = $this->getBaseQuery();
             $conditions = [];
             $params = [];
@@ -187,9 +185,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 $stmt->bindValue($key, $value);
             }
             $stmt->execute();
-            
+
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching all schedules: " . $e->getMessage(), 0, $e);
@@ -204,7 +202,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = $this->getBaseQuery() . "
                 WHERE s.event_id = :event_id
                 ORDER BY s.date ASC, s.start_time ASC
@@ -214,13 +212,13 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':event_id', $eventId, PDO::PARAM_INT);
             $stmt->execute();
-            
+
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if (!$row) {
                 return null;
             }
-            
+
             return new Schedule()->hydrateSchedule($row);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching single schedule by event: " . $e->getMessage(), 0, $e);
@@ -235,7 +233,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = $this->getBaseQuery() . "
                 WHERE s.event_id = :event_id
                 ORDER BY s.date ASC, s.start_time ASC
@@ -244,9 +242,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(':event_id', $eventId, PDO::PARAM_INT);
             $stmt->execute();
-            
+
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
@@ -257,13 +255,13 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     {
         try {
             $pdo = $this->connect();
-            
+
             $query = "SELECT DISTINCT date FROM SCHEDULE WHERE date >= CURDATE() ORDER BY date ASC";
             $stmt = $pdo->prepare($query);
             $stmt->execute();
-            
+
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             return array_map(fn($row) => $row['date'], $rows);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching available dates: " . $e->getMessage(), 0, $e);
@@ -280,9 +278,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
 
             $query = "
                 INSERT INTO SCHEDULE (event_id, venue_id, artist_id, restaurant_id, landmark_id,
-                    date, start_time, end_time, total_capacity, tickets_sold, is_sold_out)
+                    date, start_time, end_time, total_capacity)
                 VALUES (:event_id, :venue_id, :artist_id, :restaurant_id, :landmark_id,
-                    :date, :start_time, :end_time, :total_capacity, :tickets_sold, :is_sold_out)
+                    :date, :start_time, :end_time, :total_capacity)
             ";
 
             $stmt = $pdo->prepare($query);
@@ -295,8 +293,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $stmt->bindValue(':start_time',      $schedule->start_time?->format('H:i:s'));
             $stmt->bindValue(':end_time',        $schedule->end_time?->format('H:i:s'));
             $stmt->bindValue(':total_capacity',  $schedule->total_capacity, PDO::PARAM_INT);
-            $stmt->bindValue(':tickets_sold',    $schedule->tickets_sold ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(':is_sold_out',     $schedule->is_sold_out ? 1 : 0, PDO::PARAM_INT);
 
             $result = $stmt->execute();
             if ($result) {
@@ -327,9 +323,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                     date           = :date,
                     start_time     = :start_time,
                     end_time       = :end_time,
-                    total_capacity = :total_capacity,
-                    tickets_sold   = :tickets_sold,
-                    is_sold_out    = :is_sold_out
+                    total_capacity = :total_capacity
                 WHERE schedule_id = :schedule_id
             ";
 
@@ -344,8 +338,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $stmt->bindValue(':start_time',      $schedule->start_time?->format('H:i:s'));
             $stmt->bindValue(':end_time',        $schedule->end_time?->format('H:i:s'));
             $stmt->bindValue(':total_capacity',  $schedule->total_capacity, PDO::PARAM_INT);
-            $stmt->bindValue(':tickets_sold',    $schedule->tickets_sold ?? 0, PDO::PARAM_INT);
-            $stmt->bindValue(':is_sold_out',     $schedule->is_sold_out ? 1 : 0, PDO::PARAM_INT);
+
 
             return $stmt->execute();
         } catch (PDOException $e) {

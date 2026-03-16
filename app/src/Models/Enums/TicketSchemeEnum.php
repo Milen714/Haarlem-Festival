@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Models\Enums;
 
 enum TicketSchemeEnum: string
 {
     case JAZZ_MAIN_HALL = 'JAZZ_MAIN_HALL';
     case JAZZ_SECOND_HALL = 'JAZZ_SECOND_HALL';
+    case JAZZ_DAY_PASS = 'JAZZ_DAY_PASS';
     case JAZZ_FREE = 'JAZZ_FREE';
     case YUMMY_NORMAL = 'YUMMY_NORMAL';
     case YUMMY_REDUCED_CHILD = 'YUMMY_REDUCED_CHILD';
@@ -16,5 +18,4 @@ enum TicketSchemeEnum: string
     case HISTORY_FAMILY_TICKET = 'HISTORY_FAMILY_TICKET';
     case MAGIC_LORENTZ_FORMULA = 'MAGIC_LORENTZ_FORMULA';
     case MAGIC_SECRETS = 'MAGIC_SECRETS';
-    
 }

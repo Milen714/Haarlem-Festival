@@ -51,14 +51,17 @@ class PageRepository extends Repository implements IPageRepository
 
             $page = $stmt->fetch(PDO::FETCH_ASSOC);
             $pageModel = new Page();
-            $processedSections = []; // Track which sections we've already added
+            $sectionIndexById = []; // section_id => index in $pageModel->content_sections
+            $galleryMediaBySection = []; // section_id => [media_id => true]
 
             if ($page) {
                 $pageModel->fromPDOData($page);
                 do {
                     if ($page['section_id']) {
+                        $sectionId = (int) $page['section_id'];
+
                         // Only create and add the section once
-                        if (!in_array($page['section_id'], $processedSections)) {
+                        if (!isset($sectionIndexById[$sectionId])) {
                             $section = new PageSection();
                             $section->fromPDOData($page);
 
@@ -79,23 +82,34 @@ class PageRepository extends Repository implements IPageRepository
                             }
 
                             $pageModel->addContentSection($section);
-                            $processedSections[] = $page['section_id'];
+                            $sectionIndexById[$sectionId] = count($pageModel->content_sections) - 1;
+                            $galleryMediaBySection[$sectionId] = [];
                         }
 
                         // Add gallery media items if they exist
                         if (!empty($page['section_gallery_id']) && !empty($page['gallery_media_id'])) {
-                            $section = $pageModel->content_sections[count($pageModel->content_sections) - 1];
-                            $galleryMedia = new \App\Models\GalleryMedia();
-                            $galleryMedia->fromPDOData($page);
-                            // Create media object for gallery media from joined data
-                            if (!empty($page['gm_media_id'])) {
-                                $media = new \App\Models\Media();
-                                $media->media_id = (int)$page['gm_media_id'];
-                                $media->file_path = $page['gm_media_file_path'];
-                                $media->alt_text = $page['gm_media_alt_text'];
-                                $galleryMedia->media = $media;
+                            $galleryMediaId = (int) $page['gallery_media_id'];
+                            if (!isset($galleryMediaBySection[$sectionId][$galleryMediaId])) {
+                                $sectionIndex = $sectionIndexById[$sectionId];
+                                $section = $pageModel->content_sections[$sectionIndex];
+
+                                if ($section->gallery) {
+                                    $galleryMedia = new \App\Models\GalleryMedia();
+                                    $galleryMedia->fromPDOData($page);
+
+                                    // Create media object for gallery media from joined data
+                                    if (!empty($page['gm_media_id'])) {
+                                        $media = new \App\Models\Media();
+                                        $media->media_id = (int)$page['gm_media_id'];
+                                        $media->file_path = $page['gm_media_file_path'];
+                                        $media->alt_text = $page['gm_media_alt_text'];
+                                        $galleryMedia->media = $media;
+                                    }
+
+                                    $section->gallery->addGalleryMedia($galleryMedia);
+                                    $galleryMediaBySection[$sectionId][$galleryMediaId] = true;
+                                }
                             }
-                            $section->gallery->addGalleryMedia($galleryMedia);
                         }
                     }
                 } while ($page = $stmt->fetch(PDO::FETCH_ASSOC));
