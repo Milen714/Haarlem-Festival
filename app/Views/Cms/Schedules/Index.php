@@ -94,7 +94,17 @@ $filterDate      = $filterDate ?? '';
         <div class="space-y-4 xl:hidden">
             <?php foreach ($schedules as $schedule): ?>
                 <?php
-                $sold = $schedule->tickets_sold ?? 0;
+                // Aggregate tickets_sold and is_sold_out from ticket types
+                $sold = 0;
+                $isSoldOut = false;
+                if (isset($schedule->ticketTypes) && is_array($schedule->ticketTypes)) {
+                    foreach ($schedule->ticketTypes as $tt) {
+                        $sold += $tt->tickets_sold ?? 0;
+                        if (!empty($tt->is_sold_out)) {
+                            $isSoldOut = true;
+                        }
+                    }
+                }
                 $total = $schedule->total_capacity ?? 0;
                 $pct = $total > 0 ? round(($sold / $total) * 100) : 0;
                 ?>
@@ -136,9 +146,9 @@ $filterDate      = $filterDate ?? '';
                         <p>
                             <span class="font-semibold">Capacity:</span>
                             <?= (int)$sold ?> / <?= (int)$total ?>
-                            <?php if ($schedule->is_sold_out): ?>
+                            <?php if ($isSoldOut): ?>
                                 <span
-                                    class="ml-1 inline-block rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">SOLD
+                                    class="ml-1 inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded">SOLD
                                     OUT</span>
                             <?php elseif ($pct >= 80): ?>
                                 <span
@@ -236,13 +246,23 @@ $filterDate      = $filterDate ?? '';
                             <!-- Capacity -->
                             <td class="px-6 py-4 text-sm">
                                 <?php
-                                $sold = $schedule->tickets_sold ?? 0;
+                                // TicketType aggregation or placeholder (integration pending)
+                                $sold = 0;
+                                $isSoldOut = false;
+                                if (isset($schedule->ticketTypes) && is_array($schedule->ticketTypes)) {
+                                    foreach ($schedule->ticketTypes as $tt) {
+                                        $sold += $tt->tickets_sold ?? 0;
+                                        if (!empty($tt->is_sold_out)) {
+                                            $isSoldOut = true;
+                                        }
+                                    }
+                                }
                                 $total = $schedule->total_capacity ?? 0;
                                 $pct = $total > 0 ? round(($sold / $total) * 100) : 0;
                                 ?>
                                 <div>
                                     <?= $sold ?> / <?= $total ?>
-                                    <?php if ($schedule->is_sold_out): ?>
+                                    <?php if ($isSoldOut): ?>
                                         <span
                                             class="ml-1 inline-block bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded">SOLD
                                             OUT</span>

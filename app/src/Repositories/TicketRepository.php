@@ -28,6 +28,8 @@ class TicketRepository extends Repository implements ITicketRepository
                 tt.max_quantity,
                 tt.capacity,
                 tt.special_requirements,
+                tt.tickets_sold,
+                tt.is_sold_out,
 
                 -- Ticket scheme fields
                 ts.ticket_scheme_id,
@@ -42,8 +44,6 @@ class TicketRepository extends Repository implements ITicketRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.venue_id,
                 s.artist_id,
                 s.restaurant_id,
