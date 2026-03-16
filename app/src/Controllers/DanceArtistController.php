@@ -3,13 +3,13 @@ namespace App\Controllers;
 
 use App\Models\Schedule;
 use App\Services\ArtistService;
-use App\Repositories\ArtistRepository;
 use App\Services\MediaService;
-use App\Repositories\MediaRepository;
 use App\Services\ScheduleService;
-use App\Repositories\ScheduleRepository;
 use App\Services\AlbumService;
-use App\Repositories\AlbumRepository;
+use App\Services\Interfaces\IArtistService;
+use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\IAlbumService;
 use App\Controllers\BaseController;
 use App\Models\Gallery;
 
@@ -17,17 +17,17 @@ class DanceArtistController extends BaseController
 {
     private const DANCE_EVENT_ID = 4;
 
-    private ArtistService $artistService;
-    private ScheduleService $scheduleService;
-    private AlbumService $albumService;
-    private MediaService $mediaService;
+    private IArtistService $artistService;
+    private IScheduleService $scheduleService;
+    private IAlbumService $albumService;
+    private IMediaService $mediaService;
 
     public function __construct()
     {
-        $this->mediaService = new MediaService(new MediaRepository());
-        $this->artistService = new ArtistService(new ArtistRepository(), $this->mediaService);
-        $this->scheduleService = new ScheduleService(new ScheduleRepository());
-        $this->albumService = new AlbumService(new AlbumRepository());
+        $this->mediaService = new MediaService();
+        $this->artistService = new ArtistService();
+        $this->scheduleService = new ScheduleService();
+        $this->albumService = new AlbumService();
     }
 
     public function artistDetail(array $vars = []): void

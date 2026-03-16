@@ -2,14 +2,15 @@
 
 
 namespace App\Services;
+use App\Repositories\UserRepository;
 use App\Repositories\Interfaces\IUserRepository;
 use App\Services\Interfaces\IUserService;
 use App\Models\User;
 class UserService implements IUserService{
     private IUserRepository $userRepository;
 
-    public function __construct(IUserRepository $userRepository) {
-        $this->userRepository = $userRepository;
+    public function __construct() {
+        $this->userRepository = new UserRepository();
     }
     public function getUserById(int $id): ?User {
         return $this->userRepository->getUserById($id);

@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Views\Errors;
+
 $theme = $_COOKIE['theme'] ?? 'light';
 $darkClass = $theme === 'dark' ? 'dark' : '';
 ?>
@@ -16,9 +18,9 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
             </p>
 
             <?php if (!empty($error)): ?>
-            <p class="text-sm text-red-500 mb-8 max-w-2xl mx-auto break-words">
-                <?= htmlspecialchars((string)$error) ?>
-            </p>
+                <p class="text-sm text-red-500 mb-8 max-w-2xl mx-auto break-words">
+                    <?= htmlspecialchars((string)$error) ?>
+                </p>
             <?php endif; ?>
 
             <a href="/"

@@ -3,27 +3,18 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\MusicEvent\JazzArtistDetailViewModel;
-use App\Repositories\ArtistRepository;
-use App\Repositories\MediaRepository;
-use App\Repositories\ScheduleRepository;
-use App\Services\ArtistService;
-use App\Services\MediaService;
-use App\Services\ScheduleService;
+use App\Exceptions\ApplicationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Services\JazzService;
+use App\Services\Interfaces\JazzServiceInterface;
 
 class JazzArtistController extends BaseController
 {
-    private const JAZZ_EVENT_ID = 3;
-
-    private ArtistService $artistService;
-    private ScheduleService $scheduleService;
+    private JazzServiceInterface $jazzService;
 
     public function __construct()
     {
-        $mediaService = new MediaService(new MediaRepository());
-
-        $this->artistService   = new ArtistService(new ArtistRepository(), $mediaService);
-        $this->scheduleService = new ScheduleService(new ScheduleRepository());
+        $this->jazzService = new JazzService();
     }
 
     public function detail(array $vars = []): void
@@ -36,36 +27,17 @@ class JazzArtistController extends BaseController
         }
 
         try {
-            $artist = $this->artistService->getArtistBySlug($slug);
+            $this->view('Jazz/artist-detail', $this->jazzService->loadJazzArtistProfile($slug));
+        } catch (ResourceNotFoundException $e) {
 
-            if (!$artist) {
-                $this->notFound();
-                return;
-            }
+            $this->notFound();
+        } catch (ApplicationException $e) {
 
-            if (!$this->artistService->isArtistInEvent((int) $artist->artist_id, self::JAZZ_EVENT_ID)) {
-                $this->notFound();
-                return;
-            }
-
-            $scheduleByDate = $this->scheduleService->getSchedulesForArtistInEvent(
-                (int) $artist->artist_id,
-                self::JAZZ_EVENT_ID
-            );
-
-            $vm = new JazzArtistDetailViewModel(
-                artist: $artist,
-                scheduleByDate: $scheduleByDate
-            );
-
-            $this->view('Jazz/artist-detail', [
-                'title' => $vm->title,
-                'vm'    => $vm,
-            ]);
-
+            error_log('Jazz event configuration error: ' . $e->getMessage());
+            $this->internalServerError();
         } catch (\Throwable $e) {
+
             error_log('Jazz artist detail error: ' . $e->getMessage());
-            error_log($e->getTraceAsString());
             $this->internalServerError();
         }
     }

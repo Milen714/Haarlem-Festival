@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Restaurant;
+use App\Repositories\RestaurantRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\IMediaService;
@@ -10,12 +11,12 @@ use App\Services\Interfaces\IMediaService;
 class RestaurantService implements IRestaurantService
 {
     private IRestaurantRepository $restaurantRepository;
-    private MediaService $mediaService;
+    private IMediaService $mediaService;
 
-    public function __construct(IRestaurantRepository $restaurantRepository, MediaService $mediaService)
+    public function __construct()
     {
-        $this->restaurantRepository = $restaurantRepository;
-        $this->mediaService = $mediaService;
+        $this->restaurantRepository = new RestaurantRepository();
+        $this->mediaService = new MediaService();
     }
 
     public function getAllRestaurants(int $eventId, ?int $cuisineId = null): array
@@ -92,7 +93,7 @@ class RestaurantService implements IRestaurantService
         return $restaurant;
     }
 
-    public function updateFromRequest(int $restaurantId, array $postData, array $files) {
+    public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant {
         $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
 
         if(!$restaurant){

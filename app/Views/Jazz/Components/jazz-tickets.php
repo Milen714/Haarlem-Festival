@@ -3,7 +3,7 @@ namespace App\Views\Jazz\Components;
 ?>
 
 <section class="py-16 bg-white" aria-labelledby="tickets-heading">
-    <article class="container mx-auto px-4">
+    <div class="container mx-auto px-4">
         <h2 id="tickets-heading" class="text-4xl font-bold mb-12" style="font-family: 'Cormorant Garamond', serif;">
             <?= htmlspecialchars($ticketsSection->title ?? 'Tickets & Passes') ?>
         </h2>
@@ -146,15 +146,15 @@ namespace App\Views\Jazz\Components;
         
         <!-- Footer Note -->
         <footer class="text-center mt-12">
-            <aside class="inline-flex items-center text-gray-700 bg-gray-50 px-6 py-3 rounded-lg">
+            <p class="inline-flex items-center text-gray-700 bg-gray-50 px-6 py-3 rounded-lg">
                 <svg class="w-5 h-5 mr-2 text-[var(--pastel-coral)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 <strong>Sunday at Grote Markt is FREE - no tickets needed!</strong>
-            </aside>
+            </p>
             <address class="text-sm text-gray-600 mt-3 not-italic">
                 Contact: <a href="mailto:tickets@haarlemfestival.nl" class="text-[var(--pastel-lavender)] hover:underline">tickets@haarlemfestival.nl</a>
             </address>
         </footer>
-    </article>
+    </div>
 </section>

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Media;
 use App\Models\Gallery;
+use App\Repositories\MediaRepository;
 use App\Repositories\Interfaces\IMediaRepository;
 use App\Services\Interfaces\IMediaService;
 
@@ -12,9 +13,9 @@ class MediaService implements IMediaService
     private IMediaRepository $mediaRepository;
     private FileUploadService $fileUploadService;
 
-    public function __construct(IMediaRepository $mediaRepository)
+    public function __construct()
     {
-        $this->mediaRepository = $mediaRepository;
+        $this->mediaRepository = new MediaRepository();
         $this->fileUploadService = new FileUploadService();
     }
 

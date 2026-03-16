@@ -1,16 +1,15 @@
-<section class="relative py-[5rem] overflow-hidden bg-[#fffdf6]">
-    <img src="/Assets/History/line-20.svg" class="absolute top-[6.25rem] left-0 w-[19rem] hidden lg:block" alt="">
-    <img src="/Assets/History/line-21.svg" class="absolute top-[7rem] right-0 w-[18.75rem] hidden lg:block" alt="">
+<?php /** @var App\CmsModels\PageSection $bookTour */ ?>
+<section class="relative container mx-auto max-w-[1100px] px-4 my-20">
 
-    <div class="container mx-auto px-[1.5rem] text-center relative z-10">
-        <p class="text-[#344212] font-nobile font-bold text-[1.25rem] leading-[1.875rem] max-w-[46.25rem] mx-auto mb-[2.5rem]">
-            Why not to come see them with your own eyes? <br>
-            The Festival offers an incredible tour, a walk through centuries and <br class="hidden md:block">
-            unforgettable places in the city. Discover more!
-        </p>
-
-        <a href="/book-tour" class="btn-history-book inline-block no-underline">
-            Book your tour
-        </a>
-    </div>
+    <?php if ($bookTour): ?>
+        <div class="text-center p-10 relative z-10">
+            <div class="mt-3 max-w-2xl mx-auto text-ink-700 prose prose-sm max-w-none">
+                <?= $bookTour->content_html ?>
+            </div>
+            <a href="<?= htmlspecialchars($bookTour->cta_url) ?>" 
+               class="mt-6 inline-flex items-center justify-center rounded-md bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 text-base font-semibold shadow-md transition-all">
+                <?= htmlspecialchars($bookTour->cta_text ?? 'Book now') ?>
+            </a>
+        </div>
+    <?php endif; ?>
 </section>

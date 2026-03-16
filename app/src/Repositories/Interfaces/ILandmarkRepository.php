@@ -1,12 +1,15 @@
 <?php
 
 namespace App\Repositories\Interfaces;
-use App\Models\History\Landmark;
+use App\Models\Landmark;
 
 interface ILandmarkRepository
 {
+    public function getAll(): array;
+    public function getById(int $id): ?Landmark;
+    public function getBySlug(string $slug): ?Landmark;
     
-    public function getLandmarkById(int $landmarkId): ?Landmark;
-    public function getAllLandmarks(): array;
-
+    public function delete(int $id): bool;
+    public function update(Landmark $landmark): Landmark;
+    public function insert(Landmark $landmark): Landmark;
 }

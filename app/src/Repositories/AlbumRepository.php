@@ -39,7 +39,7 @@ class AlbumRepository extends Repository implements IAlbumRepository
             return $albums;
         } catch (PDOException $e) {
             error_log("Error fetching albums for artist ID $artistId: " . $e->getMessage());
-            throw new \Exception("Could not fetch albums for the artist.");
+            throw new PDOException("Could not fetch albums for the artist.", 0, $e);
         }
     }   
 }

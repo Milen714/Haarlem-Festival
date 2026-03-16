@@ -46,4 +46,22 @@ class User {
         $user->is_verified = false;
         return $user;
     }
+
+    public function fromPDOData(array $data): void
+    {
+        $this->id = isset($data['user_id']) ? (int)$data['user_id'] : null;
+        $this->email = $data['user_email'] ?? $data['email'] ?? '';
+        $this->password_hash = $data['password_hash'] ?? '';
+        $this->fname = $data['user_fname'] ?? $data['fname'] ?? null;
+        $this->lname = $data['user_lname'] ?? $data['lname'] ?? null;
+        $this->role = isset($data['user_role']) ? UserRole::from($data['user_role']) : UserRole::CUSTOMER;
+        $this->address = $data['user_address'] ?? $data['address'] ?? null;
+        $this->phone = $data['user_phone'] ?? $data['phone'] ?? null;
+        $this->verification_token = $data['verification_token'] ?? null;
+        $this->reset_token = $data['reset_token'] ?? null;
+        $this->reset_token_expiry = isset($data['reset_token_expiry']) ? new DateTime($data['reset_token_expiry']) : null;
+        $this->is_active = isset($data['is_active']) ? (bool)$data['is_active'] : true;
+        $this->is_verified = isset($data['is_verified']) ? (bool)$data['is_verified'] : false;
+        $this->created_at = isset($data['user_created_at']) ? new DateTime($data['user_created_at']) : null;
+    }
 }

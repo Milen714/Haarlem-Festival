@@ -2,11 +2,13 @@
 namespace App\Views\Magic\Components;
 use App\CmsModels\PageSection;
 /** @var PageSection $section */
+$stylesArray = $sectionStyle;
+$cardStyle = $stylesArray['cardStyle'] ?? 'magic_game_card';
 ?>
 
 <section class="magic_image_article_vertical gap-5 mb-6 w-[90%] mx-auto">
     <?php echo $section->content_html ?>
-    <article class="flex flex-col md:flex-row gap-3 items-start w-full">
+    <article class="<?php echo htmlspecialchars($cardStyle) ?> gap-3 items-start w-full">
         <img class="w-full md:w-1/3 h-auto object-cover rounded-xl shrink-0"
             src="<?php echo $section->media->file_path ?>" alt="<?php echo $section->media->alt_text ?>">
         <section class="flex flex-col gap-3 items-start w-full min-w-0 break-words">

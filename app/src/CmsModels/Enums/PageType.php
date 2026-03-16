@@ -12,4 +12,5 @@ enum PageType: string
     case performer_detail = 'performer_detail';
     case restaurants = 'restaurants';
     case restaurant_detail = 'restaurant_detail';
+    case tour_detail = 'tour_detail';
 }

@@ -15,4 +15,15 @@ enum SectionType: string
     case event_right = 'event_right';
     case image_bottom = 'image_bottom';
     case article = 'article';
+    case landmark = 'landmark';
+    case welcome = 'welcome';
+    case book_tour = 'book_tour';  
+    case tour_info = 'tour_info';
+    case good_to_know = 'good_to_know';
+    case tour_features = 'tour_features';
+    case tour_tickets = 'tour_tickets';
+    case image_left_magic = 'image_left_magic';
+    case image_right_magic = 'image_right_magic';
+    case magic_lorentz_container = 'magic_lorentz_container';
+
 }

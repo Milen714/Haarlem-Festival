@@ -5,6 +5,8 @@ namespace App\Views\Home;
 <h1 class="text-center m-5 font-serif">Login Page</h1>
 <article class="max-w-md mx-auto bg-white p-6 rounded-md shadow-md">
     <form method='POST' action='/login'>
+        <div id="error-container">
+        </div>
         <article class="input_group">
             <label class="input_label" for="email">Email:</label>
             <input class="form_input" type="email" id="email" name="email" required>
@@ -25,7 +27,7 @@ namespace App\Views\Home;
             <?php echo htmlspecialchars($success); ?>
         </div>
         <?php endif; ?>
-        <button class="button_primary" type="submit">Login</button>
+        <button data-redirect="/" class="button_primary" type="submit">Login</button>
     </form>
     <article class="mt-4 text-center text-black">
         <p>Don't have an account? <a class="text-gray-600" href="/signup">Sign up here</a>.</p>
@@ -34,5 +36,31 @@ namespace App\Views\Home;
 
 </article>
 
-<?php
-    
+<script src="/Js/ShowError.js"></script>
+<script>
+const loginForm = document.querySelector('form');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const redirectData = loginForm.querySelector('button[type="submit"]').dataset.redirect;
+
+loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email: emailInput.value,
+            password: passwordInput.value,
+            redirect: redirectData
+        })
+    });
+    const result = await response.json();
+    if (result.success) {
+        window.location.href = result.redirect || '/';
+    } else {
+        showError(result.message || 'Login failed');
+    }
+});
+</script>

@@ -1,11 +1,21 @@
 <?php
-namespace App\Views\Home\History;
-
+namespace App\Views\History;
 ?>
-<h1>Hola, probando mi página</h1>
-<section class="flex flex-col gap-6 bg_colors_home text_colors_home pt-4">
+
+<div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
     <?php include __DIR__ . '/Components/HistoryHero.php'; ?>
-    <?php include __DIR__ . '/Components/HistoryWelcome.php'; ?>
-    <?php include __DIR__ . '/Components/HistoryMainLandmarks.php'; ?>
+
+    <div class="max-w-content">
+        <?php include __DIR__ . '/Components/HistoryWelcome.php'; ?>
+
+        <section class="mt-12">
+            <h3 class="text-center font-history-serif text-xl md:text-2xl text-ink-900">
+                Read about our most beloved landmarks
+            </h3>
+        </section>
+
+        <?php include __DIR__ . '/Components/HistoryMainLandmarks.php'; ?>
+    </div>
+
     <?php include __DIR__ . '/Components/HistoryBookTour.php'; ?>
-</section>
+</div>

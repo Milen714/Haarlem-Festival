@@ -5,20 +5,19 @@ use App\Controllers\BaseController;
 use App\Models\Enums\UserRole;
 use App\Services\UserService;
 use App\Models\User;
-use App\Repositories\UserRepository;
 use App\Middleware\RequireRole;
 use App\Services\Interfaces\IAuthService;
+use App\Services\Interfaces\IUserService;
 use App\Services\AuthService;
 
 
 class UserController extends BaseController
 {
-    private UserService $userService;
+    private IUserService $userService;
     private IAuthService $authService;
     public function __construct()
     {
-        $userRepository = new UserRepository();
-        $this->userService = new UserService($userRepository);
+        $this->userService = new UserService();
         $this->authService = new AuthService();
     }
 
