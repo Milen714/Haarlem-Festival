@@ -26,6 +26,8 @@ class TicketRepository extends Repository implements ITicketRepository
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
+                tt.tickets_sold,
+                tt.is_sold_out,
                 tt.capacity,
                 tt.special_requirements,
                 tt.tickets_sold,
@@ -193,6 +195,8 @@ class TicketRepository extends Repository implements ITicketRepository
                     max_age,
                     min_quantity,
                     max_quantity,
+                    tickets_sold,
+                    is_sold_out,
                     capacity,
                     special_requirements
                 ) VALUES (
@@ -203,6 +207,8 @@ class TicketRepository extends Repository implements ITicketRepository
                     :max_age,
                     :min_quantity,
                     :max_quantity,
+                    :tickets_sold,
+                    :is_sold_out,
                     :capacity,
                     :special_requirements
                 )
@@ -216,6 +222,8 @@ class TicketRepository extends Repository implements ITicketRepository
             $stmt->bindValue(':max_age', $ticketType->max_age, PDO::PARAM_INT);
             $stmt->bindValue(':min_quantity', $ticketType->min_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':max_quantity', $ticketType->max_quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold', $ticketType->tickets_sold, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out', $ticketType->is_sold_out, PDO::PARAM_BOOL);
             $stmt->bindValue(':capacity', $ticketType->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':special_requirements', $ticketType->special_requirements);
 
@@ -244,6 +252,8 @@ class TicketRepository extends Repository implements ITicketRepository
                     max_age = :max_age,
                     min_quantity = :min_quantity,
                     max_quantity = :max_quantity,
+                    tickets_sold = :tickets_sold,
+                    is_sold_out = :is_sold_out,
                     capacity = :capacity,
                     special_requirements = :special_requirements
                 WHERE ticket_type_id = :ticket_type_id
@@ -258,6 +268,8 @@ class TicketRepository extends Repository implements ITicketRepository
             $stmt->bindValue(':max_age', $ticketType->max_age, PDO::PARAM_INT);
             $stmt->bindValue(':min_quantity', $ticketType->min_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':max_quantity', $ticketType->max_quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold', $ticketType->tickets_sold, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out', $ticketType->is_sold_out, PDO::PARAM_BOOL);
             $stmt->bindValue(':capacity', $ticketType->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':special_requirements', $ticketType->special_requirements);
 
