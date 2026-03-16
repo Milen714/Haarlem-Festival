@@ -181,31 +181,34 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // TODO: This is a duplicate of getTicketTypesByScheduleId but optimized for multiple schedule IDs at once to avoid N+1 query problem in ScheduleController
     public function getTicketTypesByScheduleIds(array $scheduleIds): array
     {
         if (empty($scheduleIds)) {
             return [];
         }
 
-        $pdo = $this->connect();
-        $placeholders = implode(',', array_fill(0, count($scheduleIds), '?'));
-        $query = $this->getBaseQuery() . "
-            WHERE tt.schedule_id IN ($placeholders)
-            ORDER BY tt.schedule_id ASC, tt.ticket_type_id ASC
-        ";
+        try {
+            $pdo = $this->connect();
+            $placeholders = implode(',', array_fill(0, count($scheduleIds), '?'));
+            $query = $this->getBaseQuery() . "
+                WHERE tt.schedule_id IN ($placeholders)
+                ORDER BY tt.schedule_id ASC, tt.ticket_type_id ASC
+            ";
 
-        $stmt = $pdo->prepare($query);
-        $stmt->execute(array_values($scheduleIds));
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(array_values($scheduleIds));
 
-        $grouped = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $ticketType = new TicketType();
-            $ticketType->fromPDOData($row);
-            $grouped[(int)$row['schedule_id']][] = $ticketType;
+            $grouped = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $ticketType = new TicketType();
+                $ticketType->fromPDOData($row);
+                $grouped[(int)$row['schedule_id']][] = $ticketType;
+            }
+
+            return $grouped;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket types by schedule IDs: " . $e->getMessage());
         }
-
-        return $grouped;
     }
 
     public function create(TicketType $ticketType): bool

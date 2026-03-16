@@ -66,7 +66,7 @@ class AccountController extends BaseController
                 // Failed login
                 $this->jsonResponse([
                     'success' => false,
-                    'message' => 'Login failed. Please sscheck your credentials and try again.',
+                    'message' => 'Login failed. Please check your credentials and try again.',
                     'user' => ['email' => $data['email']]
                 ], 401);
             }

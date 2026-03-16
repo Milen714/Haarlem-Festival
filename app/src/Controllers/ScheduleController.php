@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Exceptions\ApplicationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ValidationException;
 use App\Services\ScheduleService;
 use App\Services\VenueService;
 use App\Services\ArtistService;
@@ -16,7 +19,6 @@ use App\Repositories\ArtistRepository;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\TicketRepository;
-use App\Services\Interfaces\IScheduleService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
@@ -75,7 +77,7 @@ class ScheduleController extends BaseController
                 'filterType'     => $eventType,
                 'filterDate'     => $date,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Schedule list error: " . $e->getMessage());
             $this->cmsLayout('Cms/Schedules/Index', [
                 'title'          => 'Manage Schedules',
@@ -83,7 +85,7 @@ class ScheduleController extends BaseController
                 'eventCategories' => [],
                 'filterType'     => null,
                 'filterDate'     => null,
-                'error'          => 'Failed to load schedules: ' . $e->getMessage(),
+                'error'          => 'Failed to load schedules.',
             ]);
         }
     }
@@ -103,10 +105,10 @@ class ScheduleController extends BaseController
                 'landmarks'      => $this->scheduleService->getAllLandmarks(),
                 'ticketTypes'    => [],
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Schedule create form error: " . $e->getMessage());
             $this->startSession();
-            $_SESSION['error'] = $e->getMessage();
+            $_SESSION['error'] = 'Failed to load schedule form.';
             $this->redirect('/cms/schedules');
         }
     }
@@ -120,9 +122,12 @@ class ScheduleController extends BaseController
             $schedule = $this->scheduleService->createFromRequest($_POST);
             $_SESSION['success'] = "Schedule for " . ($schedule->date?->format('d M Y') ?? 'N/A') . " created successfully!";
             $this->redirect('/cms/schedules');
-        } catch (\Exception $e) {
-            error_log("Schedule store error: " . $e->getMessage());
+        } catch (ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/schedules/create');
+        } catch (\Throwable $e) {
+            error_log("Schedule store error: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to create schedule.';
             $this->redirect('/cms/schedules/create');
         }
     }
@@ -136,10 +141,7 @@ class ScheduleController extends BaseController
             $schedule = $this->scheduleService->getScheduleById($scheduleId);
 
             if (!$schedule) {
-                $this->startSession();
-                $_SESSION['error'] = 'Schedule not found';
-                $this->redirect('/cms/schedules');
-                return;
+                throw new ResourceNotFoundException('Schedule not found.');
             }
 
             $this->cmsLayout('Cms/Schedules/Form', [
@@ -153,10 +155,14 @@ class ScheduleController extends BaseController
                 'landmarks'      => $this->scheduleService->getAllLandmarks(),
                 'ticketTypes'    => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
-        } catch (\Exception $e) {
+        } catch (ResourceNotFoundException $e) {
+            $this->startSession();
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/schedules');
+        } catch (\Throwable $e) {
             error_log("Schedule edit error: " . $e->getMessage());
             $this->startSession();
-            $_SESSION['error'] = 'Failed to load schedule: ' . $e->getMessage();
+            $_SESSION['error'] = 'Failed to load schedule.';
             $this->redirect('/cms/schedules');
         }
     }
@@ -171,9 +177,12 @@ class ScheduleController extends BaseController
             $schedule = $this->scheduleService->updateFromRequest($scheduleId, $_POST);
             $_SESSION['success'] = "Schedule for " . ($schedule->date?->format('d M Y') ?? 'N/A') . " updated successfully!";
             $this->redirect('/cms/schedules');
-        } catch (\Exception $e) {
-            error_log("Schedule update error: " . $e->getMessage());
+        } catch (ValidationException | ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/schedules/edit/{$scheduleId}");
+        } catch (\Throwable $e) {
+            error_log("Schedule update error: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to update schedule.';
             $this->redirect("/cms/schedules/edit/{$scheduleId}");
         }
     }
@@ -187,9 +196,11 @@ class ScheduleController extends BaseController
         try {
             $this->scheduleService->deleteSchedule($scheduleId);
             $_SESSION['success'] = "Schedule deleted successfully!";
-        } catch (\Exception $e) {
-            error_log("Schedule delete error: " . $e->getMessage());
+        } catch (ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
+        } catch (\Throwable $e) {
+            error_log("Schedule delete error: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to delete schedule.';
         }
 
         $this->redirect('/cms/schedules');
