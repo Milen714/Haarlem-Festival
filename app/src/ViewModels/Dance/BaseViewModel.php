@@ -9,7 +9,10 @@ class BaseViewModel {
         $this->pageData = $pageData;
     }
 
-    public function addBreadcrumb(string $label, ?string $url = null): void {
-        $this->breadcrumbs[] = ['label' => $label, 'url' => $url];
+    public function addBreadcrumb(?string $label, ?string $url = null): void {
+        if (empty($label)) {
+            return;
+        }
+        $this->breadcrumbs[] = ['label' => (string)$label, 'url' => $url];
     }
 }

@@ -16,6 +16,7 @@ class LineupViewModel extends BaseViewModel {
         $this->schedulesSection = $schedulesSection;
 
         $this->addBreadcrumb('Home', '/events-dance');
-        $this->addBreadcrumb($pageData->title);
+        $title = $pageData->title ?? 'Lineup';
+        $this->addBreadcrumb($title);
     }
 }

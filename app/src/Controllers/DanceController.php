@@ -49,8 +49,10 @@ class DanceController extends BaseController
 
     public function index($vars = [])
     {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $slug = ltrim($uri, '/');
         try {
-            $pageData = $this->pageService->getPageBySlug('events-dance');
+            $pageData = $this->pageService->getPageBySlug($slug);
 
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
 
@@ -80,8 +82,10 @@ class DanceController extends BaseController
 
     public function lineUp()
     {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $slug = ltrim($uri, '/');
         try {
-            $pageData = $this->pageService->getPageBySlug('events-dance-lineup');
+            $pageData = $this->pageService->getPageBySlug($slug);
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
 
             $headLinerSection = array_filter($pageData->content_sections ?? [], function($section) {
