@@ -3789,11 +3789,6 @@ select:focus,
   color: rgb(185 28 28 / var(--tw-text-opacity, 1));
 }
 
-.text-red-800{
-  --tw-text-opacity: 1;
-  color: rgb(153 27 27 / var(--tw-text-opacity, 1));
-}
-
 .text-red-900{
   --tw-text-opacity: 1;
   color: rgb(127 29 29 / var(--tw-text-opacity, 1));

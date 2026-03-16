@@ -136,22 +136,31 @@ class YummyController extends BaseController
         }
     }
 
-    // public function restaurantDetail(){
-    //     try{
-    //         $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants-restaurant');
+    public function restaurantDetail($vars = []){
+        try{
+            $restaurantId = (int)($vars['id'] ?? 0);
+            $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants-restaurant');
             
             
-    //         if (!$pageData) {
-    //             error_log("Yummy page data not found for slug: events-yummy-restaurants");
-    //             $this->notFound();
-    //             return;
-    //         }
+            if (!$pageData) {
+                error_log("Yummy page data not found for slug: events-yummy-restaurants");
+                $this->notFound();
+                return;
+            }
+            $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
+            if (!$restaurant) {
+                $this->notFound();
+                return;
+            }
 
-    //          $cuisines = $this->cuisineService->getCuisineByRestaurant($restaurantId);
-    //     }
-    //     catch(\Exception $e){
-    //         error_log("Error in YummyController index method: " . $e->getMessage());
-    //         $this->internalServerError("Error loading homepage: " . $e->getMessage());
-    //     }
-    // }
+            $this->view('Yummy/DetailPage', [
+                'restaurant' => $restaurant,
+                'pageData' => $pageData
+            ]);
+        }
+        catch(\Exception $e){
+            error_log("Error in YummyController index method: " . $e->getMessage());
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
+    }
 }
