@@ -1,8 +1,5 @@
-<?php 
-//hardcoded for now
-$normalPrice = 17.50;
-$familyPrice = 60.00;
-?>
+<?php /** @var App\Models\ViewModels\TicketHistoryViewModel $ticketOptions */ ?>
+
 
 <section id="book-tour" class="container mx-auto max-w-[1100px] px-4 my-24">
     
@@ -18,8 +15,9 @@ $familyPrice = 60.00;
         <div class="ticket-options w-full lg:w-2/3 p-6 md:p-8 ">
             
             <div class="mb-8">
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">1. Select Tickets</h3>
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Tickets</h3>
                 
+
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
@@ -42,39 +40,35 @@ $familyPrice = 60.00;
             </div>
 
             <div class="mb-8">
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">2. Select Date</h3>
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Date</h3>
                 <div class="flex flex-wrap gap-3">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="date" value="2026-07-24" class="peer sr-only" required>
-                        <div class="tour-radio-btn">Thu, 24 July</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="date" value="2026-07-25" class="peer sr-only">
-                        <div class="tour-radio-btn">Fri, 25 July</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="date" value="2026-07-26" class="peer sr-only">
-                        <div class="tour-radio-btn">Sat, 26 July</div>
-                    </label>
+                    <?php foreach ($availableDates as $date): ?>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="date" value="<?= htmlspecialchars($date) ?>" class="peer sr-only" required>
+                            <div class="tour-radio-btn"><?= date('D, d M', strtotime($date)) ?></div>
+                        </label>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
             <div>
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">3. Select Language</h3>
-                <div class="flex flex-wrap gap-3">
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Language</h3>
+                <?php foreach ($availableLanguages as $language): ?>
                     <label class="cursor-pointer">
-                        <input type="radio" name="language" value="English" class="peer sr-only" required>
-                        <div class="tour-radio-btn">English</div>
-                    </label>
+                        <input type="radio" name="language" value="<?= htmlspecialchars($language) ?>" class="peer sr-only" required>
+                        <div class="tour-radio-btn"><?= htmlspecialchars($language) ?></div>
+                    </label>    
+                <?php endforeach; ?>
+            </div>
+
+            <div>
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Time</h3>
+                <?php foreach ($availableTimes as $time): ?>
                     <label class="cursor-pointer">
-                        <input type="radio" name="language" value="Dutch" class="peer sr-only">
-                        <div class="tour-radio-btn">Dutch</div>
+                        <input type="radio" name="time" value="<?= htmlspecialchars($time) ?>" class="peer sr-only" required>
+                        <div class="tour-radio-btn"><?= date('H:i', strtotime($time)) ?></div>  
                     </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="language" value="Chinese" class="peer sr-only">
-                        <div class="tour-radio-btn">Chinese</div>
-                    </label>
-                </div>
+                <?php endforeach; ?>
             </div>
 
         </div>

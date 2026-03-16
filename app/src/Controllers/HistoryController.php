@@ -6,11 +6,15 @@ use App\Services\PageService;
 use App\Controllers\BaseController;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;
+use App\Services\Interfaces\IHistoryService;
+use App\Services\HistoryService;
+use App\ViewModels\History\TicketHistoryViewModel;
 
 class HistoryController extends BaseController
 {
     private IPageService $pageService;
     private ILandmarkService $landmarkService;
+    private IHistoryService $historyService;
 
     const HISTORY_SLUG = 'events-history'; 
 
@@ -18,6 +22,7 @@ class HistoryController extends BaseController
     {
         $this->pageService = new PageService();
         $this->landmarkService = new LandmarkService();
+        $this->historyService = new HistoryService();
     }
 
     public function index($vars = [])
@@ -78,11 +83,12 @@ class HistoryController extends BaseController
                 return;
             }
 
+            $ticketOptions = $this->getTicketOptions();
+
             $sections = $pageData->content_sections ?? [];
             $hero = null;
             $tourInfo = null;
             $bookTour = null;
-            $tickets = null;
             $tourFeatures = [];     
             $goodToKnow = null; 
 
@@ -91,8 +97,6 @@ class HistoryController extends BaseController
                 
                 if ($type === 'tour_info') { 
                     $tourInfo = $s;
-                } elseif ($type === 'tour_tickets') { 
-                    $tickets = $s;
                 } elseif ($type === 'tour_features') {
                     $tourFeatures[] = $s; 
                 } elseif ($type === 'good_to_know') {
@@ -109,7 +113,7 @@ class HistoryController extends BaseController
                 'hero'            => $hero,
                 'tourInfo'        => $tourInfo,
                 'bookTour'        => $bookTour,
-                'tickets'         => $tickets,
+                'ticketOptions'   => $ticketOptions,
                 'tourFeatures'    => $tourFeatures,    
                 'goodToKnow'      => $goodToKnow  
             ]);
@@ -120,30 +124,10 @@ class HistoryController extends BaseController
         }
     }
 
-    private function getTicketPrices() {
-        // Aquí iría la lógica para obtener los precios reales de la base de datos
-        // Por ejemplo:
-        // return $this->ticketService->getHistoryTourPrices();
+    private function getTicketOptions(): TicketHistoryViewModel {
+        return $this->historyService->getAvailableTourOptions();   
 
-        // Por ahora, devolvemos precios simulados
-        return [
-            'normal' => 17.50,
-            'family' => 60.00
-        ];
     }
-
-    private function getTicketOptions() {
-        // Aquí iría la lógica para obtener las opciones de tickets disponibles desde la base de datos
-        // Por ejemplo:
-        // return $this->ticketService->getHistoryTourTicketOptions();
-
-        // Por ahora, devolvemos opciones simuladas
-        return [
-            ['type' => 'Normal', 'price' => 17.50],
-            ['type' => 'Family', 'price' => 60.00]
-        ];
-    }
-
 
     const HISTORY_DETAIL_SLUG = 'detail'; 
 
@@ -268,6 +252,8 @@ class HistoryController extends BaseController
 
         return $total;
     }
+
+
 }
 
 
