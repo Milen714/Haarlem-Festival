@@ -218,13 +218,14 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         $sql = '
             SELECT 
             r.*,
+            r.chef_img,
             r.gallery_id,
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
             m.alt_text AS restaurant_image_alt,
-            cm.alt_text AS chef_image_alt,
-            cm.media_id AS chef_image_id,
-            cm.file_path AS chef_image_path,
+            cm.alt_text AS chef_img_alt,
+            cm.media_id AS chef_img_id,
+            cm.file_path AS chef_img_path,
             bm.media_id AS banner_img_id,
             bm.file_path AS banner_img_path,
             bm.alt_text AS banner_img_alt,

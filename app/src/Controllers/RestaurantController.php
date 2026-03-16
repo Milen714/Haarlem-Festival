@@ -47,7 +47,7 @@ class RestaurantController extends BaseController{
 
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []){
-         $this->startSession();
+        
         try {
             $restaurant = $this->restaurantService->createFromRequest($_POST, $_FILES);
             $_SESSION['success'] = "Restaurant [$restaurant->name] created succesfully! ";
@@ -106,7 +106,7 @@ class RestaurantController extends BaseController{
 
      #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []){
-        $this->startSession();
+       
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
