@@ -4,17 +4,45 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\ScheduleService;
+use App\Services\VenueService;
+use App\Services\ArtistService;
+use App\Services\RestaurantService;
+use App\Services\LandmarkService;
+use App\Services\MediaService;
+use App\Services\TicketService;
+use App\Repositories\ScheduleRepository;
+use App\Repositories\VenueRepository;
+use App\Repositories\ArtistRepository;
+use App\Repositories\RestaurantRepository;
+use App\Repositories\MediaRepository;
+use App\Repositories\TicketRepository;
 use App\Services\Interfaces\IScheduleService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class ScheduleController extends BaseController
 {
-    private IScheduleService $scheduleService;
+    private ScheduleService $scheduleService;
+    private TicketService $ticketService;
 
     public function __construct()
     {
-        $this->scheduleService = new ScheduleService();
+        $mediaService = new MediaService(new MediaRepository());
+
+        $venueService      = new VenueService(new VenueRepository(), $mediaService);
+        $artistService     = new ArtistService(new ArtistRepository(), $mediaService);
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
+        $landmarkService   = new LandmarkService();
+
+        $this->scheduleService = new ScheduleService(
+            new ScheduleRepository(),
+            $venueService,
+            $artistService,
+            $restaurantService,
+            $landmarkService
+        );
+
+        $this->ticketService = new TicketService(new TicketRepository());
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -68,6 +96,7 @@ class ScheduleController extends BaseController
                 'artists'        => $this->scheduleService->getAllArtists(),
                 'restaurants'    => $this->scheduleService->getAllRestaurants(),
                 'landmarks'      => $this->scheduleService->getAllLandmarks(),
+                'ticketTypes'    => [],
             ]);
         } catch (\Exception $e) {
             error_log("Schedule create form error: " . $e->getMessage());
@@ -117,6 +146,7 @@ class ScheduleController extends BaseController
                 'artists'        => $this->scheduleService->getAllArtists(),
                 'restaurants'    => $this->scheduleService->getAllRestaurants(),
                 'landmarks'      => $this->scheduleService->getAllLandmarks(),
+                'ticketTypes'    => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
         } catch (\Exception $e) {
             error_log("Schedule edit error: " . $e->getMessage());

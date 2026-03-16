@@ -48,10 +48,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
     $r->addRoute('GET', '/events-jazz/schedule', ['App\Controllers\JazzController', 'schedule']);
     $r->addRoute('GET', '/events-jazz/artist/{slug}', ['App\Controllers\JazzArtistController', 'detail']);
-   
+
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
-    $r->addRoute('GET', '/events-dance/lineup', ['App\Controllers\DanceController', 'lineUp']);
+    $r->addRoute('GET', '/events-dance-lineup', ['App\Controllers\DanceController', 'lineUp']);
     $r->addRoute('GET', '/events-dance/artist/{slug}', ['App\Controllers\DanceArtistController', 'artistDetail']);
 
     /* Yummy event page */
@@ -59,9 +59,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
     $r->addRoute('GET', '/events-yummy/restaurants/{slug}', ['App\Controllers\YummyController', 'restaurantDetail']);
-    
+
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
-    
+
     /* History Event Route */
     $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
@@ -133,6 +133,18 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/schedules/edit/{id:\d+}', ['App\Controllers\ScheduleController', 'edit']);
     $r->addRoute('POST', '/cms/schedules/update/{id:\d+}', ['App\Controllers\ScheduleController', 'update']);
     $r->addRoute('POST', '/cms/schedules/delete/{id:\d+}', ['App\Controllers\ScheduleController', 'delete']);
+    $r->addRoute('GET', '/cms/schedules/{scheduleId:\d+}/tickets', ['App\Controllers\TicketController', 'index']);
+    $r->addRoute('GET', '/cms/schedules/{scheduleId:\d+}/tickets/create', ['App\Controllers\TicketController', 'create']);
+    $r->addRoute('POST', '/cms/schedules/{scheduleId:\d+}/tickets/store', ['App\Controllers\TicketController', 'store']);
+    $r->addRoute('GET', '/cms/schedules/{scheduleId:\d+}/tickets/edit/{ticketTypeId:\d+}', ['App\Controllers\TicketController', 'edit']);
+    $r->addRoute('POST', '/cms/schedules/{scheduleId:\d+}/tickets/update/{ticketTypeId:\d+}', ['App\Controllers\TicketController', 'update']);
+    $r->addRoute('POST', '/cms/schedules/{scheduleId:\d+}/tickets/delete/{ticketTypeId:\d+}', ['App\Controllers\TicketController', 'delete']);
+    $r->addRoute('GET', '/cms/ticket-schemes', ['App\Controllers\TicketController', 'schemeIndex']);
+    $r->addRoute('GET', '/cms/ticket-schemes/create', ['App\Controllers\TicketController', 'schemeCreate']);
+    $r->addRoute('POST', '/cms/ticket-schemes/store', ['App\Controllers\TicketController', 'schemeStore']);
+    $r->addRoute('GET', '/cms/ticket-schemes/edit/{id:\d+}', ['App\Controllers\TicketController', 'schemeEdit']);
+    $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
+    $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
     /* Payment */
     $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
@@ -143,7 +155,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
-
 });
 
 

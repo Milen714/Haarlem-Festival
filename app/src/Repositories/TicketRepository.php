@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Framework\Repository;
@@ -348,6 +349,55 @@ class TicketRepository extends Repository implements ITicketRepository
             }, $rows);
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching ticket schemes: " . $e->getMessage());
+        }
+    }
+
+    public function getTicketSchemeUsageCounts(): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT
+                    scheme_id,
+                    COUNT(*) AS usage_count
+                FROM TICKET_TYPE
+                WHERE scheme_id IS NOT NULL
+                GROUP BY scheme_id
+            ";
+
+            $stmt = $pdo->query($query);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $usageCounts = [];
+            foreach ($rows as $row) {
+                $usageCounts[(int)$row['scheme_id']] = (int)$row['usage_count'];
+            }
+
+            return $usageCounts;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket scheme usage counts: " . $e->getMessage());
+        }
+    }
+
+    public function countTicketTypesBySchemeId(int $ticketSchemeId): int
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT COUNT(*)
+                FROM TICKET_TYPE
+                WHERE scheme_id = :ticket_scheme_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':ticket_scheme_id', $ticketSchemeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return (int)$stmt->fetchColumn();
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error counting ticket types by scheme ID: " . $e->getMessage());
         }
     }
 
