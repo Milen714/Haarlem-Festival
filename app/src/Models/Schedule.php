@@ -30,6 +30,7 @@ class Schedule
     public ?Artist $artist = null;
     public ?Restaurant $restaurant = null;
     public ?Landmark $landmark = null;
+    public array $ticketTypes = [];
 
     public function __construct() {}
 

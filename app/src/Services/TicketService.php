@@ -30,6 +30,11 @@ class TicketService implements ITicketService
         return $this->ticketRepository->getTicketTypesByScheduleId($scheduleId);
     }
 
+    public function getTicketTypesByScheduleIds(array $scheduleIds): array
+    {
+        return $this->ticketRepository->getTicketTypesByScheduleIds($scheduleIds);
+    }
+
     public function create(TicketType $ticketType): bool
     {
         return $this->ticketRepository->create($ticketType);

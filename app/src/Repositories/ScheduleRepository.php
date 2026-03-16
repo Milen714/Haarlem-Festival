@@ -323,8 +323,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                     date           = :date,
                     start_time     = :start_time,
                     end_time       = :end_time,
-                    total_capacity = :total_capacity,
-                    -- tickets_sold and is_sold_out removed
+                    total_capacity = :total_capacity
                 WHERE schedule_id = :schedule_id
             ";
 

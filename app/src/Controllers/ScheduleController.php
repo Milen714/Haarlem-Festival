@@ -60,7 +60,12 @@ class ScheduleController extends BaseController
                 $date = trim($date) ?: null;
             }
 
-            $schedules        = $this->scheduleService->getAllSchedules($eventType, $date);
+            $schedules   = $this->scheduleService->getAllSchedules($eventType, $date);
+            $ids         = array_map(fn($s) => $s->schedule_id, $schedules);
+            $grouped     = $this->ticketService->getTicketTypesByScheduleIds($ids);
+            foreach ($schedules as $schedule) {
+                $schedule->ticketTypes = $grouped[$schedule->schedule_id] ?? [];
+            }
             $eventCategories  = $this->scheduleService->getAllEventCategories();
 
             $this->cmsLayout('Cms/Schedules/Index', [
