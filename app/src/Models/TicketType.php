@@ -17,6 +17,8 @@ class TicketType
 	public ?int $max_quantity = null;
 	public ?int $capacity = null;
 	public ?string $special_requirements = null;
+	public ?int $tickets_sold = null;
+	public ?bool $is_sold_out = null;
 
 	public function __construct() {}
 
@@ -31,6 +33,8 @@ class TicketType
 		$this->capacity = isset($data['capacity']) ? (int)$data['capacity'] : null;
 		$this->special_requirements = $data['special_requirements'] ?? null;
 		$this->schedule = isset($data['schedule_id']) ? (new Schedule())->hydrateSchedule($data) : null;
+		$this->is_sold_out = isset($data['is_sold_out']) ? (bool)$data['is_sold_out'] : null;
+		$this->tickets_sold = isset($data['tickets_sold']) ? (int)$data['tickets_sold'] : null;
 
 		$this->ticket_scheme = isset($data['ticket_scheme_id']) ? (new TicketScheme())->fromPDOData($data) : null;
 	}

@@ -58,6 +58,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
+                tt.tickets_sold,
+                tt.is_sold_out,
                 tt.capacity,
                 tt.special_requirements,
 
@@ -75,8 +77,6 @@ class OrderRepository extends Repository implements IOrderRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.venue_id,
                 s.artist_id,
                 s.restaurant_id,
@@ -183,6 +183,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
+                tt.tickets_sold,
+                tt.is_sold_out,
                 tt.capacity,
                 tt.special_requirements,
 
