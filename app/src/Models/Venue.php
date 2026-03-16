@@ -129,10 +129,10 @@ class Venue
             'alt_text' => $altText,
         ]);
     }
-    if (isset($data['event_id'])) {
+    if (isset($data['event_id']) || isset($data['event_category_id'])) {
         $this->event_category = new EventCategory();
         $this->event_category->fromPDOData([
-            'event_category_id' => $data['event_category_id'],
+            'event_category_id' => $data['event_category_id'] ?? $data['event_id'] ?? null,
             'event_category_title' => $data['event_category_title'] ?? null,
             'event_category_type' => $data['event_category_type'] ?? null,
             'event_category_slug' => $data['event_category_slug'] ?? null,

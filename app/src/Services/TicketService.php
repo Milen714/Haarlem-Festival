@@ -1,8 +1,12 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\TicketType;
 use App\Models\TicketScheme;
+use App\Models\Schedule;
+use App\Models\Enums\TicketLanguageEnum;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Services\Interfaces\ITicketService;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\TicketRepository;
@@ -11,9 +15,9 @@ class TicketService implements ITicketService
 {
     private ITicketRepository $ticketRepository;
 
-    public function __construct()
+    public function __construct(?ITicketRepository $ticketRepository = null)
     {
-        $this->ticketRepository = new TicketRepository();
+        $this->ticketRepository = $ticketRepository ?? new TicketRepository();
     }
 
     public function getTicketTypeById(int $ticketTypeId): ?TicketType
@@ -51,6 +55,16 @@ class TicketService implements ITicketService
         return $this->ticketRepository->getAllTicketSchemes();
     }
 
+    public function getTicketSchemeUsageCounts(): array
+    {
+        return $this->ticketRepository->getTicketSchemeUsageCounts();
+    }
+
+    public function getTicketSchemeUsageCount(int $ticketSchemeId): int
+    {
+        return $this->ticketRepository->countTicketTypesBySchemeId($ticketSchemeId);
+    }
+
     public function createTicketScheme(TicketScheme $ticketScheme): bool
     {
         return $this->ticketRepository->createTicketScheme($ticketScheme);
@@ -66,4 +80,220 @@ class TicketService implements ITicketService
         return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
     }
 
+    public function deleteTicketSchemeSafely(int $ticketSchemeId): void
+    {
+        $usageCount = $this->ticketRepository->countTicketTypesBySchemeId($ticketSchemeId);
+
+        if ($usageCount > 0) {
+            throw new \Exception("This ticket scheme is currently used by {$usageCount} ticket type(s) and cannot be deleted.");
+        }
+
+        $success = $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
+
+        if (!$success) {
+            throw new \Exception('Failed to delete ticket scheme in database');
+        }
+    }
+
+    public function createTicketSchemeFromRequest(array $postData): TicketScheme
+    {
+        $this->validateTicketSchemeData($postData);
+
+        $ticketScheme = $this->buildTicketSchemeFromPostData(new TicketScheme(), $postData);
+        $success = $this->ticketRepository->createTicketScheme($ticketScheme);
+
+        if (!$success) {
+            throw new \Exception('Failed to create ticket scheme in database');
+        }
+
+        return $ticketScheme;
+    }
+
+    public function updateTicketSchemeFromRequest(int $ticketSchemeId, array $postData): TicketScheme
+    {
+        $ticketScheme = $this->ticketRepository->getTicketSchemeById($ticketSchemeId);
+
+        if (!$ticketScheme) {
+            throw new \Exception('Ticket scheme not found');
+        }
+
+        $this->validateTicketSchemeData($postData);
+
+        $ticketScheme = $this->buildTicketSchemeFromPostData($ticketScheme, $postData);
+        $success = $this->ticketRepository->updateTicketScheme($ticketScheme);
+
+        if (!$success) {
+            throw new \Exception('Failed to update ticket scheme in database');
+        }
+
+        return $ticketScheme;
+    }
+
+    public function createFromRequest(int $scheduleId, array $postData): TicketType
+    {
+        $this->validateTicketTypeData($postData);
+
+        $ticketType = $this->buildTicketTypeFromPostData(new TicketType(), $scheduleId, $postData);
+        $success = $this->ticketRepository->create($ticketType);
+
+        if (!$success) {
+            throw new \Exception('Failed to create ticket type in database');
+        }
+
+        return $ticketType;
+    }
+
+    public function updateFromRequest(int $ticketTypeId, int $scheduleId, array $postData): TicketType
+    {
+        $ticketType = $this->ticketRepository->getTicketTypeById($ticketTypeId);
+
+        if (!$ticketType) {
+            throw new \Exception('Ticket type not found');
+        }
+
+        if (($ticketType->schedule?->schedule_id ?? null) !== $scheduleId) {
+            throw new \Exception('Ticket type does not belong to this schedule');
+        }
+
+        $this->validateTicketTypeData($postData);
+
+        $ticketType = $this->buildTicketTypeFromPostData($ticketType, $scheduleId, $postData);
+        $success = $this->ticketRepository->update($ticketType);
+
+        if (!$success) {
+            throw new \Exception('Failed to update ticket type in database');
+        }
+
+        return $ticketType;
+    }
+
+    private function validateTicketTypeData(array $postData): void
+    {
+        $schemeId = (int)($postData['scheme_id'] ?? 0);
+        $capacity = (int)($postData['capacity'] ?? 0);
+        $minQuantity = (int)($postData['min_quantity'] ?? 0);
+        $maxQuantity = (int)($postData['max_quantity'] ?? 0);
+
+        if ($schemeId <= 0) {
+            throw new \Exception('Please select a ticket scheme');
+        }
+
+        if (!$this->ticketRepository->getTicketSchemeById($schemeId)) {
+            throw new \Exception('Selected ticket scheme was not found');
+        }
+
+        if ($capacity <= 0) {
+            throw new \Exception('Capacity must be greater than 0');
+        }
+
+        if ($minQuantity <= 0) {
+            throw new \Exception('Minimum quantity must be at least 1');
+        }
+
+        if ($maxQuantity <= 0) {
+            throw new \Exception('Maximum quantity must be at least 1');
+        }
+
+        if ($minQuantity > $maxQuantity) {
+            throw new \Exception('Minimum quantity cannot be greater than maximum quantity');
+        }
+
+        $minAge = trim((string)($postData['min_age'] ?? ''));
+        $maxAge = trim((string)($postData['max_age'] ?? ''));
+
+        if ($minAge !== '' && $maxAge !== '' && (int)$minAge > (int)$maxAge) {
+            throw new \Exception('Minimum age cannot be greater than maximum age');
+        }
+    }
+
+    private function buildTicketTypeFromPostData(TicketType $ticketType, int $scheduleId, array $postData): TicketType
+    {
+        $schedule = new Schedule();
+        $schedule->schedule_id = $scheduleId;
+
+        $ticketType->schedule = $schedule;
+        $ticketType->ticket_scheme = $this->ticketRepository->getTicketSchemeById((int)$postData['scheme_id']);
+        $ticketType->description = $this->normalizeNullableString($postData['description'] ?? null);
+        $ticketType->min_age = $this->normalizeNullableInt($postData['min_age'] ?? null);
+        $ticketType->max_age = $this->normalizeNullableInt($postData['max_age'] ?? null);
+        $ticketType->min_quantity = (int)$postData['min_quantity'];
+        $ticketType->max_quantity = (int)$postData['max_quantity'];
+        $ticketType->capacity = (int)$postData['capacity'];
+        $ticketType->special_requirements = $this->normalizeNullableString($postData['special_requirements'] ?? null);
+
+        return $ticketType;
+    }
+
+    private function validateTicketSchemeData(array $postData): void
+    {
+        $name = $this->normalizeNullableString($postData['name'] ?? null);
+        $schemeEnum = $postData['scheme_enum'] ?? null;
+        $priceRaw = $postData['price'] ?? null;
+        $ticketLanguage = $postData['ticket_language'] ?? null;
+
+        if ($name === null) {
+            throw new \Exception('Ticket scheme name is required');
+        }
+
+        if (!is_string($schemeEnum) || trim($schemeEnum) === '') {
+            throw new \Exception('Ticket scheme type is required');
+        }
+
+        try {
+            TicketSchemeEnum::from(trim($schemeEnum));
+        } catch (\ValueError $e) {
+            throw new \Exception('Selected ticket scheme type is invalid');
+        }
+
+        if (!is_numeric($priceRaw) || (float)$priceRaw < 0) {
+            throw new \Exception('Price must be a valid non-negative number');
+        }
+
+        if (is_string($ticketLanguage) && trim($ticketLanguage) !== '') {
+            try {
+                TicketLanguageEnum::from(trim($ticketLanguage));
+            } catch (\ValueError $e) {
+                throw new \Exception('Selected ticket language is invalid');
+            }
+        }
+    }
+
+    private function buildTicketSchemeFromPostData(TicketScheme $ticketScheme, array $postData): TicketScheme
+    {
+        $ticketScheme->name = $this->normalizeNullableString($postData['name'] ?? null);
+        $ticketScheme->scheme_enum = TicketSchemeEnum::from(trim((string)$postData['scheme_enum']));
+        $ticketScheme->price = round((float)$postData['price'], 2);
+        $ticketScheme->fee = null;
+
+        $ticketLanguage = $this->normalizeNullableString($postData['ticket_language'] ?? null);
+        $ticketScheme->ticket_language = $ticketLanguage !== null ? TicketLanguageEnum::from($ticketLanguage) : null;
+
+        return $ticketScheme;
+    }
+
+    private function normalizeNullableString(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $value = trim($value);
+        return $value === '' ? null : $value;
+    }
+
+    private function normalizeNullableInt(mixed $value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+            if ($value === '') {
+                return null;
+            }
+        }
+
+        return (int)$value;
+    }
 }

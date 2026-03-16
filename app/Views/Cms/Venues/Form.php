@@ -11,7 +11,7 @@ $pageTitle = $isEdit ? "Edit Venue: {$venue->name}" : "Create New Venue";
 $action = $action ?? '/cms/venues/store';
 ?>
 
-<section class="p-8 max-w-4xl mx-auto">
+<section class="mx-auto max-w-4xl p-4 md:p-8">
     <!-- Header -->
     <header class="mb-8">
         <h1 class="text-4xl font-bold mb-2" style="font-family: 'Cormorant Garamond', serif;">
@@ -92,7 +92,7 @@ $action = $action ?? '/cms/venues/store';
                     placeholder="e.g., Grote Markt 16" required>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <!-- City -->
                 <div>
                     <label class="block text-gray-700 font-semibold mb-2" for="city">
@@ -181,13 +181,13 @@ $action = $action ?? '/cms/venues/store';
         </div>
 
         <!-- Submit Buttons -->
-        <div class="flex gap-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <button type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
+                class="w-full rounded-lg bg-blue-600 px-8 py-3 font-semibold text-white transition hover:bg-blue-700 sm:w-auto">
                 <?= $isEdit ? 'Update Venue' : 'Create Venue' ?>
             </button>
             <a href="/cms/venues"
-                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-3 rounded-lg font-semibold transition">
+                class="w-full rounded-lg bg-gray-200 px-8 py-3 text-center font-semibold text-gray-700 transition hover:bg-gray-300 sm:w-auto">
                 Cancel
             </a>
         </div>
