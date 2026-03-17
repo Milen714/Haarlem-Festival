@@ -85,6 +85,18 @@ class TicketService implements ITicketService
         return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
     }
 
+    // Returns how many seats are still available for a ticket type so you cant overbook 
+    public function getAvailableCapacity(int $ticketTypeId): int
+    {
+        return $this->ticketRepository->getAvailableCapacity($ticketTypeId);
+    }
+
+    // This is a hard reservation that should only be called at the moment of checkout to prevent holding seats indefinitely.
+    public function reserveSeats(int $ticketTypeId, int $quantity): bool
+    {
+        return $this->ticketRepository->atomicIncrementTicketsSold($ticketTypeId, $quantity);
+    }
+
     public function deleteTicketSchemeSafely(int $ticketSchemeId): void
     {
         $usageCount = $this->ticketRepository->countTicketTypesBySchemeId($ticketSchemeId);

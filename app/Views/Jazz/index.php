@@ -81,3 +81,6 @@ $hasRenderedVenues = false;
     include __DIR__ . '/Components/jazz-venues.php';
 ?>
 <?php endif; ?>
+
+<?php include __DIR__ . '/Components/jazz-ticket-modal.php'; ?>
+<?php include __DIR__ . '/Components/jazz-ticket-modal-js.php'; ?>

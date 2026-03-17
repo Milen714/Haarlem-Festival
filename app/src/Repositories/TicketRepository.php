@@ -433,6 +433,60 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
+    /**
+     * Returns how many seats are still available for a ticket type.
+     * Uses a fresh SELECT so the number is never stale from a cached object.
+     */
+    public function getAvailableCapacity(int $ticketTypeId): int
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT GREATEST(0, capacity - tickets_sold) AS available
+                 FROM TICKET_TYPE
+                 WHERE ticket_type_id = :id AND is_sold_out = 0"
+            );
+            $stmt->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? (int) $row['available'] : 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error checking capacity: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Claims the requested number of seats in a single database update, returning false if not enough are left.
+     * Automatically marks the ticket as sold out when the last seat is taken, so two people can never claim the same seat.
+     */
+    public function atomicIncrementTicketsSold(int $ticketTypeId, int $quantity): bool
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "UPDATE TICKET_TYPE
+                 SET
+                     tickets_sold = tickets_sold + :qty,
+                     is_sold_out  = CASE
+                                        WHEN (tickets_sold + :qty2) >= capacity THEN 1
+                                        ELSE 0
+                                    END
+                 WHERE ticket_type_id = :id
+                   AND is_sold_out    = 0
+                   AND (tickets_sold  + :qty3) <= capacity"
+            );
+            $stmt->bindValue(':qty',  $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':qty2', $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':qty3', $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
+            $stmt->execute();
+            // rowCount() = 0 means the WHERE guard failed → no seats left
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error incrementing tickets sold: " . $e->getMessage());
+        }
+    }
+
     public function createTicketScheme(TicketScheme $ticketScheme): bool
     {
         try {

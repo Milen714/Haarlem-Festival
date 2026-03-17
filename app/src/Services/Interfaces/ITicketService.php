@@ -25,4 +25,6 @@ interface ITicketService
     public function createTicketSchemeFromRequest(array $postData): TicketScheme;
     public function updateTicketSchemeFromRequest(int $ticketSchemeId, array $postData): TicketScheme;
     public function deleteTicketSchemeSafely(int $ticketSchemeId): void;
+    public function getAvailableCapacity(int $ticketTypeId): int;
+    public function reserveSeats(int $ticketTypeId, int $quantity): bool;
 }

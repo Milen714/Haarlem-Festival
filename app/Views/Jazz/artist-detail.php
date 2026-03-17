@@ -65,6 +65,9 @@ if (!empty($sections)) {
 
     <?php include __DIR__ . '/Components/artist-detail-schedule.php'; ?>
 
+    <?php include __DIR__ . '/Components/jazz-ticket-modal.php'; ?>
+    <?php include __DIR__ . '/Components/jazz-ticket-modal-js.php'; ?>
+
     <?php /* CMS Section 3 – Tickets & Jazz CTA */ ?>
     <?php if (!empty($cmsSections[3]->content_html)): ?>
         <div class="cms-section">
