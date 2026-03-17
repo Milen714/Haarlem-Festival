@@ -104,6 +104,17 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                     <span>Schedules</span>
                 </a>
 
+                <a href="/cms/ticket-schemes" class="cms-nav-link flex items-center px-4 py-2 rounded-lg"
+                    style="color: #9CA3AF;">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3-.672 3-1.5S13.657 8 12 8z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 9.5C6 6.462 8.686 4 12 4s6 2.462 6 5.5v5C18 17.538 15.314 20 12 20s-6-2.462-6-5.5v-5z" />
+                    </svg>
+                    <span>Ticket Schemes</span>
+                </a>
+
                 <a href="/cms/restaurants" class="cms-nav-link flex items-center px-4 py-2 rounded-lg"
                     style="color: #9CA3AF;">
                     <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,10 +251,6 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                             <a href="/cms/profile"
                                 class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#334155]">
                                 Profile
-                            </a>
-                            <a href="/cms/settings"
-                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#334155]">
-                                Settings
                             </a>
                             <hr class="my-2 border-gray-200 dark:border-[#334155]">
                             <form action="/logout" method="post">

@@ -117,9 +117,9 @@ class Venue
     $this->phone = $data['venue_phone'] ?? ($data['phone'] ?? null);
     $this->email = $data['venue_email'] ?? ($data['email'] ?? null);
 
-    $mediaId = $data['venue_image_id'] ?? $data['media_id'] ?? null;
-    $filePath = $data['image_path'] ?? $data['file_path'] ?? null;
-    $altText = $data['image_alt'] ?? $data['alt_text'] ?? null;
+    $mediaId = $data['venue_image_id'] ?? $data['media_id'] ?? $data['venue_media_id'] ?? null;
+    $filePath = $data['image_path'] ?? $data['file_path'] ?? $data['venue_media_file_path'] ?? null;
+    $altText = $data['image_alt'] ?? $data['alt_text'] ?? $data['venue_media_alt_text'] ?? null;
     
     if ($mediaId && $filePath) {
         $this->venue_image = new Media();
@@ -129,10 +129,10 @@ class Venue
             'alt_text' => $altText,
         ]);
     }
-    if (isset($data['event_id'])) {
+    if (isset($data['event_id']) || isset($data['event_category_id'])) {
         $this->event_category = new EventCategory();
         $this->event_category->fromPDOData([
-            'event_category_id' => $data['event_category_id'],
+            'event_category_id' => $data['event_category_id'] ?? $data['event_id'] ?? null,
             'event_category_title' => $data['event_category_title'] ?? null,
             'event_category_type' => $data['event_category_type'] ?? null,
             'event_category_slug' => $data['event_category_slug'] ?? null,

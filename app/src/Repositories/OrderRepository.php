@@ -58,6 +58,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
+                tt.tickets_sold,
+                tt.is_sold_out,
                 tt.capacity,
                 tt.special_requirements,
 
@@ -75,8 +77,6 @@ class OrderRepository extends Repository implements IOrderRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.venue_id,
                 s.artist_id,
                 s.restaurant_id,
@@ -99,8 +99,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 venue_media.media_id as venue_media_id,
                 venue_media.file_path as venue_media_file_path,
                 venue_media.alt_text as venue_media_alt_text,
-                venue_media.file_path as image_path,
-                venue_media.alt_text as image_alt,
+
+                
 
                 -- Artist fields
                 a.artist_id,
@@ -183,6 +183,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
+                tt.tickets_sold,
+                tt.is_sold_out,
                 tt.capacity,
                 tt.special_requirements,
 
@@ -426,21 +428,44 @@ class OrderRepository extends Repository implements IOrderRepository
             throw new \RuntimeException("Error fetching orders by user ID: " . $e->getMessage());
         }
     }
-    public function getOpenOrderByUserId(int $userId): ?Order{
+    public function getOpenOrderByUserId(int $userId, ?array $statuses = null): ?Order{
         try {
             $pdo = $this->connect();
+            $statusesWhereClause = '';
+            if (is_array($statuses) && count($statuses) > 0) {
+                $placeholders = [];
+                foreach ($statuses as $index => $status) {
+                    $placeholders[] = ":status_$index";
+                }
+                $placeholders = implode(', ', $placeholders);
+                $statusesWhereClause = "AND o2.status IN ($placeholders)";
+            } else {
+                $statusesWhereClause = "AND o2.status IN ('Pending', 'Confirmed')";
+            }
 
             $query = $this->getBaseQuery() . "
-                WHERE o.user_id = :user_id AND o.status = 'Pending' OR o.status = 'Confirmed'
-                ORDER BY o.order_date DESC
-                LIMIT 1
+                WHERE o.order_id = (
+                    SELECT o2.order_id
+                    FROM `ORDER` o2
+                    WHERE o2.user_id = :user_id
+                    $statusesWhereClause
+                    ORDER BY o2.order_date DESC, o2.order_id DESC
+                    LIMIT 1
+                )
+                ORDER BY oi.orderitem_id ASC
             ";
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-            //$stmt->bindValue(':status', OrderStatus::Pending->value);
+            if (is_array($statuses) && count($statuses) > 0) {
+                foreach ($statuses as $index => $status) {
+                    $statusValue = $status instanceof OrderStatus ? $status->value : (string)$status;
+                    $stmt->bindValue(":status_$index", $statusValue, PDO::PARAM_STR);
+                }
+            }
             $stmt->execute();
 
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
             if (empty($rows)) {
                 return null;
             }
@@ -481,7 +506,12 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt->bindValue(':order_id', $orderId, PDO::PARAM_INT);
             $stmt->bindValue(':status', $status->value);
 
-            return $stmt->execute();
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             throw new \RuntimeException("Failed to update order status: " . $e->getMessage());
         }

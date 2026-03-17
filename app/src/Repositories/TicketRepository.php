@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Framework\Repository;
@@ -25,8 +26,12 @@ class TicketRepository extends Repository implements ITicketRepository
                 tt.max_age,
                 tt.min_quantity,
                 tt.max_quantity,
+                tt.tickets_sold,
+                tt.is_sold_out,
                 tt.capacity,
                 tt.special_requirements,
+                tt.tickets_sold,
+                tt.is_sold_out,
 
                 -- Ticket scheme fields
                 ts.ticket_scheme_id,
@@ -41,8 +46,6 @@ class TicketRepository extends Repository implements ITicketRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.venue_id,
                 s.artist_id,
                 s.restaurant_id,
@@ -59,6 +62,12 @@ class TicketRepository extends Repository implements ITicketRepository
                 v.capacity as venue_capacity,
                 v.phone as venue_phone,
                 v.email as venue_email,
+                v.venue_image_id as venue_image_id,
+                 -- Venue media fields
+                venue_media.media_id as venue_media_id,
+                venue_media.file_path as venue_media_file_path,
+                venue_media.alt_text as venue_media_alt_text,
+
 
                 -- Artist fields
                 a.artist_id,
@@ -121,6 +130,7 @@ class TicketRepository extends Repository implements ITicketRepository
             INNER JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
             LEFT JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
+            LEFT JOIN MEDIA venue_media ON v.venue_image_id = venue_media.media_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
             LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
@@ -178,6 +188,33 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
+    // TODO: This is a duplicate of getTicketTypesByScheduleId but optimized for multiple schedule IDs at once to avoid N+1 query problem in ScheduleController
+    public function getTicketTypesByScheduleIds(array $scheduleIds): array
+    {
+        if (empty($scheduleIds)) {
+            return [];
+        }
+
+        $pdo = $this->connect();
+        $placeholders = implode(',', array_fill(0, count($scheduleIds), '?'));
+        $query = $this->getBaseQuery() . "
+            WHERE tt.schedule_id IN ($placeholders)
+            ORDER BY tt.schedule_id ASC, tt.ticket_type_id ASC
+        ";
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute(array_values($scheduleIds));
+
+        $grouped = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $ticketType = new TicketType();
+            $ticketType->fromPDOData($row);
+            $grouped[(int)$row['schedule_id']][] = $ticketType;
+        }
+
+        return $grouped;
+    }
+
     public function create(TicketType $ticketType): bool
     {
         try {
@@ -192,6 +229,8 @@ class TicketRepository extends Repository implements ITicketRepository
                     max_age,
                     min_quantity,
                     max_quantity,
+                    tickets_sold,
+                    is_sold_out,
                     capacity,
                     special_requirements
                 ) VALUES (
@@ -202,6 +241,8 @@ class TicketRepository extends Repository implements ITicketRepository
                     :max_age,
                     :min_quantity,
                     :max_quantity,
+                    :tickets_sold,
+                    :is_sold_out,
                     :capacity,
                     :special_requirements
                 )
@@ -215,6 +256,8 @@ class TicketRepository extends Repository implements ITicketRepository
             $stmt->bindValue(':max_age', $ticketType->max_age, PDO::PARAM_INT);
             $stmt->bindValue(':min_quantity', $ticketType->min_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':max_quantity', $ticketType->max_quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold', $ticketType->tickets_sold, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out', $ticketType->is_sold_out, PDO::PARAM_BOOL);
             $stmt->bindValue(':capacity', $ticketType->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':special_requirements', $ticketType->special_requirements);
 
@@ -243,6 +286,8 @@ class TicketRepository extends Repository implements ITicketRepository
                     max_age = :max_age,
                     min_quantity = :min_quantity,
                     max_quantity = :max_quantity,
+                    tickets_sold = :tickets_sold,
+                    is_sold_out = :is_sold_out,
                     capacity = :capacity,
                     special_requirements = :special_requirements
                 WHERE ticket_type_id = :ticket_type_id
@@ -257,6 +302,8 @@ class TicketRepository extends Repository implements ITicketRepository
             $stmt->bindValue(':max_age', $ticketType->max_age, PDO::PARAM_INT);
             $stmt->bindValue(':min_quantity', $ticketType->min_quantity, PDO::PARAM_INT);
             $stmt->bindValue(':max_quantity', $ticketType->max_quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':tickets_sold', $ticketType->tickets_sold, PDO::PARAM_INT);
+            $stmt->bindValue(':is_sold_out', $ticketType->is_sold_out, PDO::PARAM_BOOL);
             $stmt->bindValue(':capacity', $ticketType->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':special_requirements', $ticketType->special_requirements);
 
@@ -338,6 +385,55 @@ class TicketRepository extends Repository implements ITicketRepository
             }, $rows);
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching ticket schemes: " . $e->getMessage());
+        }
+    }
+
+    public function getTicketSchemeUsageCounts(): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT
+                    scheme_id,
+                    COUNT(*) AS usage_count
+                FROM TICKET_TYPE
+                WHERE scheme_id IS NOT NULL
+                GROUP BY scheme_id
+            ";
+
+            $stmt = $pdo->query($query);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $usageCounts = [];
+            foreach ($rows as $row) {
+                $usageCounts[(int)$row['scheme_id']] = (int)$row['usage_count'];
+            }
+
+            return $usageCounts;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket scheme usage counts: " . $e->getMessage());
+        }
+    }
+
+    public function countTicketTypesBySchemeId(int $ticketSchemeId): int
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT COUNT(*)
+                FROM TICKET_TYPE
+                WHERE scheme_id = :ticket_scheme_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':ticket_scheme_id', $ticketSchemeId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return (int)$stmt->fetchColumn();
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error counting ticket types by scheme ID: " . $e->getMessage());
         }
     }
 

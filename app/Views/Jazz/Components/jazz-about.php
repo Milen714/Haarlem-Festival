@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Views\Jazz\Components;
 ?>
 
-<section class="py-16 bg-white" aria-labelledby="about-heading">
+<section class="py-10 bg-white" aria-labelledby="about-heading">
     <div class="container mx-auto px-4">
-        <h2 id="about-heading" class="text-4xl font-bold text-center mb-12" style="font-family: 'Cormorant Garamond', serif;">
+        <h2 id="about-heading" class="text-4xl font-bold text-center mb-12"
+            style="font-family: 'Cormorant Garamond', serif;">
             <?= htmlspecialchars($aboutSection->title ?? 'About the Festival') ?>
         </h2>
 

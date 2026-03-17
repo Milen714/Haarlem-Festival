@@ -3,9 +3,11 @@ namespace App\ViewModels\Magic;
 use App\CmsModels\Page;
 use App\CmsModels\PageSection;
 use App\CmsModels\Enums\SectionType;
+use App\ViewModels\Magic\MagicTicketsViewModel;
 
 class MagicAccessibility{
     public Page $page;
+    public MagicTicketsViewModel $ticketsViewModel;
     public ?PageSection $heroSection = null;
     
      /** @var PageSection[] $introSections */

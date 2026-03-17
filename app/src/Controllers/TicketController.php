@@ -1,0 +1,313 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
+use App\Repositories\ArtistRepository;
+use App\Repositories\MediaRepository;
+use App\Repositories\RestaurantRepository;
+use App\Repositories\ScheduleRepository;
+use App\Repositories\TicketRepository;
+use App\Repositories\VenueRepository;
+use App\Services\ArtistService;
+use App\Services\LandmarkService;
+use App\Services\MediaService;
+use App\Services\RestaurantService;
+use App\Services\ScheduleService;
+use App\Services\TicketService;
+use App\Services\VenueService;
+
+class TicketController extends BaseController
+{
+    private TicketService $ticketService;
+    private ScheduleService $scheduleService;
+
+    public function __construct()
+    {
+        $mediaService = new MediaService(new MediaRepository());
+        $venueService = new VenueService(new VenueRepository(), $mediaService);
+        $artistService = new ArtistService(new ArtistRepository(), $mediaService);
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
+        $landmarkService = new LandmarkService();
+
+        $this->ticketService = new TicketService(new TicketRepository());
+        $this->scheduleService = new ScheduleService(
+            new ScheduleRepository(),
+            $venueService,
+            $artistService,
+            $restaurantService,
+            $landmarkService
+        );
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function index($vars = []): void
+    {
+        $scheduleId = (int)($vars['scheduleId'] ?? 0);
+
+        try {
+            $schedule = $this->getScheduleOrThrow($scheduleId);
+
+            $this->cmsLayout('Cms/Schedules/Tickets/Index', [
+                'title' => 'Manage Schedule Tickets',
+                'schedule' => $schedule,
+                'ticketTypes' => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
+            ]);
+        } catch (\Exception $e) {
+            error_log('Schedule ticket list error: ' . $e->getMessage());
+            $this->startSession();
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/schedules');
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function create($vars = []): void
+    {
+        $scheduleId = (int)($vars['scheduleId'] ?? 0);
+
+        try {
+            $schedule = $this->getScheduleOrThrow($scheduleId);
+
+            $this->cmsLayout('Cms/Schedules/Tickets/Form', [
+                'title' => 'Create Ticket Type',
+                'schedule' => $schedule,
+                'ticketType' => null,
+                'ticketSchemes' => $this->ticketService->getAllTicketSchemes(),
+                'action' => "/cms/schedules/{$scheduleId}/tickets/store",
+            ]);
+        } catch (\Exception $e) {
+            error_log('Schedule ticket create form error: ' . $e->getMessage());
+            $this->startSession();
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/schedules');
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function store($vars = []): void
+    {
+        $this->startSession();
+        $scheduleId = (int)($vars['scheduleId'] ?? 0);
+
+        try {
+            $this->getScheduleOrThrow($scheduleId);
+            $ticketType = $this->ticketService->createFromRequest($scheduleId, $_POST);
+
+            $_SESSION['success'] = 'Ticket type #' . ($ticketType->ticket_type_id ?? '') . ' created successfully!';
+            $this->redirect("/cms/schedules/{$scheduleId}/tickets");
+        } catch (\Exception $e) {
+            error_log('Schedule ticket store error: ' . $e->getMessage());
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/schedules/{$scheduleId}/tickets/create");
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function edit($vars = []): void
+    {
+        $scheduleId = (int)($vars['scheduleId'] ?? 0);
+        $ticketTypeId = (int)($vars['ticketTypeId'] ?? 0);
+
+        try {
+            $schedule = $this->getScheduleOrThrow($scheduleId);
+            $ticketType = $this->getTicketTypeForScheduleOrThrow($scheduleId, $ticketTypeId);
+
+            $this->cmsLayout('Cms/Schedules/Tickets/Form', [
+                'title' => 'Edit Ticket Type',
+                'schedule' => $schedule,
+                'ticketType' => $ticketType,
+                'ticketSchemes' => $this->ticketService->getAllTicketSchemes(),
+                'action' => "/cms/schedules/{$scheduleId}/tickets/update/{$ticketTypeId}",
+            ]);
+        } catch (\Exception $e) {
+            error_log('Schedule ticket edit error: ' . $e->getMessage());
+            $this->startSession();
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/schedules/{$scheduleId}/tickets");
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function update($vars = []): void
+    {
+        $this->startSession();
+        $scheduleId = (int)($vars['scheduleId'] ?? 0);
+        $ticketTypeId = (int)($vars['ticketTypeId'] ?? 0);
+
+        try {
+            $ticketType = $this->ticketService->updateFromRequest($ticketTypeId, $scheduleId, $_POST);
+
+            $_SESSION['success'] = 'Ticket type #' . ($ticketType->ticket_type_id ?? $ticketTypeId) . ' updated successfully!';
+            $this->redirect("/cms/schedules/{$scheduleId}/tickets");
+        } catch (\Exception $e) {
+            error_log('Schedule ticket update error: ' . $e->getMessage());
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/schedules/{$scheduleId}/tickets/edit/{$ticketTypeId}");
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function delete($vars = []): void
+    {
+        $this->startSession();
+        $scheduleId = (int)($vars['scheduleId'] ?? 0);
+        $ticketTypeId = (int)($vars['ticketTypeId'] ?? 0);
+
+        try {
+            $this->getTicketTypeForScheduleOrThrow($scheduleId, $ticketTypeId);
+            $this->ticketService->delete($ticketTypeId);
+            $_SESSION['success'] = 'Ticket type deleted successfully!';
+        } catch (\Exception $e) {
+            error_log('Schedule ticket delete error: ' . $e->getMessage());
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        $this->redirect("/cms/schedules/{$scheduleId}/tickets");
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function schemeIndex($vars = []): void
+    {
+        try {
+            $this->cmsLayout('Cms/TicketSchemes/Index', [
+                'title' => 'Manage Ticket Schemes',
+                'ticketSchemes' => $this->ticketService->getAllTicketSchemes(),
+                'usageCounts' => $this->ticketService->getTicketSchemeUsageCounts(),
+            ]);
+        } catch (\Exception $e) {
+            error_log('Ticket scheme list error: ' . $e->getMessage());
+            $this->cmsLayout('Cms/TicketSchemes/Index', [
+                'title' => 'Manage Ticket Schemes',
+                'ticketSchemes' => [],
+                'usageCounts' => [],
+                'error' => 'Failed to load ticket schemes: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function schemeCreate($vars = []): void
+    {
+        $this->cmsLayout('Cms/TicketSchemes/Form', [
+            'title' => 'Create Ticket Scheme',
+            'ticketScheme' => null,
+            'action' => '/cms/ticket-schemes/store',
+        ]);
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function schemeStore($vars = []): void
+    {
+        $this->startSession();
+
+        try {
+            $ticketScheme = $this->ticketService->createTicketSchemeFromRequest($_POST);
+            $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' created successfully!";
+            $this->redirect('/cms/ticket-schemes');
+        } catch (\Exception $e) {
+            error_log('Ticket scheme create error: ' . $e->getMessage());
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/ticket-schemes/create');
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function schemeEdit($vars = []): void
+    {
+        $ticketSchemeId = (int)($vars['id'] ?? 0);
+
+        try {
+            $ticketScheme = $this->ticketService->getTicketSchemeById($ticketSchemeId);
+
+            if (!$ticketScheme) {
+                throw new \Exception('Ticket scheme not found');
+            }
+
+            $this->cmsLayout('Cms/TicketSchemes/Form', [
+                'title' => 'Edit Ticket Scheme',
+                'ticketScheme' => $ticketScheme,
+                'action' => "/cms/ticket-schemes/update/{$ticketSchemeId}",
+            ]);
+        } catch (\Exception $e) {
+            error_log('Ticket scheme edit error: ' . $e->getMessage());
+            $this->startSession();
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/ticket-schemes');
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function schemeUpdate($vars = []): void
+    {
+        $this->startSession();
+        $ticketSchemeId = (int)($vars['id'] ?? 0);
+
+        try {
+            $ticketScheme = $this->ticketService->updateTicketSchemeFromRequest($ticketSchemeId, $_POST);
+            $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' updated successfully!";
+            $this->redirect('/cms/ticket-schemes');
+        } catch (\Exception $e) {
+            error_log('Ticket scheme update error: ' . $e->getMessage());
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/ticket-schemes/edit/{$ticketSchemeId}");
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function schemeDelete($vars = []): void
+    {
+        $this->startSession();
+        $ticketSchemeId = (int)($vars['id'] ?? 0);
+
+        try {
+            $ticketScheme = $this->ticketService->getTicketSchemeById($ticketSchemeId);
+
+            if (!$ticketScheme) {
+                throw new \Exception('Ticket scheme not found');
+            }
+
+            $this->ticketService->deleteTicketSchemeSafely($ticketSchemeId);
+            $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' deleted successfully!";
+        } catch (\Exception $e) {
+            error_log('Ticket scheme delete error: ' . $e->getMessage());
+            $_SESSION['error'] = $e->getMessage();
+        }
+
+        $this->redirect('/cms/ticket-schemes');
+    }
+
+    private function getScheduleOrThrow(int $scheduleId)
+    {
+        $schedule = $this->scheduleService->getScheduleById($scheduleId);
+
+        if (!$schedule) {
+            throw new \Exception('Schedule not found');
+        }
+
+        return $schedule;
+    }
+
+    private function getTicketTypeForScheduleOrThrow(int $scheduleId, int $ticketTypeId)
+    {
+        $ticketType = $this->ticketService->getTicketTypeById($ticketTypeId);
+
+        if (!$ticketType) {
+            throw new \Exception('Ticket type not found');
+        }
+
+        if (($ticketType->schedule?->schedule_id ?? null) !== $scheduleId) {
+            throw new \Exception('Ticket type does not belong to this schedule');
+        }
+
+        return $ticketType;
+    }
+
+    private function startSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+}

@@ -16,6 +16,8 @@ use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
+use DateTime;
+
 class PaymentController extends BaseController
 {
     
@@ -32,14 +34,14 @@ class PaymentController extends BaseController
     public function index(array $params = [])
     {
         //$order=$this->orderService->getOrderById(2);
-        $order= $this->orderService->createSessionCart();
-        $viewModel = new ShoppingCartViewModel($this->orderService->getOrderById(1));
+        $order= $this->orderService->getSessionCart();
+        $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($this->orderService->getOrderById(1));
+        $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
 
@@ -80,23 +82,22 @@ class PaymentController extends BaseController
     }
     public function details(array $params = [])
     {
-        $order=$this->orderService->getOrderById(1);
+        //$order=$this->orderService->getOrderById(1);
+        $order=$this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
     }
     public function test(array $params = [])
     {
          header('Content-Type: application/json');
-         //$order=$this->orderService->getOpenOrderByUserId(1);
-         $order=$_SESSION['session_cart'] ?? null;
-         if (!$order) {
-            echo json_encode(['message' => 'No open order found for user.']);
-            return;
-         }
+         $sessionCart = $this->orderService->getSessionCart();
+         $user = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser'] : new User();
+          $this->orderService->persistSessionCart($sessionCart, $user);
+          $this->orderService->hydrateSessionCart($sessionCart);
 
-         $viewModel = new ShoppingCartViewModel($order);
+         //$viewModel = new ShoppingCartViewModel($order);
         
-         echo json_encode($viewModel, JSON_PRETTY_PRINT);   
+        // echo json_encode($viewModel, JSON_PRETTY_PRINT);   
         //$this->view('ShoppingCart/WishlistMain', ['viewModel' => null]);
     }
 

@@ -144,8 +144,6 @@ class ScheduleService implements IScheduleService
         }
         
         $schedule->total_capacity = (int)($data['total_capacity'] ?? 0);
-        $schedule->tickets_sold   = (int)($data['tickets_sold'] ?? 0);
-        $schedule->is_sold_out    = isset($data['is_sold_out']) && $data['is_sold_out'] == '1';
         return $schedule;
     }
 
@@ -176,7 +174,6 @@ class ScheduleService implements IScheduleService
                     : '',
                 'venue_capacity' => $s->venue?->capacity,
                 'total_capacity' => $s->total_capacity,
-                'is_sold_out'    => $s->is_sold_out ?? false,
             ];
         }
 

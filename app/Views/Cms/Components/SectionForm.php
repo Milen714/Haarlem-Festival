@@ -32,18 +32,18 @@ use App\CmsModels\Enums\SectionType;
         </article>
 
         <?php if (isset($section->cta_text)): ?>
-        <article class="flex flex-row flex-wrap gap-2 justify-between mb-4">
-            <article class="input_group flex-1">
-                <label class="input_label">CTA Text:</label>
-                <input class="form_input" type="text" name="sections[<?= $i ?>][cta_text]"
-                    value="<?= htmlspecialchars($section->cta_text ?? '') ?>">
+            <article class="flex flex-row flex-wrap gap-2 justify-between mb-4">
+                <article class="input_group flex-1">
+                    <label class="input_label">CTA Text:</label>
+                    <input class="form_input" type="text" name="sections[<?= $i ?>][cta_text]"
+                        value="<?= htmlspecialchars($section->cta_text ?? '') ?>">
+                </article>
+                <article class="input_group flex-1">
+                    <label class="input_label">CTA URL:</label>
+                    <input class="form_input" type="text" name="sections[<?= $i ?>][cta_url]"
+                        value="<?= htmlspecialchars($section->cta_url ?? '') ?>">
+                </article>
             </article>
-            <article class="input_group flex-1">
-                <label class="input_label">CTA URL:</label>
-                <input class="form_input" type="text" name="sections[<?= $i ?>][cta_url]"
-                    value="<?= htmlspecialchars($section->cta_url ?? '') ?>">
-            </article>
-        </article>
         <?php endif; ?>
 
         <article class="input_group mb-4">
@@ -52,44 +52,44 @@ use App\CmsModels\Enums\SectionType;
                 name="sections[<?= $i ?>][content_html]"><?= htmlspecialchars($section->content_html ?? '') ?></textarea>
         </article>
         <?php if (isset($section->content_html_2)): ?>
-        <article class="input_group mb-4">
-            <label class="input_label">Section Content 2:</label>
-            <textarea class="tinymce"
-                name="sections[<?= $i ?>][content_html_2]"><?= htmlspecialchars($section->content_html_2 ?? '') ?></textarea>
-        </article>
+            <article class="input_group mb-4">
+                <label class="input_label">Section Content 2:</label>
+                <textarea class="tinymce"
+                    name="sections[<?= $i ?>][content_html_2]"><?= htmlspecialchars($section->content_html_2 ?? '') ?></textarea>
+            </article>
         <?php endif; ?>
 
         <?php if (isset($section->media)): ?>
-        <article class="input_group border-t pt-4">
-            <input type="hidden" name="sections[<?= $i ?>][media_id]" value="<?= $section->media->media_id ?? '' ?>">
+            <article class="input_group border-t pt-4">
+                <input type="hidden" name="sections[<?= $i ?>][media_id]" value="<?= $section->media->media_id ?? '' ?>">
 
-            <label class="input_label">Section Media:</label>
+                <label class="input_label">Section Media:</label>
 
-            <!-- Show current image if exists -->
-            <?php if ($section->media && $section->media->file_path): ?>
-            <div class="w-[16rem] mb-3 p-3 bg-gray-50 rounded border">
-                <p class="text-sm font-semibold mb-2">Current Image:</p>
-                <img src="<?= htmlspecialchars($section->media->file_path) ?>"
-                    alt="<?= htmlspecialchars($section->media->alt_text ?? 'Section Media') ?>"
-                    class="w-full rounded shadow">
-                <p class="text-xs text-gray-600 mt-2">
-                    <?= htmlspecialchars($section->media->file_path) ?>
+                <!-- Show current image if exists -->
+                <?php if ($section->media && $section->media->file_path): ?>
+                    <div class="w-[16rem] mb-3 p-3 bg-gray-50 rounded border">
+                        <p class="text-sm font-semibold mb-2">Current Image:</p>
+                        <img src="<?= htmlspecialchars($section->media->file_path) ?>"
+                            alt="<?= htmlspecialchars($section->media->alt_text ?? 'Section Media') ?>"
+                            class="w-full rounded shadow">
+                        <p class="text-xs text-gray-600 mt-2">
+                            <?= htmlspecialchars($section->media->file_path) ?>
+                        </p>
+                    </div>
+                <?php endif; ?>
+
+                <!-- File upload input -->
+                <input class="form_input mb-2" type="file" name="section_media_<?= $i ?>"
+                    accept="image/jpeg,image/png,image/webp">
+                <p class="text-xs text-gray-500 mb-3">
+                    Max 5MB • JPG, PNG, or WebP
                 </p>
-            </div>
-            <?php endif; ?>
 
-            <!-- File upload input -->
-            <input class="form_input mb-2" type="file" name="section_media_<?= $i ?>"
-                accept="image/jpeg,image/png,image/webp">
-            <p class="text-xs text-gray-500 mb-3">
-                Max 5MB • JPG, PNG, or WebP
-            </p>
-
-            <!-- Alt text -->
-            <label class="input_label">Alt Text:</label>
-            <input class="form_input" type="text" name="sections[<?= $i ?>][alt_text]"
-                value="<?= htmlspecialchars($section->media->alt_text ?? '') ?>" placeholder="Describe the image">
-        </article>
+                <!-- Alt text -->
+                <label class="input_label">Alt Text:</label>
+                <input class="form_input" type="text" name="sections[<?= $i ?>][alt_text]"
+                    value="<?= htmlspecialchars($section->media->alt_text ?? '') ?>" placeholder="Describe the image">
+            </article>
         <?php endif; ?>
     </div>
 </section>

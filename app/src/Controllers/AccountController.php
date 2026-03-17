@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Controllers;
+
 use App\Controllers\BaseController;
 use App\Models\User;
 use App\Models\Enums\UserRole;
@@ -14,12 +16,14 @@ use App\Services\Interfaces\IMailService;
 use App\Services\OrderService;
 
 
-class AccountController extends BaseController {
+class AccountController extends BaseController
+{
     private IUserService $userService;
     private IMailService $mailService;
     private IAuthService $authService;
     private IOrderService $orderService;
-    public function __construct() {
+    public function __construct()
+    {
         $this->userService = new UserService();
         $this->mailService = new MailService();
         $this->authService = new AuthService();
@@ -31,41 +35,52 @@ class AccountController extends BaseController {
         if (isset($_GET['error'])) {
             $error = htmlspecialchars(urldecode($_GET['error']));
         }
-        $this->view('Account/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+        $this->view('Account/Login', ['error' => $error, 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
     }
     public function loginPost($vars = [])
-    {   header('Content-Type: application/json; charset=utf-8');
+    {
+        header('Content-Type: application/json; charset=utf-8');
         try {
-        $data = json_decode(file_get_contents('php://input'), true);
+            $data = json_decode(file_get_contents('php://input'), true);
+            // var_dump($data);
+            // die();
+             if (!$data) {
+                throw new \Exception('Invalid JSON input');
+            }
+             if (empty($data['email']) || empty($data['password'])) {
+                throw new \Exception('Email and password are required.');
+            }
+             // Validate reCAPTCHA token    
             $user = $this->userService->authenticateUser($data['email'], $data['password']);
-        if ($user) {
-            $_SESSION['loggedInUser'] = $user;
-            // If there's a session cart, persist it to the database and associate it with the user
-            if (!empty($_SESSION['session_cart'])) {
-                $orderId = $this->orderService->persistSessionCart($_SESSION['session_cart'], $user);
-                //$_SESSION['order_id'] = $orderId;
-                //unset($_SESSION['session_cart']);
-            }else{
-                // If no session cart but user has an open order in the database, load it into the session
+
+            if ($user) {
+                $_SESSION['loggedInUser'] = $user;
+                // Consolidate cart merge logic in one place.
                 $this->orderService->hydrateSessionCartFormDbOnLogin($user);
+                $cart = $this->orderService->getSessionCart();
+                $redirect = $data['redirect'] ?? '/';
+                 
+                // Successful login
+                //additionally check if user is admin and redirect to cms if so
+                if ($user->role === UserRole::ADMIN) {
+                    $this->jsonResponse(['success' => true, 'redirect' => '/cms', 'cart' => $cart ], 200);
+                } else {
+                    // Regular user login
+                    $this->jsonResponse(['success' => true, 'redirect' => $redirect, 'cart' => $cart], 200);
+                }
+            } else {
+                // Failed login
+                $this->jsonResponse([
+                    'success' => false,
+                    'message' => 'Login failed. Please sscheck your credentials and try again.',
+                    'user' => ['email' => $data['email']]
+                ], 401);
             }
-            // Successful login
-            //additionally check if user is admin and redirect to cms if so
-            if($user->role === UserRole::ADMIN) {
-                $this->jsonResponse(['success' => true, 'redirect' => '/cms'] ,200);
-            }else{
-                // Regular user login
-            $this->jsonResponse(['success' => true, 'redirect' => $data['redirect']] ,200);
-            }
-        } else {
-            // Failed login
-            $this->jsonResponse(['success' => false, 'message' => 'Login failed. Please sscheck your credentials and try again.',
-            'user' => ['email' => $data['email']]], 401);
-        }
-        } catch (\Exception $e) {
-            //header("Location: /login/" . urlencode($e->getMessage()));
-            //$this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            //exit();
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
     public function logout($vars = [])
@@ -74,36 +89,37 @@ class AccountController extends BaseController {
         session_unset();
         session_destroy();
         header("Location: /");
-        
+
         exit();
     }
     public function signup($vars = [])
     {
-        $this->view('Account/Signup', ['title' => 'Signup Page'] );
+        $this->view('Account/Signup', ['title' => 'Signup Page']);
     }
-    private function validateCaptchaToken($token) {
-    if (empty($token)) {
-        throw new \Exception("reCAPTCHA token is missing.");
-    }
+    private function validateCaptchaToken($token)
+    {
+        if (empty($token)) {
+            throw new \Exception("reCAPTCHA token is missing.");
+        }
 
-    $secretKey = Secrets::$reCapchaSecretKey;
-    $ip = $_SERVER['REMOTE_ADDR'];
-    $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
-    
-    $request = file_get_contents($url);
-    $response = json_decode($request);        
-    
-    // Check if it failed OR if the score is too low
-    if (!$response->success || $response->score < 0.5) {
-        throw new \Exception("reCAPTCHA verification failed. Are you a bot?");
+        $secretKey = Secrets::$reCapchaSecretKey;
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
+
+        $request = file_get_contents($url);
+        $response = json_decode($request);
+
+        // Check if it failed OR if the score is too low
+        if (!$response->success || $response->score < 0.5) {
+            throw new \Exception("reCAPTCHA verification failed. Are you a bot?");
+        }
+
+        return true;
     }
-    
-    return true;
-}
     public function signupPost($vars = [])
     {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         $data = json_decode(file_get_contents('php://input'), true);
         $user = new User();
         $user = $user->fromArray($data);
@@ -117,7 +133,7 @@ class AccountController extends BaseController {
             }
 
             // Validate reCAPTCHA token
-            $token = $data['recaptcha'] ?? ''; 
+            $token = $data['recaptcha'] ?? '';
             $this->validateCaptchaToken($token);
             // Check if email already exists
             $existingUser = $this->userService->getUserByEmail($user->email);
@@ -133,20 +149,21 @@ class AccountController extends BaseController {
             // Return success response
             echo json_encode(['success' => true, 'message' => 'Signup successful. Please check your email to verify your account.']);
         } catch (\Exception $e) {
-            if(str_contains($e->getMessage(), 'email')) {
+            if (str_contains($e->getMessage(), 'email')) {
                 $errorMsg = "This email is already in use.";
                 echo json_encode(['success' => false, 'message' => $errorMsg]);
             } else {
                 $errorMsg = "An error occurred during signup: " . $e->getMessage();
                 echo json_encode(['success' => false, 'message' => $errorMsg]);
             }
-            
         }
     }
-    public function forgotPassword() {
+    public function forgotPassword()
+    {
         $this->view('Account/ForgotPassword', ['title' => 'Forgot Password']);
     }
-    public function forgotPasswordPost($vars = []) {
+    public function forgotPasswordPost($vars = [])
+    {
         $email = $_POST['email'] ?? '';
         try {
             $user = $this->userService->getUserByEmail($email);
@@ -157,14 +174,13 @@ class AccountController extends BaseController {
             $resetLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
-            $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            
-            
+            $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
         } catch (\Exception $e) {
             $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => $e->getMessage()]);
         }
     }
-    public function resetPassword() {
+    public function resetPassword()
+    {
         try {
             $token = $_GET['token'] ?? '';
             $email = $_GET['email'] ?? '';
@@ -183,7 +199,8 @@ class AccountController extends BaseController {
         }
         // Reset password logic here
     }
-    public function resetPasswordPost($vars = []) {
+    public function resetPasswordPost($vars = [])
+    {
         $token = $_POST['token'] ?? '';
         $email = $_POST['email'] ?? '';
         $newPassword = $_POST['password'] ?? '';
@@ -193,12 +210,12 @@ class AccountController extends BaseController {
             throw new \Exception("Passwords do not match. Please try again.");
         }
         // validate password strength
-            $passwordValidation = $this->authService->validatePassword($newPassword);
-            if (!$passwordValidation['valid']) {
-                $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
-                throw new \Exception($errorMsg);
-            }
-            
+        $passwordValidation = $this->authService->validatePassword($newPassword);
+        if (!$passwordValidation['valid']) {
+            $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
+            throw new \Exception($errorMsg);
+        }
+
         try {
             $user = $this->userService->getUserByEmail($email);
             if (!$user || $user->reset_token !== $token) {
@@ -215,10 +232,57 @@ class AccountController extends BaseController {
             $user->reset_token_expiry = null;
             $this->userService->updateUser($user);
             // Redirect to login with success message
-            $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
+            $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
         } catch (\Exception $e) {
-            $this->view('Account/ResetPassword', ['title' => 'Reset Password', 'error' => $e->getMessage(),
-                        "email" => $email, "token" => $token]);
+            $this->view('Account/ResetPassword', [
+                'title' => 'Reset Password',
+                'error' => $e->getMessage(),
+                "email" => $email,
+                "token" => $token
+            ]);
+        }
+    }
+
+    public function settings($vars = [])
+    {
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+        $loggedUser = $_SESSION['loggedInUser'];
+        $user = $this->userService->getUserById($loggedUser->id);
+
+        if ($user->role === UserRole::ADMIN) {
+            $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
+        } else {
+            $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+        }
+    }
+
+    public function update($vars = [])
+    {
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+
+        try {
+            $loggedUser = $_SESSION['loggedInUser'];
+            $user = $this->userService->getUserById($loggedUser->id);
+
+            $user->fromPDOData($_POST);
+            $this->userService->updateUser($user);
+
+            $_SESSION['loggedInUser'] = $user;
+
+            if ($user->role === UserRole::ADMIN) {
+                header("Location: /cms/profile");
+            } else {
+                header("Location: /settings");
+            }
+            exit();
+        } catch (\Exception $e) {
+            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => $e->getMessage()]);
         }
     }
 }

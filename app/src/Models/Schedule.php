@@ -18,8 +18,6 @@ class Schedule
     public ?DateTime $start_time = null;
     public ?DateTime $end_time = null;
     public ?int $total_capacity = null;
-    public ?int $tickets_sold = null;
-    public ?bool $is_sold_out = null;
     
     // Foreign key IDs
     public ?int $venue_id = null;
@@ -32,6 +30,7 @@ class Schedule
     public ?Artist $artist = null;
     public ?Restaurant $restaurant = null;
     public ?Landmark $landmark = null;
+    public array $ticketTypes = [];
 
     public function __construct() {}
 
@@ -72,8 +71,6 @@ class Schedule
         
         // Schedule specific fields
         $this->total_capacity = isset($data['total_capacity']) ? (int)$data['total_capacity'] : null;
-        $this->tickets_sold = isset($data['tickets_sold']) ? (int)$data['tickets_sold'] : null;
-        $this->is_sold_out = isset($data['is_sold_out']) ? (bool)$data['is_sold_out'] : false;
     }
 
     /**
@@ -143,21 +140,7 @@ class Schedule
         $this->hydrateEventCategory($data);
     }
 
-    /**
-     * Get the available capacity
-     */
-    public function getAvailableCapacity(): int 
-    {
-        return ($this->total_capacity ?? 0) - ($this->tickets_sold ?? 0);
-    }
-
-    /**
-     * Check if tickets are available
-     */
-    public function hasAvailableTickets(): bool 
-    {
-        return !$this->is_sold_out && $this->getAvailableCapacity() > 0;
-    }
+    // tickets_sold and is_sold_out logic removed; now handled by TicketType
     public function getDurationInMinutes(): ?float
     {
         if ($this->start_time && $this->end_time) {
