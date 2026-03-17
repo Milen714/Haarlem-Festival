@@ -5,6 +5,8 @@ use App\Models\Media;
 use App\Models\Gallery;
 use App\Models\Venue;
 use App\Models\Cuisine;
+use App\Models\Yummy\Dish;
+use App\Models\Yummy\Session;
 use Dom\Text;
 
 class Restaurant
@@ -22,9 +24,12 @@ class Restaurant
     public ?float $stars = null;
     public ?int $review_count = null;
     public ?Media $main_image = null;
+    public ?Media $banner_img = null;
     public ?Media $chef_img = null;
     public ?Gallery $gallery = null;
     public ?array $cuisines = [];
+    public ?array $sessions = [];
+    public ?array $dishes = [];
     public ?string $website_url = null;
     public ?\DateTime $deleted_at = null;
 
@@ -64,11 +69,21 @@ class Restaurant
 
         // Hydrate chef image if available
         if (isset($data['chef_img']) && $data['chef_img'] !== null) {
-            $this->main_image = new Media();
-            $this->main_image->fromPDOData([
+            $this->chef_img = new Media();
+            $this->chef_img->fromPDOData([
                 'media_id' => $data['chef_img'],
-                'file_path' => $data['restaurant_image_path'] ?? null,
-                'alt_text' => $data['restaurant_image_alt'] ?? null,
+                'file_path' => $data['chef_img_path'] ?? null,
+                'alt_text' => $data['chef_img_alt'] ?? null,
+            ]);
+        }
+
+        // Hydrate banner image if available
+        if (isset($data['banner_img']) && $data['banner_img'] !== null) {
+            $this->banner_img = new Media();
+            $this->banner_img->fromPDOData([
+                'media_id' => $data['banner_img_id'],
+                'file_path' => $data['banner_img_path'] ?? null,
+                'alt_text' => $data['banner_ime_alt'] ?? null,
             ]);
         }
 

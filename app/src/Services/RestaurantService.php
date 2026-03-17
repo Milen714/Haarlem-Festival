@@ -59,6 +59,18 @@ class RestaurantService implements IRestaurantService
         return $this->restaurantRepository->deleteRestaurant($id);
     }
 
+    public function getRestaurantDetail(int $id){
+        $restaurant = $this->restaurantRepository->getRestaurantById($id);
+
+        if (!$restaurant) {
+            return null;
+        }
+        $restaurant->sessions = $this->restaurantRepository->getSessionsByRestaurant($id);
+        $restaurant->dishes = $this->restaurantRepository->getDishessByRestaurant($id);
+       
+        return $restaurant;
+    }
+
     public function fillRestaurantFromPostData(Restaurant $restaurant, array $data){
         $restaurant->name = trim($data['name']);
         $restaurant->short_description = !empty($data['short_description']) ? trim($data['short_description']) : null;
