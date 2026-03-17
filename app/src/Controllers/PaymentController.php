@@ -35,22 +35,29 @@ class PaymentController extends BaseController
     {
         //$order=$this->orderService->getOrderById(2);
         $order= $this->orderService->getSessionCart();
+        if(!isset($order)){
+            $order = $this->orderService->createSessionCart();
+        }
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
-
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function createCheckoutSession(array $params = [])
     {
        try {
+        $order = $this->orderService->getSessionCart();
+         
+        $order->calculateTotals();
         $item = [
-            'name' => 'Test Product',
-            'amount' => 100 * 100, // amount in cents
+            'name' => 'Haarlem Festival Ticket/s',
+            'amount' => (int)round($order->total * 100), // amount in cents (integer)
             'quantity' => 1,
         ];
         $this->paymentService->stripeCheckout((object)$item);
@@ -61,11 +68,13 @@ class PaymentController extends BaseController
         }
         //require '../payment/checkout.php';  
     }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function return(array $params = [])
     {
         $this->view('ShoppingCart/CheckoutSuccess');
         
     }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function status(array $params = [])
     {
         header('Content-Type: application/json');
@@ -77,7 +86,7 @@ class PaymentController extends BaseController
         }catch (\Exception $e) {
              error_log('Error checking payment status: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'An error occurred while checking the payment status.']);
+            echo json_encode(['error' => 'An error occurred while checking the payment status.' . $e->getMessage()]);
         }
     }
     public function details(array $params = [])
