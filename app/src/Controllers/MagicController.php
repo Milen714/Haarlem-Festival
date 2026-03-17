@@ -65,6 +65,22 @@ class MagicController extends BaseController
         }
         
     }
+    public function magicTicketSelect($vars = []): void
+    {
+         $slug = ltrim($_SERVER['REQUEST_URI'], '/');
+        try {
+            $pageData = $this->pageService->getPageBySlug($slug);
+            if (!$pageData) {
+                $this->notFound();
+                return;
+            }
+            $pageModel = new MagicAccessibility($pageData);
+            
+            $this->view('Magic/MagicTicketSelect', ['pageModel' => $pageModel, 'title' => $pageData->title]);
+        } catch (\Exception $e) {
+            $this->internalServerError("Error loading page: " . $e->getMessage());
+        }
+    }
 
     
 }

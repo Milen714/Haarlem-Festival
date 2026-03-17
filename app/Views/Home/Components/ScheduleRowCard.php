@@ -7,6 +7,7 @@ $eventLabel = '';
 $cardStyles = [];
 $cardImage = new Media();
 $scheduleRef = new Schedule();
+$scheduleName = $scheduleItem->artist->name ?? '';
 if (isset($scheduleItem) && !empty($scheduleItem)) {
     $scheduleRef = $scheduleItem; 
     $eventType = $scheduleRef->event_category?->type ?? null;
@@ -15,16 +16,19 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
             $cardStyles = ['side' => 'bg-[var(--home-magic-accent)] dark:bg-[var(--home-magic-accent-muted)]', 'muted' => 'bg-[var(--home-magic-accent-muted)] dark:bg-[var(--home-magic-accent-muted-high-contrast)]'];
             $cardImage = $scheduleRef->venue?->venue_image ?? new Media();
             $eventLabel = $scheduleRef->event_category?->title ?? '';
+            $scheduleName = $scheduleRef->venue->name ?? 'Secrets @TeylersMuseum';
             break;
         case EventType::History:
             $cardStyles = ['side' => 'bg-[var(--home-history-accent)] dark:bg-[var(--home-history-accent-muted)]', 'muted' => 'bg-[var(--home-history-accent-muted)] dark:bg-[var(--home-history-accent-muted-high-contrast)]'];
             $cardImage = $scheduleRef->landmark?->landmark_image ?? new Media();
             $eventLabel = 'History';
+            $scheduleName = $scheduleRef->venue->name ?? 'Walking Tour @Haarlem';
             break;
         case EventType::Yummy:
             $cardStyles = ['side' => 'bg-[var(--home-yummy-accent)] dark:bg-[var(--home-yummy-accent-muted)]', 'muted' => 'bg-[var(--home-yummy-accent-muted)] dark:bg-[var(--home-yummy-accent-muted-high-contrast)]'];
             $cardImage = $scheduleRef->restaurant?->main_image ?? new Media();
             $eventLabel = 'Yummy';
+            $scheduleName = $scheduleRef->venue->name ? 'Food Experience @' . $scheduleRef->venue->name : 'Food Experience @Haarlem';
             break;
         case EventType::Jazz:
             $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)] dark:bg-[var(--home-jazz-accent-muted)]', 'muted' => 'bg-[var(--home-jazz-accent-muted)] dark:bg-[var(--home-jazz-accent-muted-high-contrast)]'];
@@ -60,7 +64,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
             </div>
             <div class="flex flex-col gap-3 flex-grow min-w-0">
                 <div>
-                    <h2 class="text-black text-lg font-semibold"><?= $scheduleItem->artist->name ?></h2>
+                    <h2 class="text-black text-lg font-semibold"><?= $scheduleName ?></h2>
 
                 </div>
                 <div class="flex flex-col gap-2">

@@ -20,8 +20,7 @@ function createDateButton(dateNumber, dayName, dateValue, eventFilter, isActive 
 
 async function displayDateButtons() {
     const datesUl = document.getElementById('dates-ul');
-    console.log('displayDateButtons fired');
-    console.log('datesUl exists?', !!datesUl);
+    
     if (!datesUl) {
         console.error('Could not find #dates-ul');
         return;
@@ -30,11 +29,8 @@ async function displayDateButtons() {
     datesUl.innerHTML = '';
 
     const eventFilter = document.getElementById('event-filter')?.value || '';
-    console.log('Current event filter:', eventFilter);
 
     const dateList = await getDates();
-    console.log('dateList length:', dateList.length);
-    console.log('dateList:', dateList);
 
     dateList.forEach(date => {
         // Avoid timezone issues if date is "YYYY-MM-DD"
@@ -51,6 +47,5 @@ async function displayDateButtons() {
         li.innerHTML = buttonHtml;
         datesUl.appendChild(li);
     });
-    console.log('UL children after render:', datesUl.children.length);
-    console.log('UL innerHTML:', datesUl.innerHTML);
+    
 }

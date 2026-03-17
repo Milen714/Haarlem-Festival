@@ -18,18 +18,18 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
     <link rel="stylesheet" href="/css/output.css">
     <script src="/vendor/tinymce/tinymce/tinymce.min.js"></script>
     <style>
-        .cms-nav-link:hover {
-            background-color: #374151;
-            color: #ffffff;
-        }
+    .cms-nav-link:hover {
+        background-color: #374151;
+        color: #ffffff;
+    }
 
-        #cms-sidebar {
-            background-color: #1E293B;
-        }
+    #cms-sidebar {
+        background-color: #1E293B;
+    }
 
-        .dark #cms-sidebar {
-            background-color: #0F0F0F;
-        }
+    .dark #cms-sidebar {
+        background-color: #0F0F0F;
+    }
     </style>
 </head>
 
@@ -192,10 +192,10 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
                         <a href="/cms"
                             class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">Dashboard</a>
                         <?php if (isset($breadcrumb)): ?>
-                            <?php foreach ($breadcrumb as $item): ?>
-                                <span class="text-gray-400">/</span>
-                                <span class="text-gray-700 dark:text-gray-200"><?php echo $item; ?></span>
-                            <?php endforeach; ?>
+                        <?php foreach ($breadcrumb as $item): ?>
+                        <span class="text-gray-400">/</span>
+                        <span class="text-gray-700 dark:text-gray-200"><?php echo $item; ?></span>
+                        <?php endforeach; ?>
                         <?php endif; ?>
                     </nav>
                 </div>
@@ -276,70 +276,70 @@ $darkClass = $theme === 'dark' ? 'dark' : '';
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
 
     <script>
-        // Sidebar toggle
-        const sidebar = document.getElementById('cms-sidebar');
-        const openSidebarBtn = document.getElementById('openSidebar');
-        const closeSidebarBtn = document.getElementById('closeSidebar');
-        const sidebarMenuToggle = document.getElementById('sidebarMenuToggle');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const mainContent = document.querySelector('.lg\\:ml-64');
+    // Sidebar toggle
+    const sidebar = document.getElementById('cms-sidebar');
+    const openSidebarBtn = document.getElementById('openSidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const sidebarMenuToggle = document.getElementById('sidebarMenuToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mainContent = document.querySelector('.lg\\:ml-64');
 
-        function openSidebar() {
-            sidebar.classList.remove('-translate-x-full');
-            sidebar.classList.add('translate-x-0');
-            sidebar.classList.add('lg:translate-x-0');
-            sidebarOverlay?.classList.remove('hidden');
-            if (mainContent) mainContent.classList.add('lg:ml-64');
-            closeSidebarBtn?.classList.remove('hidden');
-            sidebarMenuToggle?.classList.add('hidden');
-            openSidebarBtn?.classList.add('hidden');
+    function openSidebar() {
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        sidebar.classList.add('lg:translate-x-0');
+        sidebarOverlay?.classList.remove('hidden');
+        if (mainContent) mainContent.classList.add('lg:ml-64');
+        closeSidebarBtn?.classList.remove('hidden');
+        sidebarMenuToggle?.classList.add('hidden');
+        openSidebarBtn?.classList.add('hidden');
+    }
+
+    function closeSidebarFn() {
+        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.remove('lg:translate-x-0');
+        sidebarOverlay?.classList.add('hidden');
+        if (mainContent) mainContent.classList.remove('lg:ml-64');
+        closeSidebarBtn?.classList.add('hidden');
+        sidebarMenuToggle?.classList.remove('hidden');
+        openSidebarBtn?.classList.remove('hidden');
+    }
+
+    openSidebarBtn?.addEventListener('click', openSidebar);
+    closeSidebarBtn?.addEventListener('click', closeSidebarFn);
+    sidebarMenuToggle?.addEventListener('click', openSidebar);
+    sidebarOverlay?.addEventListener('click', closeSidebarFn);
+
+    // User dropdown toggle
+    const userMenuBtn = document.getElementById('cmsUserMenuButton');
+    const userDropdown = document.getElementById('cmsUserDropdown');
+
+    userMenuBtn?.addEventListener('click', () => {
+        userDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!userMenuBtn?.contains(e.target) && !userDropdown?.contains(e.target)) {
+            userDropdown?.classList.add('hidden');
         }
+    });
 
-        function closeSidebarFn() {
-            sidebar.classList.add('-translate-x-full');
-            sidebar.classList.remove('translate-x-0');
-            sidebar.classList.remove('lg:translate-x-0');
-            sidebarOverlay?.classList.add('hidden');
-            if (mainContent) mainContent.classList.remove('lg:ml-64');
-            closeSidebarBtn?.classList.add('hidden');
-            sidebarMenuToggle?.classList.remove('hidden');
-            openSidebarBtn?.classList.remove('hidden');
+    // Theme toggle
+    const themeToggle = document.getElementById('cmsThemeToggle');
+    themeToggle?.addEventListener('click', () => {
+        const html = document.documentElement;
+        const isDark = html.classList.contains('dark');
+
+        if (isDark) {
+            html.classList.remove('dark');
+            document.cookie = 'theme=light; path=/; max-age=31536000';
+        } else {
+            html.classList.add('dark');
+            document.cookie = 'theme=dark; path=/; max-age=31536000';
         }
-
-        openSidebarBtn?.addEventListener('click', openSidebar);
-        closeSidebarBtn?.addEventListener('click', closeSidebarFn);
-        sidebarMenuToggle?.addEventListener('click', openSidebar);
-        sidebarOverlay?.addEventListener('click', closeSidebarFn);
-
-        // User dropdown toggle
-        const userMenuBtn = document.getElementById('cmsUserMenuButton');
-        const userDropdown = document.getElementById('cmsUserDropdown');
-
-        userMenuBtn?.addEventListener('click', () => {
-            userDropdown.classList.toggle('hidden');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!userMenuBtn?.contains(e.target) && !userDropdown?.contains(e.target)) {
-                userDropdown?.classList.add('hidden');
-            }
-        });
-
-        // Theme toggle
-        const themeToggle = document.getElementById('cmsThemeToggle');
-        themeToggle?.addEventListener('click', () => {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-
-            if (isDark) {
-                html.classList.remove('dark');
-                document.cookie = 'theme=light; path=/; max-age=31536000';
-            } else {
-                html.classList.add('dark');
-                document.cookie = 'theme=dark; path=/; max-age=31536000';
-            }
-        });
+    });
     </script>
 </body>
 
