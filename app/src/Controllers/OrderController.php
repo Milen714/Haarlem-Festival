@@ -56,4 +56,27 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+    public function getNumberOfCartItems(array $params = []): void
+    {
+        try {
+            $cart = $this->orderService->getSessionCart();
+            if (!$cart) {
+                $this->jsonResponse([
+                    'success' => true,
+                    'numberOfItems' => 0
+                ], 200);
+                return;
+            }
+            $numberOfItems = count($cart->orderItems);
+            $this->jsonResponse([
+                'success' => true,
+                'numberOfItems' => $numberOfItems
+            ], 200);
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

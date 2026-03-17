@@ -362,6 +362,7 @@ ticketTypeList.addEventListener('click', async (event) => {
         }
 
         ticketTypeStatus.textContent = 'Ticket added to cart.';
+        updateCartCount();
     } catch (error) {
         ticketTypeStatus.textContent = error.message || 'Could not add ticket to cart.';
     }
