@@ -17,6 +17,13 @@ function createDateButton(dateNumber, dayName, dateValue, eventFilter, isActive 
     <span>${dayName}</span><span>${dateNumber}</span>
             </a>`;
 }
+function createDateButtonMagic(dateNumber, dayName, dateValue, isActive ) {
+    return `
+            <a href="/events-magic-tickets?date=${dateValue || ''}" 
+                class="schedule-filter-link ${isActive ? 'home_calendar_button_active' : 'home_calendar_button_inactive'}">
+    <span>${dayName}</span><span>${dateNumber}</span>
+            </a>`;
+}
 
 async function displayDateButtons() {
     const datesUl = document.getElementById('dates-ul');
@@ -42,6 +49,13 @@ async function displayDateButtons() {
         });
         const dateNumber = dateObj.getDate();
         const li = document.createElement('li');
+        if (window.location.pathname === '/events-magic-tickets') {
+            const isActive = window.location.search.includes(`date=${date}`);
+            const buttonHtml = createDateButtonMagic(dateNumber, dayName, date, isActive);
+            li.innerHTML = buttonHtml;
+            datesUl.appendChild(li);
+            return;
+        }
         const isActive = window.location.search.includes(`date=${date}`);
         const buttonHtml = createDateButton(dateNumber, dayName, date, eventFilter, isActive);
         li.innerHTML = buttonHtml;

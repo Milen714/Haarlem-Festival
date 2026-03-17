@@ -99,8 +99,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 venue_media.media_id as venue_media_id,
                 venue_media.file_path as venue_media_file_path,
                 venue_media.alt_text as venue_media_alt_text,
-                venue_media.file_path as image_path,
-                venue_media.alt_text as image_alt,
+
+                
 
                 -- Artist fields
                 a.artist_id,

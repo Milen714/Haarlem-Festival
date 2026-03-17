@@ -1876,10 +1876,6 @@ select:focus,
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.grid-cols-7{
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-}
-
 .flex-row{
   flex-direction: row;
 }
@@ -2503,6 +2499,11 @@ select:focus,
   background-color: rgb(13 13 13 / var(--tw-bg-opacity, 1));
 }
 
+.bg-\[\#10233e\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(16 35 62 / var(--tw-bg-opacity, 1));
+}
+
 .bg-\[\#121212\]{
   --tw-bg-opacity: 1;
   background-color: rgb(18 18 18 / var(--tw-bg-opacity, 1));
@@ -2530,6 +2531,11 @@ select:focus,
 .bg-\[\#1a0505\]{
   --tw-bg-opacity: 1;
   background-color: rgb(26 5 5 / var(--tw-bg-opacity, 1));
+}
+
+.bg-\[\#1b2949\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(27 41 73 / var(--tw-bg-opacity, 1));
 }
 
 .bg-\[\#2d0a0a\]{
@@ -2924,26 +2930,6 @@ select:focus,
 .bg-yellow-400{
   --tw-bg-opacity: 1;
   background-color: rgb(250 204 21 / var(--tw-bg-opacity, 1));
-}
-
-.bg-\[\#10233e\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(16 35 62 / var(--tw-bg-opacity, 1));
-}
-
-.bg-\[\#12284a\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(18 40 74 / var(--tw-bg-opacity, 1));
-}
-
-.bg-\[\#1b2949\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(27 41 73 / var(--tw-bg-opacity, 1));
-}
-
-.bg-\[\#202f56\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(32 47 86 / var(--tw-bg-opacity, 1));
 }
 
 .bg-opacity-50{
@@ -3700,6 +3686,11 @@ select:focus,
   color: rgb(212 175 55 / var(--tw-text-opacity, 1));
 }
 
+.text-\[\#d5e0f0\]{
+  --tw-text-opacity: 1;
+  color: rgb(213 224 240 / var(--tw-text-opacity, 1));
+}
+
 .text-\[\#d64550\]{
   --tw-text-opacity: 1;
   color: rgb(214 69 80 / var(--tw-text-opacity, 1));
@@ -3718,8 +3709,16 @@ select:focus,
   color: var(--home-gold-accent);
 }
 
+.text-\[var\(--magic-blue-text\)\]{
+  color: var(--magic-blue-text);
+}
+
 .text-\[var\(--magic-bright-gold-accent\)\]{
   color: var(--magic-bright-gold-accent);
+}
+
+.text-\[var\(--magic-creme-gold-accent\)\]{
+  color: var(--magic-creme-gold-accent);
 }
 
 .text-\[var\(--magic-gold-accent\)\]{
@@ -3955,29 +3954,6 @@ select:focus,
 .text-yellow-800{
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity, 1));
-}
-
-.text-\[\#9FB0C8\]{
-  --tw-text-opacity: 1;
-  color: rgb(159 176 200 / var(--tw-text-opacity, 1));
-}
-
-.text-\[\#d5e0f0\]{
-  --tw-text-opacity: 1;
-  color: rgb(213 224 240 / var(--tw-text-opacity, 1));
-}
-
-.text-\[\#d6dff0\]{
-  --tw-text-opacity: 1;
-  color: rgb(214 223 240 / var(--tw-text-opacity, 1));
-}
-
-.text-\[var\(--magic-blue-text\)\]{
-  color: var(--magic-blue-text);
-}
-
-.text-\[var\(--magic-creme-gold-accent\)\]{
-  color: var(--magic-creme-gold-accent);
 }
 
 .underline{
@@ -5079,6 +5055,10 @@ select:focus,
   }
 }
 
+.magicDayUl li{
+  flex-grow: 1;
+}
+
 /* HISTORY */
 
 .history-hero-title {
@@ -5277,8 +5257,14 @@ select:focus,
   border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
 }
 
-.hover\:border-\[var\(--magic-creme-gold-accent\)\]:hover{
-  border-color: var(--magic-creme-gold-accent);
+.hover\:bg-\[\#11253f\]:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 37 63 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-\[\#1a2f52\]:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(26 47 82 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-\[\#465e10\]:hover{
@@ -5403,18 +5389,12 @@ select:focus,
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-\[\#11253f\]:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(17 37 63 / var(--tw-bg-opacity, 1));
-}
-
-.hover\:bg-\[\#1a2f52\]:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(26 47 82 / var(--tw-bg-opacity, 1));
-}
-
 .hover\:text-\[var\(--dance-tag-color-1\)\]:hover{
   color: var(--dance-tag-color-1);
+}
+
+.hover\:text-\[var\(--magic-bright-gold-accent\)\]:hover{
+  color: var(--magic-bright-gold-accent);
 }
 
 .hover\:text-\[var\(--pastel-lavender\)\]:hover{
@@ -5477,10 +5457,6 @@ select:focus,
 .hover\:text-white:hover{
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.hover\:text-\[var\(--magic-bright-gold-accent\)\]:hover{
-  color: var(--magic-bright-gold-accent);
 }
 
 .hover\:underline:hover{
@@ -6125,6 +6101,11 @@ select:focus,
     padding-right: 1rem;
   }
 
+  .md\:px-5{
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
   .md\:py-2{
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
@@ -6138,11 +6119,6 @@ select:focus,
   .md\:py-4{
     padding-top: 1rem;
     padding-bottom: 1rem;
-  }
-
-  .md\:px-5{
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
   }
 
   .md\:py-6{
@@ -6345,10 +6321,6 @@ select:focus,
 
   .xl\:hidden{
     display: none;
-  }
-
-  .xl\:grid-cols-5{
-    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .xl\:grid-cols-\[2fr_1fr\]{
