@@ -117,9 +117,9 @@ class Venue
     $this->phone = $data['venue_phone'] ?? ($data['phone'] ?? null);
     $this->email = $data['venue_email'] ?? ($data['email'] ?? null);
 
-    $mediaId = $data['venue_image_id'] ?? $data['media_id'] ?? null;
-    $filePath = $data['image_path'] ?? $data['file_path'] ?? null;
-    $altText = $data['image_alt'] ?? $data['alt_text'] ?? null;
+    $mediaId = $data['venue_image_id'] ?? $data['media_id'] ?? $data['venue_media_id'] ?? null;
+    $filePath = $data['image_path'] ?? $data['file_path'] ?? $data['venue_media_file_path'] ?? null;
+    $altText = $data['image_alt'] ?? $data['alt_text'] ?? $data['venue_media_alt_text'] ?? null;
     
     if ($mediaId && $filePath) {
         $this->venue_image = new Media();

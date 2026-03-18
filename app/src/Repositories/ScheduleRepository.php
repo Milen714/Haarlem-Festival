@@ -250,6 +250,50 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
+    /**
+     * @param int $eventId
+     * @return \App\Models\Schedule[] 
+     */
+    public function getBackToBackSpecialsByEventId(int $eventId): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT 
+                    s.*, 
+                    -- Artist Data
+                    a.name AS artist_name, a.slug AS artist_slug, a.special_event AS artist_special_event,
+                    -- Artist Media (Required by hydrateSchedule)
+                    m.media_id AS artist_media_id, 
+                    m.file_path AS artist_media_file_path, 
+                    m.alt_text AS artist_media_alt_text,
+                    -- Venue Data
+                    v.name AS venue_name, v.street_address AS venue_address,
+                    -- Event Category (Required by hydrateEventCategory)
+                    ec.type AS event_category_type, 
+                    ec.title AS event_title
+                FROM SCHEDULE s
+                JOIN ARTIST a ON s.artist_id = a.artist_id
+                JOIN VENUE v ON s.venue_id = v.venue_id
+                JOIN EVENT_CATEGORIES ec ON s.event_id = ec.event_id
+                LEFT JOIN MEDIA m ON a.profile_image_id = m.media_id
+                WHERE s.event_id = :event_id
+                AND a.special_event = 1
+                ORDER BY s.date ASC, s.start_time ASC
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':event_id', $eventId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
+        } catch (PDOException $e) {
+            throw new PDOException("Error fetching back-to-back specials: " . $e->getMessage(), 0, $e);
+        }
+    }
 
     public function getAvailableDates(): array
     {

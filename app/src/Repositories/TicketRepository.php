@@ -62,6 +62,12 @@ class TicketRepository extends Repository implements ITicketRepository
                 v.capacity as venue_capacity,
                 v.phone as venue_phone,
                 v.email as venue_email,
+                v.venue_image_id as venue_image_id,
+                 -- Venue media fields
+                venue_media.media_id as venue_media_id,
+                venue_media.file_path as venue_media_file_path,
+                venue_media.alt_text as venue_media_alt_text,
+
 
                 -- Artist fields
                 a.artist_id,
@@ -124,6 +130,7 @@ class TicketRepository extends Repository implements ITicketRepository
             INNER JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
             LEFT JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
+            LEFT JOIN MEDIA venue_media ON v.venue_image_id = venue_media.media_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
             LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id

@@ -43,6 +43,11 @@ class ScheduleService implements IScheduleService
         return $this->scheduleRepository->getScheduleByEventId($eventId);
     }
 
+    public function getBackToBackSpecialsByEventId(int $eventId): array
+    {
+        return $this->scheduleRepository->getBackToBackSpecialsByEventId($eventId);
+    }
+
     public function createFromRequest(array $postData): Schedule
     {
         $this->validateScheduleData($postData);

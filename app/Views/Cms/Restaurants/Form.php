@@ -42,7 +42,7 @@ $action = $action ?? '/cms/restaurants/store';
 <label class="block font-semibold mb-2">Short Description</label>
 <textarea name="short_description"
           rows="3"
-          class="w-full px-4 py-2 border rounded-lg"><?= htmlspecialchars($restaurant->short_description ?? '') ?></textarea>
+          class="tinymce w-full px-4 py-2 border rounded-lg"><?= htmlspecialchars($restaurant->short_description ?? '') ?></textarea>
 </div>
 
 <!-- Welcome Text -->
@@ -50,7 +50,7 @@ $action = $action ?? '/cms/restaurants/store';
 <label class="block font-semibold mb-2">Welcome Text</label>
 <textarea name="welcome_text"
           rows="4"
-          class="w-full px-4 py-2 border rounded-lg"><?= htmlspecialchars($restaurant->welcome_text ?? '') ?></textarea>
+          class="tinymce w-full px-4 py-2 border rounded-lg"><?= htmlspecialchars($restaurant->welcome_text ?? '') ?></textarea>
 </div>
 
 </div>
@@ -192,3 +192,46 @@ Cancel
 
 </form>
 </section>
+
+<script>
+       tinymce.init({
+    selector: '.tinymce',
+    menubar: false,
+    license: 'gpl',
+    plugins: 'autoresize link lists image',
+    toolbar: 'undo redo | bold italic | h1 h2 | bullist numlist | link | image',
+    block_formats: 'Paragraph=p; Heading 1=h1; Heading 2=h2',
+    min_height: 120,
+    max_height: 400,
+    branding: false,
+    promotion: false,
+    resize: true,
+    autoresize_bottom_margin: 20,
+
+    images_upload_url: '/cms/media/upload-tinymce',
+    automatic_uploads: true,
+
+    images_upload_handler: function(blobInfo, success, failure) {
+        const formData = new FormData();
+        formData.append('image', blobInfo.blob(), blobInfo.filename());
+        formData.append('alt_text', 'Content image');
+        formData.append('category', 'Restaurants');
+
+        fetch('/cms/media/upload-tinymce', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                success(data.file_path);
+            } else {
+                failure(data.error || 'Upload failed');
+            }
+        })
+        .catch(err => {
+            failure('Upload failed: ' + err.message);
+        });
+    }
+});
+</script>

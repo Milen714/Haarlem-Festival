@@ -7,9 +7,8 @@ use App\Models\Payment\Order;
 use App\Models\User;
 use App\Models\Payment\OrderItem;
 use App\Repositories\Interfaces\IOrderRepository;
-use App\Services\Interfaces\IOrderService;
 use App\Repositories\OrderRepository;
-use App\Services\TicketService;
+use App\Services\Interfaces\IOrderService;
 
 class OrderService implements IOrderService
 {
@@ -35,9 +34,9 @@ class OrderService implements IOrderService
     {
         return $this->orderRepository->getOrdersByUserId($userId);
     }
-    public function getOpenOrderByUserId(int $userId): ?Order
+    public function getOpenOrderByUserId(int $userId, ?array $statuses = null): ?Order
     {
-        return $this->orderRepository->getOpenOrderByUserId($userId);
+        return $this->orderRepository->getOpenOrderByUserId($userId, $statuses);
     }
 
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool
@@ -58,8 +57,10 @@ class OrderService implements IOrderService
     {
         $order = new Order();
         $order->order_date = new \DateTime();
-        $order->status = OrderStatus::Pending;
-        $_SESSION['session_cart'] = $order;
+        $order->status = OrderStatus::In_Cart;
+        if(!isset($_SESSION['session_cart'])){
+            $_SESSION['session_cart'] = $order;
+        }
         return $order;
     }
     public function getSessionCart(): ?Order
@@ -109,17 +110,20 @@ class OrderService implements IOrderService
         }
         $cart->orderItems[] = $item;
         $cart->calculateTotals();
-        $_SESSION['session_cart'] = $cart;
+        
+        if($cart->order_id !== null){
+            array_last($cart->orderItems)->order_id = $cart->order_id;
+            $this->orderRepository->addOrderItem($item);
+        }
+        $this->hydrateSessionCart($cart);
     }
-    // This method should be called at the moment of checkout to 
-    //persist the order and make hard seat reservations. 
-    //It will throw if any item cannot be reserved, in which case the caller should inform the user 
-    //and not persist the order.
+    //this method maps the orderId of the passed in order with the last insterted order's id 
     public function persistSessionCart(Order $order, User $user): int
     {
-        $order->user       = $user;
+        $order->user = $user;
+        $order->order_id = null;
         $order->order_date = new \DateTime();
-        $order->status     = OrderStatus::Pending;
+        $order->status = OrderStatus::In_Cart;
         $order->calculateTotals();
 
         foreach ($order->orderItems as $item) {
@@ -142,10 +146,13 @@ class OrderService implements IOrderService
         $this->orderRepository->createOrder($order);  // sets $order->order_id
 
         foreach ($order->orderItems as $item) {
-            if ($item->order_id === null) {
-                $item->order_id = $order->order_id;
-                $this->orderRepository->addOrderItem($item);
-            }
+            $item->orderitem_id = null;
+            $item->order_id = $order->order_id;
+            $this->orderRepository->addOrderItem($item);
+        }
+
+        if ($order->order_id === null) {
+            throw new \RuntimeException('Failed to persist session cart: missing order ID after insert.');
         }
 
         return $order->order_id;
@@ -154,9 +161,32 @@ class OrderService implements IOrderService
     {
         $_SESSION['session_cart'] = $order;
     }
-    public function hydrateSessionCartFormDbOnLogin(User $user): void
-    {
-        $dbCart = $this->getOpenOrderByUserId($user->id);
+    public function hydrateSessionCartFormDbOnLogin(User $user): void{
+        $openStatuses = [OrderStatus::In_Cart, OrderStatus::Pending_Payment];
+        $dbCart = $this->getOpenOrderByUserId($user->id, $openStatuses);
+        $sessionCart = $this->getSessionCart();
+        $sessionCartHasItems = $sessionCart !== null && count($sessionCart->orderItems) > 0;
+
+        if ($sessionCartHasItems) {
+            // Cancel all currently open orders before persisting the session cart as the new active one.
+            while ($dbCart !== null) {
+                $cancelled = $this->updateOrderStatus($dbCart->order_id, OrderStatus::Cancelled);
+                if (!$cancelled) {
+                    throw new \RuntimeException("Failed to cancel open order ID {$dbCart->order_id}.");
+                }
+                $dbCart = $this->getOpenOrderByUserId($user->id, $openStatuses);
+            }
+
+            $newOrderId = $this->persistSessionCart($sessionCart, $user);
+            $persistedOrder = $this->getOrderById($newOrderId);
+            if ($persistedOrder !== null) {
+                $this->hydrateSessionCart($persistedOrder);
+            } else {
+                $this->hydrateSessionCart($sessionCart);
+            }
+            return;
+        }
+
         if ($dbCart !== null) {
             $this->hydrateSessionCart($dbCart);
         }

@@ -79,7 +79,6 @@ class ArtistController extends BaseController
             if (!$artist) {
                 throw new ResourceNotFoundException('Artist not found.');
             }
-
             $this->cmsLayout('Cms/Artists/Form', [
                 'title' => 'Edit Artist: ' . $artist->name,
                 'artist' => $artist,

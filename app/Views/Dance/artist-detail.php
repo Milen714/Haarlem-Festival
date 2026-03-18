@@ -115,17 +115,11 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                                 </div>
 
                                 <div class="ml-8">
-                                    <?php if ($session['is_sold_out']): ?>
-                                        <div class="bg-gray-800 text-gray-500 px-8 py-3 rounded text-xs font-bold uppercase tracking-widest cursor-not-allowed">
-                                            Sold Out
-                                        </div>
-                                    <?php else: ?>
-                                        <a href="/tickets/buy/<?= $session['schedule_id'] ?>"
-                                        class="bg-[var(--dance-button-color)] hover:bg-white font-medium text-black px-6 py-3 rounded uppercase tracking-tighter transition-all duration-300 flex flex-col items-center justify-center">
-                                            <span class="mb-1">BUY TICKETS</span>
-                                            <span>€<?= number_format($session['price'] ?? 60, 2) ?></span>
-                                        </a>
-                                    <?php endif; ?>
+                                    <a href="/tickets/buy/<?= $session['schedule_id'] ?>"
+                                    class="bg-[var(--dance-button-color)] hover:bg-white font-medium text-black px-6 py-3 rounded uppercase tracking-tighter transition-all duration-300 flex flex-col items-center justify-center">
+                                        <span class="mb-1">BUY TICKETS</span>
+                                        <span>€<?= number_format($session['price'] ?? 60, 2) ?></span>
+                                    </a>
                                 </div>
 
                             </div>

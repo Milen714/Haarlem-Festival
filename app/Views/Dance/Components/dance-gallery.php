@@ -3,12 +3,12 @@ namespace App\Views\Dance\Components;
 /** @var object|null $gallerySection */
 ?>
 <section class="bg-[#0d0d0d] py-20">
-    <div class="max-w-5xl mx-auto text-center">
-        <h2 class="inline-block text-[var(--dance-tag-color-1)] text-xl font-bold uppercase tracking-[0.2em] border-b-2 border-[var(--dance-tag-color-1)] mb-12 pb-1">
+    <div class="max-w-7xl mx-auto text-center">
+        <h2 class="inline-block text-[var(--dance-tag-color-1)] text-2xl font-bold uppercase tracking-[0.2em] border-b-2 border-[var(--dance-tag-color-1)] mb-6 pb-2">
             <?= htmlspecialchars($gallerySection?->title ?? 'Gallery') ?>
         </h2>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-0 px-0">
+        <div class="grid grid-cols-3 gap-0 px-0">
             <?php if ($gallerySection && isset($gallerySection->gallery->media_items)): ?>
                 <?php foreach ($gallerySection->gallery->media_items as $item): ?>
                     <?php 
