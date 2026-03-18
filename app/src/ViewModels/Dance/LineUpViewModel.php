@@ -1,7 +1,6 @@
 <?php
 namespace App\ViewModels\Dance;
 
-use App\Models\Schedule;
 use App\ViewModels\Dance\BaseViewModel;
 
 class LineupViewModel extends BaseViewModel {
