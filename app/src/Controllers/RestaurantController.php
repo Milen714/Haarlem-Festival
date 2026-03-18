@@ -90,7 +90,6 @@ class RestaurantController extends BaseController{
 
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []){
-        $this->startSession();
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
             $restaurant = $this->restaurantService->updateFromRequest($restaurantId, $_POST, $_FILES);
@@ -122,12 +121,5 @@ class RestaurantController extends BaseController{
             $_SESSION['error'] = $e->getMessage();
         }
         $this->redirect('/cms/restaurants');
-    }
-
-     private function startSession(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
     }
 }

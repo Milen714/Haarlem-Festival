@@ -8,16 +8,16 @@
   </div>
 
   <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-      <?php foreach ($restaurant->dishes as $dish): ?>
-        <?php if ($dish->is_featured): ?>
+      <?php foreach ($restaurant->gallery->media_items ?? [] as $media): ?>
+        
           <figure class="bg-white/10 p-2 rounded shadow-lg overflow-hidden group">
-              <?php if ($dish->image_id): ?>
-                <img src="<?= htmlspecialchars($dish->image_id->file_path) ?>" 
-                alt="<?= htmlspecialchars($dish->image_id->alt_text) ?>" class="w-full h-64 object-cover">
-              <?php endif; ?>
-              <figcaption class="p-3 text-white font-serif italic text-lg text-center"><?= htmlspecialchars($dish->name) ?></figcaption>
+             
+                <img src="<?= htmlspecialchars($media->file_path) ?>" 
+                alt="<?= htmlspecialchars($media->alt_text) ?>" class="w-full h-64 object-cover">
+              
+              <figcaption class="p-3 text-white font-serif italic text-lg text-center"><?= htmlspecialchars($media->alt_text) ?></figcaption>
           </figure>
-        <?php endif; ?>
+       
       <?php endforeach; ?>
   </div>
 </section>

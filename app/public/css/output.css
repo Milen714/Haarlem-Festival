@@ -1061,6 +1061,10 @@ select:focus,
   grid-column: 1 / -1;
 }
 
+.float-end{
+  float: inline-end;
+}
+
 .m-0{
   margin: 0px;
 }
@@ -1293,6 +1297,14 @@ select:focus,
 
 .mt-auto{
   margin-top: auto;
+}
+
+.me-20{
+  margin-inline-end: 5rem;
+}
+
+.me-12{
+  margin-inline-end: 3rem;
 }
 
 .box-border{
@@ -3926,6 +3938,11 @@ select:focus,
 .text-red-700{
   --tw-text-opacity: 1;
   color: rgb(185 28 28 / var(--tw-text-opacity, 1));
+}
+
+.text-red-800{
+  --tw-text-opacity: 1;
+  color: rgb(153 27 27 / var(--tw-text-opacity, 1));
 }
 
 .text-red-900{

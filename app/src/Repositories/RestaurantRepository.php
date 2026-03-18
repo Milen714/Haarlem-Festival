@@ -278,7 +278,32 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
         
     }
+    public function getRestaurantGallery(?int $galleryId){
+            if(!$galleryId){
+                return null;
+            }
 
+            $pdo = $this->connect();
+            $sql = 'SELECT m.media_id, m.file_path, m.alt_text, gm.display_order
+                FROM GALLERY_MEDIA gm
+                LEFT JOIN MEDIA m 
+                    ON gm.media_id = m.media_id
+                    WHERE gm.gallery_id = :gallery_id
+                    ORDER BY gm.display_order
+            ';
+            $getGallery = $pdo->prepare($sql);
+            $getGallery->execute(['gallery_id' => $galleryId]);
+
+            $gallery = new Gallery();
+            $gallery->media_items = [];
+            while ($row = $getGallery->fetch(PDO::FETCH_ASSOC)) {
+                $media = new Media();
+                $media->fromPDOData($row);
+                $gallery->media_items[] = $media;
+            }
+
+            return $gallery;
+    }
     public function getRestaurantCuisines(int $restaurantId){
         $pdo = $this->connect();
         $sql = "
@@ -306,32 +331,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         return $cuisines;
     }
 
-    public function getRestaurantGallery(?int $galleryId){
-        if(!$galleryId){
-            return null;
-        }
-
-        $pdo = $this->connect();
-        $sql = 'SELECT m.media_id, m.file_path, m.alt_text, gm.display_order
-            FROM GALLERY_MEDIA gm
-            LEFT JOIN MEDIA m 
-                ON gm.media_id = m.media_id
-                WHERE gm.gallery_id = :gallery_id
-                ORDER BY gm.display_order
-        ';
-        $getGallery = $pdo->prepare($sql);
-        $getGallery->execute(['gallery_id' => $galleryId]);
-
-        $gallery = new Gallery();
-        $gallery->media_items = [];
-        while ($row = $getGallery->fetch(PDO::FETCH_ASSOC)) {
-            $media = new Media();
-            $media->fromPDOData($row);
-            $gallery->media_items[] = $media;
-        }
-
-        return $gallery;
-    }
+   
 
     public function getRestaurantBySlug(string $slug): ?Restaurant{
     $pdo = $this->connect();    

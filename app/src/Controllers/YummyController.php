@@ -86,6 +86,16 @@ class YummyController extends BaseController
             
             $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
+            $gallery = null;
+
+            foreach ($pageData->content_sections as $section) {
+                if (!empty($section->gallery_id)) {
+                    $gallery = $this->mediaService->getGalleryById($section->gallery->gallery_id);
+                    break;
+                }
+            }
+
+            $galleryItems = $gallery->media_items ?? [];
             
             $this->view('Yummy/index', [
                 'title' => $pageData->title ?? 'Yummy Event',
@@ -93,6 +103,7 @@ class YummyController extends BaseController
                 'sections' => $pageData->content_sections,
                 'venues' => $venues,
                 'restaurants' => $restaurants,
+                'galleryItems' => $galleryItems
             ]);
         } catch (\Exception $e) {
             error_log("Error in YummyController index method: " . $e->getMessage());

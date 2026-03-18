@@ -1,7 +1,7 @@
 
 <header class="w-full">
   <div class="h-64 md:h-96 w-full overflow-hidden">
-    <img src="<?= htmlspecialchars($restaurant->banner_img) ?? htmlspecialchars($restaurant->main_image)  ?>" alt="Ratatouille Restaurant Exterior" class="w-full h-full object-cover">
+    <img src="<?= htmlspecialchars($restaurant->banner_img->file_path) ?? htmlspecialchars($restaurant->main_image->file_path)  ?>" alt="<?= htmlspecialchars($restaurant->banner_img->alt_text)  ?? htmlspecialchars($restaurant->main_image->alt_text)  ?>" class="w-full h-full object-cover">
   </div>
 </header>
 
