@@ -18,6 +18,8 @@ interface ITicketRepository
     public function getAllTicketSchemes(): array;
     public function getTicketSchemeUsageCounts(): array;
     public function countTicketTypesBySchemeId(int $ticketSchemeId): int;
+    public function getAvailableCapacity(int $ticketTypeId): int;
+    public function atomicIncrementTicketsSold(int $ticketTypeId, int $quantity): bool;
     public function createTicketScheme(TicketScheme $ticketScheme): bool;
     public function updateTicketScheme(TicketScheme $ticketScheme): bool;
     public function deleteTicketScheme(int $ticketSchemeId): bool;

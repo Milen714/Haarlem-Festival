@@ -51,8 +51,9 @@ namespace App\Views\Jazz\Components;
                     </ul>
 
                     <footer>
-                        <a href="/tickets" class="block w-full jazz_event_button_lavender text-center">
-                            Buy Tickets
+                        <a href="/events-jazz/schedule"
+                           class="block w-full jazz_event_button_lavender text-center">
+                            Choose a Show
                         </a>
                     </footer>
                 </article>
@@ -104,9 +105,16 @@ namespace App\Views\Jazz\Components;
                     </ul>
 
                     <footer>
-                        <a href="/tickets" class="block w-full jazz_event_button_pink text-center">
+                        <button type="button"
+                                class="block w-full jazz_event_button_pink text-center cursor-pointer"
+                                onclick="buyTicket(this)"
+                                data-artist="Day Pass"
+                                data-date="Thu / Fri / Sat — All Shows"
+                                data-start=""
+                                data-venue="All Venues"
+                                data-price="35">
                             Buy Day Pass
-                        </a>
+                        </button>
                     </footer>
                 </article>
             </li>
@@ -157,9 +165,16 @@ namespace App\Views\Jazz\Components;
                     </ul>
 
                     <footer>
-                        <a href="/tickets" class="block w-full jazz_event_button_yellow text-center">
+                        <button type="button"
+                                class="block w-full jazz_event_button_yellow text-center cursor-pointer"
+                                onclick="buyTicket(this)"
+                                data-artist="Weekend Pass"
+                                data-date="Thu + Fri + Sat — All 19 Indoor Shows"
+                                data-start=""
+                                data-venue="All Venues &amp; Stages"
+                                data-price="80">
                             Buy Weekend Pass
-                        </a>
+                        </button>
                     </footer>
                 </article>
             </li>

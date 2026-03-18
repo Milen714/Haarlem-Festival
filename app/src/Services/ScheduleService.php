@@ -4,27 +4,28 @@ namespace App\Services;
 
 use App\Models\Schedule;
 use App\Services\Interfaces\IScheduleService;
-use App\Services\Interfaces\IVenueService;
-use App\Services\Interfaces\IArtistService;
-use App\Services\Interfaces\IRestaurantService;
-use App\Services\Interfaces\ILandmarkService;
 use App\Repositories\ScheduleRepository;
-use App\Repositories\Interfaces\IScheduleRepository;
-
+use App\Repositories\TicketRepository;
+use App\Services\VenueService;
+use App\Services\ArtistService;
+use App\Services\RestaurantService;
+use App\Services\LandmarkService;
 class ScheduleService implements IScheduleService
 {
-    private IScheduleRepository $scheduleRepository;
-    private IVenueService $venueService;
-    private IArtistService $artistService;
-    private IRestaurantService $restaurantService;
-    private ILandmarkService $landmarkService;
+    private ScheduleRepository $scheduleRepository;
+    private TicketRepository $ticketRepository;
+    private VenueService $venueService;
+    private ArtistService $artistService;
+    private RestaurantService $restaurantService;
+    private LandmarkService $landmarkService;
 
     public function __construct() {
-        $this->scheduleRepository= new ScheduleRepository();
-        $this->venueService= new VenueService();
-        $this->artistService= new ArtistService();
-        $this->restaurantService= new RestaurantService();
-        $this->landmarkService= new LandmarkService();
+        $this->scheduleRepository = new ScheduleRepository();
+        $this->ticketRepository   = new TicketRepository();
+        $this->venueService       = new VenueService();
+        $this->artistService      = new ArtistService();
+        $this->restaurantService  = new RestaurantService();
+        $this->landmarkService    = new LandmarkService();
     }
 
     public function getScheduleById(int $scheduleId): ?Schedule
@@ -112,6 +113,17 @@ class ScheduleService implements IScheduleService
         return $this->landmarkService->getAllLandmarks();
     }
 
+    private function isScheduleSoldOut(?int $scheduleId): bool
+    {
+        if ($scheduleId === null) return false;
+        $ticketTypes = $this->ticketRepository->getTicketTypesByScheduleId($scheduleId);
+        return !empty($ticketTypes) && array_reduce(
+            $ticketTypes,
+            fn($carry, $tt) => $carry && $tt->is_sold_out,
+            true
+        );
+    }
+
     private function validateScheduleData(array $data): void
     {
         if (empty($data['event_id'])) {
@@ -138,7 +150,7 @@ class ScheduleService implements IScheduleService
         $schedule->artist_id      = !empty($data['artist_id'])     ? (int)$data['artist_id']     : null;
         $schedule->restaurant_id  = !empty($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
         $schedule->landmark_id    = !empty($data['landmark_id'])   ? (int)$data['landmark_id']   : null;
-        
+
         // Safely create DateTime objects with error handling
         try {
             $schedule->date       = !empty($data['date'])       ? new \DateTime($data['date'])       : null;
@@ -147,7 +159,7 @@ class ScheduleService implements IScheduleService
         } catch (\Exception $e) {
             throw new \Exception('Invalid date or time format: ' . $e->getMessage());
         }
-        
+
         $schedule->total_capacity = (int)($data['total_capacity'] ?? 0);
         return $schedule;
     }
@@ -179,6 +191,7 @@ class ScheduleService implements IScheduleService
                     : '',
                 'venue_capacity' => $s->venue?->capacity,
                 'total_capacity' => $s->total_capacity,
+                'is_sold_out'    => $this->isScheduleSoldOut($s->schedule_id),
             ];
         }
 

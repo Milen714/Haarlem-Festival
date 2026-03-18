@@ -273,9 +273,18 @@ $lastDate  = !empty($days) ? end($days)['date']->format('M j, Y') : 'Aug 3, 2025
                                         Free
                                     </span>
                                 <?php else: ?>
-                                    <a href="/tickets" class="flex-shrink-0 jazz_event_pill_<?= $color ?>">
+                                    <button type="button"
+                                            class="flex-shrink-0 jazz_event_pill_<?= $color ?> cursor-pointer"
+                                            onclick="buyTicket(this)"
+                                            data-schedule-id="<?= (int) $schedule->schedule_id ?>"
+                                            data-artist="<?= htmlspecialchars($schedule->artist?->name ?? 'Artist TBA', ENT_QUOTES) ?>"
+                                            data-date="<?= htmlspecialchars($day['date']->format('l, F j'), ENT_QUOTES) ?>"
+                                            data-start="<?= htmlspecialchars($schedule->start_time ? $schedule->start_time->format('H:i') : '--:--', ENT_QUOTES) ?>"
+                                            data-end="<?= htmlspecialchars($schedule->end_time ? $schedule->end_time->format('H:i') : '', ENT_QUOTES) ?>"
+                                            data-venue="<?= htmlspecialchars($hallLabel, ENT_QUOTES) ?>"
+                                            data-price="<?= (int) $price ?>">
                                         Buy &euro;<?= $price ?>
-                                    </a>
+                                    </button>
                                 <?php endif; ?>
 
                             </li>
@@ -307,9 +316,18 @@ $lastDate  = !empty($days) ? end($days)['date']->format('M j, Y') : 'Aug 3, 2025
         </div>
     </section>
 
+    <!-- ===== Ticket Confirmation Modal ===== -->
+    <?php include __DIR__ . '/Components/jazz-ticket-modal.php'; ?>
+
 </main>
 
+<?php include __DIR__ . '/Components/jazz-ticket-modal-js.php'; ?>
+
 <script>
+/* ─────────────────────────────────────────
+   Day accordion & filter
+   ───────────────────────────────────────── */
+
 /**
  * Toggle the expanded/collapsed state of a day card.
  * @param {HTMLButtonElement} btn   - The trigger button

@@ -42,55 +42,43 @@
         </hgroup>
 
         <!-- Bottom: Quick Info Panel -->
-        <aside class="mt-auto bg-white/95 rounded-xl p-5 shadow-xl text-sm inline-block min-w-[220px]">
+        <div class="mt-auto self-start">
+        <aside class="bg-white/95 rounded-xl p-5 shadow-xl text-sm inline-block min-w-[220px] max-w-[280px]">
                 <h2 class="font-bold text-gray-800 mb-3 text-base">Quick Info</h2>
-                <ul class="space-y-2 text-gray-700">
-
-                    <?php if (!empty($vm->scheduleByDate)): ?>
-                    <li>
-                        <strong>Performances:</strong>
-                        <?= array_sum(array_map('count', $vm->scheduleByDate)) ?>x
-                    </li>
-                    <?php endif; ?>
-
-                    <?php
-                        $venues = [];
-                        foreach ($vm->scheduleByDate as $dateSlots) {
-                            foreach ($dateSlots as $slot) {
-                                if (!empty($slot->venue_name)) {
-                                    $venues[$slot->venue_name] = true;
-                                }
+                <?php
+                    $dates  = [];
+                    $venues = [];
+                    foreach ($vm->scheduleByDate as $dateKey => $dateSlots) {
+                        $dates[] = (new \DateTime($dateKey))->format('j M');
+                        foreach ($dateSlots as $slot) {
+                            if (!empty($slot['venue_name'])) {
+                                $venues[$slot['venue_name']] = true;
                             }
                         }
-                        $venues = array_keys($venues);
-                    ?>
-                    <?php if (!empty($venues)): ?>
-                    <li>
-                        <strong>Venues:</strong>
-                        <?= htmlspecialchars(implode(' & ', $venues)) ?>
-                    </li>
+                    }
+                    $venues = array_keys($venues);
+                ?>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+
+                    <?php if (!empty($vm->scheduleByDate)): ?>
+                    <li>Performances: <?= array_sum(array_map('count', $vm->scheduleByDate)) ?>x</li>
                     <?php endif; ?>
 
-                    <?php if (!empty($artist->website)): ?>
-                    <li>
-                        <strong>Website:</strong><br>
-                        <a href="<?= htmlspecialchars($artist->website) ?>"
-                           target="_blank" rel="noopener noreferrer"
-                           class="text-blue-600 hover:underline break-all">
-                            <?= htmlspecialchars(parse_url($artist->website, PHP_URL_HOST) ?? $artist->website) ?>
-                        </a>
-                    </li>
+                    <?php if (!empty($venues)): ?>
+                    <li>Venues: <?= htmlspecialchars(implode(' & ', $venues)) ?></li>
+                    <?php endif; ?>
+
+                    <?php if (!empty($dates)): ?>
+                    <li>Dates: <?= htmlspecialchars(implode(', ', $dates)) ?></li>
                     <?php endif; ?>
 
                     <?php if (!empty($artist->ticket_price)): ?>
-                    <li>
-                        <strong>Tickets:</strong>
-                        <?= htmlspecialchars($artist->ticket_price) ?>
-                    </li>
+                    <li>Tickets: <?= htmlspecialchars($artist->ticket_price) ?></li>
                     <?php endif; ?>
 
                 </ul>
             </aside>
+        </div>
 
     </div>
 </header>

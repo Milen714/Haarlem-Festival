@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Enums\OrderStatus;
@@ -12,9 +13,12 @@ use App\Services\Interfaces\IOrderService;
 class OrderService implements IOrderService
 {
     private IOrderRepository $orderRepository;
+    private TicketService $ticketService;
+
     public function __construct()
     {
         $this->orderRepository = new OrderRepository();
+        $this->ticketService   = new TicketService();
     }
     public function createOrder(Order $order): bool
     {
@@ -67,10 +71,40 @@ class OrderService implements IOrderService
     {
         unset($_SESSION['session_cart']);
     }
-    
+
+    // Adds an item to the session cart with a soft availability check., 
+    //but does not persist anything to the database yet 
+    //(no hard reservation until checkout).
     public function addOrderItemToSessionCart(OrderItem $item): void
     {
-        $cart = $this->getSessionCart();
+        $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+
+        if ($ticketTypeId !== null) {
+            $available = $this->ticketService->getAvailableCapacity($ticketTypeId);
+
+            // Also count seats already in the cart for this ticket type so the
+            // soft check accounts for items the user already has in their session.
+            $alreadyInCart = 0;
+            $cart = $this->getSessionCart();
+            if ($cart !== null) {
+                foreach ($cart->orderItems as $existing) {
+                    if (($existing->ticket_type?->ticket_type_id ?? null) === $ticketTypeId) {
+                        $alreadyInCart += (int) $existing->quantity;
+                    }
+                }
+            }
+
+            if (($item->quantity + $alreadyInCart) > $available) {
+                $remaining = max(0, $available - $alreadyInCart);
+                throw new \OverflowException(
+                    "Only {$remaining} seat(s) remaining for this ticket type."
+                );
+            }
+        }
+
+        if (!isset($cart)) {
+            $cart = $this->getSessionCart();
+        }
         if ($cart === null) {
             $cart = $this->createSessionCart();
         }
@@ -91,6 +125,23 @@ class OrderService implements IOrderService
         $order->order_date = new \DateTime();
         $order->status = OrderStatus::In_Cart;
         $order->calculateTotals();
+
+        foreach ($order->orderItems as $item) {
+            $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+            if ($ticketTypeId === null) {
+                continue;
+            }
+
+            $reserved = $this->ticketService->reserveSeats($ticketTypeId, (int) $item->quantity);
+
+            if (!$reserved) {
+
+                throw new \OverflowException(
+                    "Ticket type {$ticketTypeId} is sold out or has insufficient capacity. " .
+                        "Please review your cart."
+                );
+            }
+        }
 
         $this->orderRepository->createOrder($order);  // sets $order->order_id
 
@@ -139,7 +190,5 @@ class OrderService implements IOrderService
         if ($dbCart !== null) {
             $this->hydrateSessionCart($dbCart);
         }
-
     }
-
 }

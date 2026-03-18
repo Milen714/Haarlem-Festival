@@ -33,14 +33,7 @@ class JazzService implements JazzServiceInterface
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
         $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
-
-        $performancesByDate = [];
-        foreach ($allSchedules as $schedule) {
-            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
-            $performancesByDate[$dateKey][] = $schedule;
-        }
-
-        ksort($performancesByDate);
+        $performancesByDate = $this->groupSchedulesByDate($allSchedules);
 
         $venues = $this->venueService->getVenuesByEventId($jazzEventId);
         $venuesFromEventQueryCount = count($venues);
@@ -123,18 +116,9 @@ class JazzService implements JazzServiceInterface
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
         $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
 
-        // Group performances by date for easier display
-        $performancesByDate = [];
-        foreach ($allSchedules as $schedule) {
-            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
-            $performancesByDate[$dateKey][] = $schedule;
-        }
-
-        ksort($performancesByDate);
-
         return [
             'title' => 'Jazz Festival Schedule',
-            'scheduleByDate' => $performancesByDate,
+            'scheduleByDate' => $this->groupSchedulesByDate($allSchedules),
         ];
     }
 
@@ -194,6 +178,17 @@ class JazzService implements JazzServiceInterface
         }
 
         return $page;
+    }
+
+    private function groupSchedulesByDate(array $schedules): array
+    {
+        $grouped = [];
+        foreach ($schedules as $schedule) {
+            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
+            $grouped[$dateKey][] = $schedule;
+        }
+        ksort($grouped);
+        return $grouped;
     }
 
     private function extractEventIdOrFail(object $pageData, string $pageSlug): int
