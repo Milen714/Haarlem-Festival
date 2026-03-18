@@ -423,6 +423,9 @@
     .magic_article_image_big{
         @apply w-[23%] md:w-[60%];
     }
+    .magicDayUl li {
+        @apply flex-grow
+    }
 
 
     /* HISTORY */

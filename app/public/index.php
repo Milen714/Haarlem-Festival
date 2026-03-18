@@ -43,6 +43,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
     $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
     $r->addRoute('GET', '/events-magic-lorentz-show', ['App\Controllers\MagicController', 'lorentzFormula']);
+    $r->addRoute('GET', '/events-magic-tickets', ['App\Controllers\MagicController', 'magicTicketSelect']);
+    $r->addRoute('GET', '/magic-get-ticketypes', ['App\Controllers\MagicController', 'magicGetTicketTypes']);
 
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
@@ -58,7 +60,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
     $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
-    $r->addRoute('GET', '/events-yummy/restaurants/{slug}', ['App\Controllers\YummyController', 'restaurantDetail']);
+    $r->addRoute('GET', '/events-yummy/restaurants/{id}', ['App\Controllers\YummyController', 'restaurantDetail']);
 
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
 
@@ -157,6 +159,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
+    $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
+    $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
 });
 
 
