@@ -2511,6 +2511,11 @@ select:focus,
   background-color: rgb(13 13 13 / var(--tw-bg-opacity, 1));
 }
 
+.bg-\[\#10233e\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(16 35 62 / var(--tw-bg-opacity, 1));
+}
+
 .bg-\[\#121212\]{
   --tw-bg-opacity: 1;
   background-color: rgb(18 18 18 / var(--tw-bg-opacity, 1));
@@ -2538,6 +2543,11 @@ select:focus,
 .bg-\[\#1a0505\]{
   --tw-bg-opacity: 1;
   background-color: rgb(26 5 5 / var(--tw-bg-opacity, 1));
+}
+
+.bg-\[\#1b2949\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(27 41 73 / var(--tw-bg-opacity, 1));
 }
 
 .bg-\[\#2d0a0a\]{
@@ -3688,6 +3698,11 @@ select:focus,
   color: rgb(212 175 55 / var(--tw-text-opacity, 1));
 }
 
+.text-\[\#d5e0f0\]{
+  --tw-text-opacity: 1;
+  color: rgb(213 224 240 / var(--tw-text-opacity, 1));
+}
+
 .text-\[\#d64550\]{
   --tw-text-opacity: 1;
   color: rgb(214 69 80 / var(--tw-text-opacity, 1));
@@ -3706,8 +3721,16 @@ select:focus,
   color: var(--home-gold-accent);
 }
 
+.text-\[var\(--magic-blue-text\)\]{
+  color: var(--magic-blue-text);
+}
+
 .text-\[var\(--magic-bright-gold-accent\)\]{
   color: var(--magic-bright-gold-accent);
+}
+
+.text-\[var\(--magic-creme-gold-accent\)\]{
+  color: var(--magic-creme-gold-accent);
 }
 
 .text-\[var\(--magic-gold-accent\)\]{
@@ -3900,11 +3923,6 @@ select:focus,
 .text-red-700{
   --tw-text-opacity: 1;
   color: rgb(185 28 28 / var(--tw-text-opacity, 1));
-}
-
-.text-red-800{
-  --tw-text-opacity: 1;
-  color: rgb(153 27 27 / var(--tw-text-opacity, 1));
 }
 
 .text-red-900{
@@ -5044,6 +5062,10 @@ select:focus,
   }
 }
 
+.magicDayUl li{
+  flex-grow: 1;
+}
+
 /* HISTORY */
 
 .history-hero-title {
@@ -5240,6 +5262,131 @@ select:focus,
 .hover\:border-gray-600:hover{
   --tw-border-opacity: 1;
   border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
+
+.font-history-serif {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* Utilidades manuales para evitar configurar tailwind.config.js */
+
+.text-ink-900 {
+  color: var(--color-ink-900);
+}
+
+.text-ink-700 {
+  color: var(--color-ink-700);
+}
+
+.text-ink-500 {
+  color: var(--color-ink-500);
+}
+
+.text-brand-600 {
+  color: var(--color-brand-600);
+}
+
+.text-gold-400 {
+  color: var(--color-gold-400);
+}
+
+.bg-brand-600 {
+  background-color: var(--color-brand-600);
+}
+
+.hover\:bg-brand-700:hover {
+  background-color: var(--color-brand-700);
+}
+
+.underline-history {
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  height: 1px;
+  width: 4rem;
+  background-color: var(--color-underline-history);
+}
+
+.before\:mr-1::before{
+  content: var(--tw-content);
+  margin-right: 0.25rem;
+}
+
+.before\:mr-2::before{
+  content: var(--tw-content);
+  margin-right: 0.5rem;
+}
+
+.before\:content-accessibility_icon::before{
+  --tw-content: url("/Assets/Nav/AccessibilityMenIcon.svg");
+  content: var(--tw-content);
+}
+
+.before\:content-footer_location::before{
+  --tw-content: url("/Assets/Nav/FooterLocation.svg");
+  content: var(--tw-content);
+}
+
+.before\:content-footer_mail::before{
+  --tw-content: url("/Assets/Nav/FooterMail.svg");
+  content: var(--tw-content);
+}
+
+.before\:content-footer_phone::before{
+  --tw-content: url("/Assets/Nav/FooterPhone.svg");
+  content: var(--tw-content);
+}
+
+.after\:ml-1::after{
+  content: var(--tw-content);
+  margin-left: 0.25rem;
+}
+
+.after\:content-arrow_right::after{
+  --tw-content: url("/Assets/Nav/ArrowRightNav.svg");
+  content: var(--tw-content);
+}
+
+.last\:border-0:last-child{
+  border-width: 0px;
+}
+
+.hover\:scale-110:hover{
+  --tw-scale-x: 1.1;
+  --tw-scale-y: 1.1;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.hover\:scale-\[1\.02\]:hover{
+  --tw-scale-x: 1.02;
+  --tw-scale-y: 1.02;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.hover\:border-\[\#faa505\]:hover{
+  --tw-border-opacity: 1;
+  border-color: rgb(250 165 5 / var(--tw-border-opacity, 1));
+}
+
+.hover\:border-\[var\(--dance-tag-color-1\)\]:hover{
+  border-color: var(--dance-tag-color-1);
+}
+
+.hover\:border-\[var\(--pastel-lavender\)\]:hover{
+  border-color: var(--pastel-lavender);
+}
+
+.hover\:border-gray-600:hover{
+  --tw-border-opacity: 1;
+  border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
+}
+
+.hover\:bg-\[\#11253f\]:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(17 37 63 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-\[\#1a2f52\]:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(26 47 82 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-\[\#465e10\]:hover{
@@ -5297,6 +5444,11 @@ select:focus,
 .hover\:bg-blue-700:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-emerald-700:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(4 120 87 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-emerald-700:hover{
@@ -5366,6 +5518,10 @@ select:focus,
 
 .hover\:text-\[var\(--dance-tag-color-1\)\]:hover{
   color: var(--dance-tag-color-1);
+}
+
+.hover\:text-\[var\(--magic-bright-gold-accent\)\]:hover{
+  color: var(--magic-bright-gold-accent);
 }
 
 .hover\:text-\[var\(--pastel-lavender\)\]:hover{
@@ -6076,6 +6232,11 @@ select:focus,
     padding-right: 1rem;
   }
 
+  .md\:px-5{
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
   .md\:py-2{
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
@@ -6089,6 +6250,11 @@ select:focus,
   .md\:py-4{
     padding-top: 1rem;
     padding-bottom: 1rem;
+  }
+
+  .md\:py-6{
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
 
   .md\:pl-0{

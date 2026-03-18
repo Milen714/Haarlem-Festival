@@ -85,8 +85,8 @@ $content = $content ?? '';
                             class="relative text_colors_nav  box-border border border-transparent  focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm p-3 focus:outline-none">
                             <img src="Assets/Home/Shoppinsad.svg" alt="">
                             <span class="sr-only">Shopping Cart</span>
-                            <div
-                                class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-red-700 rounded-full -top-2 -end-2">
+                            <div id="items-in-shoppingCart"
+                                class="absolute hidden inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-red-700 rounded-full -top-2 -end-2">
                                 2</div>
                         </a>
                     </li>
@@ -280,6 +280,9 @@ $content = $content ?? '';
     </footer>
     <script src="/Js/Navbar.js"></script>
     <script src="/Js/Theme.js"></script>
+    <script src="/Js/UpdateShoppingCartNumber.js"></script>
+
+
 </body>
 
 </html>

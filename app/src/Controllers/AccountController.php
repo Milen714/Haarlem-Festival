@@ -42,25 +42,31 @@ class AccountController extends BaseController
         header('Content-Type: application/json; charset=utf-8');
         try {
             $data = json_decode(file_get_contents('php://input'), true);
+            // var_dump($data);
+            // die();
+             if (!$data) {
+                throw new \Exception('Invalid JSON input');
+            }
+             if (empty($data['email']) || empty($data['password'])) {
+                throw new \Exception('Email and password are required.');
+            }
+             // Validate reCAPTCHA token    
             $user = $this->userService->authenticateUser($data['email'], $data['password']);
+
             if ($user) {
                 $_SESSION['loggedInUser'] = $user;
-                // If there's a session cart, persist it to the database and associate it with the user
-                if (!empty($_SESSION['session_cart'])) {
-                    // $orderId = $this->orderService->persistSessionCart($_SESSION['session_cart'], $user);
-                    //$_SESSION['order_id'] = $orderId;
-                    //unset($_SESSION['session_cart']);
-                } else {
-                    // If no session cart but user has an open order in the database, load it into the session
-                    //$this->orderService->hydrateSessionCartFormDbOnLogin($user);
-                }
+                // Consolidate cart merge logic in one place.
+                $this->orderService->hydrateSessionCartFormDbOnLogin($user);
+                $cart = $this->orderService->getSessionCart();
+                $redirect = $data['redirect'] ?? '/';
+                 
                 // Successful login
                 //additionally check if user is admin and redirect to cms if so
                 if ($user->role === UserRole::ADMIN) {
-                    $this->jsonResponse(['success' => true, 'redirect' => '/cms'], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => '/cms', 'cart' => $cart ], 200);
                 } else {
                     // Regular user login
-                    $this->jsonResponse(['success' => true, 'redirect' => $data['redirect']], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => $redirect, 'cart' => $cart], 200);
                 }
             } else {
                 // Failed login
@@ -70,10 +76,11 @@ class AccountController extends BaseController
                     'user' => ['email' => $data['email']]
                 ], 401);
             }
-        } catch (\Exception $e) {
-            //header("Location: /login/" . urlencode($e->getMessage()));
-            //$this->view('Account/Login', ['error' => $e->getMessage(), 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam'] );
-            //exit();
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
     public function logout($vars = [])
