@@ -14,12 +14,13 @@
     
     <div class="flex flex-wrap justify-between gap-4 md:gap-8">
         <?php foreach ($vm->artists ?? [] as $artist): ?>
+            <?php if (!$artist->special_event): ?>
             <div class="flex flex-col items-center group cursor-pointer">
                  <a href="/events-dance/artist/<?= $artist->slug ?>" class="flex flex-col items-center group cursor-pointer h-full">
                     <div class="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden mb-4 ring-2 ring-transparent group-hover:ring-[var(--dance-tag-color-1)] transition-all duration-300">
                         <img src="<?= $artist->profile_image->file_path ?>" 
                             alt="<?= htmlspecialchars($artist->name) ?>" 
-                            class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                            class="w-full h-full object-cover  transition-all duration-500">
                     </div>
                 </a>
                 
@@ -27,6 +28,7 @@
                     <?= htmlspecialchars($artist->name) ?>
                 </span>
             </div>
+            <?php endif; ?>
         <?php endforeach; ?>
     </div>
 </section>

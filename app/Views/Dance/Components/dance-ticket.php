@@ -8,73 +8,75 @@ namespace App\Views\Dance\Components;
             <?= htmlspecialchars($ticketSection->section_title ?? 'All-Access Experience') ?>
         </h2>
         
-        <p class="text-white max-w-4xl mx-auto mb-16 leading-relaxed text-sm md:text-base">
-            <?= $ticketSection->content_html ?? "Don't miss a beat. Why choose just one DJ? With our All-Access Passes, you get entry to every club night and exclusive Back2Back session for a fraction of the price. Move freely between venues and create your own perfect schedule." ?>
-        </p>
+        <?php if ($ticketSection?->content_html): ?>
+        <div class="text-white text-lg max-w-4xl mx-auto mb-16 leading-relaxed md:text-base whitespace-pre-line">
+            <?= $ticketSection->content_html ?>
+        </div>
+        <?php endif; ?>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             
             <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group relative">
-                <span class="absolute -top-3 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase rounded-sm">
+                <span class="absolute -top-3 left-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 uppercase rounded-sm z-10">
                     Best Value
                 </span>
-                <h3 class="text-white text-2xl font-bold mb-6 mt-4">Full Weekend</h3>
-                <p class="text-white text-3xl font-bold mb-8">€250.00</p>
-                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none">
+                <h3 class="text-white text-xl font-bold mb-4 mt-4">Full Weekend</h3>
+                <p class="text-[var(--dance-tag-color-1)] text-3xl font-black mb-6">€250.00</p>
+                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none flex-grow">
                     <li>• Access to ALL days</li>
                     <li>• ALL B2B shows</li>
                     <li>• ALL Club events</li>
                 </ul>
-                <button class="w-2/3 bg-[var(--dance-button-color)] hover:bg-white py-2 text-black font-bold uppercase text-[10px] rounded-md transition-colors mt-auto mb-6">
+                <button class="w-full bg-[var(--dance-button-color)] hover:bg-white py-3 text-black font-bold uppercase text-[10px] rounded-md transition-colors mb-6">
                     BUY TICKETS
                 </button>
-                <p class="text-[10px] text-gray-600 leading-tight">
-                    ℹ️ Please note that club venues have limited capacity. Entry is subject to safety regulations.
+                <p class="text-[10px] text-gray-600 leading-tight italic">
+                    ℹ️ Entry subject to venue capacity regulations.
                 </p>
             </div>
 
-            <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group relative">
-                <h3 class="text-white text-2xl font-bold mb-6 mt-4">Friday Access</h3>
-                <p class="text-white text-3xl font-bold mb-8">€125.00</p>
-                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none">
+            <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group">
+                <h3 class="text-white text-xl font-bold mb-4 mt-4">Friday Access</h3>
+                <p class="text-white text-3xl font-black mb-6">€125.00</p>
+                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none flex-grow">
                     <li>• Nicky Romero & Afrojack B2B</li>
                     <li>• All Friday Club Shows</li>
                 </ul>
-                <button class="w-2/3 bg-[var(--dance-button-color)] hover:bg-white py-2 text-black font-bold uppercase text-[10px] rounded-md transition-colors mt-auto mb-6">
+                <button class="w-full bg-[var(--dance-button-color)] hover:bg-white py-3 text-black font-bold uppercase text-[10px] rounded-md transition-colors mb-6">
                     BUY TICKETS
                 </button>
-                <p class="text-[10px] text-gray-600 leading-tight">
-                    ℹ️ Please note that club venues have limited capacity. Entry is subject to safety regulations.
+                <p class="text-[10px] text-gray-600 leading-tight italic">
+                    ℹ️ Entry subject to venue capacity regulations.
                 </p>
             </div>
 
-            <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group relative">
-                <h3 class="text-white text-2xl font-bold mb-6 mt-4">Saturday Access</h3>
-                <p class="text-white text-3xl font-bold mb-8">€150.00</p>
-                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none">
+            <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group">
+                <h3 class="text-white text-xl font-bold mb-4 mt-4">Saturday Access</h3>
+                <p class="text-white text-3xl font-black mb-6">€150.00</p>
+                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none flex-grow">
                     <li>• Hardwell, Garrix & Armin B2B</li>
                     <li>• All Saturday Club Shows</li>
                 </ul>
-                <button class="w-2/3 bg-[var(--dance-button-color)] hover:bg-white py-2 text-black font-bold uppercase text-[10px] rounded-md transition-colors mt-auto mb-6">
+                <button class="w-full bg-[var(--dance-button-color)] hover:bg-white py-3 text-black font-bold uppercase text-[10px] rounded-md transition-colors mb-6">
                     BUY TICKETS
                 </button>
-                <p class="text-[10px] text-gray-600 leading-tight">
-                    ℹ️ Please note that club venues have limited capacity. Entry is subject to safety regulations.
+                <p class="text-[10px] text-gray-600 leading-tight italic">
+                    ℹ️ Entry subject to venue capacity regulations.
                 </p>
             </div>
 
-            <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group relative">
-                <h3 class="text-white text-2xl font-bold mb-6 mt-4">Sunday Access</h3>
-                <p class="text-white text-3xl font-bold mb-8">€150.00</p>
-                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none">
+            <div class="bg-[#050505] border border-white/5 p-8 flex flex-col items-center hover:border-[var(--dance-tag-color-1)] transition-all duration-300 group">
+                <h3 class="text-white text-xl font-bold mb-4 mt-4">Sunday Access</h3>
+                <p class="text-white text-3xl font-black mb-6">€150.00</p>
+                <ul class="text-gray-400 text-xs space-y-3 mb-12 text-center list-none flex-grow">
                     <li>• Afrojack, Tiësto & Romero B2B</li>
                     <li>• All Sunday Club Shows</li>
                 </ul>
-                <button class="w-2/3 bg-[var(--dance-button-color)] hover:bg-white py-2 text-black font-bold uppercase text-[10px] rounded-md transition-colors mt-auto mb-6">
+                <button class="w-full bg-[var(--dance-button-color)] hover:bg-white py-3 text-black font-bold uppercase text-[10px] rounded-md transition-colors mb-6">
                     BUY TICKETS
                 </button>
-                <p class="text-[10px] text-gray-600 leading-tight">
-                    ℹ️ Please note that club venues have limited capacity. Entry is subject to safety regulations.
+                <p class="text-[10px] text-gray-600 leading-tight italic">
+                    ℹ️ Entry subject to venue capacity regulations.
                 </p>
             </div>
 

@@ -40,17 +40,10 @@ foreach ($vm->schedulesSection as $item) {
                                    class="px-6 py-2 border border-gray-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-black transition text-center">
                                     More Info
                                 </a>
-                                
-                                <?php if ($session->is_sold_out): ?>
-                                    <button class="px-6 py-2 bg-gray-800 text-gray-500 rounded text-[10px] font-bold uppercase tracking-widest cursor-not-allowed">
-                                        Sold Out
-                                    </button>
-                                <?php else: ?>
-                                    <a href="/tickets/add/<?= $session->schedule_id ?>" 
-                                       class="px-6 py-2 bg-[#f5c35e] text-black rounded text-[10px] font-bold uppercase tracking-widest hover:bg-white transition text-center shadow-lg">
-                                        Buy Tickets
-                                    </a>
-                                <?php endif; ?>
+                                <a href="/tickets/add/<?= $session->schedule_id ?>" 
+                                    class="px-6 py-2 bg-[#f5c35e] text-black rounded text-[10px] font-bold uppercase tracking-widest hover:bg-white transition text-center shadow-lg">
+                                    Buy Tickets
+                                </a>
                             </div>
                         </div>
                     </div>

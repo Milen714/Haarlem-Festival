@@ -40,7 +40,6 @@ class DanceArtistController extends BaseController
         }
         try {
             $artist = $this->artistService->getArtistBySlug($slug);
-
             if (!$artist) {
                 $this->notFound();
                 return;
