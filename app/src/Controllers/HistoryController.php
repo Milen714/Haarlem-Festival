@@ -4,17 +4,26 @@ namespace App\Controllers;
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;          
 use App\Controllers\BaseController;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\HistoryService;
 use App\ViewModels\History\TicketHistoryViewModel;
+use App\Models\History\TicketSelectionDTO;
+use App\Services\Interfaces\ITicketService;
+use App\Services\TicketService;
+use App\Services\Interfaces\IOrderService;
+use App\Services\OrderService;
+use App\Models\Payment\OrderItem;
 
 class HistoryController extends BaseController
 {
     private IPageService $pageService;
     private ILandmarkService $landmarkService;
     private IHistoryService $historyService;
+    private ITicketService $ticketService;
+    private IOrderService $orderService;
 
     const HISTORY_SLUG = 'events-history'; 
 
@@ -23,6 +32,8 @@ class HistoryController extends BaseController
         $this->pageService = new PageService();
         $this->landmarkService = new LandmarkService();
         $this->historyService = new HistoryService();
+        $this->ticketService = new TicketService();
+        $this->orderService = new OrderService();
     }
 
     public function index($vars = [])
@@ -174,6 +185,7 @@ class HistoryController extends BaseController
     }
 
     public function addHistoryToCart() {
+        
           // Leer el JSON que envía nuestro JavaScript (AJAX) - (Lecture 6)
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
@@ -185,53 +197,42 @@ class HistoryController extends BaseController
             exit();
         }
 
-        // Limpiar y validar los datos (Seguridad Básica - Lecture 2)
-        $date = htmlspecialchars($data['date'] ?? '');
-        $language = htmlspecialchars($data['language'] ?? '');
-        $qtyNormal = filter_var($data['qtyNormal'] ?? 0, FILTER_VALIDATE_INT);
-        $qtyFamily = filter_var($data['qtyFamily'] ?? 0, FILTER_VALIDATE_INT);
+        if($data['qtyNormal'] > 0)
+        {
+            $data['ticketSchemeEnum'] = TicketSchemeEnum::HISTORY_SINGLE_TICKET;
+            $ticketNormalDTO = new TicketSelectionDTO($data);
 
-        if ($qtyNormal === 0 && $qtyFamily === 0) {
+            $ticketNormalType = $this->ticketService->getTicketTypeFromSelection($ticketNormalDTO);
+
+            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketNormalType);
+            $this->orderService->addOrderItemToSessionCart($orderItem);
+        }
+        elseif ($data['qtyFamily'] > 0)
+        {
+            $data['ticketSchemeEnum'] = TicketSchemeEnum::HISTORY_FAMILY_TICKET;
+            $ticketFamilyDTO = new TicketSelectionDTO($data);
+
+            $ticketFamilyType = $this->ticketService->getTicketTypeFromSelection($ticketFamilyDTO);
+
+            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketFamilyType);
+            $this->orderService->addOrderItemToSessionCart($orderItem);
+        }
+
+        // 2. Validamos usando los métodos del objeto// esto esta mal que este por alla abajo
+        if (!$ticketNormalDTO->hasTickets() && !$ticketFamilyDTO->hasTickets()) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid quantities.']);
+            echo json_encode(['success' => false, 'message' => 'Invalid quantities']);
             exit();
         }
 
-        // 3. SEGURIDAD VITAL: Definir los precios reales en el Servidor
-        // ¡Nunca confiamos en los precios que vienen de JavaScript porque pueden ser hackeados!
-        // --- RESPUESTA A TU PREGUNTA 1: Calcular en un método aparte ---
-        // Llamamos a nuestro nuevo método privado pasándole las cantidades
-        $total = $this->calculateRealTotal($qtyNormal, $qtyFamily);
-
-        // 4. Crear el "Carrito" en la sesión si aún no existe (Lecture Sessions)
-        // --- RESPUESTA A TU PREGUNTA 2: Usar el modelo OrderItem ---
-        if (!isset($_SESSION['cart'])) {
-            $_SESSION['cart'] = [];
-        }
-
-
-
-        // Armar el "Item" o producto que acaban de elegir
-        // Instanciamos tu modelo real (Asegúrate de haberle hecho 'use App\Models\OrderItem;' arriba)
-        $cartItem = new OrderItem();
-        
-        // Rellenamos el modelo con los datos
-        // (Ajusta los nombres de las propiedades según como estén en tu clase OrderItem)
-        $cartItem->eventId = 'HistoryTour'; // o el ID numérico de la BD
-        $cartItem->date = $date;
-        $cartItem->language = $language;
-        $cartItem->qtyNormal = $qtyNormal;
-        $cartItem->qtyFamily = $qtyFamily;
-        $cartItem->itemTotal = $total;
-
-        // Guardamos EL OBJETO entero en la sesión del carrito
-        $_SESSION['cart'][] = $cartItem;
-
-        // Devolver una respuesta exitosa al JavaScript en formato JSON
-        header('Content-Type: application/json');
-        echo json_encode(['success' => true]);
-        exit();
-    }
+            $cart = $this->orderService->getSessionCart();
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'cart' => $cart
+            ], JSON_PRETTY_PRINT);
+        } 
+    
 
     private function calculateRealTotal(int $qtyNormal, int $qtyFamily): float {
         

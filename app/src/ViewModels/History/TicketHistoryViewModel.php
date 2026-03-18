@@ -9,5 +9,4 @@ class TicketHistoryViewModel {
     public array $availableLanguages = [];
     public float $normalPrice;
     public float $familyPrice;
-
 }

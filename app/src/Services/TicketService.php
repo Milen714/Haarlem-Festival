@@ -10,6 +10,7 @@ use App\Models\Enums\TicketSchemeEnum;
 use App\Services\Interfaces\ITicketService;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\TicketRepository;
+use App\Models\History\TicketSelectionDTO;
 
 class TicketService implements ITicketService
 {
@@ -300,5 +301,10 @@ class TicketService implements ITicketService
         }
 
         return (int)$value;
+    }
+
+    public function getTicketTypeFromSelection(TicketSelectionDTO $ticketDTO): ?TicketType
+    {        
+        return $this->ticketRepository->getTicketTypeFromSelection($ticketDTO);
     }
 }
