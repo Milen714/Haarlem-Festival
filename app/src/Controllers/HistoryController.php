@@ -173,9 +173,8 @@ class HistoryController extends BaseController
     
     }
 
-    // Método principal que recibe el AJAX
-    public function apiAddToCart() {
-          // 1. Leer el JSON que envía nuestro JavaScript (AJAX) - (Lecture 6)
+    public function addHistoryToCart() {
+          // Leer el JSON que envía nuestro JavaScript (AJAX) - (Lecture 6)
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
@@ -186,7 +185,7 @@ class HistoryController extends BaseController
             exit();
         }
 
-        // 2. Limpiar y validar los datos (Seguridad Básica - Lecture 2)
+        // Limpiar y validar los datos (Seguridad Básica - Lecture 2)
         $date = htmlspecialchars($data['date'] ?? '');
         $language = htmlspecialchars($data['language'] ?? '');
         $qtyNormal = filter_var($data['qtyNormal'] ?? 0, FILTER_VALIDATE_INT);
@@ -210,7 +209,9 @@ class HistoryController extends BaseController
             $_SESSION['cart'] = [];
         }
 
-         // 5. Armar el "Item" o producto que acaban de elegir
+
+
+        // Armar el "Item" o producto que acaban de elegir
         // Instanciamos tu modelo real (Asegúrate de haberle hecho 'use App\Models\OrderItem;' arriba)
         $cartItem = new OrderItem();
         
@@ -226,29 +227,20 @@ class HistoryController extends BaseController
         // Guardamos EL OBJETO entero en la sesión del carrito
         $_SESSION['cart'][] = $cartItem;
 
-
-        // 6. Devolver una respuesta exitosa al JavaScript en formato JSON
+        // Devolver una respuesta exitosa al JavaScript en formato JSON
         header('Content-Type: application/json');
         echo json_encode(['success' => true]);
         exit();
     }
 
-    // =========================================================
-    // MÉTODO PRIVADO PARA CALCULAR EL TOTAL Y CONSULTAR LA BD
-    // =========================================================
     private function calculateRealTotal(int $qtyNormal, int $qtyFamily): float {
         
         // Aquí llamas a tu Servicio que se conecta a la Base de Datos
-        // Ejemplo: $prices = $this->ticketService->getHistoryTourPrices();
-        // $serverNormalPrice = $prices['normal'];
-        // $serverFamilyPrice = $prices['family'];
-
-        // Por ahora lo simulamos:
-        $serverNormalPrice = 17.50; 
-        $serverFamilyPrice = 60.00;
+        
+        $ticketOptions = $this->getTicketOptions();
 
         // Hacemos el cálculo
-        $total = ($qtyNormal * $serverNormalPrice) + ($qtyFamily * $serverFamilyPrice);
+        $total = ($qtyNormal * $ticketOptions['normal']) + ($qtyFamily * $ticketOptions['family']);
 
         return $total;
     }

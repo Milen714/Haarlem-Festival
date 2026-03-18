@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Enviar al servidor
-        fetch('/api/tickets/comprar', {
+        fetch('/history/add-to-cart', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(backendData)
