@@ -13,4 +13,6 @@ interface IOrderRepository
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool;
     public function addOrderItem(OrderItem $orderItem): bool;
     public function getOrderItemsByOrderId(int $orderId): array;
+    public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order;
+    public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool;
 }

@@ -188,31 +188,62 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // TODO: This is a duplicate of getTicketTypesByScheduleId but optimized for multiple schedule IDs at once to avoid N+1 query problem in ScheduleController
+    // method to get ticket types by an array of scheme enums, used for filtering in the schedule list specific for day passes for jazz and dance events
+    public function getTicketTypesBySchemeEnums(array $schemeEnums): array
+    {
+        if (empty($schemeEnums)) {
+            return [];
+        }
+
+        try {
+            $pdo = $this->connect();
+            $placeholders = implode(',', array_fill(0, count($schemeEnums), '?'));
+            $query = $this->getBaseQuery() . "
+                WHERE ts.scheme_enum IN ($placeholders)
+                ORDER BY tt.ticket_type_id ASC
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(array_values($schemeEnums));
+
+            return array_map(function (array $row): TicketType {
+                $ticketType = new TicketType();
+                $ticketType->fromPDOData($row);
+                return $ticketType;
+            }, $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket types by scheme enums: " . $e->getMessage());
+        }
+    }
+
     public function getTicketTypesByScheduleIds(array $scheduleIds): array
     {
         if (empty($scheduleIds)) {
             return [];
         }
 
-        $pdo = $this->connect();
-        $placeholders = implode(',', array_fill(0, count($scheduleIds), '?'));
-        $query = $this->getBaseQuery() . "
-            WHERE tt.schedule_id IN ($placeholders)
-            ORDER BY tt.schedule_id ASC, tt.ticket_type_id ASC
-        ";
+        try {
+            $pdo = $this->connect();
+            $placeholders = implode(',', array_fill(0, count($scheduleIds), '?'));
+            $query = $this->getBaseQuery() . "
+                WHERE tt.schedule_id IN ($placeholders)
+                ORDER BY tt.schedule_id ASC, tt.ticket_type_id ASC
+            ";
 
-        $stmt = $pdo->prepare($query);
-        $stmt->execute(array_values($scheduleIds));
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(array_values($scheduleIds));
 
-        $grouped = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $ticketType = new TicketType();
-            $ticketType->fromPDOData($row);
-            $grouped[(int)$row['schedule_id']][] = $ticketType;
+            $grouped = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $ticketType = new TicketType();
+                $ticketType->fromPDOData($row);
+                $grouped[(int)$row['schedule_id']][] = $ticketType;
+            }
+
+            return $grouped;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket types by schedule IDs: " . $e->getMessage());
         }
-
-        return $grouped;
     }
 
     public function create(TicketType $ticketType): bool
@@ -434,6 +465,207 @@ class TicketRepository extends Repository implements ITicketRepository
             return (int)$stmt->fetchColumn();
         } catch (PDOException $e) {
             throw new \RuntimeException("Error counting ticket types by scheme ID: " . $e->getMessage());
+        }
+    }
+
+    // Fresh DB read so the count is never stale
+    public function getAvailableCapacity(int $ticketTypeId): int
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT GREATEST(0, capacity - tickets_sold) AS available
+                 FROM TICKET_TYPE
+                 WHERE ticket_type_id = :id AND is_sold_out = 0"
+            );
+            $stmt->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row ? (int) $row['available'] : 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error checking capacity: " . $e->getMessage());
+        }
+    }
+
+    // Increments tickets_sold atomically. Sets is_sold_out when capacity is reached. Returns false if no seats left.
+    public function atomicIncrementTicketsSold(int $ticketTypeId, int $quantity): bool
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "UPDATE TICKET_TYPE
+                 SET
+                     tickets_sold = tickets_sold + :qty,
+                     is_sold_out  = CASE
+                                        WHEN (tickets_sold + :qty2) >= capacity THEN 1
+                                        ELSE 0
+                                    END
+                 WHERE ticket_type_id = :id
+                   AND is_sold_out    = 0
+                   AND (tickets_sold  + :qty3) <= capacity"
+            );
+            $stmt->bindValue(':qty',  $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':qty2', $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':qty3', $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
+            $stmt->execute();
+            // 0 rows = WHERE guard failed, no seats left
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error incrementing tickets sold: " . $e->getMessage());
+        }
+    }
+
+    // Decrements tickets_sold atomically. Clears is_sold_out if back below capacity. Returns false if nothing to decrement.
+    public function atomicDecrementTicketsSold(int $ticketTypeId, int $quantity): bool
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "UPDATE TICKET_TYPE
+                 SET
+                     tickets_sold = GREATEST(0, tickets_sold - :qty),
+                     is_sold_out  = CASE
+                                        WHEN (tickets_sold - :qty2) < capacity THEN 0
+                                        ELSE is_sold_out
+                                    END
+                 WHERE ticket_type_id = :id
+                   AND tickets_sold   >= :qty3"
+            );
+            $stmt->bindValue(':qty',  $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':qty2', $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':qty3', $quantity, PDO::PARAM_INT);
+            $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error decrementing tickets sold: " . $e->getMessage());
+        }
+    }
+
+    // Reserves seats for multiple ticket types in one transaction. All succeed or none do.
+    public function reserveMultiple(array $items): bool
+    {
+        $pdo = $this->connect();
+        $pdo->beginTransaction();
+        try {
+            foreach ($items as $item) {
+                $ticketTypeId = (int)($item['ticket_type_id'] ?? 0);
+                $quantity     = (int)($item['quantity'] ?? 0);
+                if ($ticketTypeId <= 0 || $quantity <= 0) {
+                    continue;
+                }
+
+                $stmt = $pdo->prepare(
+                    "UPDATE TICKET_TYPE
+                     SET
+                         tickets_sold = tickets_sold + :qty,
+                         is_sold_out  = CASE
+                                            WHEN (tickets_sold + :qty2) >= capacity THEN 1
+                                            ELSE 0
+                                        END
+                     WHERE ticket_type_id = :id
+                       AND is_sold_out    = 0
+                       AND (tickets_sold  + :qty3) <= capacity"
+                );
+                $stmt->bindValue(':qty',  $quantity, PDO::PARAM_INT);
+                $stmt->bindValue(':qty2', $quantity, PDO::PARAM_INT);
+                $stmt->bindValue(':qty3', $quantity, PDO::PARAM_INT);
+                $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
+                $stmt->execute();
+
+                if ($stmt->rowCount() === 0) {
+                    $pdo->rollBack();
+                    return false;
+                }
+            }
+            $pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error reserving multiple tickets: " . $e->getMessage());
+        }
+    }
+
+    // Releases seats for multiple ticket types in one transaction.
+    public function releaseMultiple(array $items): void
+    {
+        $pdo = $this->connect();
+        $pdo->beginTransaction();
+        try {
+            foreach ($items as $item) {
+                $ticketTypeId = (int)($item['ticket_type_id'] ?? 0);
+                $quantity     = (int)($item['quantity'] ?? 0);
+                if ($ticketTypeId <= 0 || $quantity <= 0) {
+                    continue;
+                }
+
+                $stmt = $pdo->prepare(
+                    "UPDATE TICKET_TYPE
+                     SET
+                         tickets_sold = GREATEST(0, tickets_sold - :qty),
+                         is_sold_out  = CASE
+                                            WHEN (tickets_sold - :qty2) < capacity THEN 0
+                                            ELSE is_sold_out
+                                        END
+                     WHERE ticket_type_id = :id
+                       AND tickets_sold   >= :qty3"
+                );
+                $stmt->bindValue(':qty',  $quantity, PDO::PARAM_INT);
+                $stmt->bindValue(':qty2', $quantity, PDO::PARAM_INT);
+                $stmt->bindValue(':qty3', $quantity, PDO::PARAM_INT);
+                $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+            $pdo->commit();
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error releasing multiple tickets: " . $e->getMessage());
+        }
+    }
+
+    // Total capacity already allocated for a schedule. Pass excludeTicketTypeId when updating an existing type.
+    public function getTotalAllocatedCapacityForSchedule(int $scheduleId, ?int $excludeTicketTypeId = null): int
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT COALESCE(SUM(capacity), 0) AS total
+                 FROM TICKET_TYPE
+                 WHERE schedule_id = :schedule_id
+                   AND (:exclude_id IS NULL OR ticket_type_id != :exclude_id2)"
+            );
+            $stmt->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            $stmt->bindValue(':exclude_id',  $excludeTicketTypeId, $excludeTicketTypeId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $stmt->bindValue(':exclude_id2', $excludeTicketTypeId, $excludeTicketTypeId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return (int)($row['total'] ?? 0);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error getting total allocated capacity: " . $e->getMessage());
+        }
+    }
+
+    // Returns the venue's capacity for a schedule, or null if no venue is linked.
+    public function getVenueCapacityForSchedule(int $scheduleId): ?int
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT v.capacity AS venue_capacity
+                 FROM SCHEDULE s
+                 LEFT JOIN VENUE v ON s.venue_id = v.venue_id
+                 WHERE s.schedule_id = :schedule_id"
+            );
+            $stmt->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row || $row['venue_capacity'] === null) {
+                return null;
+            }
+            return (int)$row['venue_capacity'];
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error getting venue capacity for schedule: " . $e->getMessage());
         }
     }
 

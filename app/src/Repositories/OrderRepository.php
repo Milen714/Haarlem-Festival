@@ -29,6 +29,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 o.currency,
                 o.status,
                 o.stripe_payment_intent_id,
+                o.stripe_checkout_session_id,
                 o.stripe_customer_id,
                 o.created_at as order_created_at,
                 o.paid_at,
@@ -305,6 +306,7 @@ class OrderRepository extends Repository implements IOrderRepository
                     currency,
                     status,
                     stripe_payment_intent_id,
+                    stripe_checkout_session_id,
                     stripe_customer_id,
                     created_at,
                     paid_at
@@ -318,6 +320,7 @@ class OrderRepository extends Repository implements IOrderRepository
                     :currency,
                     :status,
                     :stripe_payment_intent_id,
+                    :stripe_checkout_session_id,
                     :stripe_customer_id,
                     :created_at,
                     :paid_at
@@ -334,6 +337,7 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt->bindValue(':currency', $order->currency ?: 'EUR');
             $stmt->bindValue(':status', $order->status->value);
             $stmt->bindValue(':stripe_payment_intent_id', $order->stripe_payment_intent_id);
+            $stmt->bindValue(':stripe_checkout_session_id', $order->stripe_checkout_session_id);
             $stmt->bindValue(':stripe_customer_id', $order->stripe_customer_id);
             $stmt->bindValue(':created_at', $order->created_at ?? date('Y-m-d H:i:s'));
             $stmt->bindValue(':paid_at', $order->paid_at);
@@ -576,6 +580,53 @@ class OrderRepository extends Repository implements IOrderRepository
             }, $rows);
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching order items by order ID: " . $e->getMessage());
+        }
+    }
+
+    public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = $this->getBaseQuery() . " WHERE o.stripe_checkout_session_id = :session_id ORDER BY oi.orderitem_id ASC";
+            $stmt  = $pdo->prepare($query);
+            $stmt->bindValue(':session_id', $sessionId, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($rows)) {
+                return null;
+            }
+
+            $order = new Order();
+            $order->fromPDOData($rows[0]);
+
+            $seenItems = [];
+            foreach ($rows as $row) {
+                if (!is_null($row['orderitem_id']) && !isset($seenItems[$row['orderitem_id']])) {
+                    $seenItems[$row['orderitem_id']] = true;
+                    $orderItem = new OrderItem();
+                    $order->orderItems[] = $orderItem->fromPdo($row);
+                }
+            }
+
+            return $order;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching order by Stripe checkout session ID: " . $e->getMessage());
+        }
+    }
+
+    public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare("UPDATE `ORDER` SET stripe_checkout_session_id = :session_id WHERE order_id = :order_id");
+            $stmt->bindValue(':session_id', $sessionId, PDO::PARAM_STR);
+            $stmt->bindValue(':order_id',   $orderId,   PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to set stripe checkout session ID: " . $e->getMessage());
         }
     }
 }

@@ -16,7 +16,9 @@ interface IOrderService
     public function createSessionCart(): Order;
     public function getSessionCart(): ?Order;
     public function clearSessionCart(): void;
-    public function persistSessionCart(Order $order, User $user): int;
+    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): int;
+    public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order;
+    public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool;
     public function addOrderItemToSessionCart(OrderItem $item): void;
     public function hydrateSessionCart(Order $order): void;
     public function hydrateSessionCartFormDbOnLogin(User $user): void;

@@ -125,21 +125,12 @@ $action = $action ?? '';
         <div class="mb-8 rounded-lg border bg-white p-6">
             <h2 class="mb-4 border-b pb-2 text-xl font-bold">Age Restrictions</h2>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                    <label class="mb-2 block font-semibold text-gray-700" for="min_age">Minimum Age</label>
-                    <input type="number" id="min_age" name="min_age" min="0"
-                           value="<?= htmlspecialchars((string)($ticketType?->min_age ?? '')) ?>"
-                           class="w-full rounded-lg border px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                           placeholder="Leave empty if not applicable">
-                </div>
-                <div>
-                    <label class="mb-2 block font-semibold text-gray-700" for="max_age">Maximum Age</label>
-                    <input type="number" id="max_age" name="max_age" min="0"
-                           value="<?= htmlspecialchars((string)($ticketType?->max_age ?? '')) ?>"
-                           class="w-full rounded-lg border px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                           placeholder="Leave empty if not applicable">
-                </div>
+            <div>
+                <label class="mb-2 block font-semibold text-gray-700" for="min_age">Minimum Age</label>
+                <input type="number" id="min_age" name="min_age" min="0"
+                       value="<?= htmlspecialchars((string)($ticketType?->min_age ?? '')) ?>"
+                       class="w-full rounded-lg border px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                       placeholder="Leave empty if not applicable">
             </div>
         </div>
 
