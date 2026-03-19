@@ -79,4 +79,27 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+    public function removeOrderItemFromCart(array $params = []): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        try {
+            $jsonData = json_decode(file_get_contents('php://input'), true);
+             if (!$jsonData) {
+                throw new \Exception('Invalid JSON input');
+            }
+            
+            $this->orderService->removeOrderItemFromSessionCart($jsonData['ticketTypeId']);
+            $cart = $this->orderService->getSessionCart();
+            echo json_encode([
+                'success' => true,
+                'cart' => $cart
+            ], JSON_PRETTY_PRINT);
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

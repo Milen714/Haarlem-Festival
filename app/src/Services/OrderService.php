@@ -141,5 +141,10 @@ class OrderService implements IOrderService
         }
 
     }
+    public function removeOrderItemFromSessionCart(int $orderItemId): void
+    {
+        $cart = $this->getSessionCart();
+        
+    }
 
 }
