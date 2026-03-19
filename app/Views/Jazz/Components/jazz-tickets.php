@@ -14,9 +14,16 @@ namespace App\Views\Jazz\Components;
         $dayPassTypes    = [];
         $weekendPassType = null;
         foreach ($passTicketTypes as $pt) {
-            $enum = $pt->ticket_scheme->scheme_enum->value ?? '';
-            if ($enum === 'JAZZ_DAY_PASS')     $dayPassTypes[]  = $pt;
-            if ($enum === 'JAZZ_WEEKEND_PASS') $weekendPassType = $pt;
+            $enum  = $pt->ticket_scheme->scheme_enum->value ?? '';
+            $price = (float)($pt->ticket_scheme->price ?? 0);
+            if ($enum === 'JAZZ_WEEKEND_PASS') {
+                $weekendPassType = $pt;
+            } elseif ($enum === 'JAZZ_DAY_PASS' && $price >= 60) {
+                // High-price day pass doubles as the all-access / weekend pass
+                $weekendPassType = $pt;
+            } elseif ($enum === 'JAZZ_DAY_PASS') {
+                $dayPassTypes[] = $pt;
+            }
         }
         // Deduplicate: one entry per unique calendar day (prefer date, fall back to start_time), sorted ascending
         $dayPassByDate = [];
@@ -212,6 +219,11 @@ namespace App\Views\Jazz\Components;
                         <button type="button" disabled
                                 class="block w-full jazz_event_button_yellow text-center opacity-50 cursor-not-allowed">
                             Sold Out
+                        </button>
+                        <?php elseif ($weekendTypeId === null): ?>
+                        <button type="button" disabled
+                                class="block w-full jazz_event_button_yellow text-center opacity-50 cursor-not-allowed">
+                            Coming Soon
                         </button>
                         <?php else: ?>
                         <button type="button"

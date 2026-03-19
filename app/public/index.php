@@ -149,6 +149,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
     $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
+    /* Stripe Webhook */
+    $r->addRoute('POST', '/stripe/webhook', ['App\Controllers\StripeWebhookController', 'handle']);
+
     /* Payment */
     $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
     $r->addRoute('GET', '/checkout', ['App\Controllers\PaymentController', 'checkout']);

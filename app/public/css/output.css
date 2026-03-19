@@ -1085,6 +1085,11 @@ select:focus,
   margin-right: auto;
 }
 
+.my-1{
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
 .my-2{
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -1118,11 +1123,6 @@ select:focus,
 .my-8{
   margin-top: 2rem;
   margin-bottom: 2rem;
-}
-
-.my-1{
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
 }
 
 .mb-1{
@@ -6435,10 +6435,6 @@ select:focus,
 
   .xl\:grid-cols-\[2fr_1fr\]{
     grid-template-columns: 2fr 1fr;
-  }
-
-  .xl\:grid-cols-4{
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .xl\:flex-row{

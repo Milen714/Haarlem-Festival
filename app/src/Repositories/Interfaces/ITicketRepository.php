@@ -21,6 +21,11 @@ interface ITicketRepository
     public function countTicketTypesBySchemeId(int $ticketSchemeId): int;
     public function getAvailableCapacity(int $ticketTypeId): int;
     public function atomicIncrementTicketsSold(int $ticketTypeId, int $quantity): bool;
+    public function atomicDecrementTicketsSold(int $ticketTypeId, int $quantity): bool;
+    public function reserveMultiple(array $items): bool;
+    public function releaseMultiple(array $items): void;
+    public function getTotalAllocatedCapacityForSchedule(int $scheduleId, ?int $excludeTicketTypeId = null): int;
+    public function getVenueCapacityForSchedule(int $scheduleId): ?int;
     public function createTicketScheme(TicketScheme $ticketScheme): bool;
     public function updateTicketScheme(TicketScheme $ticketScheme): bool;
     public function deleteTicketScheme(int $ticketSchemeId): bool;

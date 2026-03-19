@@ -28,4 +28,8 @@ interface ITicketService
     public function deleteTicketSchemeSafely(int $ticketSchemeId): void;
     public function getAvailableCapacity(int $ticketTypeId): int;
     public function reserveSeats(int $ticketTypeId, int $quantity): bool;
+    public function reserveMultiple(array $items): bool;
+    public function releaseSeats(int $ticketTypeId, int $quantity): bool;
+    public function releaseOrderItems(array $orderItems): void;
+    public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void;
 }

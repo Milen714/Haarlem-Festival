@@ -108,7 +108,11 @@ namespace App\Views\Jazz\Components; ?>
                     if (!typesData.success || !Array.isArray(typesData.data) || typesData.data.length === 0) {
                         throw new Error(typesData.message || 'No ticket types found for this performance.');
                     }
-                    return addToCart(typesData.data[0].ticket_type_id);
+                    const passEnums = ['JAZZ_DAY_PASS', 'JAZZ_WEEKEND_PASS'];
+                    const singleShow = typesData.data.find(function(t) {
+                        return !passEnums.includes(t.ticket_scheme && t.ticket_scheme.scheme_enum);
+                    }) || typesData.data[0];
+                    return addToCart(singleShow.ticket_type_id);
                 });
 
             cartPromise

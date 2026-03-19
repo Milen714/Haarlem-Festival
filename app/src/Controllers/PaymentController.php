@@ -51,28 +51,59 @@ class PaymentController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function createCheckoutSession(array $params = [])
     {
-       try {
-        $order = $this->orderService->getSessionCart();
-         
-        $order->calculateTotals();
-        $item = [
-            'name' => 'Haarlem Festival Ticket/s',
-            'amount' => (int)round($order->total * 100), // amount in cents (integer)
-            'quantity' => 1,
-        ];
-        $this->paymentService->stripeCheckout((object)$item);
-        } catch (\Exception $e) {
-             error_log('Error creating checkout session: ' . $e->getMessage());
+        try {
+            $order = $this->orderService->getSessionCart();
+
+            if ($order === null || empty($order->orderItems)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No active cart found.']);
+                return;
+            }
+
+            // If the cart hasn't been persisted to DB yet (user added items after login),
+            // persist it now so we can link the Stripe session to an order.
+            if ($order->order_id === null) {
+                $user = $_SESSION['loggedInUser'] ?? null;
+                if ($user !== null) {
+                    $orderId = $this->orderService->persistSessionCart($order, $user);
+                    $order   = $this->orderService->getOrderById($orderId);
+                    $this->orderService->hydrateSessionCart($order);
+                }
+            }
+
+            $order->calculateTotals();
+            $item = [
+                'name'     => 'Haarlem Festival Ticket/s',
+                'amount'   => (int)round($order->total * 100),
+                'quantity' => 1,
+            ];
+            $stripeSession = $this->paymentService->stripeCheckout((object)$item);
+
+            if ($order->order_id !== null) {
+                $this->orderService->setStripeCheckoutSessionId($order->order_id, $stripeSession->id);
+                $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Pending_Payment);
+            }
+
+            header('Content-Type: application/json');
+            http_response_code(200);
+            echo json_encode(['clientSecret' => $stripeSession->client_secret]);
+        } catch (\Throwable $e) {
+            error_log('Error creating checkout session: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
         }
-        //require '../payment/checkout.php';  
     }
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function return(array $params = [])
     {
+        $sessionId = $_GET['session_id'] ?? null;
+        if ($sessionId !== null) {
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            if ($order !== null && $order->status === OrderStatus::Paid) {
+                $this->orderService->clearSessionCart();
+            }
+        }
         $this->view('ShoppingCart/CheckoutSuccess');
-        
     }
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function status(array $params = [])
