@@ -13,6 +13,7 @@ if (isset($item) && !empty($item)) {
     $scheduleRef = $scheduleItem; 
     $eventType = $scheduleRef->event_category?->type ?? null;
     $eventName = $item->ticket_type->schedule->artist->name ?? '';
+    $sessionItemId = $item->sessionOrderitem_id ?? null;
     switch ($eventType) {
         case EventType::Magic:
             $cardStyles = ['side' => 'bg-[var(--home-magic-accent)] dark:bg-[var(--home-magic-accent-muted)]', 'muted' => 'bg-[var(--home-magic-accent-muted)] dark:bg-[var(--home-magic-accent-muted-high-contrast)]', 'text'];
@@ -58,17 +59,21 @@ if (isset($item) && !empty($item)) {
     <img loading="lazy" src="<?php echo htmlspecialchars($cardImage->file_path); ?>"
         alt="<?php echo htmlspecialchars($cardImage->alt_text); ?>"
         class="w-16 sm:w-20 md:w-30 lg:w-40 h-auto object-cover flex-shrink-0">
-
+    <? if(isset($showCrudButtons) && $showCrudButtons === true): ?>
     <ol class="flex flex-col items-center justify-center">
         <li class="flex-grow flex items-center px-2 bg-[--home-dance-accent]">
-            <a href="">
+            <button class="edit-order-item"
+                data-orderItemSessionId="<? echo htmlspecialchars($item->sessionOrderitem_id) ?>">
                 <img src="/Assets/Home/EditIcon.svg" alt="Edit Item Icon">
-            </a>
+            </button>
         </li>
         <li class="flex-grow flex items-center px-2 bg-red-400">
-            <a href=""><img src="/Assets/Home/DeleteIcon.svg" alt="Delete Item Icon"></a>
+            <button class="delete-order-item"
+                data-orderItemSessionId="<? echo htmlspecialchars($item->sessionOrderitem_id) ?>"><img
+                    src="/Assets/Home/DeleteIcon.svg" alt="Delete Item Icon"></button>
         </li>
     </ol>
+    <? endif; ?>
 
     <div class="flex flex-col flex-grow min-w-0">
 

@@ -13,4 +13,7 @@ interface IOrderRepository
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool;
     public function addOrderItem(OrderItem $orderItem): bool;
     public function getOrderItemsByOrderId(int $orderId): array;
+    public function removeOrderItem(int $orderItemId): bool;
+    public function updateOrderTotals(Order $order): bool;
+    public function updateOrderItemQuantity(OrderItem $orderItem): bool;
 }

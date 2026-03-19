@@ -578,4 +578,75 @@ class OrderRepository extends Repository implements IOrderRepository
             throw new \RuntimeException("Error fetching order items by order ID: " . $e->getMessage());
         }
     }
+    public function removeOrderItem(int $orderItemId): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "DELETE FROM ORDER_ITEM WHERE orderitem_id = :orderitem_id";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderItemId, PDO::PARAM_INT);
+
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to remove order item: " . $e->getMessage());
+        }
+    }
+    public function updateOrderTotals(Order $order): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE `ORDER` SET
+                    subtotal = :subtotal,
+                    total = :total,
+                    serviceFee = :serviceFee,
+                    reservationFees = :reservationFees
+                WHERE order_id = :order_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':order_id', $order->order_id, PDO::PARAM_INT);
+            $stmt->bindValue(':subtotal', $order->subtotal ?? 0.0);
+            $stmt->bindValue(':total', $order->total ?? 0.0);
+            $stmt->bindValue(':serviceFee', $order->serviceFee ?? 0.0);
+            $stmt->bindValue(':reservationFees', $order->reservationFees ?? 0.0);
+
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update order totals: " . $e->getMessage());
+        }
+    }
+    public function updateOrderItemQuantity(OrderItem $orderItem): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE ORDER_ITEM SET
+                    quantity = :quantity
+                WHERE orderitem_id = :orderitem_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderItem->orderitem_id, PDO::PARAM_INT);
+            $stmt->bindValue(':quantity', $orderItem->quantity, PDO::PARAM_INT);
+
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update order item: " . $e->getMessage());
+        }
+    }
 }
