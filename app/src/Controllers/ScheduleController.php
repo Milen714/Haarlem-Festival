@@ -50,16 +50,24 @@ class ScheduleController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function index($vars = []): void
     {
-        try {
-            $eventType = $_GET['event_type'] ?? null;
-            $date      = $_GET['date'] ?? null;
+        $this->startSession();
 
-            // Sanitizes the inputs
-            if (is_string($eventType)) {
-                $eventType = trim($eventType) ?: null;
-            }
-            if (is_string($date)) {
-                $date = trim($date) ?: null;
+        if (isset($_GET['clear'])) {
+            unset($_SESSION['schedule_filters']);
+            $this->redirect('/cms/schedules');
+            return;
+        }
+
+        try {
+
+            if (array_key_exists('event_type', $_GET) || array_key_exists('date', $_GET)) {
+                $eventType = trim((string)($_GET['event_type'] ?? '')) ?: null;
+                $date      = trim((string)($_GET['date'] ?? '')) ?: null;
+                $_SESSION['schedule_filters'] = ['event_type' => $eventType, 'date' => $date];
+            } else {
+                $saved     = $_SESSION['schedule_filters'] ?? [];
+                $eventType = $saved['event_type'] ?? null;
+                $date      = $saved['date'] ?? null;
             }
 
             $schedules   = $this->scheduleService->getAllSchedules($eventType, $date);

@@ -72,7 +72,7 @@ $filterDate      = $filterDate ?? '';
             Filter
         </button>
         <?php if ($filterType || $filterDate): ?>
-            <a href="/cms/schedules"
+            <a href="/cms/schedules?clear=1"
                 class="w-full rounded-lg border px-4 py-2 text-center text-gray-500 transition hover:text-gray-700 lg:w-auto">
                 Clear
             </a>

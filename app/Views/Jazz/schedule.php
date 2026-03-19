@@ -143,7 +143,7 @@ $lastDate  = !empty($days) ? end($days)['date']->format('M j, Y') : 'Aug 3, 2025
         <?php if (empty($days)): ?>
             <p class="text-center text-gray-500 py-16 text-lg">Schedule coming soon!</p>
         <?php else: ?>
-        <ol class="grid grid-cols-1 md:grid-cols-2 gap-6" id="schedule-grid">
+        <ol class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start" id="schedule-grid">
 
             <?php foreach ($days as $idx => $day):
                 $color     = $day['color'];
@@ -269,9 +269,18 @@ $lastDate  = !empty($days) ? end($days)['date']->format('M j, Y') : 'Aug 3, 2025
                                         Sold Out
                                     </span>
                                 <?php elseif ($isFree): ?>
-                                    <span class="flex-shrink-0 jazz_event_pill_<?= $color ?>">
+                                    <button type="button"
+                                            class="flex-shrink-0 jazz_event_pill_<?= $color ?> cursor-pointer"
+                                            onclick="buyTicket(this)"
+                                            data-schedule-id="<?= (int) $schedule->schedule_id ?>"
+                                            data-artist="<?= htmlspecialchars($schedule->artist?->name ?? 'Artist TBA', ENT_QUOTES) ?>"
+                                            data-date="<?= htmlspecialchars($day['date']->format('l, F j'), ENT_QUOTES) ?>"
+                                            data-start="<?= htmlspecialchars($schedule->start_time ? $schedule->start_time->format('H:i') : '--:--', ENT_QUOTES) ?>"
+                                            data-end="<?= htmlspecialchars($schedule->end_time ? $schedule->end_time->format('H:i') : '', ENT_QUOTES) ?>"
+                                            data-venue="<?= htmlspecialchars($hallLabel, ENT_QUOTES) ?>"
+                                            data-price="0">
                                         Free
-                                    </span>
+                                    </button>
                                 <?php else: ?>
                                     <button type="button"
                                             class="flex-shrink-0 jazz_event_pill_<?= $color ?> cursor-pointer"

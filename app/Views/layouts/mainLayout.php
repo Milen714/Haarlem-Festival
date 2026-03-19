@@ -65,15 +65,89 @@ $content = $content ?? '';
                             aria-current="page">Home</a>
                     </li>
 
-                    <li class="flex items-center gap-2">
-                        <a href="/addBook"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo $_SERVER['REQUEST_URI'] == '/addBook' ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
-                            Events</a>
+                    <!-- Events Dropdown -->
+                    <li class="relative flex items-center gap-2">
+                        <button data-dropdown-toggle="eventsDropdown" type="button" aria-expanded="false"
+                            class="flex items-center gap-2 py-2 font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-') ? 'text-blue-600' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            Events
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="eventsDropdown" class="absolute left-0 top-full pt-2 w-44 z-50 hidden rounded-lg border border-[#2C3233] bg_colors_home shadow-lg">
+                            <ul class="py-1 font-medium">
+                                <li>
+                                    <a href="/events-jazz" class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-jazz') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Jazz
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-dance" class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-dance') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Dance
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-magic" class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-magic') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Magic
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-yummy" class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-yummy') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Yummy
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-history" class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-history') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        History
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
-                    <li class="flex items-center gap-2">
-                        <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
-                            Schedule</a>
+                    <!-- Schedule Dropdown -->
+                    <li class="relative flex items-center gap-2">
+                        <button data-dropdown-toggle="scheduleDropdown" type="button" aria-expanded="false"
+                            class="flex items-center gap-2 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') || str_contains($_SERVER['REQUEST_URI'], '/schedule') || str_contains($_SERVER['REQUEST_URI'], '-lineup') || str_contains($_SERVER['REQUEST_URI'], '-tour') ? 'text-blue-600' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            Schedule
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="scheduleDropdown" class="absolute left-0 top-full pt-2 w-48 z-50 hidden rounded-lg border border-[#2C3233] bg_colors_home shadow-lg">
+                            <ul class="py-1 font-medium">
+                                <li>
+                                    <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>" class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        My Schedule
+                                    </a>
+                                </li>
+                                <li><hr class="my-1 border-[#2C3233]"></li>
+                                <li>
+                                    <a href="/events-jazz/schedule" class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Jazz Schedule
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-dance-lineup" class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Dance Line-up
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-magic" class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Magic Shows
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-yummy/restaurants" class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Restaurants
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/history-tour" class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        History Tour
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                     <li class="flex items-center gap-2">
                         <a href="/myRequests/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"

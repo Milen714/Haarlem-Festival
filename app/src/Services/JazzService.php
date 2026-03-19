@@ -6,6 +6,7 @@ use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Services\Interfaces\JazzServiceInterface;
+use App\Services\TicketService;
 
 class JazzService implements JazzServiceInterface
 {
@@ -16,6 +17,7 @@ class JazzService implements JazzServiceInterface
     private ArtistService $artistService;
     private VenueService $venueService;
     private ScheduleService $scheduleService;
+    private TicketService $ticketService;
 
     public function __construct()
     {
@@ -23,6 +25,7 @@ class JazzService implements JazzServiceInterface
         $this->artistService = new ArtistService();
         $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
+        $this->ticketService = new TicketService();
     }
 
     /**
@@ -97,6 +100,8 @@ class JazzService implements JazzServiceInterface
             ));
         }
 
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS', 'JAZZ_WEEKEND_PASS']);
+
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
             'pageData' => $jazzPageData,
@@ -104,6 +109,7 @@ class JazzService implements JazzServiceInterface
             'artists' => $this->artistService->getArtistsByEventId($jazzEventId),
             'venues' => $venues,
             'scheduleByDate' => $performancesByDate,
+            'passTicketTypes' => $passTicketTypes,
         ];
     }
 

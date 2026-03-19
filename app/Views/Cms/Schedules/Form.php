@@ -61,6 +61,7 @@ $ticketTypes     = $ticketTypes ?? [];
                     <option value="">— Select event category —</option>
                     <?php foreach ($eventCategories as $cat): ?>
                         <option value="<?= (int)$cat['event_id'] ?>"
+                            data-type="<?= htmlspecialchars($cat['type']) ?>"
                             <?= (int)($schedule->event_id ?? 0) === (int)$cat['event_id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cat['title']) ?> (<?= htmlspecialchars($cat['type']) ?>)
                         </option>
@@ -163,11 +164,10 @@ $ticketTypes     = $ticketTypes ?? [];
         <!-- Optional Links -->
         <div class="mb-6 rounded-lg border bg-white p-4 md:p-6">
             <h2 class="text-xl font-bold mb-4 border-b pb-2">Link to (optional)</h2>
-            <p class="text-sm text-gray-500 mb-4">Link this schedule slot to an artist, restaurant, or landmark. Only
-                one can be active at a time.</p>
+            <p class="text-sm text-gray-500 mb-4">Link this schedule slot to the relevant entity for the selected event type.</p>
 
             <!-- Artist -->
-            <div class="mb-4">
+            <div class="mb-4" data-link-type="artist" style="display:none;">
                 <label class="block text-gray-700 font-semibold mb-2" for="artist_id">Artist</label>
                 <select id="artist_id" name="artist_id"
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -182,7 +182,7 @@ $ticketTypes     = $ticketTypes ?? [];
             </div>
 
             <!-- Restaurant -->
-            <div class="mb-4">
+            <div class="mb-4" data-link-type="restaurant" style="display:none;">
                 <label class="block text-gray-700 font-semibold mb-2" for="restaurant_id">Restaurant</label>
                 <select id="restaurant_id" name="restaurant_id"
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -197,7 +197,7 @@ $ticketTypes     = $ticketTypes ?? [];
             </div>
 
             <!-- Landmark -->
-            <div class="mb-4">
+            <div class="mb-4" data-link-type="landmark" style="display:none;">
                 <label class="block text-gray-700 font-semibold mb-2" for="landmark_id">Landmark</label>
                 <select id="landmark_id" name="landmark_id"
                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -210,7 +210,47 @@ $ticketTypes     = $ticketTypes ?? [];
                     <?php endforeach; ?>
                 </select>
             </div>
+
+            <p id="link-no-entity" class="text-sm text-gray-400 italic" style="display:none;">No linked entity for this event type.</p>
         </div>
+
+        <script>
+        (function () {
+            const typeLinkMap = {
+                'Jazz':    'artist',
+                'Dance':   'artist',
+                'Yummy':   'restaurant',
+                'History': 'landmark',
+                'Magic':   null,
+            };
+
+            const eventSelect = document.getElementById('event_id');
+            const linkDivs    = document.querySelectorAll('[data-link-type]');
+            const noEntityMsg = document.getElementById('link-no-entity');
+
+            function updateLinks() {
+                const selected = eventSelect.options[eventSelect.selectedIndex];
+                const type     = selected ? selected.dataset.type : null;
+                const linkType = typeLinkMap[type] ?? null;
+
+                linkDivs.forEach(function (div) {
+                    const match = div.dataset.linkType === linkType;
+                    div.style.display = match ? '' : 'none';
+                    if (!match) {
+                        const sel = div.querySelector('select');
+                        if (sel) sel.value = '';
+                    }
+                });
+
+                if (noEntityMsg) {
+                    noEntityMsg.style.display = (type && linkType === null) ? '' : 'none';
+                }
+            }
+
+            eventSelect.addEventListener('change', updateLinks);
+            updateLinks();
+        })();
+        </script>
 
         <div class="bg-white border rounded-lg p-6 mb-6">
             <div class="mb-4 flex flex-col items-start justify-between gap-4 border-b pb-3 md:flex-row">

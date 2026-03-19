@@ -188,6 +188,34 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
+    // method to get ticket types by an array of scheme enums, used for filtering in the schedule list specific for day passes for jazz and dance events
+    public function getTicketTypesBySchemeEnums(array $schemeEnums): array
+    {
+        if (empty($schemeEnums)) {
+            return [];
+        }
+
+        try {
+            $pdo = $this->connect();
+            $placeholders = implode(',', array_fill(0, count($schemeEnums), '?'));
+            $query = $this->getBaseQuery() . "
+                WHERE ts.scheme_enum IN ($placeholders)
+                ORDER BY tt.ticket_type_id ASC
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(array_values($schemeEnums));
+
+            return array_map(function (array $row): TicketType {
+                $ticketType = new TicketType();
+                $ticketType->fromPDOData($row);
+                return $ticketType;
+            }, $stmt->fetchAll(PDO::FETCH_ASSOC));
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket types by scheme enums: " . $e->getMessage());
+        }
+    }
+
     public function getTicketTypesByScheduleIds(array $scheduleIds): array
     {
         if (empty($scheduleIds)) {
