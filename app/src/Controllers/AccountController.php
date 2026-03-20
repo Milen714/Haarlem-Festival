@@ -57,16 +57,15 @@ class AccountController extends BaseController
                 $_SESSION['loggedInUser'] = $user;
                 // Consolidate cart merge logic in one place.
                 $this->orderService->hydrateSessionCartFormDbOnLogin($user);
-                $cart = $this->orderService->getSessionCart();
                 $redirect = $data['redirect'] ?? '/';
                  
                 // Successful login
                 //additionally check if user is admin and redirect to cms if so
                 if ($user->role === UserRole::ADMIN) {
-                    $this->jsonResponse(['success' => true, 'redirect' => '/cms', 'cart' => $cart ], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => '/cms' ], 200);
                 } else {
                     // Regular user login
-                    $this->jsonResponse(['success' => true, 'redirect' => $redirect, 'cart' => $cart], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => $redirect], 200);
                 }
             } else {
                 // Failed login

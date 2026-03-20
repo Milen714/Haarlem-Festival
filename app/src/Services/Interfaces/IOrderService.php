@@ -22,5 +22,9 @@ interface IOrderService
     public function addOrderItemToSessionCart(OrderItem $item): void;
     public function hydrateSessionCart(Order $order): void;
     public function hydrateSessionCartFormDbOnLogin(User $user): void;
+    public function getOrderItemFromCartBySessionItemId(Order $cart, int $sessionOrderItemId): ?OrderItem;
+    public function removeOrderItemFromSessionCart(int $orderItemId): void;
+    public function updateOrderItemQuantity(OrderItem $orderItem): bool;
+    public function updateOrderItemInSessionCart(int $sessionOrderItemId, int $newQuantity): void;
     
 }
