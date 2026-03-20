@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ApplicationException;
 use App\Services\RestaurantService;
 use App\Services\VenueService;
 use App\Services\Interfaces\IRestaurantService;
@@ -32,9 +35,9 @@ class RestaurantController extends BaseController{
             $this->cmsLayout('Cms/Restaurants/index', [
                 'title' => 'Manage Restaurants', 'restaurants' => $restaurants
             ]);
-         } catch (\Exception $e) {
+         } catch (ResourceNotFoundException $e) {
             error_log('Restaurants listing error:' . $e->getMessage());
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to fetch all restaurants';
          }
     }
 
@@ -43,12 +46,12 @@ class RestaurantController extends BaseController{
          try {
             $cuisines = $this->cuisineService->getCuisines();
 
-            $this->cmsLayout('Cms/Restaurants/cuisines', [
+            $this->cmsLayout('Cms/Restaurants/Cuisines', [
                 'title' => 'Manage cuisines', 'cuisines' => $cuisines
             ]);
-         } catch (\Exception $e) {
+         } catch (ResourceNotFoundException $e) {
             error_log('Restaurants listing error:' . $e->getMessage());
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to fetch all cuisines';
          }
     }
 
@@ -90,7 +93,7 @@ class RestaurantController extends BaseController{
             $_SESSION['success'] = "Restaurant [$restaurant->name] created succesfully! ";
             $this->redirect('cms/restaurants');
 
-        } catch (\Exception $e) {
+        } catch (\Throwable | ValidationException $e) {
             error_log("Restaurant creation error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/restaurants/create');
@@ -103,8 +106,9 @@ class RestaurantController extends BaseController{
             $this->cuisineService->createCuisineFromRequest($_POST);
             $_SESSION['success'] = "Cuisine created!";
             $this->redirect('/cms/restaurants/cuisines');
-        } catch (\Exception $e) {
+        } catch (\Throwable | ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/restaurants/cuisine/create');
         }
     }
 
@@ -121,7 +125,7 @@ class RestaurantController extends BaseController{
             
             $venues = $this->venueService->getAllVenues();
             if(!$restaurant){
-                $this->internalServerError('Restaurant not Found!');
+                throw new ResourceNotFoundException('Restaurant not Found!');
                 return;
             }
 
@@ -134,7 +138,7 @@ class RestaurantController extends BaseController{
                 'action' => "/cms/restaurants/update/{$restaurantId}"
             ]);
 
-        } catch (\Exception $e) {
+        } catch (ResourceNotFoundException | ValidationException  $e) {
             error_log("Restaurant edit error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage(); 
             $this->redirect('/cms/restaurants');
@@ -148,7 +152,7 @@ class RestaurantController extends BaseController{
         $cuisine = $this->cuisineService->getCuisineById($id);
 
         if (!$cuisine) {
-            $this->notFound();
+           throw new ResourceNotFoundException('Cuisine not Found!');
             return;
         }
         $this->cmsLayout('Cms/Restaurants/CuisineForm', [
@@ -166,7 +170,7 @@ class RestaurantController extends BaseController{
             $_SESSION['success'] = "Restaurant {$restaurant->name} updated successfully";
 
             $this->redirect('/cms/restaurants');
-        } catch (\Exception $e) {
+        } catch (ApplicationException $e) {
              error_log("Restaurant edit error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
              $this->redirect("/cms/restaurants/edit/{$restaurantId}"); 
@@ -181,7 +185,7 @@ class RestaurantController extends BaseController{
 
             $_SESSION['success'] = "Cuisine Updated!";
             $this->redirect('/cms/restaurants/cuisines');
-        } catch (\Exception $e) {
+        } catch (ApplicationException $e) {
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/restaurants/cuisines/edit/{$id}');
         }
@@ -200,7 +204,7 @@ class RestaurantController extends BaseController{
             $this->restaurantService->deleteRestaurant($restaurantId);
             $_SESSION['success'] = "Restaurant {$restaurant->name} was deleted successfully";
 
-        } catch (\Exception $e) {
+        } catch (ApplicationException $e) {
             error_log("Restaurant deletion error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
         }
@@ -213,7 +217,7 @@ class RestaurantController extends BaseController{
         try {
             $this->cuisineService->deleteCuisine($id);
             $_SESSION['success'] = "Cuisine deleted!";
-        } catch (\Exception $e) {
+        } catch (ApplicationException $e) {
             $_SESSION['error'] = $e->getMessage();
         }
         $this->redirect('/cms/restaurants/cuisines');

@@ -93,7 +93,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/restaurants/store', ['App\Controllers\RestaurantController', 'store']);
     $r->addRoute('POST', '/cms/restaurants/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'delete']);
     $r->addRoute('POST', '/cms/restaurants/gallery-remove/{restaurantId:\d+}/{mediaId:\d+}', ['App\Controllers\RestaurantController', 'removeGallery']);
-
+    //cuisine part 
+    $r->addRoute('GET', '/cms/restaurants/cuisines', ['App\Controllers\RestaurantController', 'showCuisines']);
+    $r->addRoute('GET', '/cms/restaurants/cuisines/create', ['App\Controllers\RestaurantController', 'createCuisine']);
+    $r->addRoute('GET', '/cms/restaurants/cuisines/edit/{id:\d+}', ['App\Controllers\RestaurantController', 'editCuisine']);
+    $r->addRoute('POST', '/cms/restaurants/cuisine/update/{id:\d+}', ['App\Controllers\RestaurantController', 'updateCuisine']);
     /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
     $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
