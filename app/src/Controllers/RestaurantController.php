@@ -7,16 +7,20 @@ use App\Services\RestaurantService;
 use App\Services\VenueService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\IVenueService;
+use App\Services\CuisineService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
+use App\Services\Interfaces\ICuisineService;
 
 class RestaurantController extends BaseController{
     private IRestaurantService $restaurantService;
+    private ICuisineService $cuisineService;
     private IVenueService $venueService;
     public function __construct()
     {
         $this->venueService = new VenueService();
         $this->restaurantService = new RestaurantService();
+        $this->cuisineService = new CuisineService();
 
     }
 
@@ -35,12 +39,45 @@ class RestaurantController extends BaseController{
     }
 
     #[RequireRole([UserRole::ADMIN])]
+    public function showCuisines($vars = []){
+         try {
+            $cuisines = $this->cuisineService->getCuisines();
+
+            $this->cmsLayout('Cms/Restaurants/cuisines', [
+                'title' => 'Manage cuisines', 'cuisines' => $cuisines
+            ]);
+         } catch (\Exception $e) {
+            error_log('Restaurants listing error:' . $e->getMessage());
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+         }
+    }
+
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function createCuisine($vars = []){
+         try {
+
+            $this->cmsLayout('Cms/Restaurants/cuisines', [
+                'title' => 'Manage cuisines', 'cuisine' => null,
+                'action' => '/cms/cuisines/store'
+            ]);
+         } catch (\Exception $e) {
+            error_log('Restaurants listing error:' . $e->getMessage());
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+         }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []){
-         $venues = $this->venueService->getAllVenues();
+        $venues = $this->venueService->getAllVenues();
+        $cuisines = $this->cuisineService->getCuisines();
+        $sessionTypes = $this->restaurantService->getAllSessionsTypes();
         $this->cmsLayout('Cms/Restaurants/Form', [
             'title' => 'Create New Restaurant',
             'restaurant' => null,
             'venues' => $venues,
+            'cuisines' => $cuisines,
+            'sessionTypes' => $sessionTypes,
             'action' => '/cms/restaurants/store'
         ]);
     }
@@ -61,12 +98,26 @@ class RestaurantController extends BaseController{
     }
 
     #[RequireRole([UserRole::ADMIN])]
+    public function storeCuisine(){
+        try {
+            $this->cuisineService->createCuisineFromRequest($_POST);
+            $_SESSION['success'] = "Cuisine created!";
+            $this->redirect('/cms/restaurants/cuisines');
+        } catch (\Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+    }
+
+
+    #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []){
        
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
 
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
+            $cuisines = $this->cuisineService->getCuisines();
+            $sessionTypes = $this->restaurantService->getAllSessionsTypes();
             
             $venues = $this->venueService->getAllVenues();
             if(!$restaurant){
@@ -78,6 +129,8 @@ class RestaurantController extends BaseController{
                 'title' => "Edit Restaurant {$restaurant->name}",
                 'restaurant' => $restaurant,
                 'venues' => $venues,
+                'cuisines' => $cuisines,
+                'sessionTypes' => $sessionTypes,
                 'action' => "/cms/restaurants/update/{$restaurantId}"
             ]);
 
@@ -86,6 +139,23 @@ class RestaurantController extends BaseController{
             $_SESSION['error'] = $e->getMessage(); 
             $this->redirect('/cms/restaurants');
         }
+    }
+    
+    #[RequireRole([UserRole::ADMIN])]
+    public function editCuisine($vars = []){
+        $id = (int)($vars['id'] ?? 0);
+
+        $cuisine = $this->cuisineService->getCuisineById($id);
+
+        if (!$cuisine) {
+            $this->notFound();
+            return;
+        }
+        $this->cmsLayout('Cms/Restaurants/CuisineForm', [
+            'title' => 'Edit Cuisine',
+            'cuisine' => $cuisine,
+            'action' => '/cms/restaurants/cuisines/upadte/{$id}'
+        ]);
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -100,6 +170,20 @@ class RestaurantController extends BaseController{
              error_log("Restaurant edit error: " . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
              $this->redirect("/cms/restaurants/edit/{$restaurantId}"); 
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function updateCuisine($vars = []){
+        $id = (int)($vars['id'] ?? 0);
+        try {
+            $this->cuisineService->updateCuisineFromRequest($id, $_POST);
+
+            $_SESSION['success'] = "Cuisine Updated!";
+            $this->redirect('/cms/restaurants/cuisines');
+        } catch (\Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/restaurants/cuisines/edit/{$id}');
         }
     }
 
@@ -121,5 +205,34 @@ class RestaurantController extends BaseController{
             $_SESSION['error'] = $e->getMessage();
         }
         $this->redirect('/cms/restaurants');
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function deleteCuisine($vars= []){
+        $id = (int)($vars['id'] ?? 0);
+        try {
+            $this->cuisineService->deleteCuisine($id);
+            $_SESSION['success'] = "Cuisine deleted!";
+        } catch (\Exception $e) {
+            $_SESSION['error'] = $e->getMessage();
+        }
+        $this->redirect('/cms/restaurants/cuisines');
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function removeGallery($vars = []): void
+    {
+        $restaurantId = (int)($vars['restaurantId'] ?? 0);
+        $mediaId  = (int)($vars['mediaId']  ?? 0);
+
+        try {
+            $this->restaurantService->removeGalleryImage($restaurantId, $mediaId);
+            $_SESSION['success'] = 'Gallery image removed.';
+        } catch (\Throwable $e) {
+            error_log("Remove gallery image error: " . $e->getMessage());
+            $_SESSION['error'] = 'Failed to remove gallery image.';
+        }
+
+        $this->redirect("/cms/restaurants/edit/{$restaurantId}");
     }
 }

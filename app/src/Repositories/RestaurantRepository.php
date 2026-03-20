@@ -10,7 +10,6 @@ use App\Models\Restaurant;
 use App\Models\Cuisine;
 use App\Models\Gallery;
 use App\Models\Media;
-use App\Models\Yummy\Dish;
 use PDO;
 use PDOException;
 
@@ -265,7 +264,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             //load the new relations
             $restaurant->cuisines = $this->getRestaurantCuisines($id);
             $restaurant->sessions = $this->getSessionsByRestaurant($id);
-            $restaurant->dishes = $this->getDishessByRestaurant($id);
             $restaurant->gallery = $this->getRestaurantGallery($row['gallery_id'] ?? null);
             
             return $restaurant;
@@ -320,19 +318,13 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ]);
         $cuisines = [];
         while ($row = $getCuisines->fetch(PDO::FETCH_ASSOC)) {
-            $cuisines[] = [
-                'id' => $row['cuisine_id'],
-                'name' => $row['name'],
-                'description' => $row['description'],
-                'icon_url' => $row['icon_url']
-            ];
+            $cuisine = new Cuisine();
+            $cuisine->fromPDOData($row);
+            $cuisines[] = $cuisine;
         }
 
         return $cuisines;
     }
-
-   
-
     public function getRestaurantBySlug(string $slug): ?Restaurant{
     $pdo = $this->connect();    
     $sql = "
@@ -444,8 +436,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                 stars, 
                 review_count, 
                 website_url, 
-                course_details_html, 
-                special_notes_html, 
                 venue_id, 
                 chef_name,
                 chef_bio_text,
@@ -456,9 +446,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                 :price_category, 
                 :stars, 
                 :review_count, 
-                :website_url, 
-                :course_details_html, 
-                :special_notes_html, 
+                :website_url,
                 :venue_id,
                 :chef_name,
                 :chef_bio_text,
@@ -628,7 +616,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         return $session;
     }
 
-    public function createSession(Session $session): int
+    public function createSession(Session $session): Session
     {
         $pdo = $this->connect();
         $sql = "
@@ -639,7 +627,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ";
         $createSession = $pdo->prepare($sql);
         $createSession->execute([
-            'restaurant_id' => $session->restaurant,
+            'restaurant_id' => $session->restaurantId,
             'session_type_id' => $session->session_id,
             'start_time' => $session->start_time,
             'end_time' => $session->end_time,
@@ -663,186 +651,294 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             'session_type_id' => $session->session_id,
             'start_time' => $session->start_time,
             'end_time' => $session->end_time,
-            'restaurant_id' => $session->restaurant,
+            'restaurant_id' => $session->restaurantId,
             'session_number' => $session->session_number
         ]);
     }
 
-    public function deleteSession(int $restaurantId, int $sessionNumber): bool
+    public function deleteSessionsByRestaurant(int $restaurantId): bool
     {
         $pdo = $this->connect();
-        //because theres no actual id and there will be multiple per restaurant
         $sql = "
             DELETE FROM RESTAURANT_SESSION
             WHERE restaurant_id = :restaurant_id
-            AND session_number = :session_number
         ";
         $delete = $pdo->prepare($sql);
         return $delete->execute([
-            'restaurant_id' => $restaurantId,
-            'session_number' => $sessionNumber
+            'restaurant_id' => $restaurantId
         ]);
+    }
+
+    public function syncRestaurantCuisines(int $restaurantId, $cuisineIds): void{
+        $pdo = $this->connect();
+
+        //delete old so no duplicates
+        $stmt = $pdo->prepare('
+            DELETE FROM RESTAURANT_CUISINE
+            WHERE restaurant_id = :restaurant_id
+        ');
+        $stmt->execute(['restaurant_id' => $restaurantId]);
+
+        //insert new list 
+        $stmt = $pdo->prepare('
+            INSERT INTO RESTAURANT_CUISINE (restaurant_id, cuisine_id)
+            VALUES (:restaurant_id, :cuisine_id)
+        ');
+
+        foreach ($cuisineIds as $cuisineId){
+            $stmt->execute([
+                'restaurant_id' => $restaurantId,
+                'cuisine_id' => $cuisineId
+            ]);
+        }
+    }
+
+     public function createGalleryForRestaurant(int $restaurantId, string $title = 'Restaurant Gallery'): int
+    {
+        try {
+            $pdo = $this->connect();
+
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("INSERT INTO GALLERY (title) VALUES (:title)");
+            $stmt->bindValue(':title', $title);
+            $stmt->execute();
+            $galleryId = (int) $pdo->lastInsertId();
+
+            $stmt2 = $pdo->prepare("UPDATE RESTAURANT SET gallery_id = :gallery_id WHERE restaurant_id = :restaurant_id");
+            $stmt2->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt2->bindValue(':restaurant_id', $restaurantId, PDO::PARAM_INT);
+            $stmt2->execute();
+
+            $pdo->commit();
+
+            return $galleryId;
+        } catch (PDOException $e) {
+            if (isset($pdo) && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Error creating gallery for restaurant: " . $e->getMessage());
+            throw new PDOException("Failed to create gallery for restaurant {$restaurantId}", 0, $e);
+        }
+    }
+
+    /**
+     * Insert a media item into a gallery at the given display order.
+     */
+    public function addMediaToGallery(int $galleryId, int $mediaId, int $displayOrder): bool
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "INSERT INTO GALLERY_MEDIA (gallery_id, media_id, display_order) VALUES (:gallery_id, :media_id, :display_order)"
+            );
+            $stmt->bindValue(':gallery_id',    $galleryId,    PDO::PARAM_INT);
+            $stmt->bindValue(':media_id',      $mediaId,      PDO::PARAM_INT);
+            $stmt->bindValue(':display_order', $displayOrder, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error adding media to gallery: " . $e->getMessage());
+            throw new PDOException("Failed to add media to gallery", 0, $e);
+        }
+    }
+
+    /**
+     * Remove a specific media item from a gallery.
+     */
+    public function removeMediaFromGallery(int $galleryId, int $mediaId): bool
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "DELETE FROM GALLERY_MEDIA WHERE gallery_id = :gallery_id AND media_id = :media_id"
+            );
+            $stmt->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt->bindValue(':media_id',   $mediaId,   PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error removing media from gallery: " . $e->getMessage());
+            throw new PDOException("Failed to remove media from gallery", 0, $e);
+        }
+    }
+
+    /**
+     * Get the next display_order value for a gallery (max + 1).
+     */
+    public function getNextGalleryOrder(int $galleryId): int
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT COALESCE(MAX(display_order), 0) + 1 FROM GALLERY_MEDIA WHERE gallery_id = :gallery_id"
+            );
+            $stmt->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt->execute();
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            error_log("Error getting next gallery order: " . $e->getMessage());
+            throw new PDOException("Failed to get next gallery order", 0, $e);
+        }
     }
 
     //Dish Crud
-    public function getDishes(): array
-    {
-        $pdo =$this->connect();
-        $sql= "
-            SELECT d.*, m.media_id,
-            m.file_path,
-            m.alt_text FROM DISH d
-            JOIN MEDIA m ON m.image_id = media_id
-            WHERE deleted_at IS NULL
-            ORDER BY display_order
-        ";
-        $getDishes = $pdo->prepare($sql);
-        $getDishes->execute();
-        $dishes = [];
-        while ($row = $getDishes->fetch(PDO::FETCH_ASSOC)) {
-            $dish = new Dish();
-            $dish->fromPDOData($row);
-            $dishes[] = $dish;
-        }
+    // public function getDishes(): array
+    // {
+    //     $pdo =$this->connect();
+    //     $sql= "
+    //         SELECT d.*, m.media_id,
+    //         m.file_path,
+    //         m.alt_text FROM DISH d
+    //         JOIN MEDIA m ON m.image_id = media_id
+    //         WHERE deleted_at IS NULL
+    //         ORDER BY display_order
+    //     ";
+    //     $getDishes = $pdo->prepare($sql);
+    //     $getDishes->execute();
+    //     $dishes = [];
+    //     while ($row = $getDishes->fetch(PDO::FETCH_ASSOC)) {
+    //         $dish = new Dish();
+    //         $dish->fromPDOData($row);
+    //         $dishes[] = $dish;
+    //     }
 
-        return $dishes;
-    }
+    //     return $dishes;
+    // }
 
-    public function getDishessByRestaurant(int $restaurantId): array
-    {
-       $pdo =$this->connect();
-        $sql= "
-            SELECT d.*,
-            m.file_path,
-            m.alt_text FROM DISH d
-            JOIN MEDIA m ON m.media_id = d.image_id
-            WHERE restaurant_id = :restaurant_id
-            AND deleted_at IS NULL
-            ORDER BY display_order
-        ";
-        $getDishes = $pdo->prepare($sql);
-        $getDishes->execute([
-            'restaurant_id' => $restaurantId
-        ]);
-        $dishes = [];
-        while ($row = $getDishes->fetch(PDO::FETCH_ASSOC)) {
-            $dish = new Dish();
-            $dish->fromPDOData($row);
-            $dishes[] = $dish;
-        }
+    // public function getDishessByRestaurant(int $restaurantId): array
+    // {
+    //    $pdo =$this->connect();
+    //     $sql= "
+    //         SELECT d.*,
+    //         m.file_path,
+    //         m.alt_text FROM DISH d
+    //         JOIN MEDIA m ON m.media_id = d.image_id
+    //         WHERE restaurant_id = :restaurant_id
+    //         AND deleted_at IS NULL
+    //         ORDER BY display_order
+    //     ";
+    //     $getDishes = $pdo->prepare($sql);
+    //     $getDishes->execute([
+    //         'restaurant_id' => $restaurantId
+    //     ]);
+    //     $dishes = [];
+    //     while ($row = $getDishes->fetch(PDO::FETCH_ASSOC)) {
+    //         $dish = new Dish();
+    //         $dish->fromPDOData($row);
+    //         $dishes[] = $dish;
+    //     }
 
-        return $dishes;
-    }
+    //     return $dishes;
+    // }
 
-    public function getDishById(int $id): ?Dish
-    {
-        $pdo = $this->connect();
-        $sql = "
-            SELECT d.*, m.file_path,
-            m.alt_text FROM DISH d
-            JOIN MEDIA m ON m.image_id = media_id
-            WHERE dish_id = :dish_id
-            AND deleted_at IS NULL
-            LIMIT 1
-        ";
-        $getDish = $pdo->prepare($sql);
-        $getDish->execute([
-            'dish_id' => $id
-        ]);
-        $row = $getDish->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            return null;
-        }
+    // public function getDishById(int $id): ?Dish
+    // {
+    //     $pdo = $this->connect();
+    //     $sql = "
+    //         SELECT d.*, m.file_path,
+    //         m.alt_text FROM DISH d
+    //         JOIN MEDIA m ON m.image_id = media_id
+    //         WHERE dish_id = :dish_id
+    //         AND deleted_at IS NULL
+    //         LIMIT 1
+    //     ";
+    //     $getDish = $pdo->prepare($sql);
+    //     $getDish->execute([
+    //         'dish_id' => $id
+    //     ]);
+    //     $row = $getDish->fetch(PDO::FETCH_ASSOC);
+    //     if (!$row) {
+    //         return null;
+    //     }
 
-        $dish = new Dish();
-        $dish->fromPDOData($row);
-        return $dish;
-    }
+    //     $dish = new Dish();
+    //     $dish->fromPDOData($row);
+    //     return $dish;
+    // }
 
-    public function createDish(Dish $dish): int
-    {
-         $pdo = $this->connect();
-         $sql = "
-            INSERT INTO DISH
-        (
-            restaurant_id,
-            name,
-            description_html,
-            is_featured,
-            display_order,
-            is_vegetarian,
-            is_vegan,
-            allergens
-        )
-        VALUES
-        (
-            :restaurant_id,
-            :name,
-            :description_html,
-            :is_featured,
-            :display_order,
-            :is_vegetarian,
-            :is_vegan,
-            :allergens
-        )
-         ";
-         $create = $pdo->prepare($sql);
-         $create->execute([
-            'restaurant_id' => $dish->restaurant,
-            'name' => $dish->name,
-            'description_html' => $dish->description_html,
-            'is_featured' => $dish->is_featured,
-            'display_order' => $dish->display_order,
-            'is_vegetarian' => $dish->is_vegetarian,
-            'is_vegan' => $dish->is_vegan,
-            'allergens' => $dish->allergens
-         ]);
-         return (int)$pdo->lastInsertId();
-    }
+    // public function createDish(Dish $dish): int
+    // {
+    //      $pdo = $this->connect();
+    //      $sql = "
+    //         INSERT INTO DISH
+    //     (
+    //         restaurant_id,
+    //         name,
+    //         description_html,
+    //         is_featured,
+    //         display_order,
+    //         is_vegetarian,
+    //         is_vegan,
+    //         allergens
+    //     )
+    //     VALUES
+    //     (
+    //         :restaurant_id,
+    //         :name,
+    //         :description_html,
+    //         :is_featured,
+    //         :display_order,
+    //         :is_vegetarian,
+    //         :is_vegan,
+    //         :allergens
+    //     )
+    //      ";
+    //      $create = $pdo->prepare($sql);
+    //      $create->execute([
+    //         'restaurant_id' => $dish->restaurant,
+    //         'name' => $dish->name,
+    //         'description_html' => $dish->description_html,
+    //         'is_featured' => $dish->is_featured,
+    //         'display_order' => $dish->display_order,
+    //         'is_vegetarian' => $dish->is_vegetarian,
+    //         'is_vegan' => $dish->is_vegan,
+    //         'allergens' => $dish->allergens
+    //      ]);
+    //      return (int)$pdo->lastInsertId();
+    // }
 
-    public function updateDish(Dish $dish): bool
-    {
-        $pdo = $this->connect();
-        $sql = "
-        UPDATE DISH
-        SET
-            name = :name,
-            description_html = :description_html,
-            is_featured = :is_featured,
-            display_order = :display_order,
-            is_vegetarian = :is_vegetarian,
-            is_vegan = :is_vegan,
-            allergens = :allergens
-        WHERE dish_id = :dish_id
-    ";
+    // public function updateDish(Dish $dish): bool
+    // {
+    //     $pdo = $this->connect();
+    //     $sql = "
+    //     UPDATE DISH
+    //     SET
+    //         name = :name,
+    //         description_html = :description_html,
+    //         is_featured = :is_featured,
+    //         display_order = :display_order,
+    //         is_vegetarian = :is_vegetarian,
+    //         is_vegan = :is_vegan,
+    //         allergens = :allergens
+    //     WHERE dish_id = :dish_id
+    // ";
 
-    $stmt = $pdo->prepare($sql);
+    // $stmt = $pdo->prepare($sql);
 
-    return $stmt->execute([
-        'dish_id' => $dish->dish_id,
-        'name' => $dish->name,
-        'description_html' => $dish->description_html,
-        'is_featured' => $dish->is_featured,
-        'display_order' => $dish->display_order,
-        'is_vegetarian' => $dish->is_vegetarian,
-        'is_vegan' => $dish->is_vegan,
-        'allergens' => $dish->allergens
-    ]);
-    }
+    // return $stmt->execute([
+    //     'dish_id' => $dish->dish_id,
+    //     'name' => $dish->name,
+    //     'description_html' => $dish->description_html,
+    //     'is_featured' => $dish->is_featured,
+    //     'display_order' => $dish->display_order,
+    //     'is_vegetarian' => $dish->is_vegetarian,
+    //     'is_vegan' => $dish->is_vegan,
+    //     'allergens' => $dish->allergens
+    // ]);
+    // }
 
-    public function deleteDish(int $id): bool
-    {
-        $pdo =$this->connect();
-        $sql = "
-            UPDATE DISH
-            SET deleted_at = NOW()
-            WHERE dish_id = :dish_id
-        ";
+    // public function deleteDish(int $id): bool
+    // {
+    //     $pdo =$this->connect();
+    //     $sql = "
+    //         UPDATE DISH
+    //         SET deleted_at = NOW()
+    //         WHERE dish_id = :dish_id
+    //     ";
 
-        $delete = $pdo->prepare($sql);
-        return $delete->execute([
-            'dish_id' => $id
-        ]);
-    }
+    //     $delete = $pdo->prepare($sql);
+    //     return $delete->execute([
+    //         'dish_id' => $id
+    //     ]);
+    // }
     
 }

@@ -110,7 +110,7 @@ class YummyController extends BaseController
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
     }
-
+    
     public function displayRestaurants(){
         try{
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants');

@@ -83,6 +83,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/artists/edit/{id:\d+}', ['App\Controllers\ArtistController', 'edit']);
     $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
     $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
+    $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
 
     /*CMS Restaurant Management */
     $r->addRoute('GET', '/cms/restaurants', ['App\Controllers\RestaurantController', 'index']);
@@ -91,7 +92,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/restaurants/update/{id:\d+}', ['App\Controllers\RestaurantController', 'update']);
     $r->addRoute('POST', '/cms/restaurants/store', ['App\Controllers\RestaurantController', 'store']);
     $r->addRoute('POST', '/cms/restaurants/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'delete']);
-    $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
+    $r->addRoute('POST', '/cms/restaurants/gallery-remove/{restaurantId:\d+}/{mediaId:\d+}', ['App\Controllers\RestaurantController', 'removeGallery']);
 
     /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);

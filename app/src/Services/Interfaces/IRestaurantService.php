@@ -2,6 +2,7 @@
 
 namespace App\Services\Interfaces;
 use App\Models\Restaurant;
+use App\Models\Yummy\Session;
 
 interface IRestaurantService
 {
@@ -16,6 +17,18 @@ interface IRestaurantService
     public function createRestaurant(Restaurant $restaurant): int;
     public function updateRestaurant( Restaurant $restaurant): bool;
     public function deleteRestaurant(int $id): bool;
+
+    //Session Crud
+    public function getSessions(): array;  
+    public function getAllSessionsTypes(): array;
+    public function getSessionsByRestaurant(int $restaurantId): array;
+    public function getSessionById(int $restaurantId, int $sessionNumber);
+    public function createSession(Session $session): Session;
+    public function updateSession(Session $session): bool;
+    public function deleteSessionsByRestaurant(int $restaurantId): bool;
     public function createFromRequest(array $postData, array $files): Restaurant;
     public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant;
+     public function uploadRestauratGallery(int $restaurantId, ?Restaurant $restaurant, array $files): void;
+
+    public function removeGalleryImage(int $restaurantId, int $mediaId): bool;
 }
