@@ -45,22 +45,32 @@ const redirectData = loginForm.querySelector('button[type="submit"]').dataset.re
 
 loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            email: emailInput.value,
-            password: passwordInput.value,
-            redirect: redirectData
-        })
-    });
-    const result = await response.json();
-    if (result.success) {
-        window.location.href = result.redirect || '/';
-    } else {
-        showError(result.message || 'Login failed');
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: emailInput.value,
+                password: passwordInput.value,
+                redirect: redirectData
+            })
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            throw new Error('Server returned an unexpected response format.');
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            window.location.href = result.redirect || '/';
+        } else {
+            showError(result.message || 'Login failed');
+        }
+    } catch (error) {
+        showError(error.message || 'Something went wrong while logging in. Please try again.');
     }
 });
 </script>

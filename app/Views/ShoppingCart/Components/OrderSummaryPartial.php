@@ -2,7 +2,7 @@
 namespace App\Views\ShoppingCart\Components;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 /** @var ShoppingCartViewModel|null $viewModel */
-
+$numberOfCartItems = $viewModel?->nCartItems ?? 0;
 
 ?>
 
@@ -11,7 +11,7 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
     <dl class="space-y-4 text-xs font-medium text-gray-600 flex-grow">
         <div class="flex justify-between">
-            <dt>Tickets/Reservations (<?= (int)($viewModel?->nCartItems ?? 0) ?>)</dt>
+            <dt>Tickets/Reservations (<?= (int)$numberOfCartItems ?>)</dt>
             <dd class="font-bold text-black">€<?= number_format((float)($viewModel?->subtotal ?? 0.0), 2) ?></dd>
         </div>
         <?php if (($viewModel?->reservationFees ?? 0.0) > 0): ?>
@@ -36,6 +36,9 @@ use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
         <span
             class="text-2xl lg:text-3xl font-bold text-black">€<?= number_format((float)($viewModel?->total ?? 0.0), 2) ?></span>
     </div>
-
+    <? if ($numberOfCartItems == 0): ?>
+    <p class="text-sm text-gray-500 mb-4">Your cart is empty. Please add tickets or reservations to proceed.</p>
+    <? else: ?>
     <a href="/payment-details" class="home_dance_button mt-auto block text-center">Agree & Continue</a>
+    <? endif; ?>
 </section>

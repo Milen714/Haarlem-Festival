@@ -15,4 +15,7 @@ interface IOrderRepository
     public function getOrderItemsByOrderId(int $orderId): array;
     public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order;
     public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool;
+    public function removeOrderItem(int $orderItemId): bool;
+    public function updateOrderTotals(Order $order): bool;
+    public function updateOrderItemQuantity(OrderItem $orderItem): bool;
 }
