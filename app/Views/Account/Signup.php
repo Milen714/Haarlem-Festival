@@ -142,22 +142,32 @@ if (isset($userModel)) {
     });
 
     async function autoLoginAfterSignup() {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email: hiddenEmail.value,
-                password: hiddenPassword.value,
-                redirect: hiddenRedirect.value
-            })
-        });
-        const result = await response.json();
-        if (result.success) {
-            window.location.href = result.redirect || '/';
-        } else {
-            showError(result.message || 'Login failed. Please check your credentials and try again.');
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: hiddenEmail.value,
+                    password: hiddenPassword.value,
+                    redirect: hiddenRedirect.value
+                })
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                throw new Error('Server returned an unexpected response format.');
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                window.location.href = result.redirect || '/';
+            } else {
+                showError(result.message || 'Login failed. Please check your credentials and try again.');
+            }
+        } catch (error) {
+            showError(error.message || 'Something went wrong while logging in. Please try again.');
         }
     }
 

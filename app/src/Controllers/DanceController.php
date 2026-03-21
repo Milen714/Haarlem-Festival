@@ -43,7 +43,8 @@ class DanceController extends BaseController
 
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
 
-            $venues = [];
+            $backtoback = $this->scheduleService->getBackToBackSpecialsByEventId(self::DANCE_EVENT_ID);
+
             $sections = $pageData->content_sections ?? [];
             
             $organizedSections = $this->organizeHomeSections($sections);
@@ -59,7 +60,7 @@ class DanceController extends BaseController
                 'ticketSection' => $organizedSections['ticketSection'],
                 'gallerySection' => $organizedSections['gallerySection'],
                 'artists' => $artists,
-                'venues' => $venues
+                'backtoback' => $backtoback
             ]);
         } catch (\Exception $e) {
             error_log("Error in DanceController index method: " . $e->getMessage());

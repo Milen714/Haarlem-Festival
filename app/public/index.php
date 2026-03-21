@@ -50,6 +50,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
     $r->addRoute('GET', '/events-jazz/schedule', ['App\Controllers\JazzController', 'schedule']);
     $r->addRoute('GET', '/events-jazz/artist/{slug}', ['App\Controllers\JazzArtistController', 'detail']);
+    $r->addRoute('GET', '/jazz-get-tickettypes', ['App\Controllers\JazzController', 'getTicketTypes']);
 
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
@@ -150,6 +151,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
     $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
+    /* Stripe Webhook */
+    $r->addRoute('POST', '/stripe/webhook', ['App\Controllers\StripeWebhookController', 'handle']);
+
     /* Payment */
     $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
     $r->addRoute('GET', '/checkout', ['App\Controllers\PaymentController', 'checkout']);
@@ -161,6 +165,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
+    $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
+    $r->addRoute('GET', '/getOrderItemData', ['App\Controllers\OrderController', 'getOrderItemDataForUpdate']);
+    $r->addRoute('POST', '/updateOrderItem', ['App\Controllers\OrderController', 'updateOrderItemInCart']);
 });
 
 

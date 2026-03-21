@@ -19,6 +19,7 @@ class Secrets
     public static int $tokenExpirationHours;
     public static string $stripeSecretKey;
     public static string $stripePublicKey;
+    public static string $stripeWebhookSecret;
     public static string $reCapchaSiteKey;
     public static string $reCapchaSecretKey;
 
@@ -29,6 +30,7 @@ class Secrets
         self::$tokenExpirationHours = (int)(getenv('TOKEN_EXPIRATION_HOURS') ?: $_ENV['TOKEN_EXPIRATION_HOURS'] ?? 24);
         self::$stripeSecretKey = getenv('STRIPE_SECRET_KEY') ?: $_ENV['STRIPE_SECRET_KEY'] ?? '';
         self::$stripePublicKey = getenv('STRIPE_PUBLISHABLE_KEY') ?: $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? '';
+        self::$stripeWebhookSecret = getenv('STRIPE_WEBHOOK_SECRET') ?: $_ENV['STRIPE_WEBHOOK_SECRET'] ?? '';
         self::$reCapchaSiteKey = getenv('RECAPTCHA_SITE_KEY') ?: $_ENV['RECAPTCHA_SITE_KEY'] ?? '';
         self::$reCapchaSecretKey = getenv('RECAPTCHA_SECRET_KEY') ?: $_ENV['RECAPTCHA_SECRET_KEY'] ?? '';
     }

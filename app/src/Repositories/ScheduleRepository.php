@@ -45,6 +45,12 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 v.capacity as venue_capacity,
                 v.phone as venue_phone,
                 v.email as venue_email,
+                v.venue_image_id as venue_image_id,
+
+                -- Venue Media fields
+                venue_media.media_id as venue_media_id,
+                venue_media.file_path as venue_media_file_path,
+                venue_media.alt_text as venue_media_alt_text,
                 
                 -- Artist fields
                 a.artist_id,
@@ -112,6 +118,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 
             FROM SCHEDULE s
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
+            LEFT JOIN MEDIA venue_media ON v.venue_image_id = venue_media.media_id
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
             LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
@@ -248,6 +255,50 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
         } catch (PDOException $e) {
             throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
+        }
+    }
+    /**
+     * @param int $eventId
+     * @return \App\Models\Schedule[] 
+     */
+    public function getBackToBackSpecialsByEventId(int $eventId): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                SELECT 
+                    s.*, 
+                    -- Artist Data
+                    a.name AS artist_name, a.slug AS artist_slug, a.special_event AS artist_special_event,
+                    -- Artist Media (Required by hydrateSchedule)
+                    m.media_id AS artist_media_id, 
+                    m.file_path AS artist_media_file_path, 
+                    m.alt_text AS artist_media_alt_text,
+                    -- Venue Data
+                    v.name AS venue_name, v.street_address AS venue_address,
+                    -- Event Category (Required by hydrateEventCategory)
+                    ec.type AS event_category_type, 
+                    ec.title AS event_title
+                FROM SCHEDULE s
+                JOIN ARTIST a ON s.artist_id = a.artist_id
+                JOIN VENUE v ON s.venue_id = v.venue_id
+                JOIN EVENT_CATEGORIES ec ON s.event_id = ec.event_id
+                LEFT JOIN MEDIA m ON a.profile_image_id = m.media_id
+                WHERE s.event_id = :event_id
+                AND a.special_event = 1
+                ORDER BY s.date ASC, s.start_time ASC
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindParam(':event_id', $eventId, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map(fn($row) => new Schedule()->hydrateSchedule($row), $rows);
+        } catch (PDOException $e) {
+            throw new PDOException("Error fetching back-to-back specials: " . $e->getMessage(), 0, $e);
         }
     }
 

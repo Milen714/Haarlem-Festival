@@ -32,6 +32,7 @@ $order = $viewModel?->order;
                     foreach ($order->orderItems as $item) {
                         $scheduleItem = $item->ticket_type->schedule;
                         $ticketType = $item->ticket_type;
+                        $showCrudButtons = true;
                         include __DIR__ . '/Components/TicketItemRow.php';
                     }
                 ?>
@@ -49,3 +50,12 @@ $order = $viewModel?->order;
     </section>
 
 </section>
+
+<section id="overlay-container"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="overlay">
+        <h1>Delete Item</h1>
+    </div>
+</section>
+
+<script src="/Js/UpdateCart.js"></script>

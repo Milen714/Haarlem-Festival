@@ -54,6 +54,18 @@ $action = $action ?? '/cms/artists/store';
                     required>
             </div>
 
+            <div class="mb-4">
+                <label class="flex items-center space-x-3 cursor-pointer">
+                    <div class="relative flex items-center">
+                        <input type="checkbox" id="special_event" name="special_event" value="1"
+                            <?= ($artist->special_event ?? false) ? 'checked' : '' ?>
+                            class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    </div>
+                    <span class="text-gray-700 font-semibold">Special Event / Headliner</span>
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-8">Check this if the artist should be featured in the special events or headliners section.</p>
+            </div>
+
             <!-- Bio -->
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2" for="bio">

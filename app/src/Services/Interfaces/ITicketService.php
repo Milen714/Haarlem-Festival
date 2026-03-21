@@ -10,6 +10,7 @@ interface ITicketService
 {
     public function getTicketTypeById(int $ticketTypeId): ?TicketType;
     public function getTicketTypesByScheduleId(int $scheduleId): array;
+    public function getTicketTypesBySchemeEnums(array $schemeEnums): array;
     public function getTicketTypeFromSelection(TicketSelectionDTO $ticketDTO): ?TicketType;
     public function create(TicketType $ticketType): bool;
     public function update(TicketType $ticketType): bool;
@@ -27,4 +28,10 @@ interface ITicketService
     public function createTicketSchemeFromRequest(array $postData): TicketScheme;
     public function updateTicketSchemeFromRequest(int $ticketSchemeId, array $postData): TicketScheme;
     public function deleteTicketSchemeSafely(int $ticketSchemeId): void;
+    public function getAvailableCapacity(int $ticketTypeId): int;
+    public function reserveSeats(int $ticketTypeId, int $quantity): bool;
+    public function reserveMultiple(array $items): bool;
+    public function releaseSeats(int $ticketTypeId, int $quantity): bool;
+    public function releaseOrderItems(array $orderItems): void;
+    public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void;
 }

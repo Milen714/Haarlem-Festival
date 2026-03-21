@@ -24,9 +24,9 @@ $ticketTypes = $ticketTypes ?? [];
         </div>
 
         <div class="flex gap-3">
-            <a href="/cms/schedules/edit/<?= (int)$schedule->schedule_id ?>"
+            <a href="/cms/schedules?event_type=<?= urlencode($schedule->event_category?->type?->value ?? '') ?>"
                class="rounded-lg border border-gray-300 px-4 py-2 font-semibold text-gray-700 transition hover:bg-gray-50">
-                Back to Schedule
+                Back to Schedules
             </a>
             <a href="/cms/schedules/<?= (int)$schedule->schedule_id ?>/tickets/create"
                class="rounded-lg bg-green-600 px-5 py-2.5 font-semibold text-white transition hover:bg-green-700">
