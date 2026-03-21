@@ -1,16 +1,75 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Referencias a los contenedores
+    const stepDate = document.getElementById('step-date');
+    const stepTime = document.getElementById('step-time');
+    const datesContainer = document.getElementById('dates-container');
+    const timesContainer = document.getElementById('times-container');
 
-    const form = document.getElementById('ticket-form');
-    const inputNormal = document.getElementById('qty-normal');
-    const inputFamily = document.getElementById('qty-family');
-    const spanTotal = document.getElementById('summary-total');
-    
-    // Nuevos elementos para el resumen visual
-    const summaryDetails = document.getElementById('summary-details');
-    const summaryQtyText = document.getElementById('summary-qty-text');
-    const summaryDateText = document.getElementById('summary-date-text');
-    const summaryTimeText = document.getElementById('summary-time-text');
-    const summaryLangText = document.getElementById('summary-lang-text');
+    // 1. Escuchar cuando cambian el Idioma
+    document.querySelectorAll('input[name="language"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const selectedLang = e.target.value;
+            const availableDates = tourOptionsTree[selectedLang]; // Buscamos en el árbol
+
+            // Limpiamos fechas y horas anteriores
+            datesContainer.innerHTML = '';
+            timesContainer.innerHTML = '';
+            stepTime.classList.add('hidden', 'opacity-0'); // Ocultamos horas
+
+            // Pintamos los nuevos botones de fechas
+            for (const date in availableDates) {
+                // Formateamos la fecha bonita (ej. Sat, 25 Jul)
+                const dateObj = new Date(date);
+                const niceDate = dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+
+                datesContainer.innerHTML += `
+                    <label class="cursor-pointer">
+                        <input type="radio" name="date" value="${date}" class="peer sr-only" required>
+                        <div class="tour-radio-btn">${niceDate}</div>
+                    </label>
+                `;
+            }
+
+            // Mostramos el contenedor de fechas con animación
+            stepDate.classList.remove('hidden');
+            setTimeout(() => stepDate.classList.remove('opacity-0'), 50);
+
+            // VOLVEMOS A ASIGNAR LISTENERS A LAS FECHAS RECIÉN CREADAS
+            attachDateListeners(selectedLang);
+            updateOrderOverview(); // Tu función existente
+        });
+    });
+
+    // 2. Función para escuchar cuando cambian la Fecha
+    function attachDateListeners(selectedLang) {
+        document.querySelectorAll('input[name="date"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const selectedDate = e.target.value;
+                const availableTimes = tourOptionsTree[selectedLang][selectedDate]; // Buscamos las horas exactas
+
+                timesContainer.innerHTML = '';
+
+                // Pintamos las horas
+                availableTimes.forEach(time => {
+                    const niceTime = time.substring(0, 5); // Corta "10:00:00" a "10:00"
+                    timesContainer.innerHTML += `
+                        <label class="cursor-pointer">
+                            <input type="radio" name="time" value="${time}" class="peer sr-only" required>
+                            <div class="tour-radio-btn">${niceTime}</div>
+                        </label>
+                    `;
+                });
+
+                // Mostramos el contenedor de horas con animación
+                stepTime.classList.remove('hidden');
+                setTimeout(() => stepTime.classList.remove('opacity-0'), 50);
+
+                // Re-atachamos el listener de cambio para el resumen de compra
+                document.querySelectorAll('input[name="time"]').forEach(t => t.addEventListener('change', updateOrderOverview));
+                updateOrderOverview(); 
+            });
+        });
+    }
 
     // 1. Función Maestra para actualizar todo el panel derecho
     function updateOrderOverview() {

@@ -1,5 +1,8 @@
-<?php /** @var App\Models\ViewModels\TicketHistoryViewModel $ticketOptions */ ?>
+<?php /** @var App\ViewModels\History\TicketHistoryViewModel $ticketOptions */ ?>
 
+<script>
+    const tourOptionsTree = <?= json_encode($ticketOptions->options) ?>;
+</script>
 
 <section id="book-tour" class="container mx-auto max-w-[1100px] px-4 my-24">
     
@@ -17,7 +20,6 @@
             <div class="mb-8">
                 <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Tickets</h3>
                 
-
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
@@ -39,22 +41,10 @@
                 </div>
             </div>
 
-            <div class="mb-8">
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Date</h3>
-                <div class="flex flex-wrap gap-3">
-                    <?php foreach ($ticketOptions->availableDates as $date): ?>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="date" value="<?= htmlspecialchars($date) ?>" class="peer sr-only" required>
-                            <div class="tour-radio-btn"><?= date('D, d M', strtotime($date)) ?></div>
-                        </label>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-
-            <div class="mb-8">
+            <div class="mb-8" id="step-language">
                 <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Language</h3>
                 <div class="flex flex-wrap gap-3">
-                    <?php foreach ($ticketOptions->availableLanguages as $language): ?>
+                    <?php foreach (array_keys($ticketOptions->options) as $language): ?>
                         <label class="cursor-pointer">
                             <input type="radio" name="language" value="<?= htmlspecialchars($language) ?>" class="peer sr-only" required>
                             <div class="tour-radio-btn"><?= htmlspecialchars($language) ?></div>
@@ -63,16 +53,16 @@
                 </div>
             </div>
 
-            <div class="mb-8">
+            <div class="mb-8 hidden opacity-0 transition-opacity duration-500" id="step-date">
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Date</h3>
+                <div class="flex flex-wrap gap-3" id="dates-container">
+                    </div>
+            </div>
+
+            <div class="mb-8 hidden opacity-0 transition-opacity duration-500" id="step-time">
                 <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Time</h3>
-                <div class="flex flex-wrap gap-3">
-                    <?php foreach ($ticketOptions->availableTimes as $time): ?>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="time" value="<?= htmlspecialchars($time) ?>" class="peer sr-only" required>
-                            <div class="tour-radio-btn"><?= date('H:i', strtotime($time)) ?></div>  
-                        </label>
-                    <?php endforeach; ?>
-                </div>
+                <div class="flex flex-wrap gap-3" id="times-container">
+                    </div>
             </div>
 
         </div>

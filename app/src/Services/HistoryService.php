@@ -16,39 +16,40 @@ class HistoryService implements IHistoryService
         $this->historyRepository = new HistoryRepository();
     }
 
-    public function getAvailableTourOptions(): TicketHistoryViewModel{
-
-        $options = $this->historyRepository->getAvailableTourOptions();
-
-
+    public function getAvailableTourOptions(): TicketHistoryViewModel
+    {
+        $rawOptions = $this->historyRepository->getAvailableTourOptions();
         $ticketPrices = $this->historyRepository->getTourTicketPrices();
         
-        $ticketHistoryViewModel = new TicketHistoryViewModel();
+        $viewModel = new TicketHistoryViewModel();
 
-        $dates = [];
-        $times = [];
-        $languages = [];
+        // Creamos el Árbol de Decisiones
+        $ticketOptions = [];
 
-        foreach ($options as $row) {
-            if (isset($row['date']) && !in_array($row['date'], $dates)) {
-                $dates[] = $row['date'];
+        foreach ($rawOptions as $row) {
+            $language = $row['language'];
+            $date = $row['date'];
+            $time = $row['time'];
+
+            // Si el idioma no existe en el árbol, lo creamos
+            if (!isset($ticketOptions[$language])) {
+                $ticketOptions[$language] = [];
             }
-            if (isset($row['time']) && !in_array($row['time'], $times)) {
-                $times[] = $row['time'];
+            // Si la fecha no existe dentro de ese idioma, la creamos
+            if (!isset($ticketOptions[$language][$date])) {
+                $ticketOptions[$language][$date] = [];
             }
-            if (isset($row['language']) && !in_array($row['language'], $languages)) {
-                $languages[] = $row['language'];
+            // Agregamos la hora a esa fecha exacta (evitando duplicados)
+            if (!in_array($time, $ticketOptions[$language][$date])) {
+                $ticketOptions[$language][$date][] = $time;
             }
         }
 
-        $ticketHistoryViewModel->availableDates = $dates;
-        $ticketHistoryViewModel->availableTimes = $times;
-        $ticketHistoryViewModel->availableLanguages = $languages;
-        
-        $ticketHistoryViewModel->normalPrice = $ticketPrices['normal'] ?? 0.00;
-        $ticketHistoryViewModel->familyPrice = $ticketPrices['family'] ?? 0.00;
+        $viewModel->options = $ticketOptions;
+        $viewModel->normalPrice = $ticketPrices['normal'] ?? 0.00;
+        $viewModel->familyPrice = $ticketPrices['family'] ?? 0.00;
 
-        return $ticketHistoryViewModel;
+        return $viewModel;
     }
 
 
