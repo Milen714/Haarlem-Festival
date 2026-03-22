@@ -139,6 +139,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
      * Gets a single schedule by ID
      * @return Schedule|null
      */
+    //
     public function getScheduleById(int $scheduleId): ?Schedule
     {
         try {
@@ -162,12 +163,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets all schedules with optional filters
-     * @param string|null $eventType Filter by event type (e.g., 'Yummy', 'Jazz', 'Magic')
-     * @param string|null $date Filter by date (format: 'Y-m-d')
-     * @return Schedule[]
-     */
+    // For CMS: get all schedules for a specific event category (e.g., 'Yummy') and/or date
     public function getAllSchedules(?string $eventType = null, ?string $date = null): array
     {
         try {
@@ -207,10 +203,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets a single schedule for an event (first upcoming one)
-     * @return Schedule|null
-     */
+    // Used for event pages to show the next schedule for that event
     public function getOneScheduleByEventId(int $eventId): ?Schedule
     {
         try {
@@ -267,6 +260,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
      * @param int $eventId
      * @return \App\Models\Schedule[] 
      */
+    //
     public function getBackToBackSpecialsByEventId(int $eventId): array
     {
         try {
@@ -346,9 +340,8 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Create a new schedule record
-     */
+
+    //Create a new schedule record
     public function create(Schedule $schedule): bool
     {
         try {
@@ -383,9 +376,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Update an existing schedule record
-     */
     public function update(Schedule $schedule): bool
     {
         try {
@@ -425,9 +415,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Delete a schedule by ID
-     */
     public function delete(int $scheduleId): bool
     {
         try {

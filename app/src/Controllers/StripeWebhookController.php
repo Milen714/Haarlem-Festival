@@ -10,6 +10,7 @@ use App\Services\OrderService;
 use App\Services\PaymentService;
 use App\Services\TicketService;
 use Exception;
+
 class StripeWebhookController
 {
     private IPaymentService $paymentService;
@@ -23,18 +24,20 @@ class StripeWebhookController
         $this->ticketService  = new TicketService();
     }
 
+    // Main handler for Stripe webhook events. Verifies the signature, processes the event, and updates order status accordingly.
     public function handle(array $params = []): void
     {
+
         $payload   = file_get_contents('php://input');
         $sigHeader = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? '';
 
         try {
             $event = $this->paymentService->verifyWebhookSignature($payload, $sigHeader);
-        
+
 
             $session = $event->data->object;
-            
-            
+
+
             switch ($event->type) {
                 case 'checkout.session.completed':
                     if (($session->payment_status ?? '') !== 'paid') {
@@ -58,9 +61,8 @@ class StripeWebhookController
             }
             http_response_code(200);
             echo json_encode(['received' => true]);
-        
         } catch (\Throwable $e) {
-            http_response_code(500); // tells Stripe to retry
+            http_response_code(500);
             echo json_encode(['error' => 'temporary failure']);
         }
     }

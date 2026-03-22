@@ -2,68 +2,67 @@
 
 namespace App\Views\Jazz;
 
-$sections = is_array($sections ?? null) ? $sections : [];
-$jazzHomeVenues = is_array($venues ?? null) ? $venues : [];
-$hasRenderedVenues = false;
+/* ── Section title keywords used to detect which component to render ── */
 
+const SECTION_KEYWORD_HERO     = ['history', 'hero'];
+const SECTION_KEYWORD_ABOUT    = ['about'];
+const SECTION_KEYWORD_ARTISTS  = ['artist'];
+const SECTION_KEYWORD_SCHEDULE = ['schedule', 'glance'];
+const SECTION_KEYWORD_VENUE    = ['venue', 'location', 'locatie', 'place'];
+const SECTION_KEYWORD_TICKETS  = ['ticket', 'pass'];
+
+/**
+ * Check whether a section title contains any of the given keywords.
+ *
+ * @param string   $sectionTitle Lowercase-trimmed section title.
+ * @param string[] $keywords     List of keywords to match against.
+ */
+function sectionTitleContains(string $sectionTitle, array $keywords): bool
+{
+    foreach ($keywords as $keyword) {
+        if (strpos($sectionTitle, $keyword) !== false) {
+            return true;
+        }
+    }
+    return false;
+}
+
+$sections       = is_array($sections ?? null) ? $sections : [];
+$jazzHomeVenues = is_array($venues   ?? null) ? $venues   : [];
+$venuesRendered = false;
 ?>
 
 <?php foreach ($sections as $section): ?>
 <?php
-    // Restore canonical venue data on each iteration in case another component mutates $venues.
+    /* Restore venue data on each iteration — a component must not mutate the canonical list. */
     $venues = $jazzHomeVenues;
 
-    // Match by title since section_type is generic ("text", "hero_picture", etc.)
-    $sectionTitle = strtolower(trim($section->title ?? ''));
-    $isVenueSection =
-        strpos($sectionTitle, 'venue') !== false ||
-        strpos($sectionTitle, 'location') !== false ||
-        strpos($sectionTitle, 'locatie') !== false ||
-        strpos($sectionTitle, 'place') !== false;
+    $sectionTitle = strtolower(trim((string) ($section->title ?? '')));
 
-    // Hero Section
-    if (strpos($sectionTitle, 'history') !== false || strpos($sectionTitle, 'hero') !== false) {
+    if (sectionTitleContains($sectionTitle, SECTION_KEYWORD_HERO)) {
         $heroSection = $section;
-        include __DIR__ . '/Components/jazz-hero.php';
-    }
-
-    // About Section
-    elseif (strpos($sectionTitle, 'about') !== false) {
+        include __DIR__ . '/Components/Home/jazz-hero.php';
+    } elseif (sectionTitleContains($sectionTitle, SECTION_KEYWORD_ABOUT)) {
         $aboutSection = $section;
-        include __DIR__ . '/Components/jazz-about.php';
-    }
-
-    // Artists Section
-    elseif (strpos($sectionTitle, 'artist') !== false) {
+        include __DIR__ . '/Components/Home/jazz-about.php';
+    } elseif (sectionTitleContains($sectionTitle, SECTION_KEYWORD_ARTISTS)) {
         $artistSection = $section;
         if (!empty($artists)) {
-            include __DIR__ . '/Components/jazz-carousel.php';
+            include __DIR__ . '/Components/Home/jazz-artists-grid.php';
         }
-    }
-
-    // Schedule Section
-    elseif (strpos($sectionTitle, 'schedule') !== false || strpos($sectionTitle, 'glance') !== false) {
+    } elseif (sectionTitleContains($sectionTitle, SECTION_KEYWORD_SCHEDULE)) {
         $scheduleSection = $section;
-        include __DIR__ . '/Components/jazz-schedule.php';
-    }
-
-    // Venues Section
-    elseif ($isVenueSection) {
-        $venuesSection = $section;
-        $venues = $jazzHomeVenues;
-        include __DIR__ . '/Components/jazz-venues.php';
-        $hasRenderedVenues = true;
-    }
-
-    // Tickets Section
-    elseif (strpos($sectionTitle, 'ticket') !== false || strpos($sectionTitle, 'pass') !== false) {
+        include __DIR__ . '/Components/Home/jazz-schedule.php';
+    } elseif (sectionTitleContains($sectionTitle, SECTION_KEYWORD_VENUE)) {
+        $venuesSection  = $section;
+        $venues         = $jazzHomeVenues;
+        include __DIR__ . '/Components/Home/jazz-venues.php';
+        $venuesRendered = true;
+    } elseif (sectionTitleContains($sectionTitle, SECTION_KEYWORD_TICKETS)) {
         $ticketsSection = $section;
-        include __DIR__ . '/Components/jazz-tickets.php';
-    }
-
-
-    // Generic content section (fallback)
-    else {
+        include __DIR__ . '/Components/Home/jazz-tickets.php';
+    } else {
+        /* Generic fallback — render raw CMS HTML when it is not navigation markup */
         $containsNavMarkup = stripos((string) ($section->content_html ?? ''), '<nav') !== false;
         if (!empty($section->content_html) && !$containsNavMarkup) {
             echo '<section class="container mx-auto px-4 py-8">';
@@ -74,13 +73,14 @@ $hasRenderedVenues = false;
 ?>
 <?php endforeach; ?>
 
-<?php if (!$hasRenderedVenues): ?>
 <?php
+/* Guarantee venues are always shown, even when no CMS section matched the venue keywords. */
+if (!$venuesRendered):
     $venuesSection = (object) ['title' => 'Venues'];
-    $venues = $jazzHomeVenues;
-    include __DIR__ . '/Components/jazz-venues.php';
+    $venues        = $jazzHomeVenues;
+    include __DIR__ . '/Components/Home/jazz-venues.php';
+endif;
 ?>
-<?php endif; ?>
 
-<?php include __DIR__ . '/Components/jazz-ticket-modal.php'; ?>
-<?php include __DIR__ . '/Components/jazz-ticket-modal-js.php'; ?>
+<?php include __DIR__ . '/Components/Partials/purchase-overlay.php'; ?>
+<?php include __DIR__ . '/Components/Partials/purchase-overlay-js.php'; ?>

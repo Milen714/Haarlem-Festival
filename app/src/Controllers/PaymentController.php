@@ -128,28 +128,40 @@ class PaymentController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function return(array $params = [])
     {
-        $sessionId = $_GET['session_id'] ?? null;
-        if ($sessionId !== null) {
-            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-            if ($order !== null && $order->status === OrderStatus::Paid) {
-                $this->orderService->clearSessionCart();
-            }
-        }
         $this->view('ShoppingCart/CheckoutSuccess');
     }
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function status(array $params = [])
     {
         header('Content-Type: application/json');
-        try{
+        try {
             $jsonString = file_get_contents('php://input');
-            $jsonData = json_decode($jsonString, true);
-            $this->paymentService->stripeCheckoutStatus($jsonData);
+            $jsonData   = json_decode($jsonString, true);
+            $sessionId  = $jsonData['session_id'] ?? null;
 
-        }catch (\Exception $e) {
-             error_log('Error checking payment status: ' . $e->getMessage());
+            $data = $this->paymentService->stripeCheckoutStatus($jsonData);
+
+            // If Stripe confirms payment, update the order in DB and clear the session cart.
+            // This handles the case where the webhook fires after the redirect (race condition).
+            if (
+                ($data['status'] ?? '')          === 'complete' &&
+                ($data['payment_status'] ?? '')  === 'paid'     &&
+                $sessionId !== null
+            ) {
+                $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+                if ($order !== null && $order->status !== OrderStatus::Paid) {
+                    $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Paid);
+                }
+                $this->orderService->clearSessionCart();
+            }
+
+            http_response_code(200);
+            echo json_encode($data);
+
+        } catch (\Exception $e) {
+            error_log('Error checking payment status: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'An error occurred while checking the payment status.' . $e->getMessage()]);
+            echo json_encode(['error' => 'An error occurred while checking the payment status.']);
         }
     }
     public function details(array $params = [])
