@@ -3857,15 +3857,24 @@ select:focus,
   color: rgb(212 175 55 / var(--tw-text-opacity, 1));
 }
 
+.text-\[\#d5e0f0\]{
+  --tw-text-opacity: 1;
+  color: rgb(213 224 240 / var(--tw-text-opacity, 1));
+}
+
 .text-\[\#d64550\]{
   --tw-text-opacity: 1;
+  color: rgb(214 69 80 / var(--tw-text-opacity, 1));
 }
 
 .text-\[\#f5c35e\]{
+  --tw-text-opacity: 1;
+  color: rgb(245 195 94 / var(--tw-text-opacity, 1));
 }
 
 .text-\[\#faa505\]{
   --tw-text-opacity: 1;
+  color: rgb(250 165 5 / var(--tw-text-opacity, 1));
 }
 
 .text-\[var\(--dance-tag-color-1\)\]{
@@ -4143,10 +4152,6 @@ select:focus,
 
 .opacity-20{
   opacity: 0.2;
-}
-
-.opacity-40{
-  opacity: 0.4;
 }
 
 .opacity-50{
