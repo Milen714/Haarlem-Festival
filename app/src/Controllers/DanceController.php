@@ -13,6 +13,7 @@ use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
 use App\ViewModels\Dance\LineupViewModel;
+use App\ViewModels\Dance\VenueViewModel;
 
 class DanceController extends BaseController
 {
@@ -88,6 +89,24 @@ class DanceController extends BaseController
             ]);
         } catch (\Exception $e) {
             error_log("Error in DanceController lineUp method: " . $e->getMessage());
+            $this->notFound();
+        }
+    }
+
+    public function venues()
+    {
+        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $slug = ltrim($uri, '/');
+        try {
+            $pageData = $this->pageService->getPageBySlug($slug);
+            $venues = $this->venueService->getVenuesByEventId(self::DANCE_EVENT_ID);
+            $viewModel = new VenueViewModel($pageData, $venues);
+            $this->view('Dance/venues', [
+                'title' => 'Dance Venues',
+                'vm' => $viewModel
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error in DanceController venues method: " . $e->getMessage());
             $this->notFound();
         }
     }
