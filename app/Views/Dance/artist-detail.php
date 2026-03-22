@@ -100,6 +100,12 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                 <div class="border-b border-gray-800 pb-8 last:border-0">
                     <div class="flex flex-col gap-6">
                         <?php foreach ($slots as $session): ?>
+                            <?php 
+                                $currentScheduleId = $session['schedule_id'] ?? null;
+                                $ticket = $ticketLookup[$currentScheduleId] ?? null;
+                                $ticketId = $ticket['id'] ?? null;
+                                $price = $ticket['price'] ?? 0;
+                            ?>
                             <div class="flex justify-between items-center py-4">
                                 
                                 <div class="flex-1">
@@ -121,11 +127,26 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                                 </div>
 
                                 <div class="ml-8">
-                                    <a href="/tickets/buy/<?= $session['schedule_id'] ?>"
-                                    class="bg-[var(--dance-button-color)] hover:bg-white font-medium text-black px-6 py-3 rounded uppercase tracking-tighter transition-all duration-300 flex flex-col items-center justify-center">
-                                        <span class="mb-1">BUY TICKETS</span>
-                                        <span>€<?= number_format($session['price'] ?? 60, 2) ?></span>
-                                    </a>
+                                    <button 
+                                    onclick="<?= $ticketId ? 'openDanceModal(this)' : '' ?>"
+                                    data-ticket-type-id="<?= $ticketId ?>"
+                                    data-price="<?= $price ?>"
+                                    data-artist="<?= htmlspecialchars($vm->artist->name) ?>"
+                                    data-venue="<?= htmlspecialchars($session['venue_name']) ?>"
+                                    data-date="<?= date('l, F d, Y', strtotime($dateKey)) ?>"
+                                    data-time="<?= ($session['start_time'] instanceof \DateTime ? $session['start_time']->format('H:i') : '--:--') ?>"
+                                    class="px-6 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition flex items-center gap-2
+                                        <?= $ticketId ? 'bg-[#f5c35e] text-black hover:bg-white' : 'bg-gray-800 text-gray-500 cursor-not-allowed' ?>">
+                                    
+                                    <?php if ($ticketId): ?>
+                                        <div class="flex flex-col">
+                                            <span>Buy Tickets</span>
+                                            <span>€<?= number_format($price, 2) ?></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <span>Sold Out</span>
+                                    <?php endif; ?>
+                                    </button>
                                 </div>
 
                             </div>
@@ -158,7 +179,8 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
         </div>
     </section>
 </div>
-
+<?php include __DIR__ . '/Components/ticket-modal.php'; ?> 
+<script src="/Js/dance-modal.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const bio = document.getElementById('artist-bio');
