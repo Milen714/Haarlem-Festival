@@ -35,6 +35,11 @@ class TicketService implements ITicketService
         return $this->ticketRepository->getTicketTypesByScheduleIds($scheduleIds);
     }
 
+    public function getTicketTypesBySchemeEnums(array $schemeEnums): array
+    {
+        return $this->ticketRepository->getTicketTypesBySchemeEnums($schemeEnums);
+    }
+
     public function create(TicketType $ticketType): bool
     {
         return $this->ticketRepository->create($ticketType);
@@ -83,6 +88,64 @@ class TicketService implements ITicketService
     public function deleteTicketScheme(int $ticketSchemeId): bool
     {
         return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
+    }
+
+    public function getAvailableCapacity(int $ticketTypeId): int
+    {
+        return $this->ticketRepository->getAvailableCapacity($ticketTypeId);
+    }
+
+    // Hard-locks seats. Call at checkout, not at add-to-cart.
+    public function reserveSeats(int $ticketTypeId, int $quantity): bool
+    {
+        return $this->ticketRepository->atomicIncrementTicketsSold($ticketTypeId, $quantity);
+    }
+
+    // Reserves seats for multiple ticket types in one transaction. All or nothing.
+    public function reserveMultiple(array $items): bool
+    {
+        return $this->ticketRepository->reserveMultiple($items);
+    }
+
+    public function releaseSeats(int $ticketTypeId, int $quantity): bool
+    {
+        return $this->ticketRepository->atomicDecrementTicketsSold($ticketTypeId, $quantity);
+    }
+
+    // Releases all tickets from an order's items in one transaction. Used by the webhook on session expiry.
+    public function releaseOrderItems(array $orderItems): void
+    {
+        $items = [];
+        foreach ($orderItems as $item) {
+            $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+            $quantity     = (int)($item->quantity ?? 0);
+            if ($ticketTypeId !== null && $quantity > 0) {
+                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+            }
+        }
+        if (!empty($items)) {
+            $this->ticketRepository->releaseMultiple($items);
+        }
+    }
+
+    // Throws if adding this capacity would exceed the venue's limit. Pass excludeTicketTypeId when editing an existing type.
+    public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void
+    {
+        $existing     = $this->ticketRepository->getTotalAllocatedCapacityForSchedule($scheduleId, $excludeTicketTypeId);
+        $venueCapacity = $this->ticketRepository->getVenueCapacityForSchedule($scheduleId);
+
+        if ($venueCapacity === null) {
+            // No venue or venue has no capacity set — skip validation
+            return;
+        }
+
+        $total = $existing + $newCapacity;
+        if ($total > $venueCapacity) {
+            throw new \OverflowException(
+                "Total ticket capacity ({$total}) would exceed the venue capacity ({$venueCapacity}). " .
+                "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
+            );
+        }
     }
 
     public function deleteTicketSchemeSafely(int $ticketSchemeId): void
@@ -137,6 +200,7 @@ class TicketService implements ITicketService
     public function createFromRequest(int $scheduleId, array $postData): TicketType
     {
         $this->validateTicketTypeData($postData);
+        $this->validateCapacityAgainstVenue($scheduleId, (int)($postData['capacity'] ?? 0));
 
         $ticketType = $this->buildTicketTypeFromPostData(new TicketType(), $scheduleId, $postData);
         $success = $this->ticketRepository->create($ticketType);
@@ -161,6 +225,7 @@ class TicketService implements ITicketService
         }
 
         $this->validateTicketTypeData($postData);
+        $this->validateCapacityAgainstVenue($scheduleId, (int)($postData['capacity'] ?? 0), $ticketType->ticket_type_id);
 
         $ticketType = $this->buildTicketTypeFromPostData($ticketType, $scheduleId, $postData);
         $success = $this->ticketRepository->update($ticketType);

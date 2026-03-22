@@ -5,6 +5,7 @@ use App\Models\TicketType;
 class OrderItem
 {
     public ?int $orderitem_id = null;
+    public ?int $sessionOrderitem_id = null;
     public ?int $order_id = null;
     public ?TicketType $ticket_type = null;
     public ?int $quantity = null;
@@ -45,6 +46,12 @@ class OrderItem
             $total += $this->reservation_fee * $this->quantity;
         }
         return $total; 
+    }
+    public function calculateTotalPriceWithNewQuantity(int $newQuantity): void
+    {
+        $this->quantity = $newQuantity;
+        $this->subtotal = $this->calculateSubtotal();
+        $this->total_price = $this->calculateTotalPrice();
     }
 
     private function calculateSubtotal(): float

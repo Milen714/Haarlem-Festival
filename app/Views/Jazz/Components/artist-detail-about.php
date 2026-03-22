@@ -7,7 +7,9 @@
         About <?= htmlspecialchars($artist->name ?? '') ?>
     </h2>
 
-    <p class="text-gray-700 leading-relaxed text-lg mb-6">
-        <?= nl2br(htmlspecialchars($artist->bio)) ?>
-    </p>
+    <div class="border-l-4 jazz_event_border_<?= $accentColor ?> pl-6 bg-gray-50 rounded-r-xl py-4 pr-4">
+        <p class="text-gray-700 leading-relaxed text-lg">
+            <?= nl2br(htmlspecialchars($artist->bio)) ?>
+        </p>
+    </div>
 </section>

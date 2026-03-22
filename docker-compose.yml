@@ -50,6 +50,16 @@ services:
             DB_PASSWORD: ${AIVEN_PASSWORD}
             DB_SSL_CA: /etc/ssl/certs/aiven-ca.pem
 
+    stripe-cli:
+        image: stripe/stripe-cli
+        entrypoint: /bin/sh
+        command: -c "stripe listen --api-key $$STRIPE_SECRET_KEY --forward-to http://nginx/stripe/webhook"
+        env_file:
+            - ./app/.env
+        depends_on:
+            - nginx
+        restart: on-failure
+
     phpmyadmin:
         image: phpmyadmin:latest
         ports:
