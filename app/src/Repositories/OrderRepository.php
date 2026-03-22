@@ -29,6 +29,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 o.currency,
                 o.status,
                 o.stripe_payment_intent_id,
+                o.stripe_checkout_session_id,
                 o.stripe_customer_id,
                 o.created_at as order_created_at,
                 o.paid_at,
@@ -99,8 +100,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 venue_media.media_id as venue_media_id,
                 venue_media.file_path as venue_media_file_path,
                 venue_media.alt_text as venue_media_alt_text,
-                venue_media.file_path as image_path,
-                venue_media.alt_text as image_alt,
+
+                
 
                 -- Artist fields
                 a.artist_id,
@@ -305,6 +306,7 @@ class OrderRepository extends Repository implements IOrderRepository
                     currency,
                     status,
                     stripe_payment_intent_id,
+                    stripe_checkout_session_id,
                     stripe_customer_id,
                     created_at,
                     paid_at
@@ -318,6 +320,7 @@ class OrderRepository extends Repository implements IOrderRepository
                     :currency,
                     :status,
                     :stripe_payment_intent_id,
+                    :stripe_checkout_session_id,
                     :stripe_customer_id,
                     :created_at,
                     :paid_at
@@ -334,6 +337,7 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt->bindValue(':currency', $order->currency ?: 'EUR');
             $stmt->bindValue(':status', $order->status->value);
             $stmt->bindValue(':stripe_payment_intent_id', $order->stripe_payment_intent_id);
+            $stmt->bindValue(':stripe_checkout_session_id', $order->stripe_checkout_session_id);
             $stmt->bindValue(':stripe_customer_id', $order->stripe_customer_id);
             $stmt->bindValue(':created_at', $order->created_at ?? date('Y-m-d H:i:s'));
             $stmt->bindValue(':paid_at', $order->paid_at);
@@ -446,21 +450,44 @@ class OrderRepository extends Repository implements IOrderRepository
         return $getItems->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getOpenOrderByUserId(int $userId): ?Order{
+    public function getOpenOrderByUserId(int $userId, ?array $statuses = null): ?Order{
         try {
             $pdo = $this->connect();
+            $statusesWhereClause = '';
+            if (is_array($statuses) && count($statuses) > 0) {
+                $placeholders = [];
+                foreach ($statuses as $index => $status) {
+                    $placeholders[] = ":status_$index";
+                }
+                $placeholders = implode(', ', $placeholders);
+                $statusesWhereClause = "AND o2.status IN ($placeholders)";
+            } else {
+                $statusesWhereClause = "AND o2.status IN ('Pending', 'Confirmed')";
+            }
 
             $query = $this->getBaseQuery() . "
-                WHERE o.user_id = :user_id AND o.status = 'Pending' OR o.status = 'Confirmed'
-                ORDER BY o.order_date DESC
-                LIMIT 1
+                WHERE o.order_id = (
+                    SELECT o2.order_id
+                    FROM `ORDER` o2
+                    WHERE o2.user_id = :user_id
+                    $statusesWhereClause
+                    ORDER BY o2.order_date DESC, o2.order_id DESC
+                    LIMIT 1
+                )
+                ORDER BY oi.orderitem_id ASC
             ";
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-            //$stmt->bindValue(':status', OrderStatus::Pending->value);
+            if (is_array($statuses) && count($statuses) > 0) {
+                foreach ($statuses as $index => $status) {
+                    $statusValue = $status instanceof OrderStatus ? $status->value : (string)$status;
+                    $stmt->bindValue(":status_$index", $statusValue, PDO::PARAM_STR);
+                }
+            }
             $stmt->execute();
 
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
             if (empty($rows)) {
                 return null;
             }
@@ -501,7 +528,12 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt->bindValue(':order_id', $orderId, PDO::PARAM_INT);
             $stmt->bindValue(':status', $status->value);
 
-            return $stmt->execute();
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             throw new \RuntimeException("Failed to update order status: " . $e->getMessage());
         }
@@ -566,6 +598,124 @@ class OrderRepository extends Repository implements IOrderRepository
             }, $rows);
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching order items by order ID: " . $e->getMessage());
+        }
+    }
+
+    public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = $this->getBaseQuery() . " WHERE o.stripe_checkout_session_id = :session_id ORDER BY oi.orderitem_id ASC";
+            $stmt  = $pdo->prepare($query);
+            $stmt->bindValue(':session_id', $sessionId, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($rows)) {
+                return null;
+            }
+
+            $order = new Order();
+            $order->fromPDOData($rows[0]);
+
+            $seenItems = [];
+            foreach ($rows as $row) {
+                if (!is_null($row['orderitem_id']) && !isset($seenItems[$row['orderitem_id']])) {
+                    $seenItems[$row['orderitem_id']] = true;
+                    $orderItem = new OrderItem();
+                    $order->orderItems[] = $orderItem->fromPdo($row);
+                }
+            }
+
+            return $order;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching order by Stripe checkout session ID: " . $e->getMessage());
+        }
+    }
+
+    public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare("UPDATE `ORDER` SET stripe_checkout_session_id = :session_id WHERE order_id = :order_id");
+            $stmt->bindValue(':session_id', $sessionId, PDO::PARAM_STR);
+            $stmt->bindValue(':order_id',   $orderId,   PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to set stripe checkout session ID: " . $e->getMessage());
+        }
+    }
+    public function removeOrderItem(int $orderItemId): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "DELETE FROM ORDER_ITEM WHERE orderitem_id = :orderitem_id";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderItemId, PDO::PARAM_INT);
+
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to remove order item: " . $e->getMessage());
+        }
+    }
+    public function updateOrderTotals(Order $order): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE `ORDER` SET
+                    subtotal = :subtotal,
+                    total = :total,
+                    serviceFee = :serviceFee,
+                    reservationFees = :reservationFees
+                WHERE order_id = :order_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':order_id', $order->order_id, PDO::PARAM_INT);
+            $stmt->bindValue(':subtotal', $order->subtotal ?? 0.0);
+            $stmt->bindValue(':total', $order->total ?? 0.0);
+            $stmt->bindValue(':serviceFee', $order->serviceFee ?? 0.0);
+            $stmt->bindValue(':reservationFees', $order->reservationFees ?? 0.0);
+
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update order totals: " . $e->getMessage());
+        }
+    }
+    public function updateOrderItemQuantity(OrderItem $orderItem): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE ORDER_ITEM SET
+                    quantity = :quantity
+                WHERE orderitem_id = :orderitem_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderItem->orderitem_id, PDO::PARAM_INT);
+            $stmt->bindValue(':quantity', $orderItem->quantity, PDO::PARAM_INT);
+
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update order item: " . $e->getMessage());
         }
     }
 }

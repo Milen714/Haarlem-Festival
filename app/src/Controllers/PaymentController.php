@@ -16,6 +16,8 @@ use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
+use DateTime;
+
 class PaymentController extends BaseController
 {
     
@@ -32,8 +34,11 @@ class PaymentController extends BaseController
     public function index(array $params = [])
     {
         //$order=$this->orderService->getOrderById(2);
-        $order= $this->orderService->createSessionCart();
-        $viewModel = new ShoppingCartViewModel($this->orderService->getOrderById(1));
+        $order= $this->orderService->getSessionCart();
+        if(!isset($order)){
+            $order = $this->orderService->createSessionCart();
+        }
+        $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
 
@@ -68,34 +73,71 @@ class PaymentController extends BaseController
             'tickets' => $tickets
         ]);
     }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($this->orderService->getOrderById(1));
+        $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
-
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function createCheckoutSession(array $params = [])
     {
-       try {
-        $item = [
-            'name' => 'Test Product',
-            'amount' => 100 * 100, // amount in cents
-            'quantity' => 1,
-        ];
-        $this->paymentService->stripeCheckout((object)$item);
-        } catch (\Exception $e) {
-             error_log('Error creating checkout session: ' . $e->getMessage());
+        try {
+            $order = $this->orderService->getSessionCart();
+
+            if ($order === null || empty($order->orderItems)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No active cart found.']);
+                return;
+            }
+
+            // If the cart hasn't been persisted to DB yet (user added items after login),
+            // persist it now so we can link the Stripe session to an order.
+            if ($order->order_id === null) {
+                $user = $_SESSION['loggedInUser'] ?? null;
+                if ($user !== null) {
+                    $orderId = $this->orderService->persistSessionCart($order, $user);
+                    $order   = $this->orderService->getOrderById($orderId);
+                    $this->orderService->hydrateSessionCart($order);
+                }
+            }
+
+            $order->calculateTotals();
+            $item = [
+                'name'     => 'Haarlem Festival Ticket/s',
+                'amount'   => (int)round($order->total * 100),
+                'quantity' => 1,
+            ];
+            $stripeSession = $this->paymentService->stripeCheckout((object)$item);
+
+            if ($order->order_id !== null) {
+                $this->orderService->setStripeCheckoutSessionId($order->order_id, $stripeSession->id);
+                $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Pending_Payment);
+            }
+
+            header('Content-Type: application/json');
+            http_response_code(200);
+            echo json_encode(['clientSecret' => $stripeSession->client_secret]);
+        } catch (\Throwable $e) {
+            error_log('Error creating checkout session: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
         }
-        //require '../payment/checkout.php';  
     }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function return(array $params = [])
     {
+        $sessionId = $_GET['session_id'] ?? null;
+        if ($sessionId !== null) {
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            if ($order !== null && $order->status === OrderStatus::Paid) {
+                $this->orderService->clearSessionCart();
+            }
+        }
         $this->view('ShoppingCart/CheckoutSuccess');
-        
     }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function status(array $params = [])
     {
         header('Content-Type: application/json');
@@ -107,28 +149,27 @@ class PaymentController extends BaseController
         }catch (\Exception $e) {
              error_log('Error checking payment status: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'An error occurred while checking the payment status.']);
+            echo json_encode(['error' => 'An error occurred while checking the payment status.' . $e->getMessage()]);
         }
     }
     public function details(array $params = [])
     {
-        $order=$this->orderService->getOrderById(1);
+        //$order=$this->orderService->getOrderById(1);
+        $order=$this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
     }
     public function test(array $params = [])
     {
          header('Content-Type: application/json');
-         //$order=$this->orderService->getOpenOrderByUserId(1);
-         $order=$_SESSION['session_cart'] ?? null;
-         if (!$order) {
-            echo json_encode(['message' => 'No open order found for user.']);
-            return;
-         }
+         $sessionCart = $this->orderService->getSessionCart();
+         $user = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser'] : new User();
+          $this->orderService->persistSessionCart($sessionCart, $user);
+          $this->orderService->hydrateSessionCart($sessionCart);
 
-         $viewModel = new ShoppingCartViewModel($order);
+         //$viewModel = new ShoppingCartViewModel($order);
         
-         echo json_encode($viewModel, JSON_PRETTY_PRINT);   
+        // echo json_encode($viewModel, JSON_PRETTY_PRINT);   
         //$this->view('ShoppingCart/WishlistMain', ['viewModel' => null]);
     }
 

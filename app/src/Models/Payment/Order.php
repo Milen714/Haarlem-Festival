@@ -15,9 +15,10 @@ class Order
     public ?float $serviceFee = null;
     public ?float $reservationFees = null;
     public string $currency = 'EUR';
-    public OrderStatus $status = OrderStatus::Pending;
+    public OrderStatus $status = OrderStatus::In_Cart;
     public ?string $stripe_customer_id = null;
     public ?string $stripe_payment_intent_id = null;
+    public ?string $stripe_checkout_session_id = null;
     public ?string $created_at = null;
     public ?string $paid_at = null;
 
@@ -36,9 +37,10 @@ class Order
         $this->serviceFee = isset($data['serviceFee']) ? (float)$data['serviceFee'] : null;
         $this->reservationFees = isset($data['reservationFees']) ? (float)$data['reservationFees'] : null;
         $this->currency = (string)($data['currency'] ?? 'EUR');
-        $this->status = isset($data['status']) ? OrderStatus::from($data['status']) : OrderStatus::Pending;
+        $this->status = isset($data['status']) ? OrderStatus::from($data['status']) : OrderStatus::In_Cart;
         $this->stripe_customer_id = $data['stripe_customer_id'] ?? null;
         $this->stripe_payment_intent_id = $data['stripe_payment_intent_id'] ?? null;
+        $this->stripe_checkout_session_id = $data['stripe_checkout_session_id'] ?? null;
         $this->created_at = $data['order_created_at'] ?? $data['created_at'] ?? null;
         $this->paid_at = $data['paid_at'] ?? null;
         $this->order_date = isset($data['order_date']) ? new DateTime($data['order_date']) : null;

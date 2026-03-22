@@ -24,6 +24,7 @@ class ArtistRepository extends Repository implements IArtistRepository
                     a.artist_id,
                     a.name,
                     a.slug,
+                    a.special_event,
                     a.bio,
                     a.featured_quote,
                     a.website,
@@ -285,6 +286,7 @@ class ArtistRepository extends Repository implements IArtistRepository
                 INSERT INTO ARTIST (
                     name, 
                     slug, 
+                    special_event,
                     bio,
                     featured_quote,
                     press_quote,
@@ -297,6 +299,7 @@ class ArtistRepository extends Repository implements IArtistRepository
                 ) VALUES (
                     :name,
                     :slug,
+                    :special_event,
                     :bio,
                     :featured_quote,
                     :press_quote,
@@ -312,6 +315,7 @@ class ArtistRepository extends Repository implements IArtistRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':name',             $artist->name);
             $stmt->bindValue(':slug',             $artist->slug);
+            $stmt->bindValue(':special_event',    $artist->special_event ? 1 : 0, PDO::PARAM_INT);
             $stmt->bindValue(':bio',              $artist->bio);
             $stmt->bindValue(':featured_quote',   $artist->featured_quote);
             $stmt->bindValue(':press_quote',      $artist->press_quote);
@@ -345,6 +349,7 @@ class ArtistRepository extends Repository implements IArtistRepository
                 UPDATE ARTIST SET
                     name             = :name,
                     slug             = :slug,
+                    special_event    = :special_event,
                     bio              = :bio,
                     featured_quote   = :featured_quote,
                     press_quote      = :press_quote,
@@ -361,6 +366,7 @@ class ArtistRepository extends Repository implements IArtistRepository
             $stmt->bindValue(':artist_id',        $artist->artist_id, PDO::PARAM_INT);
             $stmt->bindValue(':name',             $artist->name);
             $stmt->bindValue(':slug',             $artist->slug);
+            $stmt->bindValue(':special_event',    $artist->special_event ? 1 : 0, PDO::PARAM_INT);
             $stmt->bindValue(':bio',              $artist->bio);
             $stmt->bindValue(':featured_quote',   $artist->featured_quote);
             $stmt->bindValue(':press_quote',      $artist->press_quote);

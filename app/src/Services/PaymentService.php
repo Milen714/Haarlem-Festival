@@ -10,7 +10,7 @@ class PaymentService implements IPaymentService {
     public function __construct() {
     }
 
-    public function stripeCheckout(object $item): void {
+    public function stripeCheckout(object $item): \Stripe\Checkout\Session {
         $stripeSecretKey = Secrets::$stripeSecretKey  ?? '';
         $domainUrl = rtrim(Secrets::$domain ?? 'http://localhost', '/');
 
@@ -20,31 +20,22 @@ class PaymentService implements IPaymentService {
 
         $stripe = new \Stripe\StripeClient($stripeSecretKey);
 
-        header('Content-Type: application/json');
-
-
-        $checkout_session = $stripe->checkout->sessions->create([
+        return $stripe->checkout->sessions->create([
             'ui_mode' => 'embedded',
             'mode' => 'payment',
-
-            // Minimal line item (no dashboard setup needed)
             'line_items' => [[
-            'price_data' => [
-            'currency' => 'eur',
-            'product_data' => [
-                'name' => $item->name,
-            ],
-            'unit_amount' => $item->amount, // amount in cents
-        ],
-        'quantity' => 1,
-    ]],
-
-    // Stripe will replace {CHECKOUT_SESSION_ID}
-    'return_url' => $domainUrl . '/return?session_id={CHECKOUT_SESSION_ID}&paymentId=',
-    ]);
-
-        http_response_code(200);
-        echo json_encode(array('clientSecret' => $checkout_session->client_secret));
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => [
+                        'name' => $item->name,
+                    ],
+                    'unit_amount' => $item->amount, // amount in cents
+                ],
+                'quantity' => 1,
+            ]],
+            // Stripe will replace {CHECKOUT_SESSION_ID}
+            'return_url' => $domainUrl . '/return?session_id={CHECKOUT_SESSION_ID}&paymentId=',
+        ]);
 }
     public function stripeCheckoutStatus(array $jsonData): void {
         header('Content-Type: application/json');
@@ -86,4 +77,12 @@ class PaymentService implements IPaymentService {
 
     }
 
+    public function verifyWebhookSignature(string $payload, string $sigHeader): \Stripe\Event
+    {
+        $webhookSecret = Secrets::$stripeWebhookSecret ?? '';
+        if ($webhookSecret === '') {
+            throw new \RuntimeException('Missing STRIPE_WEBHOOK_SECRET environment variable.');
+        }
+        return \Stripe\Webhook::constructEvent($payload, $sigHeader, $webhookSecret);
+    }
 }

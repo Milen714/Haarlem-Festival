@@ -33,6 +33,13 @@ interface IScheduleRepository
      * Get available dates for scheduling
      * @return string[] Array of dates in 'Y-m-d' format
      */
+
+    /**
+     * @param int $eventId
+     * @return Schedule[]
+     */
+    public function getBackToBackSpecialsByEventId(int $eventId): array;
+
     public function getAvailableDates(): array;
 
     /**

@@ -43,16 +43,21 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
     $r->addRoute('GET', '/events-magic-accessibility', ['App\Controllers\MagicController', 'accessibility']);
     $r->addRoute('GET', '/events-magic-lorentz-show', ['App\Controllers\MagicController', 'lorentzFormula']);
+    $r->addRoute('GET', '/events-magic-tickets', ['App\Controllers\MagicController', 'magicTicketSelect']);
+    $r->addRoute('GET', '/magic-get-ticketypes', ['App\Controllers\MagicController', 'magicGetTicketTypes']);
 
     /* Jazz Event Route */
     $r->addRoute('GET', '/events-jazz', ['App\Controllers\JazzController', 'index']);
     $r->addRoute('GET', '/events-jazz/schedule', ['App\Controllers\JazzController', 'schedule']);
     $r->addRoute('GET', '/events-jazz/artist/{slug}', ['App\Controllers\JazzArtistController', 'detail']);
+    $r->addRoute('GET', '/jazz-get-tickettypes', ['App\Controllers\JazzController', 'getTicketTypes']);
 
     /* Dance Event Route */
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
     $r->addRoute('GET', '/events-dance-lineup', ['App\Controllers\DanceController', 'lineUp']);
     $r->addRoute('GET', '/events-dance/artist/{slug}', ['App\Controllers\DanceArtistController', 'artistDetail']);
+    $r->addRoute('GET', '/events-dance-venue', ['App\Controllers\DanceController', 'venues']);
+    $r->addRoute('GET', '/events-dance/venue/{slug}', ['App\Controllers\DanceVenueController', 'venueDetail']);
 
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
@@ -60,6 +65,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
     $r->addRoute('GET', '/events-yummy/restaurants/{id}', ['App\Controllers\YummyController', 'restaurantDetail']);
     
+
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
 
     /* History Event Route */
@@ -151,6 +157,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
     $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
+    /* Stripe Webhook */
+    $r->addRoute('POST', '/stripe/webhook', ['App\Controllers\StripeWebhookController', 'handle']);
+
     /* Payment */
     $r->addRoute('GET', '/payment', ['App\Controllers\PaymentController', 'index']);
     $r->addRoute('GET', '/checkout', ['App\Controllers\PaymentController', 'checkout']);
@@ -161,6 +170,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
     $r->addRoute('GET', '/personal-program', ['App\Controllers\PaymentController', 'personalProgram']);
+    $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
+    $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
+    $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
+    $r->addRoute('GET', '/getOrderItemData', ['App\Controllers\OrderController', 'getOrderItemDataForUpdate']);
+    $r->addRoute('POST', '/updateOrderItem', ['App\Controllers\OrderController', 'updateOrderItemInCart']);
 });
 
 

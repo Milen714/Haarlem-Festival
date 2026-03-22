@@ -20,22 +20,7 @@ $content = $content ?? '';
 
 <body class="flex flex-col min-h-screen bg_colors_home">
     <!-- Navbar -->
-    <!-- <ul class="flex gap-6 p-4 bg-colors border-b border-[#2C3233] ">
-            <li class="flex items-center gap-2">
-                <a href="" class="after:content-arrow_right after:ml-1 text_colors_home font-bold">Home</a>
-            </li>
-            <li class="flex items-center gap-2">
-                <a href="" class="after:content-arrow_right after:ml-1 text_colors_home font-bold">Events</a>
-            </li>
-            <li class="flex items-center gap-2">
-                <a href="" class="after:content-arrow_right after:ml-1 text_colors_home font-bold">Schedule</a>
-            </li>
-            <li class="flex items-center gap-2">
-                <a href="" class="after:content-arrow_right after:ml-1 text_colors_home font-bold">Personal Plan</a>
-            </li>
 
-        </ul>
-    </nav> -->
     <nav id="main-nav" class="bg_colors_home  w-full z-20 top-0 start-0 border-b border-[#2C3233]">
 
         <div class="nav-ul-container  max-w-screen-2xl flex flex-wrap items-center justify-between mx-auto p-4">
@@ -65,15 +50,106 @@ $content = $content ?? '';
                             aria-current="page">Home</a>
                     </li>
 
-                    <li class="flex items-center gap-2">
-                        <a href="/addBook"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo $_SERVER['REQUEST_URI'] == '/addBook' ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
-                            Events</a>
+                    <!-- Events Dropdown -->
+                    <li class="relative flex items-center gap-2">
+                        <button data-dropdown-toggle="eventsDropdown" type="button" aria-expanded="false"
+                            class="flex items-center gap-2 py-2 font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-') ? 'text-blue-600' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            Events
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="eventsDropdown"
+                            class="absolute left-0 top-full pt-2 w-44 z-50 hidden rounded-lg border border-[#2C3233] bg_colors_home shadow-lg">
+                            <ul class="py-1 font-medium">
+                                <li>
+                                    <a href="/events-jazz"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-jazz') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Jazz
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-dance"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-dance') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Dance
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-magic"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-magic') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Magic
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-yummy"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-yummy') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        Yummy
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-history"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/events-history') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        History
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
-                    <li class="flex items-center gap-2">
-                        <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
-                            Schedule</a>
+                    <!-- Schedule Dropdown -->
+                    <li class="relative flex items-center gap-2">
+                        <button data-dropdown-toggle="scheduleDropdown" type="button" aria-expanded="false"
+                            class="flex items-center gap-2 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') || str_contains($_SERVER['REQUEST_URI'], '/schedule') || str_contains($_SERVER['REQUEST_URI'], '-lineup') || str_contains($_SERVER['REQUEST_URI'], '-tour') ? 'text-blue-600' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            Schedule
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div id="scheduleDropdown"
+                            class="absolute left-0 top-full pt-2 w-48 z-50 hidden rounded-lg border border-[#2C3233] bg_colors_home shadow-lg">
+                            <ul class="py-1 font-medium">
+                                <li>
+                                    <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600' : 'text_colors_nav' ?>">
+                                        My Schedule
+                                    </a>
+                                </li>
+                                <li>
+                                    <hr class="my-1 border-[#2C3233]">
+                                </li>
+                                <li>
+                                    <a href="/events-jazz/schedule"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Jazz Schedule
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-dance-lineup"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Dance Line-up
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-magic"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Magic Shows
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/events-yummy/restaurants"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        Restaurants
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/history-tour"
+                                        class="block px-4 py-2 hover-color rounded-md font-bold text_colors_nav">
+                                        History Tour
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
                     <li class="flex items-center gap-2">
                         <a href="/myRequests/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
@@ -85,8 +161,8 @@ $content = $content ?? '';
                             class="relative text_colors_nav  box-border border border-transparent  focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm p-3 focus:outline-none">
                             <img src="Assets/Home/Shoppinsad.svg" alt="">
                             <span class="sr-only">Shopping Cart</span>
-                            <div
-                                class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-red-700 rounded-full -top-2 -end-2">
+                            <div id="items-in-shoppingCart"
+                                class="absolute hidden inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-red-700 rounded-full -top-2 -end-2">
                                 2</div>
                         </a>
                     </li>
@@ -176,9 +252,8 @@ $content = $content ?? '';
             <div class="relative flex flex-row gap-2 items-center">
                 <?php
                     if(isset($_SESSION['loggedInUser'])): ?>
-                <button data-dropdown-toggle="userMenuDropdown" type="button" aria-expanded="false"
-                    class="inline-flex items-center text-colors_nav font-semibold p-2 rounded-full
-                   bg-[#CBCBCB] dark:bg-[#222222] hover:bg-[#b5b5b5] dark:hover:bg-[#3a3a3a] focus:outline-none focus:ring-2 focus:ring-brand">
+                <button data-dropdown-toggle="userMenuDropdown" type="button" aria-expanded="false" class="inline-flex items-center text-colors_nav font-semibold p-2 rounded-full
+                   bg-[#CBCBCB] hover:bg-[#b5b5b5]  focus:outline-none focus:ring-2 focus:ring-brand">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                         <?= strtoupper(substr($_SESSION['loggedInUser']->fname, 0, 1) . substr($_SESSION['loggedInUser']->lname, 0, 1)); ?>
                     </span>
@@ -280,6 +355,9 @@ $content = $content ?? '';
     </footer>
     <script src="/Js/Navbar.js"></script>
     <script src="/Js/Theme.js"></script>
+    <script src="/Js/UpdateShoppingCartNumber.js"></script>
+
+
 </body>
 
 </html>

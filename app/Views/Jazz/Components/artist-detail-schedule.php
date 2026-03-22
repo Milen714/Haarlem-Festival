@@ -66,10 +66,22 @@
                             FREE Entry
                         </span>
                     <?php else: ?>
-                        <a href="/events-jazz#tickets"
-                           class="inline-block jazz_event_button_<?= $accentColor ?> text-sm font-bold px-5 py-2 rounded-lg whitespace-nowrap">
+                        <?php
+                            $slotStart = ($startTime instanceof \DateTime) ? $startTime->format('H:i') : '';
+                            $slotEnd   = ($endTime   instanceof \DateTime) ? $endTime->format('H:i')   : '';
+                        ?>
+                        <button type="button"
+                                class="inline-block jazz_event_button_<?= $accentColor ?> text-sm font-bold px-5 py-2 rounded-lg whitespace-nowrap cursor-pointer"
+                                onclick="buyTicket(this)"
+                                data-schedule-id="<?= (int) ($slot['schedule_id'] ?? 0) ?>"
+                                data-artist="<?= htmlspecialchars($artist->name ?? 'Artist TBA', ENT_QUOTES) ?>"
+                                data-date="<?= htmlspecialchars($date->format('l, F j'), ENT_QUOTES) ?>"
+                                data-start="<?= htmlspecialchars($slotStart, ENT_QUOTES) ?>"
+                                data-end="<?= htmlspecialchars($slotEnd, ENT_QUOTES) ?>"
+                                data-venue="<?= htmlspecialchars($slot['venue_name'] ?? '', ENT_QUOTES) ?>"
+                                data-price="15">
                             Buy Tickets
-                        </a>
+                        </button>
                     <?php endif; ?>
                 </footer>
 

@@ -28,7 +28,9 @@ interface IScheduleService
 
     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array;
 
-     public function getAvailableDates(): array;
+    public function getBackToBackSpecialsByEventId(int $eventId): array;
+
+    public function getAvailableDates(): array;
 
     public function createFromRequest(array $postData): \App\Models\Schedule;
 

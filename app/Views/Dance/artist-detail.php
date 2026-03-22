@@ -35,13 +35,16 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                         <?= htmlspecialchars($vm->artist->name) ?>
                     </h1>
                     
-                    <div id="artist-bio" class="leading-relaxed text-sm md:text-base line-clamp-4 transition-all duration-500 ease-in-out">
-                        <?= nl2br(htmlspecialchars($vm->artist->bio)) ?>
-                    </div>
-
-                    <button id="read-more-btn" class="mt-8 uppercase tracking-[0.2em] transition">
-                        Read more →
-                    </button>
+                    <?php if ($vm->artist->bio): ?>
+                        <div id="artist-bio" class="leading-relaxed text-sm md:text-base line-clamp-4 transition-all duration-500 ease-in-out">
+                            <?= nl2br(htmlspecialchars($vm->artist->bio)) ?>
+                        </div>
+                        <button id="read-more-btn" class="mt-8 uppercase tracking-[0.2em] transition">
+                            Read more →
+                        </button>
+                    <?php else: ?>
+                        <p class="text-gray-400">No biography available.</p>
+                    <?php endif; ?>
                 </div>
 
                 <?php if ($trackId): ?>
@@ -64,24 +67,26 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
         </div>
     </header> 
     <section class="max-w-5xl mx-auto px-6 mt-24">
-
         <h2 class="text-center text-2xl font-semibold mb-10 relative inline-block">
             Important tracks / albums
             <span class="block h-[2px] bg-[var(--dance-tag-color-1)] mt-2 mx-auto"></span>
         </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-12">
-            <?php foreach($vm->albums as $album): ?>
-                <div class="text-center group">
-                    <img src="<?= $album->cover_image?->file_path ?? '/images/default-album.jpg' ?>"
+        <?php if ($vm->albums): ?>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-12">
+                <?php foreach($vm->albums as $album): ?>
+                    <div class="text-center group">
+                        <img src="<?= $album->cover_image?->file_path ?? '/images/default-album.jpg' ?>"
                         class="w-full aspect-square object-cover transition duration-500"
                         alt="<?= htmlspecialchars($album->cover_image?->alt_text ?? $album->name) ?>">
-                    <p class="mt-4">
-                        <?= htmlspecialchars($album->name) ?>
-                    </p>
-                </div>
-            <?php endforeach; ?>
-        </div>
+                        <p class="mt-4">
+                            <?= htmlspecialchars($album->name) ?>
+                        </p>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="text-center text-gray-400">No albums available.</p>
+        <?php endif; ?>
     </section>
 
     <section class="max-w-5xl mx-auto px-6 mt-24">
@@ -89,11 +94,18 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
             Upcoming events
             <span class="block h-[2px] bg-[var(--dance-tag-color-1)] mt-2 mx-auto"></span>
         </h2>
-        <div class="space-y-12">
+        <?php if ($vm->upcomingEvents): ?>
+            <div class="space-y-12">
             <?php foreach ($vm->upcomingEvents as $dateKey => $slots): ?>
                 <div class="border-b border-gray-800 pb-8 last:border-0">
                     <div class="flex flex-col gap-6">
                         <?php foreach ($slots as $session): ?>
+                            <?php 
+                                $currentScheduleId = $session['schedule_id'] ?? null;
+                                $ticket = $ticketLookup[$currentScheduleId] ?? null;
+                                $ticketId = $ticket['id'] ?? null;
+                                $price = $ticket['price'] ?? 0;
+                            ?>
                             <div class="flex justify-between items-center py-4">
                                 
                                 <div class="flex-1">
@@ -115,17 +127,26 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                                 </div>
 
                                 <div class="ml-8">
-                                    <?php if ($session['is_sold_out']): ?>
-                                        <div class="bg-gray-800 text-gray-500 px-8 py-3 rounded text-xs font-bold uppercase tracking-widest cursor-not-allowed">
-                                            Sold Out
+                                    <button 
+                                    onclick="<?= $ticketId ? 'openDanceModal(this)' : '' ?>"
+                                    data-ticket-type-id="<?= $ticketId ?>"
+                                    data-price="<?= $price ?>"
+                                    data-artist="<?= htmlspecialchars($vm->artist->name) ?>"
+                                    data-venue="<?= htmlspecialchars($session['venue_name']) ?>"
+                                    data-date="<?= date('l, F d, Y', strtotime($dateKey)) ?>"
+                                    data-time="<?= ($session['start_time'] instanceof \DateTime ? $session['start_time']->format('H:i') : '--:--') ?>"
+                                    class="px-6 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition flex items-center gap-2
+                                        <?= $ticketId ? 'bg-[#f5c35e] text-black hover:bg-white' : 'bg-gray-800 text-gray-500 cursor-not-allowed' ?>">
+                                    
+                                    <?php if ($ticketId): ?>
+                                        <div class="flex flex-col">
+                                            <span>Buy Tickets</span>
+                                            <span>€<?= number_format($price, 2) ?></span>
                                         </div>
                                     <?php else: ?>
-                                        <a href="/tickets/buy/<?= $session['schedule_id'] ?>"
-                                        class="bg-[var(--dance-button-color)] hover:bg-white font-medium text-black px-6 py-3 rounded uppercase tracking-tighter transition-all duration-300 flex flex-col items-center justify-center">
-                                            <span class="mb-1">BUY TICKETS</span>
-                                            <span>€<?= number_format($session['price'] ?? 60, 2) ?></span>
-                                        </a>
+                                        <span>Sold Out</span>
                                     <?php endif; ?>
+                                    </button>
                                 </div>
 
                             </div>
@@ -133,6 +154,9 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                     </div>
                 </div>
             <?php endforeach; ?>
+        <?php else: ?>
+            <p class="text-center text-gray-400">No upcoming events available.</p>
+        <?php endif; ?>
         </div>
     </section>  
     <section class="max-w-5xl mx-auto px-6 mt-24">
@@ -155,7 +179,8 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
         </div>
     </section>
 </div>
-
+<?php include __DIR__ . '/Components/ticket-modal.php'; ?> 
+<script src="/Js/dance-modal.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const bio = document.getElementById('artist-bio');

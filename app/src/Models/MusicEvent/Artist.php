@@ -11,6 +11,7 @@ class Artist
 	public ?int $artist_id = null;
 	public ?string $name = null;
 	public ?string $slug = null;
+	public ?bool $special_event = false;
 	public ?string $bio = null;
 	public ?Media $profile_image = null;
 	public ?Gallery $gallery = null;
@@ -50,6 +51,7 @@ class Artist
 	{
 		$this->name = trim($data['name']);
 		$this->slug = self::generateSlug($this->name);
+		$this->special_event = isset($data['special_event']) ? (bool)$data['special_event'] : false;
 		$this->bio = self::optionalTrimmedValue($data, 'bio');
 		$this->featured_quote = self::optionalTrimmedValue($data, 'featured_quote');
 		$this->website = self::optionalTrimmedValue($data, 'website');
@@ -102,6 +104,7 @@ class Artist
 		$this->artist_id = isset($data['artist_id']) ? (int)$data['artist_id'] : null;
 		$this->name = $data['name'] ?? $data['artist_name'] ?? null;
 		$this->slug = $data['artist_slug'] ?? $data['slug'] ?? null;
+		$this->special_event = isset($data['special_event']) ? (bool)$data['special_event'] : (isset($data['special_event']) ? (bool)$data['special_event'] : null);
 		$this->bio = $data['artist_bio'] ?? $data['bio'] ?? null;
 		$this->website = $data['artist_website'] ?? $data['website'] ?? null;
 		$this->spotify_url = $data['artist_spotify_url'] ?? $data['spotify_url'] ?? null;

@@ -6,6 +6,7 @@ use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Services\Interfaces\JazzServiceInterface;
+use App\Services\TicketService;
 
 class JazzService implements JazzServiceInterface
 {
@@ -16,6 +17,7 @@ class JazzService implements JazzServiceInterface
     private ArtistService $artistService;
     private VenueService $venueService;
     private ScheduleService $scheduleService;
+    private TicketService $ticketService;
 
     public function __construct()
     {
@@ -23,6 +25,7 @@ class JazzService implements JazzServiceInterface
         $this->artistService = new ArtistService();
         $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
+        $this->ticketService = new TicketService();
     }
 
     /**
@@ -33,14 +36,7 @@ class JazzService implements JazzServiceInterface
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
         $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
-
-        $performancesByDate = [];
-        foreach ($allSchedules as $schedule) {
-            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
-            $performancesByDate[$dateKey][] = $schedule;
-        }
-
-        ksort($performancesByDate);
+        $performancesByDate = $this->groupSchedulesByDate($allSchedules);
 
         $venues = $this->venueService->getVenuesByEventId($jazzEventId);
         $venuesFromEventQueryCount = count($venues);
@@ -104,6 +100,8 @@ class JazzService implements JazzServiceInterface
             ));
         }
 
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS', 'JAZZ_WEEKEND_PASS']);
+
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
             'pageData' => $jazzPageData,
@@ -111,6 +109,7 @@ class JazzService implements JazzServiceInterface
             'artists' => $this->artistService->getArtistsByEventId($jazzEventId),
             'venues' => $venues,
             'scheduleByDate' => $performancesByDate,
+            'passTicketTypes' => $passTicketTypes,
         ];
     }
 
@@ -123,18 +122,9 @@ class JazzService implements JazzServiceInterface
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
         $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
 
-        // Group performances by date for easier display
-        $performancesByDate = [];
-        foreach ($allSchedules as $schedule) {
-            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
-            $performancesByDate[$dateKey][] = $schedule;
-        }
-
-        ksort($performancesByDate);
-
         return [
             'title' => 'Jazz Festival Schedule',
-            'scheduleByDate' => $performancesByDate,
+            'scheduleByDate' => $this->groupSchedulesByDate($allSchedules),
         ];
     }
 
@@ -194,6 +184,17 @@ class JazzService implements JazzServiceInterface
         }
 
         return $page;
+    }
+
+    private function groupSchedulesByDate(array $schedules): array
+    {
+        $grouped = [];
+        foreach ($schedules as $schedule) {
+            $dateKey = $schedule->date ? $schedule->date->format('Y-m-d') : 'unknown';
+            $grouped[$dateKey][] = $schedule;
+        }
+        ksort($grouped);
+        return $grouped;
     }
 
     private function extractEventIdOrFail(object $pageData, string $pageSlug): int
