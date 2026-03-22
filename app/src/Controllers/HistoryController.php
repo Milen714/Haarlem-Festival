@@ -183,7 +183,6 @@ class HistoryController extends BaseController
         ]);
     
     }
-
 }
 
 

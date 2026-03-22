@@ -69,8 +69,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
     $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
-    //$r->addRoute('POST', '/history/add-to-cart', ['App\Controllers\HistoryController', 'addHistoryToCart']);
-
 
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
@@ -116,14 +114,13 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /*Landmark cms*/
     $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
-
     $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
     $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
-
     $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
     $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
     $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
 
+    /* Account Settings */
     $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
 
