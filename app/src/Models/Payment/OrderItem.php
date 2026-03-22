@@ -13,6 +13,9 @@ class OrderItem
     public ?float $reservation_fee = null;
     public ?float $subtotal = null;
     public ?float $total_price = null;
+    public ?bool $is_scanned = null;
+    public ?string $scanned_at = null;
+    public ?string $qr_code_hash = null;
 
     public function __construct() {
         if ($this->ticket_type !== null && $this->ticket_type->ticket_scheme !== null) {
@@ -29,9 +32,15 @@ class OrderItem
         $item->orderitem_id = $data['orderitem_id'] ?? null;
         $item->order_id = $data['order_id'] ?? null;
         $item->quantity = isset($data['quantity']) ? (int)$data['quantity'] : 0;
+        
+        $item->qr_code_hash = $data['qr_code_hash'] ?? null;
+        $item->is_scanned = isset($data['is_scanned']) ? (bool)$data['is_scanned'] : false;
+        $item->scanned_at = $data['scanned_at'] ?? null;
+
         $ticketType = new TicketType();
         $ticketType->fromPDOData($data);
         $item->ticket_type = $ticketType;
+
         $item->unit_price = $ticketType->ticket_scheme->price ?? null;
         $item->reservation_fee = $item->calculateReservationFee();
         $item->subtotal = $item->calculateSubtotal();

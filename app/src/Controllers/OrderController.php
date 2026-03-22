@@ -150,4 +150,23 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+
+    public function showUserTickets(): void
+    {
+        /** @var \App\Models\User $user */
+        $user = $_SESSION['loggedInUser'];
+        
+        if (!$user->id) {
+            header('Location: /login');
+            exit;
+        }
+
+        $this->orderService->generateTicketHashes(66);
+
+        $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
+
+         $this->view('Orders/my-tickets',[
+            'orderItems' => $orderItems
+        ]);
+    }
 }
