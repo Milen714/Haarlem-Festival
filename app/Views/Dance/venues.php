@@ -40,10 +40,17 @@ $headerSection = $vm->pageData->content_sections[0] ?? null;
                             </p>
                         </div>
                         
-                        <div class="flex justify-end mt-6">
-                            <a href="/venues/detail?id=<?= $venue->venue_id ?>" 
-                            class="bg-[#F3E5AB] text-black px-6 py-2 rounded-md font-bold text-xs uppercase hover:bg-white transition duration-300">
-                                More info
+                        <div class="ml-auto">
+                            <?php 
+                                $mapQuery = urlencode($venue->name . ' ' . $venue->street_address . ' ' . $venue->city);
+                                $googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=" . $mapQuery;
+                            ?>
+                            
+                            <a href="<?= $googleMapsUrl ?>" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="bg-[#f5c35e] text-black px-6 py-2 rounded font-bold uppercase text-[10px] tracking-widest hover:bg-white transition-all duration-300 shadow-lg">
+                                More Info
                             </a>
                         </div>
                     </div>

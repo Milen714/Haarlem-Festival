@@ -6,11 +6,11 @@ foreach ($vm->schedulesSection as $item) {
     $groupedSchedule[$dateKey][] = $item;
 }
 ?>
-<div class="space-y-16">
-    <?php foreach ($groupedSchedule as $date => $sessions): ?>
-        <div class="schedule-date-group" id="date-<?= $date ?>">
-            <h3 class="text-[var(--dance-tag-color-1)] text-xl font-bold mb-8 border-b border-gray-800 pb-2">
-                <?= date('d F Y', strtotime($date)) ?>
+<div class="space-y-16" id="schedule-container">
+    <?php foreach ($vm->groupedSchedules as $date => $sessions): ?>
+        <div class="schedule-day-group space-y-8" id="group-<?= $date ?>">
+            <h3 class="text-[var(--dance-tag-color-1)] text-xl font-bold mb-8 border-b border-gray-800 pb-2 uppercase tracking-widest">
+                <?= date('l, d F Y', strtotime($date)) ?>
             </h3>
 
             <div class="grid grid-cols-1 gap-6">

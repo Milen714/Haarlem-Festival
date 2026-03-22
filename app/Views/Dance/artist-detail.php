@@ -35,13 +35,16 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                         <?= htmlspecialchars($vm->artist->name) ?>
                     </h1>
                     
-                    <div id="artist-bio" class="leading-relaxed text-sm md:text-base line-clamp-4 transition-all duration-500 ease-in-out">
-                        <?= nl2br(htmlspecialchars($vm->artist->bio)) ?>
-                    </div>
-
-                    <button id="read-more-btn" class="mt-8 uppercase tracking-[0.2em] transition">
-                        Read more →
-                    </button>
+                    <?php if ($vm->artist->bio): ?>
+                        <div id="artist-bio" class="leading-relaxed text-sm md:text-base line-clamp-4 transition-all duration-500 ease-in-out">
+                            <?= nl2br(htmlspecialchars($vm->artist->bio)) ?>
+                        </div>
+                        <button id="read-more-btn" class="mt-8 uppercase tracking-[0.2em] transition">
+                            Read more →
+                        </button>
+                    <?php else: ?>
+                        <p class="text-gray-400">No biography available.</p>
+                    <?php endif; ?>
                 </div>
 
                 <?php if ($trackId): ?>
@@ -64,24 +67,26 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
         </div>
     </header> 
     <section class="max-w-5xl mx-auto px-6 mt-24">
-
         <h2 class="text-center text-2xl font-semibold mb-10 relative inline-block">
             Important tracks / albums
             <span class="block h-[2px] bg-[var(--dance-tag-color-1)] mt-2 mx-auto"></span>
         </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-12">
-            <?php foreach($vm->albums as $album): ?>
-                <div class="text-center group">
-                    <img src="<?= $album->cover_image?->file_path ?? '/images/default-album.jpg' ?>"
+        <?php if ($vm->albums): ?>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-12">
+                <?php foreach($vm->albums as $album): ?>
+                    <div class="text-center group">
+                        <img src="<?= $album->cover_image?->file_path ?? '/images/default-album.jpg' ?>"
                         class="w-full aspect-square object-cover transition duration-500"
                         alt="<?= htmlspecialchars($album->cover_image?->alt_text ?? $album->name) ?>">
-                    <p class="mt-4">
-                        <?= htmlspecialchars($album->name) ?>
-                    </p>
-                </div>
-            <?php endforeach; ?>
-        </div>
+                        <p class="mt-4">
+                            <?= htmlspecialchars($album->name) ?>
+                        </p>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="text-center text-gray-400">No albums available.</p>
+        <?php endif; ?>
     </section>
 
     <section class="max-w-5xl mx-auto px-6 mt-24">
@@ -89,7 +94,8 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
             Upcoming events
             <span class="block h-[2px] bg-[var(--dance-tag-color-1)] mt-2 mx-auto"></span>
         </h2>
-        <div class="space-y-12">
+        <?php if ($vm->upcomingEvents): ?>
+            <div class="space-y-12">
             <?php foreach ($vm->upcomingEvents as $dateKey => $slots): ?>
                 <div class="border-b border-gray-800 pb-8 last:border-0">
                     <div class="flex flex-col gap-6">
@@ -127,6 +133,9 @@ if (!empty($vm->artist) && !empty($vm->artist->spotify_url)) {
                     </div>
                 </div>
             <?php endforeach; ?>
+        <?php else: ?>
+            <p class="text-center text-gray-400">No upcoming events available.</p>
+        <?php endif; ?>
         </div>
     </section>  
     <section class="max-w-5xl mx-auto px-6 mt-24">
