@@ -11,10 +11,12 @@ use PDOException;
 class ScheduleRepository extends Repository implements IScheduleRepository
 {
     private MediaRepository $mediaRepository;
+    private TicketRepository $ticketRepository;
 
     public function __construct()
     {
         $this->mediaRepository = new MediaRepository();
+        $this->ticketRepository = new TicketRepository();
     }
 
     /**
@@ -83,6 +85,9 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 r.review_count as restaurant_review_count,
                 r.website_url as restaurant_website_url,
                 r.main_image_id as restaurant_main_image_id,
+
+                -- Session field
+                rs.session_number,
                 
                 -- Restaurant Media fields
                 restaurant_media.media_id as restaurant_media_id,
@@ -122,6 +127,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             LEFT JOIN ARTIST a ON s.artist_id = a.artist_id
             LEFT JOIN MEDIA artist_media ON a.profile_image_id = artist_media.media_id
             LEFT JOIN RESTAURANT r ON s.restaurant_id = r.restaurant_id
+            LEFT JOIN RESTAURANT_SESSION rs ON r.restaurant_id = rs.restaurant_id
             LEFT JOIN MEDIA restaurant_media ON r.main_image_id = restaurant_media.media_id
             LEFT JOIN LANDMARK l ON s.landmark_id = l.landmark_id
             LEFT JOIN MEDIA landmark_media ON l.main_image_id = landmark_media.media_id
@@ -236,7 +242,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
      * Gets all the schedules for a specific event
      * @return Schedule[]
      */
-    public function getScheduleByEventId(int $eventId): array
+    public function getSchedulesByEventId(int $eventId): array
     {
         try {
             $pdo = $this->connect();
@@ -300,6 +306,27 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         } catch (PDOException $e) {
             throw new PDOException("Error fetching back-to-back specials: " . $e->getMessage(), 0, $e);
         }
+    }
+
+    public function getSchedulesByRestaurant(int $restaurantId): array
+    {
+        $pdo = $this->connect();
+        $sql = $this->getBaseQuery() . '
+            Where s.restaurant_id = :restaurant_id
+            ORDER BY s.date, s.start_time
+        ';  
+        $getSchedule = $pdo->prepare($sql);
+        $getSchedule->execute([
+            'restaurant_id' => $restaurantId
+        ]);
+        $schedules = [];
+        while ($row = $getSchedule->fetch(PDO::FETCH_ASSOC)) {
+            $schedule = new Schedule();
+            $schedule->hydrateSchedule($row);
+            $schedule->ticketTypes = $this->ticketRepository->getTicketTypesByScheduleId($schedule->schedule_id);
+            $schedules[] = $schedule;
+        }
+        return $schedules;
     }
 
     public function getAvailableDates(): array

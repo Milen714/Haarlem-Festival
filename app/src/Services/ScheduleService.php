@@ -40,7 +40,12 @@ class ScheduleService implements IScheduleService
 
     public function getSchedulesByEventId(int $eventId): array
     {
-        return $this->scheduleRepository->getScheduleByEventId($eventId);
+        return $this->scheduleRepository->getSchedulesByEventId($eventId);
+    }
+
+    public function getSchedulesByRestaurant(int $restaurantId): array
+    {
+        return $this->scheduleRepository->getSchedulesByRestaurant($restaurantId);
     }
 
     public function getBackToBackSpecialsByEventId(int $eventId): array
@@ -166,7 +171,7 @@ class ScheduleService implements IScheduleService
 
     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array
     {
-        $all = $this->scheduleRepository->getScheduleByEventId($eventId);
+        $all = $this->scheduleRepository->getSchedulesByEventId($eventId);
 
         $artistSchedules = array_values(array_filter(
             $all,
@@ -208,6 +213,14 @@ class ScheduleService implements IScheduleService
 
         return $grouped;
     }
+
+    // public function getRestaurantSchedulesWithTickets(int $restaurantId): array{
+    //     $schedules = $this->scheduleRepository->getSchedulesByRestaurant($restaurantId);
+
+    //     foreach($schedules as $schedule){
+    //         $schedule->tickets
+    //     }
+    // }
 
     public function getAvailableDates(): array
     {

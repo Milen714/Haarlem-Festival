@@ -9,7 +9,7 @@ class Cuisine{
     public ?string $icon = null;
 
     public function fromPDOData(array $data): void{
-        $this->cuisine_Id = $data['cuisine_id'] ?? null;
+        $this->cuisine_Id = isset($data['cuisine_id']) ? (int)$data['cuisine_id'] : null;
         $this->name = $data['name'] ?? $data['cuisine_name'] ?? null;
         $this->description = $data['description'] ?? $data['cuisine_description'] ?? null;
         $this->icon = $data['icon_url'] ?? $data['cusine_icon_url'] ?? null;

@@ -86,6 +86,16 @@ class YummyController extends BaseController
             
             $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
+            $gallery = null;
+
+            foreach ($pageData->content_sections as $section) {
+                if (!empty($section->gallery_id)) {
+                    $gallery = $this->mediaService->getGalleryById($section->gallery->gallery_id);
+                    break;
+                }
+            }
+
+            $galleryItems = $gallery->media_items ?? [];
             
             $this->view('Yummy/index', [
                 'title' => $pageData->title ?? 'Yummy Event',
@@ -93,13 +103,14 @@ class YummyController extends BaseController
                 'sections' => $pageData->content_sections,
                 'venues' => $venues,
                 'restaurants' => $restaurants,
+                'galleryItems' => $galleryItems
             ]);
         } catch (\Exception $e) {
             error_log("Error in YummyController index method: " . $e->getMessage());
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
         }
     }
-
+    
     public function displayRestaurants(){
         try{
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants');
@@ -148,6 +159,13 @@ class YummyController extends BaseController
                 return;
             }
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
+            $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
+            //because it should display 3 sessions from the schedule, so grouped by date
+            $groupedSchedules = [];
+            foreach($schedules as $schedule){
+                $date = $schedule->date->format('Y-m-d');
+                $groupedSchedules[$date][] = $schedule;
+            }
             if (!$restaurant) {
                 $this->notFound();
                 return;
@@ -155,7 +173,8 @@ class YummyController extends BaseController
 
             $this->view('Yummy/DetailPage', [
                 'restaurant' => $restaurant,
-                'pageData' => $pageData
+                'pageData' => $pageData,
+                'groupedSchedules' => $groupedSchedules
             ]);
         }
         catch(\Exception $e){

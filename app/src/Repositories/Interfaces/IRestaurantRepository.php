@@ -21,21 +21,27 @@ interface IRestaurantRepository
     public function deleteRestaurant(int $id): bool;
 
     //Session Crud
-    public function getSessions(): array;  
     public function getAllSessionsTypes(): array;
     public function getSessionsByRestaurant(int $restaurantId): array;
-    public function getSessionById(int $restaurantId, int $sessionNumber): ?Session;
-    public function createSession(Session $session): int;
-    public function updateSession(Session $session): bool;
-    public function deleteSession(int $restaurantId, int $sessionNumber): bool;
+    public function createSession(Session $session): Session;
+    public function deleteSessionsByRestaurant(int $restaurantId): bool;
 
+    public function syncRestaurantCuisines(int $restaurantId, $cuisineIds): void;
+
+    public function createGalleryForRestaurant(int $restaurantId, string $title): int;
+
+    public function addMediaToGallery(int $galleryId, int $mediaId, int $displayOrder): bool;
+
+    public function removeMediaFromGallery(int $galleryId, int $mediaId): bool;
+
+    public function getNextGalleryOrder(int $galleryId): int;
     //Dish Crud
 
-     public function getDishes(): array;  
-    public function getDishessByRestaurant(int $restaurantId): array;
-    public function getDishById(int $id): ?Dish;
-    public function createDish(Dish $dish): int;
-    public function updateDish(Dish $dish): bool;
-    public function deleteDish(int $id): bool;
+    //  public function getDishes(): array;  
+    // public function getDishessByRestaurant(int $restaurantId): array;
+    // public function getDishById(int $id): ?Dish;
+    // public function createDish(Dish $dish): int;
+    // public function updateDish(Dish $dish): bool;
+    // public function deleteDish(int $id): bool;
 
 }

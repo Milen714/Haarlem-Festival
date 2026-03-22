@@ -41,6 +41,38 @@ class PaymentController extends BaseController
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
+
+    public function personalProgram(){
+        $userId = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : null;
+        if (!$userId) {
+            //should show error
+            $this->notFound();
+            exit;
+        }
+
+        $tickets = $this->orderService->getPaidTicketsByUser($userId);
+        //for each events
+        foreach ($tickets as $ticket) {
+            $ticket['title'] = $ticket['artist_name']
+                    ?? $ticket['restaurant_name']
+                    ?? $ticket['landmark_name']
+                    ?? 'Event';
+            $ticket['ticket_image'] = $ticket['artist_media_file_path']
+                    ?? $ticket['restaurant_media_file_path']
+                    ?? $ticket['landmark_media_file_path']
+                    ?? $ticket['venue_media_file_path'] 
+                    ?? $ticket['magic_media_file_path'];    
+            $ticket['alt_text'] = $ticket['artist_media_alt_text']
+                    ?? $ticket['restaurant_media_alt_text']
+                    ?? $ticket['landmark_media_alt_text']
+                    ?? $ticket['venue_media_alt_text'] 
+                    ?? $ticket['magic_media_alt_text'];   
+        }
+
+        $this->view('ShoppingCart/wishlist', [
+            'tickets' => $tickets
+        ]);
+    }
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function checkout(array $params = [])
     {
