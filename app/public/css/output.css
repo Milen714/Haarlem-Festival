@@ -2572,6 +2572,11 @@ select:focus,
   border-color: rgb(161 98 7 / var(--tw-border-opacity, 1));
 }
 
+.border-green-200{
+  --tw-border-opacity: 1;
+  border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));
+}
+
 .bg-\[\#004a7c\]{
   --tw-bg-opacity: 1;
   background-color: rgb(0 74 124 / var(--tw-bg-opacity, 1));
@@ -3517,6 +3522,10 @@ select:focus,
   text-align: start;
 }
 
+.align-middle{
+  vertical-align: middle;
+}
+
 .font-blackopsone{
   font-family: Black Ops One, system-ui;
 }
@@ -4088,6 +4097,16 @@ select:focus,
 .text-yellow-800{
   --tw-text-opacity: 1;
   color: rgb(133 77 14 / var(--tw-text-opacity, 1));
+}
+
+.text-indigo-600{
+  --tw-text-opacity: 1;
+  color: rgb(79 70 229 / var(--tw-text-opacity, 1));
+}
+
+.text-red-800{
+  --tw-text-opacity: 1;
+  color: rgb(153 27 27 / var(--tw-text-opacity, 1));
 }
 
 .underline{
@@ -5622,6 +5641,11 @@ select:focus,
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.hover\:text-indigo-800:hover{
+  --tw-text-opacity: 1;
+  color: rgb(55 48 163 / var(--tw-text-opacity, 1));
+}
+
 .hover\:underline:hover{
   text-decoration-line: underline;
 }
@@ -6354,6 +6378,14 @@ select:focus,
 
   .md\:border-0{
     border-width: 0px;
+  }
+
+  .md\:border-l{
+    border-left-width: 1px;
+  }
+
+  .md\:border-t-0{
+    border-top-width: 0px;
   }
 
   .md\:bg-transparent{

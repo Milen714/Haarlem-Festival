@@ -18,4 +18,7 @@ interface IOrderRepository
     public function removeOrderItem(int $orderItemId): bool;
     public function updateOrderTotals(Order $order): bool;
     public function updateOrderItemQuantity(OrderItem $orderItem): bool;
+    public function updateItemHash(int $orderItemId, string $hash): bool;
+    public function markAsScanned(int $orderItemId): bool;
+    public function getOrderItemByHash(string $hash): ?OrderItem;
 }

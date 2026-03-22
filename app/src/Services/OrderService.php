@@ -298,4 +298,39 @@ class OrderService implements IOrderService
         }
     }
 
+    public function generateTicketHashes(int $orderId): void
+    {
+        $items = $this->orderRepository->getOrderItemsByOrderId($orderId);
+
+        foreach ($items as $item) {
+            $uniqueHash = bin2hex(random_bytes(8));
+
+            $this->orderRepository->updateItemHash($item->orderitem_id, $uniqueHash);
+        }
+    }
+
+    public function getOrderItemByHash(string $hash): ?OrderItem
+    {
+        return $this->orderRepository->getOrderItemByHash($hash);
+    }
+
+    public function markAsScanned(int $orderItemId): bool
+    {
+        return $this->orderRepository->markAsScanned($orderItemId);
+    }
+
+    public function getPaidOrderItemsByUserId(int $userId): array
+    {
+        $orders = $this->getOrdersByUserId($userId);
+        $paidItems = [];
+
+        foreach ($orders as $order) {
+            if ($order->status === OrderStatus::Fulfilled) {
+                $items = $this->getOrderItemsByOrderId($order->order_id);
+                $paidItems = array_merge($paidItems, $items);
+            }
+        }
+
+        return $paidItems;
+    }
 }

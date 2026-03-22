@@ -175,6 +175,9 @@ class OrderRepository extends Repository implements IOrderRepository
                 oi.quantity,
                 oi.unit_price,
                 oi.reservation_fee,
+                oi.qr_code_hash,
+                oi.is_scanned,
+                oi.scanned_at,
 
                 -- Ticket Type fields
                 tt.ticket_type_id,
@@ -203,8 +206,6 @@ class OrderRepository extends Repository implements IOrderRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.venue_id,
                 s.artist_id,
                 s.restaurant_id,
@@ -223,7 +224,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 v.venue_image_id as venue_image_id,
                 v.email as venue_email,
 
-                --venue media fields
+                -- Venue media fields
                 venue_media.media_id as venue_media_id,
                 venue_media.file_path as venue_media_file_path,
                 venue_media.alt_text as venue_media_alt_text,
@@ -698,6 +699,77 @@ class OrderRepository extends Repository implements IOrderRepository
             return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             throw new \RuntimeException("Failed to update order item: " . $e->getMessage());
+        }
+    }
+    public function updateItemHash(int $orderitemId, string $hash): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE ORDER_ITEM SET
+                    qr_code_hash = :hash
+                WHERE orderitem_id = :orderitem_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderitemId, PDO::PARAM_INT);
+            $stmt->bindValue(':hash', $hash, PDO::PARAM_STR);
+
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update order item hash: " . $e->getMessage());
+        }
+    }
+    public function markAsScanned(int $orderitemId): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE ORDER_ITEM 
+                SET is_scanned = 1, 
+                    scanned_at = NOW() 
+                WHERE orderitem_id = :orderitem_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderitemId, PDO::PARAM_INT);
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to mark order item as scanned: " . $e->getMessage());
+        }
+    }
+
+    public function getOrderItemByHash(string $hash): ?OrderItem
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = $this->getOrderItemsBaseQuery() . " WHERE oi.qr_code_hash = :hash LIMIT 1";
+            $stmt  = $pdo->prepare($query);
+            $stmt->bindValue(':hash', $hash, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return null;
+            }
+
+            $orderItem = new OrderItem();
+            return $orderItem->fromPdo($row);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching order item by hash: " . $e->getMessage());
         }
     }
 }
