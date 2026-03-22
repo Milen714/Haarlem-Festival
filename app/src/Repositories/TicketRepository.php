@@ -483,7 +483,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Fresh DB read so the count is never stale
+    // Fresh  DB read so that the count is never out of date. Used for checking capacity before allowing a reservation to proceed. Returns 0 if sold out or any error occurs.
     public function getAvailableCapacity(int $ticketTypeId): int
     {
         try {
@@ -502,7 +502,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Increments tickets_sold atomically. Sets is_sold_out when capacity is reached. Returns false if no seats left.
+    // Increments tickets_sold atomically/transactionally. Sets is_sold_out when capacity is reached. Returns false if no seats left.
     public function atomicIncrementTicketsSold(int $ticketTypeId, int $quantity): bool
     {
         try {
@@ -531,7 +531,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Decrements tickets_sold atomically. Clears is_sold_out if back below capacity. Returns false if nothing to decrement.
+    // Decrements tickets_sold atomically/transactionally. Clears is_sold_out if back below capacity. Returns false if nothing to decrement.
     public function atomicDecrementTicketsSold(int $ticketTypeId, int $quantity): bool
     {
         try {
@@ -558,7 +558,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Reserves seats for multiple ticket types in one transaction. All succeed or none do.
+    // Reserves seats for multiple ticket types in one transaction. All succeed or none do. 
     public function reserveMultiple(array $items): bool
     {
         $pdo = $this->connect();
@@ -602,7 +602,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Releases seats for multiple ticket types in one transaction.
+    // Releases seats for multiple ticket types in one transaction. 
     public function releaseMultiple(array $items): void
     {
         $pdo = $this->connect();

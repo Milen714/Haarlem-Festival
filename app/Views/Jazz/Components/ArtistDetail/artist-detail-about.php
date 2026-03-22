@@ -1,5 +1,7 @@
 <?php
-/** @var \App\Models\MusicEvent\Artist $artist */
+
+namespace App\Views\Jazz\Components\ArtistDetail;
+
 ?>
 
 <section aria-labelledby="bio-heading">

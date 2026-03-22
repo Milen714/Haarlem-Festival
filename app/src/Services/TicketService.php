@@ -100,13 +100,11 @@ class TicketService implements ITicketService
         return $this->ticketRepository->getAvailableCapacity($ticketTypeId);
     }
 
-    // Hard-locks seats. Call at checkout, not at add-to-cart.
     public function reserveSeats(int $ticketTypeId, int $quantity): bool
     {
         return $this->ticketRepository->atomicIncrementTicketsSold($ticketTypeId, $quantity);
     }
 
-    // Reserves seats for multiple ticket types in one transaction. All or nothing.
     public function reserveMultiple(array $items): bool
     {
         return $this->ticketRepository->reserveMultiple($items);
@@ -146,14 +144,13 @@ class TicketService implements ITicketService
         }
     }
 
-    // Throws if adding this capacity would exceed the venue's limit. Pass excludeTicketTypeId when editing an existing type.
     public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void
     {
         $existing     = $this->ticketRepository->getTotalAllocatedCapacityForSchedule($scheduleId, $excludeTicketTypeId);
         $venueCapacity = $this->ticketRepository->getVenueCapacityForSchedule($scheduleId);
 
         if ($venueCapacity === null) {
-            // No venue or venue has no capacity set — skip validation
+
             return;
         }
 
@@ -161,7 +158,7 @@ class TicketService implements ITicketService
         if ($total > $venueCapacity) {
             throw new \OverflowException(
                 "Total ticket capacity ({$total}) would exceed the venue capacity ({$venueCapacity}). " .
-                "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
+                    "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
             );
         }
     }
