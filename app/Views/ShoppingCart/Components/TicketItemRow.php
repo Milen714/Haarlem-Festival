@@ -14,6 +14,7 @@ $cardImage  = $p->getCardImage();
         <div class="absolute w-[1rem] h-[1rem] -bottom-[-2rem] -left-2.5 bg_colors_home rounded-full ">
         </div>
     </div>
+
     <img loading="lazy" src="<?= htmlspecialchars($cardImage->file_path ?? '') ?>"
         alt="<?= htmlspecialchars($cardImage->alt_text ?? '') ?>"
         class="w-16 sm:w-20 md:w-30 lg:w-40 h-auto object-cover flex-shrink-0">

@@ -441,7 +441,7 @@ class OrderRepository extends Repository implements IOrderRepository
             $query = $this->getBaseQuery() . '
                 WHERE o.user_id = :user_id
                 AND (o.status = \'Paid\' OR o.status = \'Fulfilled\')
-                AND o.paid_at IS NOT NULL
+                
                 ORDER BY s.date, s.start_time
             ';
             $stmt = $pdo->prepare($query);

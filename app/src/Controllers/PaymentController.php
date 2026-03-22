@@ -51,6 +51,7 @@ class PaymentController extends BaseController
         }
 
         $tickets = $this->orderService->getPaidTicketsByUser($userId);
+        
         //for each events
         foreach ($tickets as $ticket) {
             $ticket['title'] = $ticket['artist_name']
