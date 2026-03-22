@@ -2,18 +2,22 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Repositories\Interfaces\ITicketRepository;
 use App\Services\PageService;
 use App\Services\ArtistService;
 use App\Services\MediaService;
 use App\Services\VenueService;
 use App\Services\ScheduleService;
+use App\Services\TicketService;
 use App\Services\Interfaces\IPageService;
 use App\Services\Interfaces\IArtistService;
 use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\ITicketService;
 use App\ViewModels\Dance\LineupViewModel;
 use App\ViewModels\Dance\VenueViewModel;
+
 
 class DanceController extends BaseController
 {
@@ -22,6 +26,7 @@ class DanceController extends BaseController
     private IVenueService $venueService;
     private IMediaService $mediaService;
     private IScheduleService $scheduleService;
+    private ITicketService $ticketService;
     
     // Dance event ID constant
     private const DANCE_EVENT_ID = 4;
@@ -33,6 +38,7 @@ class DanceController extends BaseController
         $this->artistService = new ArtistService();
         $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
+        $this->ticketService = new TicketService();
     }
 
     public function index($vars = [])
@@ -45,6 +51,7 @@ class DanceController extends BaseController
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
 
             $backtoback = $this->scheduleService->getBackToBackSpecialsByEventId(self::DANCE_EVENT_ID);
+            $ticketLookup = $this->getTicketLookupForSchedules($backtoback);
 
             $sections = $pageData->content_sections ?? [];
             
@@ -61,7 +68,8 @@ class DanceController extends BaseController
                 'ticketSection' => $organizedSections['ticketSection'],
                 'gallerySection' => $organizedSections['gallerySection'],
                 'artists' => $artists,
-                'backtoback' => $backtoback
+                'backtoback' => $backtoback,
+                'ticketLookup' => $ticketLookup
             ]);
         } catch (\Exception $e) {
             error_log("Error in DanceController index method: " . $e->getMessage());
@@ -71,24 +79,27 @@ class DanceController extends BaseController
 
     public function lineUp()
     {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $slug = ltrim($uri, '/');
+        $slug = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
         try {
             $pageData = $this->pageService->getPageBySlug($slug);
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
+            $schedulesSection = $this->scheduleService->getSchedulesByEventId(self::DANCE_EVENT_ID);
 
             $headLinerSection = array_filter($pageData->content_sections ?? [], function($section) {
                 return stripos($section->title, 'The 2025 Headliners') !== false;
                 });
             $headLinerSection = array_shift($headLinerSection);
-            $schedulesSection = $this->scheduleService->getSchedulesByEventId(self::DANCE_EVENT_ID);
+            $ticketLookup = $this->getTicketLookupForSchedules($schedulesSection);
+
             $viewModel = new LineupViewModel($pageData, $artists, $headLinerSection, $schedulesSection);
+            
             $this->view('Dance/lineup', [
                 'title' => 'Dance Lineup',
-                'vm' => $viewModel
+                'vm' => $viewModel,
+                'ticketLookup' => $ticketLookup
             ]);
         } catch (\Exception $e) {
-            error_log("Error in DanceController lineUp method: " . $e->getMessage());
+            error_log($e->getMessage());
             $this->notFound();
         }
     }
@@ -144,6 +155,22 @@ class DanceController extends BaseController
             }
         }
         return $organized;
+    }
+
+    private function getTicketLookupForSchedules(array $schedules): array
+    {
+        $lookup = [];
+        foreach ($schedules as $schedule) {
+            $ticket = $this->ticketService->getTicketTypesByScheduleId($schedule->schedule_id)[0] ?? null;
+            if ($ticket) {
+                $lookup[$schedule->schedule_id] = [
+                    'id' => $ticket->ticket_type_id,
+                    'price' => $ticket->ticket_scheme->price ?? 0.0,
+                    'available' => ($ticket->capacity - $ticket->tickets_sold)
+                ];
+            }
+        }
+        return $lookup;
     }
 
 }
