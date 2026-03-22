@@ -43,11 +43,11 @@ function onScanSuccess(decodedText, decodedResult) {
         if (data.success) {
             resultDiv.className = "mt-6 p-4 rounded-lg bg-green-100 text-green-800 border border-green-200";
             msgEl.textContent = data.message;
-            detailEl.textContent = data.description;
+            detailEl.textContent = data.description ?? '';
         } else {
             resultDiv.className = "mt-6 p-4 rounded-lg bg-red-100 text-red-800 border border-red-200";
             msgEl.textContent = data.message;
-            detailEl.textContent = "Check-in failed.";
+            detailEl.textContent = data.description ?? 'Check-in failed.';
         }
     })
     .catch(err => {

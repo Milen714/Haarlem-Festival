@@ -18,10 +18,8 @@ class EmployeeController extends BaseController
     #[RequireRole([UserRole::EMPLOYEE])]
     public function validateScan(): void
     {
-        ob_start(); 
         $json = json_decode(file_get_contents('php://input'), true);
         $hash = $json['hash'] ?? '';
-         ob_end_clean();
         if (empty($hash)) {
             $this->jsonResponse(['success' => false, 'message' => 'No scan data provided'], 400);
             return;
@@ -35,10 +33,19 @@ class EmployeeController extends BaseController
         }
 
         if ($item->is_scanned) {
-            $time = date('H:i on d M', strtotime($item->scanned_at));
+            if ($item->scanned_at) {
+                $ts = strtotime($item->scanned_at);
+                $time = date('H:i', $ts);
+                $date = date('d M Y', $ts);
+            }
+
             $this->jsonResponse([
-                'success' => false, 
-                'message' => "⚠️ ALREADY SCANNED at $time"
+                'success'  => false,
+                'message'  => '⚠️ Already Scanned',
+                'description' => isset($ts) 
+                    ? "This ticket was checked in at {$time} on {$date}."
+                    : "This ticket has already been used.",
+                'scanned_at' => $item->scanned_at,
             ], 400);
             return;
         }
