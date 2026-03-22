@@ -29,10 +29,10 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
        <?php foreach ($restaurant->cuisines as $cuisine): ?>
           <button class="bg-white/50 mb-6 p-4 rounded text-center hover:bg-white transition">
-              <span class="text-xl"><?= htmlspecialchars($cuisine['icon_url']) ?></span>
+              <span class="text-xl"><?= htmlspecialchars($cuisine->icon) ?></span>
               <div>
-                <p class="font-bold"><?= htmlspecialchars($cuisine['name']) ?></p><p class="opacity-70">
-                  <?= htmlspecialchars($cuisine['description']) ?>
+                <p class="font-bold"><?= htmlspecialchars($cuisine->name) ?></p><p class="opacity-70">
+                  <?= htmlspecialchars($cuisine->description) ?>
                 </p>
               </div>
           </button>

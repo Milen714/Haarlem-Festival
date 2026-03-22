@@ -1,5 +1,6 @@
 <?php
-namespace App\Views\ShoppingCart;
+namespace App\Views\ShoppingCart\Components;
+
 ?>
 <main class="bg-gray-50 min-h-screen py-10 px-4">
     <div class="max-w-7xl mx-auto">
@@ -36,21 +37,23 @@ namespace App\Views\ShoppingCart;
                             <p class="font-bold">27</p>
                         </button>
                     </div>
-
+                <?php foreach($tickets as $ticket): 
+                ?>
                     <article class="relative flex border border-gray-200 rounded-md overflow-hidden bg-white mb-6">
                         <div class="w-2 bg-yellow-400"></div>
                         <div class="p-4 flex-grow">
                             <span class="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Haarlem
-                                Dance!</span>
+                                <?= htmlspecialchars($ticket['event_category_title'] ?? 'Event') ?>    
+                            </span>
                             <div class="flex justify-between items-start mt-1">
                                 <div>
-                                    <h2 class="font-bold text-lg">Hardwell</h2>
-                                    <p class="text-xs text-gray-500">📅 2026-06-26 · 19:00 - 20:00</p>
-                                    <p class="text-xs text-gray-500">📍 XD the Club</p>
-                                    <p class="text-xs text-gray-500">👤 x 1</p>
+                                    <h2 class="font-bold text-lg"><?= htmlspecialchars($ticket['title']) ?></h2>
+                                    <p class="text-xs text-gray-500">📅 <?= $ticket['date'] ?> · <?= $ticket['start_time'] ?> - <?= $ticket['end_time'] ?></p>
+                                    <p class="text-xs text-gray-500">📍 <?= $ticket['venue_name'] ?? 'Location TBA' ?></p>
+                                    <p class="text-xs text-gray-500">👤 x <?= $ticket['quantity'] ?></p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xl font-bold">€ 90</p>
+                                    <p class="text-xl font-bold">€ <?= number_format($ticket['unit_price'], 2) ?></p>
                                 </div>
                             </div>
                             <footer class="mt-4 flex items-center justify-between border-t pt-2">
@@ -60,10 +63,10 @@ namespace App\Views\ShoppingCart;
                             </footer>
                         </div>
                         <figure class="w-32 bg-gray-100">
-                            <img src="artist.jpg" alt="Hardwell" class="w-full h-full object-cover grayscale">
+                            <img src="<?= $ticket['ticket_image'] ?>" alt="<?= $ticket['alt_text'] ?>" class="w-full h-full object-cover grayscale">
                         </figure>
                     </article>
-
+                <?php endforeach ?>
                     <aside class="flex items-start bg-amber-50 p-4 rounded-md border border-amber-100">
                         <span class="mr-3 text-amber-500">ℹ️</span>
                         <div>

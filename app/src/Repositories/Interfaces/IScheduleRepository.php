@@ -24,7 +24,11 @@ interface IScheduleRepository
      * Get schedules for a specific event
      * @return Schedule[]
      */
-    public function getScheduleByEventId(int $eventId): array;
+    public function getSchedulesByEventId(int $eventId): array;
+    /**
+     * @return array[]
+     */
+    public function getSchedulesByRestaurant(int $restaurantId): array;
     /**
      * Get available dates for scheduling
      * @return string[] Array of dates in 'Y-m-d' format

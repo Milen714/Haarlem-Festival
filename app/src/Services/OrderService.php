@@ -65,6 +65,11 @@ class OrderService implements IOrderService
     {
         return $this->orderRepository->getOrderItemsByOrderId($orderId);
     }
+
+    public function getPaidTicketsByUser(int $userId): array
+    {
+        return $this->orderRepository->getPaidTicketsByUser($userId);
+    }
     public function createSessionCart(): Order
     {
         $order = new Order();

@@ -13,6 +13,7 @@ interface IOrderService
     public function updateOrderStatus(int $orderId, OrderStatus $status): bool;
     public function addOrderItem(OrderItem $orderItem): bool;
     public function getOrderItemsByOrderId(int $orderId): array;
+        public function getPaidTicketsByUser(int $userId): array;
     public function createSessionCart(): Order;
     public function getSessionCart(): ?Order;
     public function clearSessionCart(): void;

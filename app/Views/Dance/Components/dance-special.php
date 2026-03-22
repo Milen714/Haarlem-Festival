@@ -17,6 +17,12 @@ namespace App\Views\Dance\Components;
 
         <div class="grid grid-cols-3 md:grid-cols-3 gap-8">
             <?php foreach ($backtoback as $session): ?>
+                <?php 
+                    // Find the ticket info in our lookup table using the schedule_id from your dump
+                    $ticket = $ticketLookup[$session->schedule_id] ?? null;
+                    $ticketId = $ticket['id'] ?? null;
+                    $price = $ticket['price'] ?? 0;
+                ?>
                 <div class="relative group rounded-lg overflow-hidden bg-[#121212] flex flex-col">
                     
                     <div class="absolute bg-[var(--dance-tag-color-1)] top-4 left-4 z-20 px-3 py-2 rounded-md font-bold flex flex-col items-center leading-tight text-black">
@@ -50,11 +56,26 @@ namespace App\Views\Dance\Components;
                                class="text-[10px] text-gray-500 underline hover:text-white transition-colors">
                                More Info >
                             </a>
-                            <a href="/tickets/add/<?= $session->schedule_id ?>" 
-                                class="bg-[var(--dance-button-color)] hover:bg-white text-black font-bold py-2 px-4 rounded-md text-[10px] transition-all text-center">
-                                BUY TICKETS <br> 
-                                <span class="opacity-70">€ <?= number_format($session->price ?? 75, 2) ?></span>
-                            </a>
+                            <button 
+                                onclick="<?= $ticketId ? 'openDanceModal(this)' : '' ?>"
+                                data-ticket-type-id="<?= $ticketId ?>"
+                                data-price="<?= $price ?>"
+                                data-artist="<?= htmlspecialchars($session->artist->name) ?>"
+                                data-venue="<?= htmlspecialchars($session->venue->name) ?>"
+                                data-date="<?= $session->date->format('l, F d, Y') ?>"
+                                data-time="<?= $session->start_time->format('H:i') ?> - <?= $session->end_time->format('H:i') ?>"
+                                class="px-6 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition flex items-center gap-2
+                                    <?= $ticketId ? 'bg-[#f5c35e] text-black hover:bg-white' : 'bg-gray-800 text-gray-500 cursor-not-allowed' ?>">
+                                
+                                <?php if ($ticketId): ?>
+                                    <div class="flex flex-col">
+                                        <span>Buy Tickets</span>
+                                        <span>€<?= number_format($price, 2) ?></span>
+                                    </div>
+                                <?php else: ?>
+                                    <span>Sold Out</span>
+                                <?php endif; ?>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -73,3 +94,5 @@ namespace App\Views\Dance\Components;
         <?php endif; ?>
     </div>
 </section>
+<?php include __DIR__ . '/ticket-modal.php'; ?>
+<script src="/Js/dance-modal.js"></script>
