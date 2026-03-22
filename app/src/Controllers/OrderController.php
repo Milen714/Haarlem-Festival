@@ -161,7 +161,7 @@ class OrderController extends BaseController
             exit;
         }
 
-        $this->orderService->generateTicketHashes(66);
+        $this->orderService->generateTicketHashes(69);
 
         $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
 

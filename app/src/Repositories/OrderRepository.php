@@ -176,6 +176,8 @@ class OrderRepository extends Repository implements IOrderRepository
                 oi.unit_price,
                 oi.reservation_fee,
                 oi.qr_code_hash,
+                oi.is_scanned,
+                oi.scanned_at,
 
                 -- Ticket Type fields
                 tt.ticket_type_id,
