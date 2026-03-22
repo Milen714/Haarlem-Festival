@@ -56,6 +56,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-dance', ['App\Controllers\DanceController', 'index']);
     $r->addRoute('GET', '/events-dance-lineup', ['App\Controllers\DanceController', 'lineUp']);
     $r->addRoute('GET', '/events-dance/artist/{slug}', ['App\Controllers\DanceArtistController', 'artistDetail']);
+    $r->addRoute('GET', '/events-dance-venue', ['App\Controllers\DanceController', 'venues']);
+    $r->addRoute('GET', '/events-dance/venue/{slug}', ['App\Controllers\DanceVenueController', 'venueDetail']);
 
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);

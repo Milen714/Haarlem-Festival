@@ -17,22 +17,17 @@ class VenueRepository extends Repository implements IVenueRepository
 
             $query = "
                 SELECT DISTINCT
-                    v.venue_id,
-                    v.name,
-                    v.street_address,
-                    v.city,
-                    v.postal_code,
-                    v.country,
-                    v.description_html,
-                    v.capacity,
-                    v.phone,
-                    v.email,
-                    v.venue_image_id,
+                    v.*,
                     m.file_path as image_path,
-                    m.alt_text as image_alt
+                    m.alt_text as image_alt,
+                    ec.event_id as event_category_id,
+                    ec.title as event_category_title,
+                    ec.type as event_category_type,
+                    ec.slug as event_category_slug
                 FROM VENUE v
                 INNER JOIN SCHEDULE s ON v.venue_id = s.venue_id
                 LEFT JOIN MEDIA m ON v.venue_image_id = m.media_id
+                LEFT JOIN EVENT_CATEGORIES ec ON v.event_id = ec.event_id
                 WHERE s.event_id = :event_id
                 ORDER BY v.name ASC
             ";
@@ -65,11 +60,15 @@ class VenueRepository extends Repository implements IVenueRepository
             $query = "
                 SELECT 
                     v.*,
-                    v.venue_image_id,
                     m.file_path as image_path,
-                    m.alt_text as image_alt
+                    m.alt_text as image_alt,
+                    ec.event_id as event_category_id,
+                    ec.title as event_category_title,
+                    ec.type as event_category_type,
+                    ec.slug as event_category_slug
                 FROM VENUE v
                 LEFT JOIN MEDIA m ON v.venue_image_id = m.media_id
+                LEFT JOIN EVENT_CATEGORIES ec ON v.event_id = ec.event_id
                 WHERE v.venue_id = :venue_id
                 LIMIT 1
             ";

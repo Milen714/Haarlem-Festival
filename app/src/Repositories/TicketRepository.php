@@ -489,9 +489,9 @@ class TicketRepository extends Repository implements ITicketRepository
         try {
             $pdo  = $this->connect();
             $stmt = $pdo->prepare(
-                "SELECT GREATEST(0, capacity - tickets_sold) AS available
-                 FROM TICKET_TYPE
-                 WHERE ticket_type_id = :id AND is_sold_out = 0"
+                "SELECT GREATEST(0, COALESCE(capacity, 0) - COALESCE(tickets_sold, 0)) AS available
+                    FROM TICKET_TYPE
+                    WHERE ticket_type_id = :id"
             );
             $stmt->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
             $stmt->execute();
