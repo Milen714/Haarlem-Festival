@@ -26,5 +26,8 @@ interface IOrderService
     public function removeOrderItemFromSessionCart(int $orderItemId): void;
     public function updateOrderItemQuantity(OrderItem $orderItem): bool;
     public function updateOrderItemInSessionCart(int $sessionOrderItemId, int $newQuantity): void;
-    
+    public function generateTicketHashes(int $orderId): void;
+    public function getOrderItemByHash(string $hash): ?OrderItem;
+    public function markAsScanned(int $orderItemId): bool;
+    public function getPaidOrderItemsByUserId(int $userId): array;
 }

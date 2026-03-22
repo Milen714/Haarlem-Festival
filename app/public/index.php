@@ -168,6 +168,12 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
     $r->addRoute('GET', '/getOrderItemData', ['App\Controllers\OrderController', 'getOrderItemDataForUpdate']);
     $r->addRoute('POST', '/updateOrderItem', ['App\Controllers\OrderController', 'updateOrderItemInCart']);
+
+    /* Qr code */
+    $r->addRoute('GET', '/qr-code', ['App\Controllers\OrderController', 'generateQrCode']);
+    $r->addRoute('GET', '/my-tickets', ['App\Controllers\OrderController', 'showUserTickets']);
+    $r->addRoute('GET', '/qr-code/scan', ['App\Controllers\EmployeeController', 'scanPage']);
+    $r->addRoute('POST', '/qr-code/validate', ['App\Controllers\EmployeeController', 'validate']);
 });
 
 
