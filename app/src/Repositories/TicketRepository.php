@@ -6,7 +6,6 @@ use App\Framework\Repository;
 use App\Models\TicketScheme;
 use App\Models\TicketType;
 use App\Repositories\Interfaces\ITicketRepository;
-use App\Models\History\TicketSelectionDTO;
 use PDO;
 use PDOException;
 
@@ -753,7 +752,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType
+    /*public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType
     {
         $sql = "SELECT tt.ticket_type_id 
                 FROM TICKET_TYPE tt
@@ -778,5 +777,5 @@ class TicketRepository extends Repository implements ITicketRepository
         $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         return $result ? (int)$result['ticket_type_id'] : null;
-    }
+    }*/
 }

@@ -4,7 +4,6 @@ namespace App\Repositories\Interfaces;
 
 use App\Models\TicketScheme;
 use App\Models\TicketType;
-use App\Models\History\TicketSelectionDTO;
 
 interface ITicketRepository
 {
@@ -12,7 +11,7 @@ interface ITicketRepository
     public function getTicketTypesByScheduleId(int $scheduleId): array;
     public function getTicketTypesByScheduleIds(array $scheduleIds): array;
     public function getTicketTypesBySchemeEnums(array $schemeEnums): array;
-    public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType;
+    //public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType;
     public function create(TicketType $ticketType): bool;
     public function update(TicketType $ticketType): bool;
     public function delete(int $ticketTypeId): bool;

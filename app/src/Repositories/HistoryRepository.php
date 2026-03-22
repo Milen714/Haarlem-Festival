@@ -16,6 +16,7 @@ class HistoryRepository extends Repository implements IHistoryRepository
     public function getAvailableTourOptions(): array
     {
         $sql = "SELECT DISTINCT 
+                    ttype.ticket_type_id AS id,
                     sched.date AS date, 
                     sched.start_time AS time, 
                     tschem.ticket_language AS language

@@ -186,66 +186,64 @@ class HistoryController extends BaseController
 
     public function addHistoryToCart() {
         
-          // Leer el JSON que envía nuestro JavaScript (AJAX) - (Lecture 6)
         $jsonData = file_get_contents('php://input');
         $data = json_decode($jsonData, true);
 
-        // Verificar que sí llegaron datos
         if (!$data) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'No data received']);
             exit();
         }
 
-        if($data['qtyNormal'] > 0)
-        {
-            $data['ticketSchemeEnum'] = TicketSchemeEnum::HISTORY_SINGLE_TICKET;
-            $ticketNormalDTO = new TicketSelectionDTO($data);
+        $addedAny = false;
 
-            $ticketNormalType = $this->ticketService->getTicketTypeFromSelection($ticketNormalDTO);
-
-            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketNormalType);
-            $this->orderService->addOrderItemToSessionCart($orderItem);
-        }
-        elseif ($data['qtyFamily'] > 0)
-        {
-            $data['ticketSchemeEnum'] = TicketSchemeEnum::HISTORY_FAMILY_TICKET;
-            $ticketFamilyDTO = new TicketSelectionDTO($data);
-
-            $ticketFamilyType = $this->ticketService->getTicketTypeFromSelection($ticketFamilyDTO);
-
-            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketFamilyType);
-            $this->orderService->addOrderItemToSessionCart($orderItem);
+        // 1. Procesar Ticket Normal
+        if (!empty($data['qtyNormal']) && $data['qtyNormal'] > 0 && !empty($data['normalTicketId'])) {
+            // Usamos tu método exacto del servicio
+            $ticketNormalType = $this->ticketService->getTicketTypeById($data['normalTicketId']);
+            
+            // Accedemos a la propiedad pública is_sold_out directamente
+            if ($ticketNormalType && !$ticketNormalType->is_sold_out) {
+                $orderItem = (new OrderItem())->createOrderItemFromTicketType($data['qtyNormal'], $ticketNormalType);
+                $this->orderService->addOrderItemToSessionCart($orderItem);
+                $addedAny = true;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Normal ticket is sold out.']);
+                exit();
+            }
         }
 
-        // 2. Validamos usando los métodos del objeto// esto esta mal que este por alla abajo
-        if (!$ticketNormalDTO->hasTickets() && !$ticketFamilyDTO->hasTickets()) {
+        // 2. Procesar Ticket Familiar
+        if (!empty($data['qtyFamily']) && $data['qtyFamily'] > 0 && !empty($data['familyTicketId'])) {
+            // Usamos tu método exacto del servicio
+            $ticketFamilyType = $this->ticketService->getTicketTypeById($data['familyTicketId']);
+            
+            // Accedemos a la propiedad pública is_sold_out directamente
+            if ($ticketFamilyType && !$ticketFamilyType->is_sold_out) {
+                $orderItem = (new OrderItem())->createOrderItemFromTicketType($data['qtyFamily'], $ticketFamilyType);
+                $this->orderService->addOrderItemToSessionCart($orderItem);
+                $addedAny = true;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Family ticket is sold out.']);
+                exit();
+            }
+        }
+
+        // Si no se añadió nada, las cantidades eran inválidas
+        if (!$addedAny) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'Invalid quantities']);
             exit();
         }
 
-            $cart = $this->orderService->getSessionCart();
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => true,
-                'cart' => $cart
-            ], JSON_PRETTY_PRINT);
-        } 
-    
-
-    private function calculateRealTotal(int $qtyNormal, int $qtyFamily): float {
-        
-        // Aquí llamas a tu Servicio que se conecta a la Base de Datos
-        
-        $ticketOptions = $this->getTicketOptions();
-
-        // Hacemos el cálculo
-        $total = ($qtyNormal * $ticketOptions['normal']) + ($qtyFamily * $ticketOptions['family']);
-
-        return $total;
+        // Retornar éxito
+        $cart = $this->orderService->getSessionCart();
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => true,
+            'cart' => $cart
+        ], JSON_PRETTY_PRINT);
     }
-
 
 }
 

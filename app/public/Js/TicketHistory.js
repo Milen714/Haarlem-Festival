@@ -41,30 +41,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 2. Función para escuchar cuando cambian la Fecha
+   // 2. Función para escuchar cuando cambian la Fecha
     function attachDateListeners(selectedLang) {
         document.querySelectorAll('input[name="date"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 const selectedDate = e.target.value;
-                const availableTimes = tourOptionsTree[selectedLang][selectedDate]; // Buscamos las horas exactas
+                const availableTimes = tourOptionsTree[selectedLang][selectedDate]; // Ahora es un objeto con horas e IDs
 
                 timesContainer.innerHTML = '';
 
-                // Pintamos las horas
-                availableTimes.forEach(time => {
-                    const niceTime = time.substring(0, 5); // Corta "10:00:00" a "10:00"
+                // Pintamos las horas leyendo las llaves del objeto
+                Object.keys(availableTimes).forEach(time => {
+                    const ticketIds = availableTimes[time]; // Extraemos los IDs
+                    const niceTime = time.substring(0, 5); 
+                    
                     timesContainer.innerHTML += `
                         <label class="cursor-pointer">
-                            <input type="radio" name="time" value="${time}" class="peer sr-only" required>
+                            <input type="radio" name="time" value="${time}" 
+                                   data-normal-id="${ticketIds.normalId || ''}" 
+                                   data-family-id="${ticketIds.familyId || ''}" 
+                                   class="peer sr-only" required>
                             <div class="tour-radio-btn">${niceTime}</div>
                         </label>
                     `;
                 });
 
-                // Mostramos el contenedor de horas con animación
                 stepTime.classList.remove('hidden');
                 setTimeout(() => stepTime.classList.remove('opacity-0'), 50);
 
-                // Re-atachamos el listener de cambio para el resumen de compra
                 document.querySelectorAll('input[name="time"]').forEach(t => t.addEventListener('change', updateOrderOverview));
                 updateOrderOverview(); 
             });
@@ -148,9 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Empaquetar todo para el Backend (Mandamos los 'value' reales, no los textos bonitos)
         let backendData = {
-            date: selectedDate.value,
-            language: selectedLanguage.value,
-            time: selectedTime.value,
+            normalTicketId: selectedTime.getAttribute('data-normal-id'),
+            familyTicketId: selectedTime.getAttribute('data-family-id'),
             qtyNormal: qtyNormal,
             qtyFamily: qtyFamily
         };

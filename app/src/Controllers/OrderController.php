@@ -57,6 +57,7 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+    
     public function getNumberOfCartItems(array $params = []): void
     {
         try {
