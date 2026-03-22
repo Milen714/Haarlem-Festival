@@ -2,77 +2,70 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Repositories\Interfaces\ITicketRepository;
 use App\Services\PageService;
 use App\Services\ArtistService;
 use App\Services\MediaService;
 use App\Services\VenueService;
 use App\Services\ScheduleService;
 use App\Services\TicketService;
+use App\Services\DanceService;
 use App\Services\Interfaces\IPageService;
 use App\Services\Interfaces\IArtistService;
 use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ITicketService;
+use App\Services\Interfaces\IDanceService;
 use App\ViewModels\Dance\LineupViewModel;
 use App\ViewModels\Dance\VenueViewModel;
 
 
 class DanceController extends BaseController
 {
+    // Dance event ID constant
+    private const DANCE_EVENT_ID = 4;
     private IPageService $pageService;
     private IArtistService $artistService;
     private IVenueService $venueService;
     private IMediaService $mediaService;
     private IScheduleService $scheduleService;
     private ITicketService $ticketService;
-    
-    // Dance event ID constant
-    private const DANCE_EVENT_ID = 4;
+    private IDanceService $danceService;
 
     public function __construct()
     {
+        $this->venueService = new VenueService();
         $this->mediaService = new MediaService();
         $this->pageService = new PageService();
         $this->artistService = new ArtistService();
-        $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
         $this->ticketService = new TicketService();
+
+        $this->danceService = new DanceService(
+            $this->ticketService,
+            $this->scheduleService,
+            $this->artistService,
+            $this->pageService
+        );
     }
 
-    public function index($vars = [])
+    public function index()
     {
-        $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-        $slug = ltrim($uri, '/');
+        $slug = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+        
         try {
-            $pageData = $this->pageService->getPageBySlug($slug);
+            $data = $this->danceService->getDanceOverviewData($slug, self::DANCE_EVENT_ID);
 
-            $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
+            $organized = $this->organizeHomeSections($data['pageData']->content_sections ?? []);
 
-            $backtoback = $this->scheduleService->getBackToBackSpecialsByEventId(self::DANCE_EVENT_ID);
-            $ticketLookup = $this->getTicketLookupForSchedules($backtoback);
-
-            $sections = $pageData->content_sections ?? [];
-            
-            $organizedSections = $this->organizeHomeSections($sections);
-            
-            $this->view('Dance/index', [
-                'title' => $pageData->title ?? 'Dance Event',
-                'pageData' => $pageData,
-                'sections' => $sections,
-                'heroSection' => $organizedSections['heroSection'],
-                'artistSection' => $organizedSections['artistSection'],
-                'specialSection' => $organizedSections['specialSection'],
-                'venueSection' => $organizedSections['venueSection'],
-                'ticketSection' => $organizedSections['ticketSection'],
-                'gallerySection' => $organizedSections['gallerySection'],
-                'artists' => $artists,
-                'backtoback' => $backtoback,
-                'ticketLookup' => $ticketLookup
+            $viewData = array_merge($data, $organized, [
+                'title' => $data['pageData']->title ?? 'Dance Event'
             ]);
+
+            $this->view('Dance/index', $viewData);
+
         } catch (\Exception $e) {
-            error_log("Error in DanceController index method: " . $e->getMessage());
+            error_log("Dance Index Error: " . $e->getMessage());
             $this->notFound();
         }
     }
