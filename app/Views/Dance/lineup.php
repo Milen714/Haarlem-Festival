@@ -17,13 +17,61 @@ $items = $vm->breadcrumbs;
                 Program Schedule
             </h2>
             
-            <div class="flex gap-4 mb-12">
-                <button class="bg-[var(--dance-tag-color-1)] text-black px-6 py-2 rounded-md font-bold text-xs uppercase">Friday 24 July</button>
-                <button class="bg-[#1A1D29] text-gray-400 px-6 py-2 rounded-md font-bold text-xs uppercase hover:bg-white hover:text-black transition">Saturday 25 July</button>
-                <button class="bg-[#1A1D29] text-gray-400 px-6 py-2 rounded-md font-bold text-xs uppercase hover:bg-white hover:text-black transition">Sunday 26 July</button>
+            <div class="flex flex-wrap gap-4 mb-12" id="schedule-filters">
+                <button 
+                    data-date="all"
+                    class="filter-btn px-6 py-2 rounded-md font-bold text-xs uppercase transition-all bg-[var(--dance-tag-color-1)] text-black">
+                    All Days
+                </button>
+
+                <?php foreach (array_keys($vm->groupedSchedules) as $date): ?>
+                    <button 
+                        data-date="<?= $date ?>"
+                        class="filter-btn px-6 py-2 rounded-md font-bold text-xs uppercase transition-all bg-[#1A1D29] text-gray-400 hover:bg-white hover:text-black">
+                        <?= date('l d F', strtotime($date)) ?>
+                    </button>
+                <?php endforeach; ?>
             </div>
 
-            <?php include 'Components/lineup-schedule-grid.php'; ?>
+            <div id="schedule-grid-container">
+                <?php include 'Components/lineup-schedule-grid.php'; ?>
+            </div>
         </section>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.filter-btn');
+    const groups = document.querySelectorAll('.schedule-day-group');
+
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const selectedDate = this.getAttribute('data-date');
+
+            // Update Button Visual Styles
+            buttons.forEach(b => {
+                b.classList.remove('bg-[var(--dance-tag-color-1)]', 'text-black');
+                b.classList.add('bg-[#1A1D29]', 'text-gray-400');
+            });
+            this.classList.add('bg-[var(--dance-tag-color-1)]', 'text-black');
+            this.classList.remove('bg-[#1A1D29]', 'text-gray-400');
+
+            // Filter the Schedule Groups
+            groups.forEach(group => {
+                if (selectedDate === 'all') {
+                    group.classList.remove('hidden');
+                } else {
+                    if (group.id === `group-${selectedDate}`) {
+                        group.classList.remove('hidden');
+                    } else {
+                        group.classList.add('hidden');
+                    }
+                }
+            });
+
+            document.getElementById('schedule-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+});
+</script>

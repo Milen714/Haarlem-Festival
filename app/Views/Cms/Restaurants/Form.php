@@ -3,6 +3,7 @@ namespace App\Views\Cms\Restaurants;
 
 use App\Models\Restaurant;
 use App\Models\Venue;
+use App\Models\Cuisine;
 
 /** @var Restaurant|null $restaurant */
 /** @var Venue[] $venues */
@@ -118,7 +119,50 @@ $action = $action ?? '/cms/restaurants/store';
 </div>
 
 </div>
+ <!-- Cusine Form -->
+<section class="be-white border rounded-lg p-6 mb-6">
+    <h2 class="text-lx font-bold mb-4">Cuisine Types (Max 3)</h2>
+    <?php foreach ($cuisines as $cuisine): ?>
+        <label for="" class="flex items-center gap-2 mb-2">
+            <input 
+            type="checkbox" 
+            name="cuisines[]" 
+            value="<?= $cuisine->cuisine_Id ?>"
+            <?= in_array($cuisine->cuisine_Id, array_map(fn($c) => $c->cuisine_Id, $restaurant->cuisines ?? [])) ? 'checked' : '' ?>
+            class="cuisine-checkbox"
+            >
+            <?= htmlspecialchars($cuisine->name) ?>
+        </label>
+    <?php endforeach ?>
+</section>
 
+<?php for ($i=0; $i < 3; $i++):
+    $session = $restaurant->sessions[$i] ?? null;
+    ?>
+    <div class="grid grid-cols-3 gap-4 mb-3">
+
+        <select name="sessions[<?= $i ?>][type]" class="border px-3 py-2 rounded">
+            <option value="">Select type</option>
+            <?php foreach ($sessionTypes as $type): ?>
+                <option value="<?= $type['session_type_id'] ?>"
+                    <?= (isset($session) && $session->session_id == $type['session_type_id']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($type['name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
+        <input type="time"
+            name="sessions[<?= $i ?>][start]"
+            value="<?= $session?->start_time?->format('H:i') ?>"
+            class="border px-3 py-2 rounded">
+
+        <input type="time"
+            name="sessions[<?= $i ?>][end]"
+            value="<?= $session?->end_time?->format('H:i') ?>"
+            class="border px-3 py-2 rounded">
+
+    </div>
+<?php endfor?>
 
 <!-- Images -->
 <div class="bg-white border rounded-lg p-6 mb-6">
@@ -157,6 +201,81 @@ $action = $action ?? '/cms/restaurants/store';
 
 </div>
 
+<!-- Gallery Images -->
+        <?php if ($isEdit): ?>
+            <section aria-labelledby="gallery-heading" class="bg-white border rounded-lg p-6 mb-6">
+                <h2 id="gallery-heading" class="text-xl font-bold mb-1 border-b pb-2">Gallery Images</h2>
+                <p class="text-sm text-gray-500 mb-4">These photos are the dishes for each restaurant that are on display</p>
+
+                <?php if ($restaurant->gallery && !empty($restaurant->gallery->media_items)): ?>
+                    <p class="text-sm font-semibold text-gray-700 mb-3">
+                        Current Gallery (<?= count($restaurant->gallery->media_items) ?>
+                        image<?= count($restaurant->gallery->media_items) !== 1 ? 's' : '' ?>):
+                    </p>
+                    <ul class="mb-5 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        <?php foreach ($restaurant->gallery->media_items as $Index => $media): ?>
+                            <?php
+                            $imgPath  = $media?->file_path ?? '';
+                            if ($imgPath && !str_starts_with($imgPath, '/')) {
+                                $imgPath = '/' . $imgPath;
+                            }
+                            $imgAlt   = $media?->alt_text ?? ($restaurant->name . ' gallery image');
+                            $mediaId  = $media->media_id?? null;
+                            $position = $Index + 1;
+                            $total    = count($restaurant->gallery->media_items);
+                            ?>
+                            <?php if ($mediaId): ?>
+                                <li class="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                                    <figure class="flex flex-col h-full m-0">
+                                        <span class="sr-only">Photo <?= $position ?> of <?= $total ?></span>
+                                        <img src="<?= htmlspecialchars($imgPath) ?>" alt="<?= htmlspecialchars($imgAlt) ?>"
+                                            class="w-full h-40 object-cover block"
+                                            onerror="this.onerror=null; this.src='/Assets/Home/ImagePlaceholder.png';">
+                                        <figcaption
+                                            class="flex items-center justify-between px-2 py-2 bg-white border-t border-gray-100 text-xs text-gray-500">
+                                            <span>#<?= $position ?> of <?= $total ?></span>
+                                            <button type="submit"
+                                                formaction="/cms/artists/gallery-remove/<?= (int)$restaurant->restaurant_id ?>/<?= (int)$mediaId ?>"
+                                                formmethod="POST" formnovalidate
+                                                onclick="return confirm('Remove photo #<?= $position ?> from the gallery?');"
+                                                class="text-red-600 hover:text-red-800 font-semibold hover:underline">
+                                                Remove
+                                            </button>
+                                        </figcaption>
+
+                                        <div class="px-2 py-2 border-t border-gray-100 bg-gray-50">
+                                            <label for="gallery_replace_<?= (int)$mediaId ?>"
+                                                class="block text-[11px] font-semibold text-gray-700 mb-1">
+                                                Replace this image
+                                            </label>
+                                            <input type="file" id="gallery_replace_<?= (int)$mediaId ?>"
+                                                name="gallery_replace_<?= (int)$mediaId ?>" accept="image/jpeg,image/png,image/webp"
+                                                class="text-[11px] w-full">
+                                            <p class="text-[10px] text-blue-600 mt-1 italic">Uploading a new file replaces this image in
+                                                place.</p>
+                                        </div>
+                                    </figure>
+                                </li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-sm text-gray-400 italic mb-4">No gallery images yet. Upload some below.</p>
+                <?php endif; ?>
+
+                <fieldset class="border-0 p-0 m-0">
+                    <label class="block text-gray-700 font-semibold mb-2" for="gallery_images">
+                        Add New Gallery Images
+                    </label>
+                    <input type="file" id="gallery_images" name="gallery_images[]" accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-sm text-gray-500 mt-1">You can select multiple files at once • Max 5MB each • JPG, PNG,
+                        or WebP</p>
+                </fieldset>
+            </section>
+        <?php endif; ?>
+
 
 <!-- Website -->
 <div class="bg-white border rounded-lg p-6 mb-6">
@@ -194,7 +313,7 @@ Cancel
 </section>
 
 <script>
-       tinymce.init({
+tinymce.init({
     selector: '.tinymce',
     menubar: false,
     license: 'gpl',
@@ -234,4 +353,13 @@ Cancel
         });
     }
 });
+document.querySelectorAll('.cuisine-checkbox').forEach(cb => {
+    cb.addEventListener('change', () =>{
+        const checked = document.querySelectorAll('.cuisine-checkbox:checked');
+        if (checked.length > 3) {
+            cd.checked = false;
+            alert('you can select max 3 cuisines');
+        }
+    })
+})
 </script>

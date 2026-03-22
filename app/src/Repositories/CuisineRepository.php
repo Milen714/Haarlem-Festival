@@ -16,7 +16,7 @@ class CuisineRepository extends Repository implements ICuisineRepository{
         $pdo = $this->connect();
         $sql =
         "
-            SELECT cuisine_id, name, description, icon_url
+            SELECT *
             FROM CUISINE_TYPE
             ORDER BY name ASC
         ";
