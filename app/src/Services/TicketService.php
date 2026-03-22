@@ -90,6 +90,11 @@ class TicketService implements ITicketService
         return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
     }
 
+    public function getTicketTypeIdsBySchemeId(int $schemeId): array
+    {
+        return $this->ticketRepository->getTicketTypeIdsBySchemeId($schemeId);
+    }
+
     public function getAvailableCapacity(int $ticketTypeId): int
     {
         return $this->ticketRepository->getAvailableCapacity($ticketTypeId);
@@ -113,13 +118,26 @@ class TicketService implements ITicketService
     }
 
     // Releases all tickets from an order's items in one transaction. Used by the webhook on session expiry.
+    // For pass-type tickets, releases from all sibling ticket types sharing the same scheme.
     public function releaseOrderItems(array $orderItems): void
     {
         $items = [];
         foreach ($orderItems as $item) {
             $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+            $schemeEnum   = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+            $schemeId     = $item->ticket_type?->ticket_scheme?->ticket_scheme_id ?? null;
             $quantity     = (int)($item->quantity ?? 0);
-            if ($ticketTypeId !== null && $quantity > 0) {
+
+            if ($ticketTypeId === null || $quantity <= 0) {
+                continue;
+            }
+
+            if ($schemeEnum !== null && TicketSchemeEnum::isPassType($schemeEnum) && $schemeId !== null) {
+                $siblingIds = $this->ticketRepository->getTicketTypeIdsBySchemeId($schemeId);
+                foreach ($siblingIds as $siblingId) {
+                    $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
+                }
+            } else {
                 $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
             }
         }

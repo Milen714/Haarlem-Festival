@@ -37,9 +37,7 @@ class PaymentService implements IPaymentService {
             'return_url' => $domainUrl . '/return?session_id={CHECKOUT_SESSION_ID}&paymentId=',
         ]);
 }
-    public function stripeCheckoutStatus(array $jsonData): void {
-        header('Content-Type: application/json');
-       // Implement logic to check payment status using Stripe API
+    public function stripeCheckoutStatus(array $jsonData): array {
        try{
             $stripeSecret = Secrets::$stripeSecretKey  ?? '';
             $stripe = new \Stripe\StripeClient($stripeSecret);
@@ -58,8 +56,7 @@ class PaymentService implements IPaymentService {
                 $paidAt = $paymentIntent->created ?? null;
             }
 
-            http_response_code(200);
-            echo json_encode([
+            return [
                 'status' => $session->status,
                 'payment_status' => $session->payment_status,
                 'customer_email' => $session->customer_details?->email ?? '',
@@ -67,14 +64,10 @@ class PaymentService implements IPaymentService {
                 'session_created_at_iso' => gmdate('c', $session->created),
                 'paid_at' => $paidAt,
                 'paid_at_iso' => $paidAt ? gmdate('c', $paidAt) : null,
-            ]);
+            ];
        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
-            
+            throw $e;
         }
-
-
     }
 
     public function verifyWebhookSignature(string $payload, string $sigHeader): \Stripe\Event

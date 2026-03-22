@@ -102,7 +102,7 @@ class Artist
 	public function fromPDOData(array $data): void
 	{
 		$this->artist_id = isset($data['artist_id']) ? (int)$data['artist_id'] : null;
-		$this->name = $data['name'] ?? $data['artist_name'] ?? null;
+		$this->name = $data['artist_name'] ?? $data['name'] ?? null;
 		$this->slug = $data['artist_slug'] ?? $data['slug'] ?? null;
 		$this->special_event = isset($data['special_event']) ? (bool)$data['special_event'] : (isset($data['special_event']) ? (bool)$data['special_event'] : null);
 		$this->bio = $data['artist_bio'] ?? $data['bio'] ?? null;

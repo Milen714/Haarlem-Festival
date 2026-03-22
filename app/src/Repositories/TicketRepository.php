@@ -447,6 +447,21 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
+    public function getTicketTypeIdsBySchemeId(int $schemeId): array
+    {
+        try {
+            $pdo = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT ticket_type_id FROM TICKET_TYPE WHERE scheme_id = :scheme_id"
+            );
+            $stmt->bindValue(':scheme_id', $schemeId, PDO::PARAM_INT);
+            $stmt->execute();
+            return array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'ticket_type_id');
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching ticket type IDs by scheme ID: " . $e->getMessage());
+        }
+    }
+
     public function countTicketTypesBySchemeId(int $ticketSchemeId): int
     {
         try {
