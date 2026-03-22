@@ -315,8 +315,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         ]);
         $schedules = [];
         while ($row = $getSchedule->fetch(PDO::FETCH_ASSOC)) {
-            $schedule = new Schedule();
-            $schedule->hydrateSchedule($row);
+            $schedule = (new Schedule())->hydrateSchedule($row);
             $schedule->ticketTypes = $this->ticketRepository->getTicketTypesByScheduleId($schedule->schedule_id);
             $schedules[] = $schedule;
         }
