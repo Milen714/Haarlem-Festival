@@ -1,5 +1,7 @@
 
-
+<?php
+  $selectedSchedule = $schedules[0] ?? null;
+?>
 
 <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
   
@@ -23,22 +25,16 @@
           <input type="checkbox" checked class="mr-2 accent-[#d4a356]"> Select Date
         </legend>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <button class="border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition">
-            <span class="block text-[10px] uppercase">Thursday</span>
-            <span class="block font-bold">24th July</span>
+          <?php
+
+use function Safe\date;
+
+ foreach ($schedules as $schedule):?>
+            <button class="session-btn border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition">
+              <span class="block text-[10px] uppercase"><?= $schedule->date->format('l') ?></span>
+              <span class="block font-bold"><?= $schedule->date->format('d M') ?></span>
           </button>
-          <button class="border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition">
-            <span class="block text-[10px] uppercase">Friday</span>
-            <span class="block font-bold">25th July</span>
-          </button>
-          <button class="bg-[#d4a356] text-black p-3 rounded border border-[#d4a356]">
-            <span class="block text-[10px] uppercase">Saturday</span>
-            <span class="block font-bold">26th July</span>
-          </button>
-          <button class="border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition">
-            <span class="block text-[10px] uppercase">Sunday</span>
-            <span class="block font-bold">27th July</span>
-          </button>
+          <?php endforeach ?>
         </div>
       </fieldset>
 
@@ -47,27 +43,16 @@
           <input type="checkbox" checked class="mr-2 accent-[#d4a356]"> Select Session (2h duration)
         </legend>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <button class="border border-[#d4a356] p-4 rounded text-left flex justify-between items-center group hover:bg-[#d4a356]/10">
-            <div>
-              <span class="block font-bold">Session 1</span>
-              <span class="text-[10px] opacity-60">Duration: 2h</span>
-            </div>
-            <span class="text-xl font-serif">17:00</span>
-          </button>
-          <button class="bg-[#1a0505] border-2 border-[#d4a356] p-4 rounded text-left flex justify-between items-center">
-             <div>
-              <span class="block font-bold text-[#d4a356]">Session 2</span>
-              <span class="text-[10px] opacity-60">Duration: 2h</span>
-            </div>
-            <span class="text-xl font-serif text-[#d4a356]">19:00</span>
-          </button>
-          <button class="border border-[#d4a356] p-4 rounded text-left flex justify-between items-center opacity-40">
-            <div>
-              <span class="block font-bold">Session 3</span>
-              <span class="text-[10px]">Fully Booked</span>
-            </div>
-            <span class="text-xl font-serif">21:00</span>
-          </button>
+          <?php $i = 1; foreach($schedules as $schedule): ?>
+              <button class="border border-[#d4a356] p-4 rounded text-left flex justify-between items-center group hover:bg-[#d4a356]/10">
+                <div>
+                  <span class="block font-bold">
+                   Session <?= $i++ ?>
+                  </span>
+                </div>
+                <span class="text-xl font-serif"><?= $schedule->start_time->format('H:i') ?></span>
+              </button>
+          <?php endforeach ?>
         </div>
       </fieldset>
 
@@ -80,29 +65,30 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-[#1a0505] border border-[#d4a356]/30 rounded p-4">
+        <?php foreach($selectedSchedule->ticketTypes as $ticket): ?>
+          <div class="bg-[#1a0505] border border-[#d4a356]/30 rounded p-4">
           <div class="flex justify-between items-center mb-4">
-            <span class="text-xs font-bold uppercase tracking-widest">Adults: <span class="text-[#d4a356]">€45</span></span>
+            <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->description) ?> : 
+            <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->price) ?></span></span>
             <span class="text-[10px] opacity-50">per person</span>
           </div>
           <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
-            <button class="p-2 text-[#d4a356] font-bold">-</button>
-            <span class="font-bold">0</span>
-            <button class="p-2 text-[#d4a356] font-bold">+</button>
+            <button 
+            type="button" 
+            class="btn p-2 text-[#d4a356] font-bold"
+            data-ticket-id="<?= $ticket->ticket_type_id ?>"
+            >
+            -
+            </button>
+            <span class="font-bold quantity" data-ticket-id="<?= $ticket->ticket_type_id ?>">0</span>
+            <button 
+            type="button" 
+            class="btn p-2 text-[#d4a356] font-bold"
+            data-ticket-id="<?= $ticket->ticket_type_id ?>"
+            >+</button>
           </div>
         </div>
-
-        <div class="bg-[#1a0505] border border-[#d4a356]/30 rounded p-4">
-          <div class="flex justify-between items-center mb-4">
-            <span class="text-xs font-bold uppercase tracking-widest">Kids: <span class="text-[#d4a356]">€22.50</span></span>
-            <span class="text-[10px] opacity-50">per person</span>
-          </div>
-          <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
-            <button class="p-2 text-[#d4a356] font-bold">-</button>
-            <span class="font-bold">0</span>
-            <button class="p-2 text-[#d4a356] font-bold">+</button>
-          </div>
-        </div>
+        <?php endforeach ?>
       </div>
 
       <footer class="border-t border-[#d4a356]/30 pt-4 space-y-2">

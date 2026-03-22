@@ -160,6 +160,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
+    $r->addRoute('GET', '/personal-program', ['App\Controllers\PaymentController', 'personalProgram']);
 });
 
 

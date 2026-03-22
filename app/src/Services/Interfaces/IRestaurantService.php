@@ -19,12 +19,9 @@ interface IRestaurantService
     public function deleteRestaurant(int $id): bool;
 
     //Session Crud
-    public function getSessions(): array;  
     public function getAllSessionsTypes(): array;
     public function getSessionsByRestaurant(int $restaurantId): array;
-    public function getSessionById(int $restaurantId, int $sessionNumber);
     public function createSession(Session $session): Session;
-    public function updateSession(Session $session): bool;
     public function deleteSessionsByRestaurant(int $restaurantId): bool;
     public function createFromRequest(array $postData, array $files): Restaurant;
     public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant;

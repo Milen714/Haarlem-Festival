@@ -159,6 +159,13 @@ class YummyController extends BaseController
                 return;
             }
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
+            $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
+            //because it should display 3 sessions from the schedule, so grouped by date
+            $groupedSchedules = [];
+            foreach($schedules as $schedule){
+                $date = $schedule->date->format('Y-m-d');
+                $groupedSchedules[$date][] = $schedule;
+            }
             if (!$restaurant) {
                 $this->notFound();
                 return;
@@ -166,7 +173,8 @@ class YummyController extends BaseController
 
             $this->view('Yummy/DetailPage', [
                 'restaurant' => $restaurant,
-                'pageData' => $pageData
+                'pageData' => $pageData,
+                'groupedSchedules' => $groupedSchedules
             ]);
         }
         catch(\Exception $e){

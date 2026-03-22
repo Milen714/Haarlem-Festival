@@ -60,24 +60,15 @@ class RestaurantService implements IRestaurantService
     {
         return $this->restaurantRepository->deleteRestaurant($id);
     }
-    public function getSessions(): array{
-        return $this->restaurantRepository->getSessions();
-    }
     public function getAllSessionsTypes(): array{
         return $this->restaurantRepository->getAllSessionsTypes();
     }
     public function getSessionsByRestaurant(int $restaurantId): array{
         return $this->restaurantRepository->getSessionsByRestaurant($restaurantId);
     }
-    public function getSessionById(int $restaurantId, int $sessionNumber){
-        return $this->restaurantRepository->getSessionById($restaurantId, $sessionNumber);
-    }
     public function createSession(Session $session): Session
     {
         return $this->restaurantRepository->createSession($session);
-    }
-    public function updateSession(Session $session): bool{
-        return $this->restaurantRepository->updateSession($session);
     }
     public function deleteSessionsByRestaurant(int $restaurantId): bool{
         return $this->restaurantRepository->deleteSessionsByRestaurant($restaurantId);

@@ -428,6 +428,24 @@ class OrderRepository extends Repository implements IOrderRepository
             throw new \RuntimeException("Error fetching orders by user ID: " . $e->getMessage());
         }
     }
+
+    public function getPaidTicketsByUser(int $userId): array
+    {
+        $pdo = $this->connect();
+        $sql = $this->getBaseQuery() . '
+            WHERE o.user_id = :user_id
+            AND o.status = "Paid", "Fulfilled"
+            AND o.paid_at IS NOT NULL
+            ORDER BY s.date, s.start_time
+            GROUP BY oi.orderitem_id
+        ';
+        $getItems = $this->pdo->prepare($sql);
+        $getItems->execute([
+            'user_id' => $userId
+        ]);
+        return $getItems->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getOpenOrderByUserId(int $userId): ?Order{
         try {
             $pdo = $this->connect();

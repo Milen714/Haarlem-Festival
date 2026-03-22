@@ -530,26 +530,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
     }
 
     //Session Crud
-    public function getSessions(): array{
-        $pdo = $this->connect();
-        $sql = "
-        SELECT rs.*, st.name AS session_type_name
-        FROM RESTAURANT_SESSION rs
-        LEFT JOIN SESSION_TYPE st
-        ON rs.session_type_id = st.session_type_id
-        ORDER BY rs.restaurant_id, rs.session_number
-        ";
-
-        $getSession = $pdo->prepare($sql);
-        $getSession->execute();
-        $sessions = [];
-        while ($row = $getSession->fetch(PDO::FETCH_ASSOC)) {
-            $session = new Session();
-            $session->fromPDOData($row);
-            $sessions[] = $session;
-        }
-        return $sessions;
-    }
 
     public function getAllSessionsTypes(): array
     {
@@ -589,33 +569,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         return $sessions;
     }
 
-    public function getSessionById(int $restaurantId, int $sessionNumber): ?Session
-    {
-        $pdo = $this->connect();
-        $sql = "
-            SELECT rs.*, st.name AS session_type_name
-            FROM RESTAURANT_SESSION rs
-            LEFT JOIN SESSION_TYPE st
-            ON rs.session_type_id = st.session_type_id
-            WHERE rs.restaurant_id = :restaurant_id
-            AND rs.session_number = :session_number
-            LIMIT 1
-        ";
-
-        $getSession = $pdo->prepare($sql);
-        $getSession->execute([
-            'restaurant_id' => $restaurantId,
-            'session_number' => $sessionNumber
-        ]);
-        $row = $getSession->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            return null;
-        }        
-        $session = new Session();
-        $session->fromPDOData($row);
-        return $session;
-    }
-
     public function createSession(Session $session): Session
     {
         $pdo = $this->connect();
@@ -634,26 +587,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             'session_number' => $session->session_number
         ]);
 
-        return $pdo->lastInsertId();
-    }
-
-    public function updateSession(Session $session): bool
-    {
-        $pdo = $this->connect();
-        $sql = "
-            UPDATE RESTAURANT_SESSION
-            SET session_type_id = :session_type_id, start_time = :start_time, end_time = :end_time
-            WHERE restaurant_id = :restaurant_id
-            AND session_number = :session_number
-        ";
-        $update = $pdo->prepare($sql);
-        return $update->execute([
-            'session_type_id' => $session->session_id,
-            'start_time' => $session->start_time,
-            'end_time' => $session->end_time,
-            'restaurant_id' => $session->restaurantId,
-            'session_number' => $session->session_number
-        ]);
+        return $session;
     }
 
     public function deleteSessionsByRestaurant(int $restaurantId): bool
@@ -722,9 +656,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    /**
-     * Insert a media item into a gallery at the given display order.
-     */
+    
+    //Insert a media item into a gallery at the given display order.
     public function addMediaToGallery(int $galleryId, int $mediaId, int $displayOrder): bool
     {
         try {
@@ -742,9 +675,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    /**
-     * Remove a specific media item from a gallery.
-     */
+    
+    //Remove a specific media item from a gallery.
     public function removeMediaFromGallery(int $galleryId, int $mediaId): bool
     {
         try {
@@ -761,9 +693,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    /**
-     * Get the next display_order value for a gallery (max + 1).
-     */
+    
+    //Get the next display_order value for a gallery (max + 1).
     public function getNextGalleryOrder(int $galleryId): int
     {
         try {

@@ -36,6 +36,8 @@ interface IScheduleService
 
     public function deleteSchedule(int $scheduleId): bool;
 
+    public function getSchedulesByRestaurant(int $restaurantId): array;
+
     public function getAllEventCategories(): array;
 
     public function getAllVenues(): array;
