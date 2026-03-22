@@ -175,9 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!responseFamily.ok || !resultFamily.success) throw new Error(resultFamily.message || 'Error adding family tickets.');
             }
 
+            btnSubmit.innerText = "Add to Cart";  // Restauramos el texto
+            btnSubmit.disabled = false;
             // Si llegamos hasta aquí, todo fue un éxito
             alert('Tickets added to cart!');
-            window.location.href = '/ShoppingCart'; // Asegúrate de que esta URL sea la correcta de tu carrito
 
         } catch (error) {
             // Si hubo un error en el servidor, se lo mostramos al usuario

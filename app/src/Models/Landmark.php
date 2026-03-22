@@ -29,7 +29,7 @@ class Landmark
     {
         $this->landmark_id = isset($data['landmark_id']) ? (int)$data['landmark_id'] : null;
         $this->event_id = isset($data['event_id']) ? (int)$data['event_id'] : null;
-        $this->name = $data['name'] ?? $data['landmark_name'] ?? null;
+        $this->name = $data['landmark_name'] ?? $data['name'] ?? null;
         $this->short_description = $data['short_description'] ?? null;
         $this->landmark_slug = $data['landmark_slug'] ?? null;
         $this->intro_title = $data['intro_title'] ?? null;

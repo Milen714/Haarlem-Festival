@@ -11,7 +11,7 @@ $cardImage = new Media();
 $scheduleRef = new Schedule();
 if (isset($item) && !empty($item)) {
     $scheduleRef = $scheduleItem; 
-    $eventType = $scheduleRef->event_category?->type ?? null;
+    $eventType = $scheduleRef->event_category?->type ?? null; 
     $eventName = $item->ticket_type->schedule->artist->name ?? '';
     $sessionItemId = $item->sessionOrderitem_id ?? null;
     switch ($eventType) {
@@ -23,7 +23,8 @@ if (isset($item) && !empty($item)) {
             break;
         case EventType::History:
             $cardStyles = ['side' => 'bg-[var(--home-history-accent)] dark:bg-[var(--home-history-accent-muted)]', 'muted' => 'bg-[var(--home-history-accent-muted)] dark:bg-[var(--home-history-accent-muted-high-contrast)]'];
-            $cardImage = $item->ticket_type->schedule->landmark->landmark_image ?? new Media();
+            $cardImage = $item->ticket_type->schedule->landmark->main_image_id ?? new Media();
+            $eventName = $item->ticket_type->ticket_scheme->name ?? '';
             $eventLabel = 'History';
             break;
         case EventType::Yummy:
