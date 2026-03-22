@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Enums\OrderStatus;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Models\Payment\Order;
 use App\Models\User;
 use App\Models\Payment\OrderItem;
@@ -159,14 +160,28 @@ class OrderService implements IOrderService
         $order->calculateTotals();
 
         if (!$ticketsAlreadyLocked) {
-            // Build items array and reserve all seats in a single transaction
+            // Build items array and reserve all seats in a single transaction.
+            // For pass-type tickets, expand to all sibling ticket types sharing the same scheme
+            // so that 1 pass purchase deducts 1 slot from every schedule for that pass.
             $items = [];
             foreach ($order->orderItems as $item) {
                 $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+                $schemeEnum   = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+                $schemeId     = $item->ticket_type?->ticket_scheme?->ticket_scheme_id ?? null;
+                $quantity     = (int)$item->quantity;
+
                 if ($ticketTypeId === null) {
                     continue;
                 }
-                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => (int)$item->quantity];
+
+                if ($schemeEnum !== null && TicketSchemeEnum::isPassType($schemeEnum) && $schemeId !== null) {
+                    $siblingIds = $this->ticketService->getTicketTypeIdsBySchemeId($schemeId);
+                    foreach ($siblingIds as $siblingId) {
+                        $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
+                    }
+                } else {
+                    $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+                }
             }
 
             if (!empty($items) && !$this->ticketService->reserveMultiple($items)) {

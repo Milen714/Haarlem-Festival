@@ -1,30 +1,37 @@
 <?php
 
-namespace App\Views\Jazz\Components; ?>
+namespace App\Views\Jazz\Components\Partials;
 
-<dialog id="ticket-modal"
-    class="w-full max-w-lg rounded-2xl shadow-2xl p-0 bg-white border-0
+/**
+ * Purchase Overlay — modal dialog used on the Jazz index, schedule, and artist-detail pages.
+ * Receives no PHP variables; all state is injected by purchase-overlay-js.php at runtime.
+ */
+?>
+
+<dialog id="purchase-overlay"
+        class="w-full max-w-lg rounded-2xl shadow-2xl p-0 bg-white border-0
                backdrop:bg-black/40 backdrop:backdrop-blur-sm"
-    aria-labelledby="ticket-modal-title"
-    aria-modal="true">
+        aria-labelledby="purchase-overlay-title"
+        aria-modal="true">
 
     <article class="flex flex-col">
 
-        <!-- ── Close button (visible in both states) ── -->
+        <!-- Close button — visible in both states -->
         <button type="button"
-            class="self-end mt-4 mr-4 text-gray-400 hover:text-gray-600 transition-colors
+                data-action="close-overlay"
+                class="self-end mt-4 mr-4 text-gray-400 hover:text-gray-600 transition-colors
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pastel-lavender)] rounded-full p-1"
-            aria-label="Close dialog"
-            onclick="closeTicketModal()">
+                aria-label="Close dialog">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
 
-        <section id="modal-state-select" aria-label="Select ticket quantity">
+        <!-- ── State 1: Choose quantity ── -->
+        <section id="overlay-state-select" aria-label="Select ticket quantity">
 
             <header class="flex flex-col items-center px-8 pb-2 text-center">
-                <h2 id="ticket-modal-title"
+                <h2 id="purchase-overlay-title"
                     class="text-2xl font-bold text-gray-900"
                     style="font-family: 'Cormorant Garamond', serif;">
                     Buy Tickets
@@ -32,15 +39,14 @@ namespace App\Views\Jazz\Components; ?>
                 <p class="text-gray-500 text-sm mt-1">Choose how many tickets you want</p>
             </header>
 
-            <!-- Ticket info card -->
+            <!-- Performance summary card -->
             <section class="mx-6 mt-4 mb-5 rounded-xl bg-gray-50 border border-gray-200 overflow-hidden"
-                aria-label="Performance details">
+                     aria-label="Performance details">
                 <div class="flex items-stretch">
                     <span class="w-1 flex-shrink-0 bg-[var(--pastel-lavender)] rounded-l-xl" aria-hidden="true"></span>
-
                     <div class="flex-1 px-4 py-4">
                         <h3 id="select-artist-name" class="font-bold text-gray-900 text-base leading-snug"></h3>
-                        <p id="select-datetime" class="text-sm text-gray-500 mt-1"></p>
+                        <p id="select-datetime"     class="text-sm text-gray-500 mt-1"></p>
                         <p class="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
                             <span aria-hidden="true">📍</span>
                             <span id="select-venue-name"></span>
@@ -59,32 +65,30 @@ namespace App\Views\Jazz\Components; ?>
                 </label>
                 <div class="flex items-center gap-4">
                     <button type="button"
-                        id="qty-decrease"
-                        class="w-10 h-10 flex items-center justify-center rounded-full border-2
+                            data-action="qty-decrease"
+                            class="w-10 h-10 flex items-center justify-center rounded-full border-2
                                    border-[var(--pastel-lavender)] text-[var(--pastel-lavender)]
                                    text-xl font-bold hover:bg-[var(--pastel-lavender)]/10 transition-colors
                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pastel-lavender)]
                                    disabled:opacity-30 disabled:cursor-not-allowed"
-                        aria-label="Decrease quantity"
-                        onclick="changeQty(-1)">
+                            aria-label="Decrease quantity">
                         &minus;
                     </button>
 
                     <output id="ticket-qty"
-                        class="w-12 text-center text-2xl font-extrabold text-gray-900"
-                        aria-live="polite"
-                        aria-atomic="true">
+                            class="w-12 text-center text-2xl font-extrabold text-gray-900"
+                            aria-live="polite"
+                            aria-atomic="true">
                         1
                     </output>
 
                     <button type="button"
-                        id="qty-increase"
-                        class="w-10 h-10 flex items-center justify-center rounded-full border-2
+                            data-action="qty-increase"
+                            class="w-10 h-10 flex items-center justify-center rounded-full border-2
                                    border-[var(--pastel-lavender)] text-[var(--pastel-lavender)]
                                    text-xl font-bold hover:bg-[var(--pastel-lavender)]/10 transition-colors
                                    focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pastel-lavender)]"
-                        aria-label="Increase quantity"
-                        onclick="changeQty(1)">
+                            aria-label="Increase quantity">
                         +
                     </button>
 
@@ -95,69 +99,64 @@ namespace App\Views\Jazz\Components; ?>
                 </div>
             </section>
 
-            <!-- Inline error (shown by JS when the server rejects the request) -->
-            <p id="modal-add-error"
+            <!-- Inline server error (shown by JS when the cart API rejects the request) -->
+            <p id="overlay-add-error"
                class="hidden mx-6 mb-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2"
                role="alert"></p>
 
-            <!-- CTA -->
             <footer class="flex flex-col sm:flex-row gap-3 px-6 pb-6">
                 <button type="button"
-                    class="flex-1 py-3 px-5 rounded-full border-2 border-gray-300 text-gray-500
+                        data-action="close-overlay"
+                        class="flex-1 py-3 px-5 rounded-full border-2 border-gray-300 text-gray-500
                                font-semibold text-sm hover:border-gray-400 transition-colors
-                               focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
-                    onclick="closeTicketModal()">
+                               focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400">
                     Cancel
                 </button>
-
                 <button type="button"
-                    id="modal-add-btn"
-                    class="flex-1 py-3 px-5 rounded-full bg-[var(--pastel-lavender)] text-white
+                        id="overlay-add-btn"
+                        data-action="confirm-purchase"
+                        class="flex-1 py-3 px-5 rounded-full bg-[var(--pastel-lavender)] text-white
                                font-semibold text-sm hover:opacity-90 transition-opacity
                                focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-                               focus-visible:ring-[var(--pastel-lavender)]"
-                    onclick="confirmTicketAdd()">
+                               focus-visible:ring-[var(--pastel-lavender)]">
                     Add to Program
                 </button>
             </footer>
 
         </section><!-- /state-select -->
 
-        <section id="modal-state-confirm" class="hidden" aria-label="Purchase confirmation">
+        <!-- ── State 2: Confirmation ── -->
+        <section id="overlay-state-confirm" class="hidden" aria-label="Purchase confirmation">
 
             <header class="flex flex-col items-center px-8 pb-4 text-center">
                 <span class="flex items-center justify-center w-16 h-16 rounded-full bg-[var(--pastel-lavender)] mb-4"
-                    aria-hidden="true">
+                      aria-hidden="true">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
                     </svg>
                 </span>
-
                 <h2 class="text-2xl font-bold text-gray-900"
                     style="font-family: 'Cormorant Garamond', serif;">
                     Added to Your Program!
                 </h2>
-
                 <p id="confirm-subtitle" class="text-gray-500 text-sm mt-1"></p>
             </header>
 
-            <!-- Confirmed ticket card -->
+            <!-- Confirmed ticket details -->
             <section class="mx-6 mb-5 rounded-xl bg-gray-50 border border-gray-200 overflow-hidden"
-                aria-label="Confirmed ticket details">
+                     aria-label="Confirmed ticket details">
                 <div class="flex items-stretch">
                     <span class="w-1 flex-shrink-0 bg-[var(--pastel-lavender)] rounded-l-xl" aria-hidden="true"></span>
-
                     <div class="flex-1 px-4 py-4">
                         <h3 id="confirm-artist-name" class="font-bold text-gray-900 text-base leading-snug"></h3>
-                        <p id="confirm-datetime" class="text-sm text-gray-500 mt-1"></p>
+                        <p id="confirm-datetime"     class="text-sm text-gray-500 mt-1"></p>
                         <p class="flex items-center gap-1 text-sm text-gray-500 mt-0.5">
                             <span aria-hidden="true">📍</span>
                             <span id="confirm-venue-name"></span>
                         </p>
-
                         <footer class="flex items-center justify-between mt-3">
                             <mark id="confirm-ticket-label"
-                                class="bg-[var(--pastel-lavender)]/15 text-[var(--pastel-lavender)]
+                                  class="bg-[var(--pastel-lavender)]/15 text-[var(--pastel-lavender)]
                                          text-xs font-semibold px-3 py-1 rounded-full not-italic">
                             </mark>
                             <data id="confirm-line-total" class="font-bold text-gray-900 text-base"></data>
@@ -168,7 +167,7 @@ namespace App\Views\Jazz\Components; ?>
 
             <!-- Cart summary -->
             <section class="mx-6 mb-6 flex items-start justify-between text-sm text-gray-600 border-t border-gray-100 pt-4"
-                aria-label="Current cart summary">
+                     aria-label="Current cart summary">
                 <div>
                     <p class="font-medium text-gray-800">Current cart total:</p>
                     <p id="confirm-cart-items" class="text-gray-400 text-xs mt-0.5"></p>
@@ -176,19 +175,17 @@ namespace App\Views\Jazz\Components; ?>
                 <data id="confirm-cart-total" class="font-bold text-gray-900 text-base"></data>
             </section>
 
-            <!-- Actions -->
             <footer class="flex flex-col sm:flex-row gap-3 px-6 pb-6">
                 <button type="button"
-                    class="flex-1 py-3 px-5 rounded-full border-2 border-[var(--pastel-lavender)]
+                        data-action="close-overlay"
+                        class="flex-1 py-3 px-5 rounded-full border-2 border-[var(--pastel-lavender)]
                                text-[var(--pastel-lavender)] font-semibold text-sm
                                hover:bg-[var(--pastel-lavender)]/10 transition-colors
-                               focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pastel-lavender)]"
-                    onclick="closeTicketModal()">
+                               focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pastel-lavender)]">
                     Continue Shopping
                 </button>
-
                 <a href="/my-program"
-                    class="flex-1 py-3 px-5 rounded-full bg-[var(--pastel-lavender)] text-white
+                   class="flex-1 py-3 px-5 rounded-full bg-[var(--pastel-lavender)] text-white
                           font-semibold text-sm text-center hover:opacity-90 transition-opacity
                           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
                           focus-visible:ring-[var(--pastel-lavender)]">

@@ -28,9 +28,6 @@ class JazzService implements JazzServiceInterface
         $this->ticketService = new TicketService();
     }
 
-    /**
-     * Load the jazz festival overview page with featured artists and venues
-     */
     public function loadJazzOverview(): array
     {
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
@@ -84,7 +81,6 @@ class JazzService implements JazzServiceInterface
                     static fn($v) => (int) ($v->event_category?->event_id ?? 0) === $jazzEventId
                 ));
 
-                // Last-resort fallback to keep homepage populated while mappings are repaired.
                 if (empty($venues)) {
                     $venues = $allVenues;
                 }
@@ -100,7 +96,7 @@ class JazzService implements JazzServiceInterface
             ));
         }
 
-        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS', 'JAZZ_WEEKEND_PASS']);
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
 
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
@@ -113,9 +109,6 @@ class JazzService implements JazzServiceInterface
         ];
     }
 
-    /**
-     * Load the jazz festival schedule organized by performance date
-     */
     public function loadJazzSchedule(): array
     {
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
@@ -128,12 +121,6 @@ class JazzService implements JazzServiceInterface
         ];
     }
 
-    /**
-     * Load a specific jazz artist's profile with their performance schedule
-     *
-     * @throws ResourceNotFoundException if artist not found or doesn't perform at jazz event
-     * @throws ApplicationException if jazz event data is misconfigured
-     */
     public function loadJazzArtistProfile(string $artistSlug): array
     {
         if ($artistSlug === '') {
@@ -149,7 +136,6 @@ class JazzService implements JazzServiceInterface
             throw new ResourceNotFoundException('Artist not found.');
         }
 
-        // Verify this artist performs at the jazz event
         if (!$this->artistService->isArtistInEvent((int) $requestedArtist->artist_id, $jazzEventId)) {
             throw new ResourceNotFoundException('Artist not found.');
         }
@@ -162,19 +148,17 @@ class JazzService implements JazzServiceInterface
             )
         );
 
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
+
         return [
-            'title' => $artistViewModel->title,
-            'vm' => $artistViewModel,
-            'pageData' => $jazzArtistPageData,
-            'sections' => $jazzArtistPageData->content_sections ?? [],
+            'title'          => $artistViewModel->title,
+            'vm'             => $artistViewModel,
+            'pageData'       => $jazzArtistPageData,
+            'sections'       => $jazzArtistPageData->content_sections ?? [],
+            'passTicketTypes' => $passTicketTypes,
         ];
     }
 
-    /**
-     * Load a page by its slug, ensure it exists, or throw exception
-     *
-     * @throws ResourceNotFoundException if page not found
-     */
     private function loadPageBySlugOrFail(string $pageSlug, string $pageName): object
     {
         $page = $this->pageService->getPageBySlug($pageSlug);
