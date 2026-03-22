@@ -43,10 +43,10 @@ class PaymentController extends BaseController
     }
 
     public function personalProgram(){
-        $userId = $_SESSION['user_id'] ?? null;
+        $userId = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : null;
         if (!$userId) {
             //should show error
-            header('Location: /login');
+            $this->notFound();
             exit;
         }
 
