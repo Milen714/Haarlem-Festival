@@ -1,5 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Referencias a los contenedores
+    const form = document.getElementById('ticket-form');
+    const inputNormal = document.getElementById('qty-normal');
+    const inputFamily = document.getElementById('qty-family');
+    const spanTotal = document.getElementById('summary-total');
+    
+    // Referencias para el resumen
+    const summaryDetails = document.getElementById('summary-details');
+    const summaryQtyText = document.getElementById('summary-qty-text');
+    const summaryDateText = document.getElementById('summary-date-text');
+    const summaryTimeText = document.getElementById('summary-time-text');
+    const summaryLangText = document.getElementById('summary-lang-text');
+
     const stepDate = document.getElementById('step-date');
     const stepTime = document.getElementById('step-time');
     const datesContainer = document.getElementById('dates-container');
@@ -18,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Pintamos los nuevos botones de fechas
             for (const date in availableDates) {
-                // Formateamos la fecha bonita (ej. Sat, 25 Jul)
                 const dateObj = new Date(date);
                 const niceDate = dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
@@ -30,29 +41,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
 
-            // Mostramos el contenedor de fechas con animación
             stepDate.classList.remove('hidden');
             setTimeout(() => stepDate.classList.remove('opacity-0'), 50);
 
-            // VOLVEMOS A ASIGNAR LISTENERS A LAS FECHAS RECIÉN CREADAS
             attachDateListeners(selectedLang);
-            updateOrderOverview(); // Tu función existente
+            updateOrderOverview(); 
         });
     });
 
-    // 2. Función para escuchar cuando cambian la Fecha
    // 2. Función para escuchar cuando cambian la Fecha
     function attachDateListeners(selectedLang) {
         document.querySelectorAll('input[name="date"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 const selectedDate = e.target.value;
-                const availableTimes = tourOptionsTree[selectedLang][selectedDate]; // Ahora es un objeto con horas e IDs
+                const availableTimes = tourOptionsTree[selectedLang][selectedDate]; 
 
                 timesContainer.innerHTML = '';
 
-                // Pintamos las horas leyendo las llaves del objeto
                 Object.keys(availableTimes).forEach(time => {
-                    const ticketIds = availableTimes[time]; // Extraemos los IDs
+                    const ticketIds = availableTimes[time]; 
                     const niceTime = time.substring(0, 5); 
                     
                     timesContainer.innerHTML += `
@@ -75,9 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 1. Función Maestra para actualizar todo el panel derecho
+    // 3. Función Maestra para actualizar todo el panel derecho
     function updateOrderOverview() {
-        // --- A. Calcular Cantidades y Precio ---
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;
         
@@ -87,28 +93,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let total = (qtyNormal * priceNormal) + (qtyFamily * priceFamily);
         spanTotal.innerText = total.toFixed(2);
 
-        // Actualizar el texto de cantidad de tickets
         let qtyTextParts = [];
         if (qtyNormal > 0) qtyTextParts.push(`${qtyNormal}x Normal`);
         if (qtyFamily > 0) qtyTextParts.push(`${qtyFamily}x Family`);
         summaryQtyText.innerText = qtyTextParts.length > 0 ? qtyTextParts.join(', ') : '0';
 
-        // --- B. Obtener selecciones de los Radio Buttons ---
         let selectedDate = document.querySelector('input[name="date"]:checked');
         let selectedLang = document.querySelector('input[name="language"]:checked');
         let selectedTime = document.querySelector('input[name="time"]:checked');
 
-        // Para mostrar la fecha bonita, leemos el texto del <div> hermano
         if (selectedDate) summaryDateText.innerText = selectedDate.nextElementSibling.innerText;
-        
-        // Para el idioma, igual leemos el texto visible
         if (selectedLang) summaryLangText.innerText = selectedLang.nextElementSibling.innerText;
-        
-        // Para la hora, igual
         if (selectedTime) summaryTimeText.innerText = selectedTime.nextElementSibling.innerText;
 
-        // --- C. Mostrar u ocultar el panel de detalles ---
-        // Si hay al menos un ticket o alguna selección, mostramos el panel
         if (qtyNormal > 0 || qtyFamily > 0 || selectedDate || selectedLang || selectedTime) {
             summaryDetails.classList.remove('hidden');
         } else {
@@ -116,26 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 2. Asignar Event Listeners (Escuchadores)
-    // Escuchar inputs numéricos
     inputNormal.addEventListener('input', updateOrderOverview);
     inputFamily.addEventListener('input', updateOrderOverview);
 
-    // Escuchar los radio buttons (usamos change en el form para capturar todos los radios)
     form.addEventListener('change', (e) => {
-        if(e.target.type === 'radio') {
-            updateOrderOverview();
-        }
+        if(e.target.type === 'radio') updateOrderOverview();
     });
 
-    // 3. Enviar por AJAX (Fetch) cuando se hace submit en el form
-    form.addEventListener('submit', (e) => {
+    // 4. Enviar por AJAX (Fetch) al OrderController
+    // NOTA: Agregamos "async" aquí para poder usar "await" en los fetch
+    form.addEventListener('submit', async (e) => {
         e.preventDefault(); 
 
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;
 
-        // Validaciones antes de enviar
         if (qtyNormal === 0 && qtyFamily === 0) {
             alert("Please select at least one ticket.");
             return;
@@ -150,29 +142,48 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Empaquetar todo para el Backend (Mandamos los 'value' reales, no los textos bonitos)
-        let backendData = {
-            normalTicketId: selectedTime.getAttribute('data-normal-id'),
-            familyTicketId: selectedTime.getAttribute('data-family-id'),
-            qtyNormal: qtyNormal,
-            qtyFamily: qtyFamily
-        };
+        // Extraemos los IDs que guardamos inteligentemente en el HTML
+        let normalId = selectedTime.getAttribute('data-normal-id');
+        let familyId = selectedTime.getAttribute('data-family-id');
 
-        // Enviar al servidor
-        fetch('/history/add-to-cart', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(backendData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                alert('Tickets added to cart!');
-                window.location.href = '/cart';
-            } else {
-                alert('Error: ' + data.message);
+        const btnSubmit = document.getElementById('btn-submit');
+
+        try {
+            // Cambiamos el estado del botón para que el usuario no haga doble clic
+            btnSubmit.innerText = "Adding...";
+            btnSubmit.disabled = true;
+
+            // A) Si compró tickets normales, mandamos un paquete al OrderController
+            if (qtyNormal > 0 && normalId) {
+                const responseNormal = await fetch('/addToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketTypeId: Number(normalId), quantity: qtyNormal })
+                });
+                const resultNormal = await responseNormal.json();
+                if (!responseNormal.ok || !resultNormal.success) throw new Error(resultNormal.message || 'Error adding normal tickets.');
             }
-        })
-        .catch(error => console.error("Error:", error));
+
+            // B) Si compró tickets familiares, mandamos otro paquete al OrderController
+            if (qtyFamily > 0 && familyId) {
+                const responseFamily = await fetch('/addToCart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketTypeId: Number(familyId), quantity: qtyFamily })
+                });
+                const resultFamily = await responseFamily.json();
+                if (!responseFamily.ok || !resultFamily.success) throw new Error(resultFamily.message || 'Error adding family tickets.');
+            }
+
+            // Si llegamos hasta aquí, todo fue un éxito
+            alert('Tickets added to cart!');
+            window.location.href = '/ShoppingCart'; // Asegúrate de que esta URL sea la correcta de tu carrito
+
+        } catch (error) {
+            // Si hubo un error en el servidor, se lo mostramos al usuario
+            alert("Error: " + error.message);
+            btnSubmit.innerText = "Add to Cart";
+            btnSubmit.disabled = false;
+        }
     });
 });

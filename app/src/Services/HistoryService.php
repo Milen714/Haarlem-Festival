@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\HistoryRepository;
 use App\Services\Interfaces\IHistoryService;
 use App\ViewModels\History\TicketHistoryViewModel;
+use App\Models\Enums\TicketSchemeEnum;
 
 class HistoryService implements IHistoryService
 {
@@ -30,6 +31,8 @@ class HistoryService implements IHistoryService
             $language = $row['language'];
             $date = $row['date'];
             $time = $row['time'];
+            $id   = (int)$row['ticket_type_id']; 
+            $schemeType = $row['scheme_enum']; 
 
             // Si el idioma no existe en el árbol, lo creamos
             if (!isset($ticketOptions[$language])) {
@@ -39,9 +42,18 @@ class HistoryService implements IHistoryService
             if (!isset($ticketOptions[$language][$date])) {
                 $ticketOptions[$language][$date] = [];
             }
-            // Agregamos la hora a esa fecha exacta (evitando duplicados)
-            if (!in_array($time, $ticketOptions[$language][$date])) {
-                $ticketOptions[$language][$date][] = $time;
+            
+            // ¡EL CAMBIO IMPORTANTE ESTÁ AQUÍ!
+            // Inicializamos la hora usando su llave explícita [$time]
+            if (!isset($ticketOptions[$language][$date][$time])) {
+                $ticketOptions[$language][$date][$time] = ['normalId' => null, 'familyId' => null];
+            }
+
+            // Asignamos el ID correcto usando validación estricta con tu Enum
+            if ($schemeType === TicketSchemeEnum::HISTORY_SINGLE_TICKET->value) {
+                $ticketOptions[$language][$date][$time]['normalId'] = $id;
+            } elseif ($schemeType === TicketSchemeEnum::HISTORY_FAMILY_TICKET->value) {
+                $ticketOptions[$language][$date][$time]['familyId'] = $id;
             }
         }
 
@@ -51,6 +63,5 @@ class HistoryService implements IHistoryService
 
         return $viewModel;
     }
-
 
 }

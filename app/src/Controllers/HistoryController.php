@@ -184,67 +184,6 @@ class HistoryController extends BaseController
     
     }
 
-    public function addHistoryToCart() {
-        
-        $jsonData = file_get_contents('php://input');
-        $data = json_decode($jsonData, true);
-
-        if (!$data) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'No data received']);
-            exit();
-        }
-
-        $addedAny = false;
-
-        // 1. Procesar Ticket Normal
-        if (!empty($data['qtyNormal']) && $data['qtyNormal'] > 0 && !empty($data['normalTicketId'])) {
-            // Usamos tu método exacto del servicio
-            $ticketNormalType = $this->ticketService->getTicketTypeById($data['normalTicketId']);
-            
-            // Accedemos a la propiedad pública is_sold_out directamente
-            if ($ticketNormalType && !$ticketNormalType->is_sold_out) {
-                $orderItem = (new OrderItem())->createOrderItemFromTicketType($data['qtyNormal'], $ticketNormalType);
-                $this->orderService->addOrderItemToSessionCart($orderItem);
-                $addedAny = true;
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Normal ticket is sold out.']);
-                exit();
-            }
-        }
-
-        // 2. Procesar Ticket Familiar
-        if (!empty($data['qtyFamily']) && $data['qtyFamily'] > 0 && !empty($data['familyTicketId'])) {
-            // Usamos tu método exacto del servicio
-            $ticketFamilyType = $this->ticketService->getTicketTypeById($data['familyTicketId']);
-            
-            // Accedemos a la propiedad pública is_sold_out directamente
-            if ($ticketFamilyType && !$ticketFamilyType->is_sold_out) {
-                $orderItem = (new OrderItem())->createOrderItemFromTicketType($data['qtyFamily'], $ticketFamilyType);
-                $this->orderService->addOrderItemToSessionCart($orderItem);
-                $addedAny = true;
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Family ticket is sold out.']);
-                exit();
-            }
-        }
-
-        // Si no se añadió nada, las cantidades eran inválidas
-        if (!$addedAny) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid quantities']);
-            exit();
-        }
-
-        // Retornar éxito
-        $cart = $this->orderService->getSessionCart();
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => true,
-            'cart' => $cart
-        ], JSON_PRETTY_PRINT);
-    }
-
 }
 
 
