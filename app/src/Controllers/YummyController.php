@@ -174,7 +174,8 @@ class YummyController extends BaseController
             $this->view('Yummy/DetailPage', [
                 'restaurant' => $restaurant,
                 'pageData' => $pageData,
-                'groupedSchedules' => $groupedSchedules
+                'groupedSchedules' => $groupedSchedules,
+                'schedules' => $schedules
             ]);
         }
         catch(\Exception $e){
