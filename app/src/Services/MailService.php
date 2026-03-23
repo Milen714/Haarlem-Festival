@@ -25,4 +25,12 @@ class MailService implements IMailService {
                  <p>Welcome to The Festival!</p>";
         $this->sendEmail($to, $subject, $body);
     }
+    public function ticketsPurchasedMail(string $to, string $orderDetails): void {
+        $subject = "Your Festival Ticket Purchase Confirmation";
+        $body = "<h1>Thank you for your purchase!</h1>
+                 <p>Your order details:</p>
+                 <pre>" . htmlspecialchars($orderDetails) . "</pre>
+                 <p>We look forward to seeing you at The Festival!</p>";
+        $this->sendEmail($to, $subject, $body);
+    }
 }

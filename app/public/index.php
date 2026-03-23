@@ -175,6 +175,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
     $r->addRoute('GET', '/getOrderItemData', ['App\Controllers\OrderController', 'getOrderItemDataForUpdate']);
     $r->addRoute('POST', '/updateOrderItem', ['App\Controllers\OrderController', 'updateOrderItemInCart']);
+    $r->addRoute('GET', '/test-mail-view', ['App\Controllers\PaymentController', 'sendTicketEmail']);
 
     /* Qr code */
     $r->addRoute('GET', '/my-tickets', ['App\Controllers\OrderController', 'showUserTickets']);

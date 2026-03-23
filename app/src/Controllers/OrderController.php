@@ -16,17 +16,21 @@ use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use Stripe\ApiOperations\Update;
+use App\Services\MailService;
+use App\Services\Interfaces\IMailService;
 
 class OrderController extends BaseController
 {
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
+    private IMailService $mailService;
     public function __construct()
     {
         $this->ticketService = new TicketService();
         $this->paymentService = new PaymentService();
         $this->orderService = new OrderService();
+        $this->mailService = new MailService();
     }
 
     public function addToCart(array $params = []): void
@@ -169,4 +173,5 @@ class OrderController extends BaseController
             'orderItems' => $orderItems
         ]);
     }
+    
 }

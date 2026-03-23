@@ -16,6 +16,10 @@ use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
+use App\Services\MailService;
+use App\Services\Interfaces\IMailService;
+use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Services\TicketFulfillmentService;
 use DateTime;
 
 class PaymentController extends BaseController
@@ -24,11 +28,16 @@ class PaymentController extends BaseController
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
+    private IMailService $mailService;
+    private ITicketFulfillmentService $ticketFulfillmentService;
+
     public function __construct()
     {
         $this->ticketService = new TicketService();
         $this->paymentService = new PaymentService();
         $this->orderService = new OrderService();
+        $this->mailService = new MailService();
+        $this->ticketFulfillmentService = new TicketFulfillmentService();
     }
 
     public function index(array $params = [])
@@ -207,6 +216,41 @@ class PaymentController extends BaseController
                 'success' => true,
                 'cart' => $cart
             ], JSON_PRETTY_PRINT);
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function sendTicketEmail(array $params = []): void
+    {
+
+        try {
+            
+            /**
+             * @var Order $order
+             */
+            $order= $this->orderService->getSessionCart();
+        if(!isset($order)){
+            $order = $this->orderService->createSessionCart();
+        }
+        // foreach($order->orderItems as $item){
+        //     $item->qrPic = $item->generateQrCode();
+        // }
+        $viewModel = new ShoppingCartViewModel($order);
+            
+        //     $this->mailService->sendEmail('paami97@gmail.com',
+        //     "Test Email - Your Festival Ticket Purchase Confirmation",
+        //     $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel])
+        // );
+            //$this->view('Email/TicketsMailBody', ['viewModel' => $viewModel]);
+            $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
+
+            // foreach($order->orderItems as $item){
+            //     echo $this->ticketFulfillmentService->generateQrCode($item);
+            // }
+
         } catch (\Throwable $e) {
             $this->jsonResponse([
                 'success' => false,

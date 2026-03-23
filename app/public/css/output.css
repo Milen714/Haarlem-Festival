@@ -2304,6 +2304,10 @@ select:focus,
   border-top-width: 4px;
 }
 
+.border-l-2{
+  border-left-width: 2px;
+}
+
 .border-dashed{
   border-style: dashed;
 }
@@ -2500,6 +2504,11 @@ select:focus,
 .border-gray-300{
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
+}
+
+.border-gray-500{
+  --tw-border-opacity: 1;
+  border-color: rgb(107 114 128 / var(--tw-border-opacity, 1));
 }
 
 .border-gray-600{
@@ -3062,11 +3071,6 @@ select:focus,
   background-color: rgb(250 204 21 / var(--tw-bg-opacity, 1));
 }
 
-.bg-orange-500{
-  --tw-bg-opacity: 1;
-  background-color: rgb(249 115 22 / var(--tw-bg-opacity, 1));
-}
-
 .bg-opacity-50{
   --tw-bg-opacity: 0.5;
 }
@@ -3213,14 +3217,6 @@ select:focus,
 
 .to-white{
   --tw-gradient-to: #fff var(--tw-gradient-to-position);
-}
-
-.bg-cover{
-  background-size: cover;
-}
-
-.bg-center{
-  background-position: center;
 }
 
 .object-contain{
@@ -3520,6 +3516,10 @@ select:focus,
 
 .pt-\[45vh\]{
   padding-top: 45vh;
+}
+
+.pr-2{
+  padding-right: 0.5rem;
 }
 
 .text-left{
@@ -5594,11 +5594,6 @@ select:focus,
 
 .hover\:bg-white\/5:hover{
   background-color: rgb(255 255 255 / 0.05);
-}
-
-.hover\:bg-orange-600:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(234 88 12 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:text-\[var\(--dance-tag-color-1\)\]:hover{
