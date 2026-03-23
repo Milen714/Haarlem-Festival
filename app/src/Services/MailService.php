@@ -4,10 +4,11 @@ use App\Services\Interfaces\IMailService;
 use App\Models\Mailer;
 use App\Models\BookSwapRequest;
 class MailService implements IMailService {
-    public function sendEmail(string $to, string $subject, string $body): void {
+    public function sendEmail(string $to, string $subject, string $body, array $attachments = []): void {
         $mailConfig = require __DIR__ . '/../../config/mailConfig.php';
         $mailer = new Mailer($mailConfig);
-        $mailer->send($to, $body, $subject);
+            
+        $mailer->send($to, $body, $subject, $attachments);
     }
     public function resetPasswordMail(string $to, string $resetLink): void {
         $subject = "The Festival Password Reset Request";

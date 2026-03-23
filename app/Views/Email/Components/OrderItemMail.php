@@ -27,37 +27,37 @@ if (isset($item) && !empty($item)) {
     
     switch ($eventType) {
         case EventType::Magic:
-            $accentColor = '#7c3aed';
-            $badgeColor = '#ede9fe';
+            $accentColor = '#B18132';
+            $badgeColor = '#B181324D';
             $cardImage = $item->ticket_type->schedule->venue->venue_image ?? new Media();
             $eventLabel = $scheduleRef->event_category?->title ?? 'Magic';
             $eventName = $item->ticket_type->ticket_scheme->name ?? '';
             break;
 
         case EventType::History:
-            $accentColor = '#92400e';
-            $badgeColor = '#fef3c7';
+            $accentColor = '#A7C957';
+            $badgeColor = '#fef3c74D';
             $cardImage = $item->ticket_type->schedule->landmark->landmark_image ?? new Media();
             $eventLabel = 'History';
             break;
 
         case EventType::Yummy:
-            $accentColor = '#b45309';
-            $badgeColor = '#fde68a';
+            $accentColor = '#CC112F';
+            $badgeColor = '#CC112F4D';
             $cardImage = $item->ticket_type->schedule->restaurant->main_image ?? new Media();
             $eventLabel = 'Yummy';
             break;
 
         case EventType::Jazz:
-            $accentColor = '#1e3a8a';
-            $badgeColor = '#dbeafe';
+            $accentColor = '#6B2FD1';
+            $badgeColor = '#6B2FD14D';
             $cardImage = $item->ticket_type->schedule->artist->profile_image ?? new Media();
             $eventLabel = 'Jazz';
             break;
 
         case EventType::Dance:
-            $accentColor = '#be185d';
-            $badgeColor = '#fce7f3';
+            $accentColor = '#FFD600';
+            $badgeColor = '#FFD6004D';
             $cardImage = $item->ticket_type->schedule->artist->profile_image ?? new Media();
             $eventLabel = 'Dance';
             break;

@@ -9,6 +9,10 @@ use App\Services\Interfaces\ITicketService;
 use App\Services\OrderService;
 use App\Services\PaymentService;
 use App\Services\TicketService;
+use App\Services\MailService;
+use App\Services\Interfaces\IMailService;
+use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Services\TicketFulfillmentService;
 use Exception;
 
 class StripeWebhookController
@@ -16,12 +20,17 @@ class StripeWebhookController
     private IPaymentService $paymentService;
     private IOrderService   $orderService;
     private ITicketService  $ticketService;
+    private IMailService    $mailService;
+    private ITicketFulfillmentService $ticketFulfillmentService;
+
 
     public function __construct()
     {
         $this->paymentService = new PaymentService();
         $this->orderService   = new OrderService();
         $this->ticketService  = new TicketService();
+        $this->mailService    = new MailService();
+        $this->ticketFulfillmentService = new TicketFulfillmentService();
     }
 
     // Main handler for Stripe webhook events. Verifies the signature, processes the event, and updates order status accordingly.

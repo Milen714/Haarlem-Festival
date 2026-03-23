@@ -238,12 +238,16 @@ class PaymentController extends BaseController
         // foreach($order->orderItems as $item){
         //     $item->qrPic = $item->generateQrCode();
         // }
-        $viewModel = new ShoppingCartViewModel($order);
-            
-            $this->mailService->sendEmail('paami97@gmail.com',
-            "Test Email - Your Festival Ticket Purchase Confirmation",
-            $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel])
-        );
+            $viewModel = new ShoppingCartViewModel($order);
+           // In your PaymentController->sendTicketEmail() method:
+            $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/Tickets (4).pdf';
+
+            $this->mailService->sendEmail(
+            'paami97@gmail.com',
+            "Your Festival Tickets",
+            $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel]),
+            [$ticketPdfPath]  // Pass PDF as attachment
+            );
             //$this->view('Email/TicketsMailBody', ['viewModel' => $viewModel]);
             
             // foreach($order->orderItems as $item){
