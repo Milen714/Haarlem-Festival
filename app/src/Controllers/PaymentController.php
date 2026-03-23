@@ -240,17 +240,17 @@ class PaymentController extends BaseController
         // }
         $viewModel = new ShoppingCartViewModel($order);
             
-        //     $this->mailService->sendEmail('paami97@gmail.com',
-        //     "Test Email - Your Festival Ticket Purchase Confirmation",
-        //     $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel])
-        // );
+            $this->mailService->sendEmail('paami97@gmail.com',
+            "Test Email - Your Festival Ticket Purchase Confirmation",
+            $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel])
+        );
             //$this->view('Email/TicketsMailBody', ['viewModel' => $viewModel]);
-            $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
-
+            
             // foreach($order->orderItems as $item){
-            //     echo $this->ticketFulfillmentService->generateQrCode($item);
-            // }
-
+                //     echo $this->ticketFulfillmentService->generateQrCode($item);
+                // }
+                // $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), 'Tickets');
+                // $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
         } catch (\Throwable $e) {
             $this->jsonResponse([
                 'success' => false,

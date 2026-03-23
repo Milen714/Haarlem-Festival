@@ -1,76 +1,126 @@
 <?php
-use App\ViewModels\ShoppingCart\OrderItemViewModel;
+namespace App\Views\Home\Components;
+
+use App\Models\Schedule;
+use App\Models\Media;
+use App\Models\Enums\EventType;
 use App\Models\Payment\OrderItem;
+use App\ViewModels\ShoppingCart\OrderItemViewModel;
 
 /** @var OrderItem $item */
+
 $p = new OrderItemViewModel($item);
-$cardStyles = $p->getCardStyles();
-$cardImage  = $p->getCardImage();
+
+$cardImage = $p->getCardImage() ?? new Media();
+$scheduleRef = $scheduleItem ?? new Schedule();
+
+$eventLabel = '';
+$accentColor = '#6B2FD1';
+$mutedColor = '#EFE7FB';
+$eventType = $scheduleRef->event_category?->type ?? null;
+
+if (isset($item) && !empty($item)) {
+    switch ($eventType) {
+        case EventType::Magic:
+            $accentColor = '#B18132';
+            $mutedColor = '#F3E8D1';
+            $eventLabel = $scheduleRef->event_category?->title ?? 'Magic';
+            break;
+
+        case EventType::History:
+            $accentColor = '#A7C957';
+            $mutedColor = '#EAF4D7';
+            $eventLabel = 'History';
+            break;
+
+        case EventType::Yummy:
+            $accentColor = '#CC112F';
+            $mutedColor = '#F8D9DF';
+            $eventLabel = 'Yummy';
+            break;
+
+        case EventType::Jazz:
+            $accentColor = '#6B2FD1';
+            $mutedColor = '#EDE4FB';
+            $eventLabel = 'Jazz';
+            break;
+
+        case EventType::Dance:
+            $accentColor = '#CC9900';
+            $mutedColor = '#FFF3BF';
+            $eventLabel = 'Dance';
+            break;
+
+        default:
+            $accentColor = '#6B2FD1';
+            $mutedColor = '#EDE4FB';
+            $eventLabel = 'Event';
+            break;
+    }
+}
+
+$imagePath = $cardImage->file_path ?? '';
+$imageAlt  = $cardImage->alt_text ?? '';
 ?>
 
-<article class="flex flex-row w-fit pr-2 rounded-lg overflow-hidden shadow-md border border-gray-200">
-    <div class="relative calendar-coils w-2 md:w-[0.65rem] <?= $cardStyles['side'] ?> text-transparent flex-shrink-0">
-        hh
-        <div class="absolute w-[1rem] h-[1rem] -bottom-[-2rem] -left-2.5 bg_colors_home rounded-full ">
-        </div>
-    </div>
+<table class="ticket-card" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+        <td class="ticket-accent" style="background-color: <?= htmlspecialchars($accentColor) ?>;"></td>
 
-    <img loading="lazy" src="<?= htmlspecialchars($cardImage->file_path ?? '') ?>"
-        alt="<?= htmlspecialchars($cardImage->alt_text ?? '') ?>"
-        class="w-16 sm:w-20 md:w-30 lg:w-40 h-auto object-cover flex-shrink-0">
-
-
-    <div class="flex flex-col flex-grow min-w-0">
-        <div class="flex flex-col py-1">
-            <div class="flex flex-col lg:flex-row justify-between gap-3 mt-2">
-                <div class="flex pl-2 gap-2 items-center">
-                    <div class="h-min px-2 md:px-4 py-2 md:py-4 <?= $cardStyles['muted'] ?> rounded-md flex-shrink-0">
-                        <h1 class="font-bold text-lg md:text-2xl text-black text-center">
-                            <?= htmlspecialchars($p->getDateBoxLabel()) ?>
-                        </h1>
-                    </div>
-                    <div class="flex flex-col">
-                        <h2 class="text-black text-sm md:text-lg font-semibold">
-                            <?= htmlspecialchars($p->getDisplayName()) ?>
-                        </h2>
-                        <div class="flex flex-col gap-2">
-                            <div class="flex flex-row gap-2 items-center">
-                                <img src="/Assets/Home/LocationTicketHome.svg" alt="Location Icon"
-                                    class="w-4 h-4 flex-shrink-0">
-                                <span class="text-sm text-black">
-                                    <?= htmlspecialchars($p->getVenueDisplay()) ?>
-                                </span>
-                            </div>
-                            <div class="flex flex-row gap-2 items-center">
-                                <img src="/Assets/Home/DurationIconHome.svg" alt="Duration Icon"
-                                    class="w-4 h-4 flex-shrink-0">
-                                <span class="text-sm font-bold text-black whitespace-nowrap">
-                                    <?= htmlspecialchars($p->getDurationDisplay()) ?>
-                                </span>
-                            </div>
-                            <div class="flex flex-row gap-2 items-center">
-                                <img src="/Assets/Home/PersonIcon.svg" alt="Quantity Icon"
-                                    class="w-4 h-4 flex-shrink-0">
-                                <span class="text-sm font-bold text-black whitespace-nowrap">
-                                    x <?= (int)$item->quantity ?>
-                                </span>
-                            </div>
+        <td class="ticket-main">
+            <table class="ticket-inner" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td class="ticket-content">
+                        <div class="ticket-label" style="background-color: <?= htmlspecialchars($mutedColor) ?>;">
+                            <?= htmlspecialchars(strtoupper($eventLabel)) ?>
                         </div>
-                    </div>
-                    <article class="flex-shrink-0 flex items-center mx-3 justify-center">
-                        <header class="text-black">
-                            <h3 class="font-semibold text-base md:text-3xl mb-2">
-                                €<?= number_format($item->subtotal, 2) ?>
-                            </h3>
-                        </header>
-                    </article>
-                    <article class="h-full w-full  border-l-2 border-dashed border-gray-500 ">
-                        <?php $item->generateQrCode(); ?>
 
-                    </article>
-                </div>
-            </div>
-        </div>
-    </div>
+                        <table class="ticket-info-row" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td class="ticket-date-box-cell">
+                                    <div class="ticket-date-box"
+                                        style="background-color: <?= htmlspecialchars($mutedColor) ?>;">
+                                        <?= htmlspecialchars($p->getDateBoxLabel()) ?>
+                                    </div>
+                                </td>
 
-</article>
+                                <td class="ticket-text-cell">
+                                    <div class="ticket-title">
+                                        <?= htmlspecialchars($p->getDisplayName()) ?>
+                                    </div>
+
+                                    <div class="ticket-meta">
+                                        <span class="ticket-meta-label">Location:</span>
+                                        <?= htmlspecialchars($p->getVenueDisplay()) ?>
+                                    </div>
+
+                                    <div class="ticket-meta">
+                                        <span class="ticket-meta-label">Duration:</span>
+                                        <?= htmlspecialchars($p->getDurationDisplay()) ?>
+                                    </div>
+
+                                    <div class="ticket-meta">
+                                        <span class="ticket-meta-label">Quantity:</span>
+                                        x <?= (int)$item->quantity ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+
+                    <td class="ticket-price-cell">
+                        <div class="ticket-price">
+                            €<?= number_format((float)$item->subtotal, 2) ?>
+                        </div>
+                    </td>
+
+                    <td class="ticket-qr-cell">
+                        <div class="ticket-qr-wrap">
+                            <?php $item->generateQrCode(); ?>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>

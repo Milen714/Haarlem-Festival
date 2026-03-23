@@ -29,7 +29,7 @@ namespace App\Views\Email\Components;
             foreach ($viewModel?->order->orderItems ?? [] as $item) {
                 $scheduleItem = $item->ticket_type->schedule;
                 $ticketType = $item->ticket_type;
-                include __DIR__ . '/OrderItem.php';
+                include __DIR__ . '/OrderItemMail.php';
             }
             ?>
         </td>
