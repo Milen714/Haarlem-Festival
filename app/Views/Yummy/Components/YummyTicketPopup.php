@@ -4,8 +4,7 @@
 ?>
 
 <div id="reservation-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-    
+
     <section class="relative w-full max-w-4xl bg-[#4a0e0e] border-2 border-[#d4a356] rounded-xl shadow-2xl overflow-hidden text-white font-sans">
       
       <header class="bg-[#1a0505] py-6 text-center border-b border-[#d4a356]/30">
@@ -72,8 +71,8 @@
                   data-schedule-id="<?= $schedule->schedule_id ?>"
                 >
                 <div class="flex justify-between items-center mb-4">
-                  <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->description) ?> : 
-                  <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->price) ?></span></span>
+                  <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->name ?? '') ?> : 
+                  <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->ticket_scheme?->price ?? 0) ?></span></span>
                   <span class="text-[10px] opacity-50">per person</span>
                 </div>
                 <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
@@ -128,15 +127,13 @@
       </div>
     </section>
   </div>
-</div>
-
 
 
 <script>
 const ticketPrices = {
   <?php foreach($schedules as $schedule): ?>
     <?php foreach($schedule->ticketTypes as $ticket): ?>
-      <?= $ticket->ticket_type_id ?> : <?= $ticket->price ?>
+      <?= $ticket->ticket_type_id ?> : <?= $ticket->ticket_scheme?->price ?? 0 ?>,
     <?php endforeach ?>
   <?php endforeach ?>
 }
@@ -144,11 +141,11 @@ const ticketPrices = {
 const ticketNames = {
   <?php foreach($schedules as $schedule): ?>
     <?php foreach($schedule->ticketTypes as $ticket): ?>
-      <?= $ticket->ticket_type_id ?> : <?= $ticket->description ?>
+      <?= $ticket->ticket_type_id ?> : <?= htmlspecialchars($ticket->name ?? '') ?>,
     <?php endforeach ?>
   <?php endforeach ?>
 }
 
 const reservationFee = 10;
 </script>
-<script src="/app/public/Js/RestaurantTicket.js"></script>
+<script src="/Js/RestaurantTicket.js"></script>
