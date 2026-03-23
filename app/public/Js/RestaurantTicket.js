@@ -49,6 +49,7 @@ document.querySelectorAll('.date-btn').forEach(btn => {
 
         document.querySelectorAll('.session-btn').forEach(session =>{
             if (session.dataset.date === selectedDate) {
+                state.selectedDate = selectedDate;
                 session.classList.remove('hidden');
             } else {
                 session.classList.add('hidden');
@@ -65,7 +66,22 @@ document.querySelectorAll('.session-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.session-btn').forEach(b => b.classList.remove('bg-[#d4a356]', 'text-black'));
         btn.classList.add('bg-[#d4a356]', 'text-black');
-        state.selectedScheduleId = btn.dataset.scheduleId;
+        const scheduleId = btn.dataset.scheduleId;
+        state.selectedScheduleId = scheduleId;
+
+        //this shows only matching tickets
+        document.querySelectorAll('.ticket-item').forEach(ticket => {
+            if (ticket.dataset.scheduleId === scheduleId) {
+                ticket.classList.remove('hidden');
+            } else{
+                ticket.classList.add('hidden');
+            }
+        });
+
+        state.tickets = {};
+        document.querySelectorAll('.quantity').forEach(q => q.textContent = '0');
+        updateSummary();
+
         //see if its selected
         console.log('Selected session: ', state.selectedScheduleId);
     });

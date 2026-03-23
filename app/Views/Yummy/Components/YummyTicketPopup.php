@@ -39,11 +39,12 @@
 
         <fieldset>
           <legend class="text-[#d4a356] text-xs font-bold uppercase mb-3 flex items-center">
-            <input type="checkbox" checked class="mr-2 accent-[#d4a356]"> Select Session (2h duration)
+            <input type="checkbox" checked class="mr-2 accent-[#d4a356]"> Select Session
           </legend>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <?php $i = 1; foreach($schedules as $schedule): ?>
-                <button data-schedule-id="<?= $schedule->schedule_id ?>" data-date="<?= $schedule->date->format('Y-m-d') ?>" class="session-btn hidden border border-[#d4a356] p-4 rounded text-left flex justify-between items-center group hover:bg-[#d4a356]/10">
+            <?php $i = 1; foreach($groupedSchedules as $date => $daySchedules): ?>
+              <?php foreach($daySchedules as $schedule): ?>
+                <button data-schedule-id="<?= $schedule->schedule_id ?>" data-date="<?= $date?>" class="session-btn hidden border border-[#d4a356] p-4 rounded text-left flex justify-between items-center group hover:bg-[#d4a356]/10">
                   <div>
                     <span class="block font-bold">
                     Session <?= $i++ ?>
@@ -51,6 +52,7 @@
                   </div>
                   <span class="text-xl font-serif"><?= $schedule->start_time->format('H:i') ?></span>
                 </button>
+                <?php endforeach ?>
             <?php endforeach ?>
           </div>
         </fieldset>
@@ -63,30 +65,34 @@
           ></textarea>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <?php foreach($selectedSchedule->ticketTypes as $ticket): ?>
-            <div class="bg-[#1a0505] border border-[#d4a356]/30 rounded p-4">
-            <div class="flex justify-between items-center mb-4">
-              <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->description) ?> : 
-              <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->price) ?></span></span>
-              <span class="text-[10px] opacity-50">per person</span>
-            </div>
-            <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
-              <button 
-              type="button" 
-              class="decrement btn p-2 text-[#d4a356] font-bold"
-              data-ticket-id="<?= $ticket->ticket_type_id ?>"
-              >
-              -
-              </button>
-              <span class="font-bold quantity" data-ticket-id="<?= $ticket->ticket_type_id ?>">0</span>
-              <button 
-              type="button" 
-              class="increment btn p-2 text-[#d4a356] font-bold"
-              data-ticket-id="<?= $ticket->ticket_type_id ?>"
-              >+</button>
-            </div>
-          </div>
+        <div class="ticket-container grid grid-cols-1 md:grid-cols-2 gap-4">
+          <?php foreach($schedules as $schedule): ?>
+              <?php foreach($schedule->ticketTypes as $ticket): ?>
+                <div class="ticket-item hidden bg-[#1a0505] border border-[#d4a356]/30 rounded p-4"
+                  data-schedule-id="<?= $schedule->schedule_id ?>"
+                >
+                <div class="flex justify-between items-center mb-4">
+                  <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->description) ?> : 
+                  <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->price) ?></span></span>
+                  <span class="text-[10px] opacity-50">per person</span>
+                </div>
+                <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
+                  <button 
+                  type="button" 
+                  class="decrement btn p-2 text-[#d4a356] font-bold"
+                  data-ticket-id="<?= $ticket->ticket_type_id ?>"
+                  >
+                  -
+                  </button>
+                  <span class="font-bold quantity" data-ticket-id="<?= $ticket->ticket_type_id ?>">0</span>
+                  <button 
+                  type="button" 
+                  class="increment btn p-2 text-[#d4a356] font-bold"
+                  data-ticket-id="<?= $ticket->ticket_type_id ?>"
+                  >+</button>
+                </div>
+              </div>
+            <?php endforeach ?>
           <?php endforeach ?>
         </div>
 
@@ -127,13 +133,21 @@
 
 
 <script>
-const ticketPrices = <?= json_encode(
-    array_column($selectedSchedule->ticketTypes, 'price', 'ticket_type_id')
-) ?>;
+const ticketPrices = {
+  <?php foreach($schedules as $schedule): ?>
+    <?php foreach($schedule->ticketTypes as $ticket): ?>
+      <?= $ticket->ticket_type_id ?> : <?= $ticket->price ?>
+    <?php endforeach ?>
+  <?php endforeach ?>
+}
 
-const ticketNames = <?= json_encode(
-    array_column($selectedSchedule->ticketTypes, 'description', 'ticket_type_id')
-) ?>;
+const ticketNames = {
+  <?php foreach($schedules as $schedule): ?>
+    <?php foreach($schedule->ticketTypes as $ticket): ?>
+      <?= $ticket->ticket_type_id ?> : <?= $ticket->description ?>
+    <?php endforeach ?>
+  <?php endforeach ?>
+}
 
 const reservationFee = 10;
 </script>
