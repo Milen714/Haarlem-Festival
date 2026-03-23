@@ -10,6 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('open-model');
     const closeBtn = document.getElementById('close-model');
 
+    // Add null checks to prevent errors if elements don't exist
+    if (!openBtn || !closeBtn || !modal) {
+        console.error('Modal elements not found. Check your HTML IDs:', {
+            modal: !!modal,
+            openBtn: !!openBtn,
+            closeBtn: !!closeBtn
+        });
+        return;
+    }
+
     openBtn.addEventListener('click', (e) => {
         e.preventDefault();
         modal.classList.remove('hidden');

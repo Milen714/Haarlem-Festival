@@ -1,6 +1,6 @@
 
 <?php
-  $selectedSchedule = $schedules[0] ?? null;
+  $selectedSchedules = $schedules[0] ?? null;
 ?>
 
 <div id="reservation-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
@@ -28,10 +28,10 @@
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
             <?php
 
-            foreach ($schedules as $schedule):?>
-              <button  class="date-btn border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition"  data-date="<?= $schedule->date->format('Y-m-d') ?>">
-                <span class="block text-[10px] uppercase"><?= $schedule->date->format('l') ?></span>
-                <span class="block font-bold"><?= $schedule->date->format('d M') ?></span>
+            foreach ($groupedSchedules as $date => $daySchedules):?>
+              <button  class="date-btn border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition"  data-date="<?= $date?>">
+                <span class="block text-[10px] uppercase"><?= date('l', strtotime($date)) ?></span>
+                <span class="block font-bold"><?= date('d M', strtotime($date))  ?></span>
               </button>
             <?php endforeach ?>
           </div>
