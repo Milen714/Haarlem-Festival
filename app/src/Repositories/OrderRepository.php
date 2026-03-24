@@ -21,6 +21,7 @@ class OrderRepository extends Repository implements IOrderRepository
             SELECT
                 o.order_id,
                 o.user_id,
+                o.reference_number as order_reference_number,
                 o.order_date,
                 o.subtotal,
                 o.total,
@@ -300,6 +301,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 INSERT INTO `ORDER` (
                     user_id,
                     order_date,
+                    reference_number,
                     subtotal,
                     total,
                     serviceFee,
@@ -314,6 +316,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 ) VALUES (
                     :user_id,
                     :order_date,
+                    :reference_number,
                     :subtotal,
                     :total,
                     :serviceFee,
@@ -331,6 +334,7 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $order->user?->id, PDO::PARAM_INT);
             $stmt->bindValue(':order_date', $order->order_date?->format('Y-m-d H:i:s'));
+            $stmt->bindValue(':reference_number', $order->reference_number);
             $stmt->bindValue(':subtotal', $order->subtotal ?? 0.0);
             $stmt->bindValue(':total', $order->total ?? 0.0);
             $stmt->bindValue(':serviceFee', $order->serviceFee ?? 0.0);
@@ -639,6 +643,11 @@ class OrderRepository extends Repository implements IOrderRepository
                     $orderItem = new OrderItem();
                     $order->orderItems[] = $orderItem->fromPdo($row);
                 }
+            }
+
+            // If no items were found from the join, explicitly fetch them
+            if (empty($order->orderItems) && !is_null($order->order_id)) {
+                $order->orderItems = $this->getOrderItemsByOrderId($order->order_id);
             }
 
             return $order;

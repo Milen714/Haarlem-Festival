@@ -74,6 +74,7 @@ class OrderService implements IOrderService
     public function createSessionCart(): Order
     {
         $order = new Order();
+        $order->generateReferenceNumber();
         $order->order_date = new \DateTime();
         $order->status = OrderStatus::In_Cart;
         if(!isset($_SESSION['session_cart'])){

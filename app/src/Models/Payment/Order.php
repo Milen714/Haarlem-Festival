@@ -8,6 +8,7 @@ use DateTime;
 class Order
 {
     public ?int $order_id = null;
+    public ?string $reference_number = null;
     public ?User $user = null;
     public ?DateTime $order_date = null;
     public ?float $subtotal = null;
@@ -32,6 +33,7 @@ class Order
     public function fromPDOData(array $data): void
     {
         $this->order_id = isset($data['order_id']) ? (int)$data['order_id'] : 0;
+        $this->reference_number = $data['order_reference_number'] ?? null;
         $this->subtotal = isset($data['subtotal']) ? (float)$data['subtotal'] : null;
         $this->total = isset($data['total']) ? (float)$data['total'] : null;
         $this->serviceFee = isset($data['serviceFee']) ? (float)$data['serviceFee'] : null;
@@ -74,5 +76,9 @@ class Order
 
         $this->serviceFee = round($this->subtotal * 0.025, 2);
         $this->total = $this->subtotal + $this->serviceFee + $this->reservationFees;
+    }
+    public function generateReferenceNumber(): void
+    {
+        $this->reference_number = 'HF-' . strtoupper(bin2hex(random_bytes(4))) . '-' . time();
     }
 }

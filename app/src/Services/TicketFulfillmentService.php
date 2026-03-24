@@ -5,6 +5,7 @@ use Dompdf\Dompdf;
 use chillerlan\QRCode\QRCode;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Models\Payment\OrderItem;
+use App\Models\Payment\Order;
 
 class TicketFulfillmentService implements ITicketFulfillmentService
 {
@@ -34,34 +35,44 @@ class TicketFulfillmentService implements ITicketFulfillmentService
  * @return void
  */
 
-public function generatePDF($html, $filename, $paperSize ='A4', $orientation = 'landsacpe', 
-$download = true, $save = true, $savePath = 'Assets/documents/') : void
-{
-    $dompdf = new Dompdf();
+    public function generatePDF($html, $filename, $paperSize ='A4', $orientation = 'landsacpe', 
+    $download = true, $save = true, $savePath = 'Assets/documents/') : void
+    {
+        $dompdf = new Dompdf();
 
-    // this loads the html content
-    $dompdf->loadHtml($html);
+        // this loads the html content
+        $dompdf->loadHtml($html);
 
-    //sets up the size and orientation of orientation
-    $dompdf->setPaper($paperSize, $orientation);
+        //sets up the size and orientation of orientation
+        $dompdf->setPaper($paperSize, $orientation);
 
-    //renders the PDF 
-    $dompdf->render();
-    $output = $dompdf->output();
+        //renders the PDF 
+        $dompdf->render();
+        $output = $dompdf->output();
 
-    //if you wish to save it to the server
-    if ($save) {
-        if (!is_dir($savePath)) {
-            mkdir($savePath, 0755, true);
+        //if you wish to save it to the server
+        if ($save) {
+            if (!is_dir($savePath)) {
+                mkdir($savePath, 0755, true);
+            }
+            file_put_contents($savePath . $filename . '.pdf', $output);
         }
-        file_put_contents($savePath . $filename . '.pdf', $output);
-    }
 
-    if($download){
-        header("Content-Type: application/pdf");
-        header("Content-Disposition: attachment; filename=" . $filename . ".pdf");
-        echo $output;
-        exit;
+        if($download){
+            header("Content-Type: application/pdf");
+            header("Content-Disposition: attachment; filename=" . $filename . ".pdf");
+            echo $output;
+            
+        }
     }
-}
+    public function generatePDFName(Order $order) : string
+    {
+        return "Tickets_" . $order->reference_number . "_" . date('YmdHis');
+    }
+    public function generatePDFAndReturnPath($html, Order $order, bool $download, bool $save, string $savePath = '/../../public/Assets/documents/') : string
+    {
+        $fileName = $this->generatePDFName($order);
+        $this->generatePDF($html, $fileName, 'A4', 'landscape', $download, $save, $savePath);
+        return $savePath . $fileName . '.pdf';
+    }
 }

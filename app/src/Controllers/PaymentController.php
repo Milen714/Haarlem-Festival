@@ -251,10 +251,10 @@ class PaymentController extends BaseController
             //$this->view('Email/TicketsMailBody', ['viewModel' => $viewModel]);
             
             // foreach($order->orderItems as $item){
-                //     echo $this->ticketFulfillmentService->generateQrCode($item);
-                // }
-                // $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), 'Tickets');
-                // $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
+            //         echo $this->ticketFulfillmentService->generateQrCode($item);
+            //     }
+                $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), 'Tickets21');
+                $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
         } catch (\Throwable $e) {
             $this->jsonResponse([
                 'success' => false,
