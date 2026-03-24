@@ -1,14 +1,24 @@
 const state = {
     selectedDate: null,
+    selectedDateLabel: null,
     selectedScheduleId: null,
+    selectedTime: null,
     tickets: {} //for the quantity of tickets
+}
+
+function setElementText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
 
     const modal = document.getElementById('reservation-modal');
+    const confModal = document.getElementById('confirmation-modal');
     const openBtn = document.getElementById('open-model');
     const closeBtn = document.getElementById('close-model');
+    const closeConfbtn = document.getElementById('close-confirmation');
+    const continuebtn = document.getElementById('continue-shopping');
 
     // Add null checks to prevent errors if elements don't exist
     if (!openBtn || !closeBtn || !modal) {
@@ -19,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         return;
     }
-
+    //displays pop up and closes if button is hit and if outside the border is hit
     openBtn.addEventListener('click', (e) => {
         e.preventDefault();
         modal.classList.remove('hidden');
@@ -30,12 +40,32 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.classList.add('hidden');
     });
 
+    if (continuebtn) {
+        continuebtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            confModal.classList.add('hidden');
+        });
+    }
+
+    if (closeConfbtn) {
+        closeConfbtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            confModal.classList.add('hidden');
+        });
+    }
+
     modal.addEventListener('click', (e) => {
         if (e.target.id === 'reservation-modal') {
             modal.classList.add('hidden');
-        }
-    });
+        } 
 
+    });
+    confModal.addEventListener('click', (e) => {
+        if (e.target.id === 'confirmation-modal') {
+            confModal.classList.add('hidden');
+        }
+
+    });
 });
 
 document.querySelectorAll('.date-btn').forEach(btn => {
@@ -44,10 +74,12 @@ document.querySelectorAll('.date-btn').forEach(btn => {
         btn.classList.add('bg-[#d4a356]', 'text-black');
         const selectedDate = btn.dataset.date;
         state.selectedDate = selectedDate;
+        state.selectedDateLabel = btn.dataset.dateLabel; //store it
         //see if its selected
         console.log('Selected date: ', state.selectedDate);
 
         document.querySelectorAll('.session-btn').forEach(session =>{
+            //if date is selected it only hows sessions connected to the date and hides the rest and vice versa
             if (session.dataset.date === selectedDate) {
                 state.selectedDate = selectedDate;
                 session.classList.remove('hidden');
@@ -68,7 +100,7 @@ document.querySelectorAll('.session-btn').forEach(btn => {
         btn.classList.add('bg-[#d4a356]', 'text-black');
         const scheduleId = btn.dataset.scheduleId;
         state.selectedScheduleId = scheduleId;
-
+        state.selectedTime = btn.dataset.time; //store
         //this shows only matching tickets
         document.querySelectorAll('.ticket-item').forEach(ticket => {
             if (ticket.dataset.scheduleId === scheduleId) {
@@ -90,6 +122,12 @@ document.querySelectorAll('.session-btn').forEach(btn => {
 
 document.querySelectorAll('.increment').forEach(btn => {
     btn.addEventListener('click', () =>{
+        //checks if tickets are soldout and blocks it
+        const ticketCard = btn.closest('.ticket-item');
+        if (ticketCard.dataset.soldOut === '1') {
+            return; //stops click if soldout
+        }
+
         const id = btn.dataset.ticketId;
         const element = document.querySelector(`.quantity[data-ticket-id="${id}"]`);
 
@@ -104,6 +142,13 @@ document.querySelectorAll('.increment').forEach(btn => {
 
 document.querySelectorAll('.decrement').forEach(btn => {
     btn.addEventListener('click', () =>{
+
+        //checks if tickets are soldout and blocks it
+        const ticketCard = btn.closest('.ticket-item');
+        if (ticketCard.dataset.soldOut === '1') {
+            return; //stops click if soldout
+        }
+
         const id = btn.dataset.ticketId;
         const element = document.querySelector(`.quantity[data-ticket-id="${id}"]`);
         
@@ -116,26 +161,59 @@ document.querySelectorAll('.decrement').forEach(btn => {
     })
 });
 
-document.querySelector('.confirm-btn').addEventListener('click', () => {
-    const payload = {
-        schedule_id: state.selectedScheduleId,
-        tickets: state.tickets
-    };
+document.querySelector('.confirm-btn').addEventListener('click', async () => {
+    if (!state.selectedScheduleId) {
+        alert('Please select a session!');
+        return;
+    }
+    
+    //converts my data into correct type for cart
+   const selectedTickets = Object.entries(state.tickets).filter(([id, qty]) => qty > 0);
 
-    console.log(payload);
-    fetch('/reserve', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log('success:', data);
-    });
+
+    if (selectedTickets.length === 0) {
+        alert('Please select at least one ticket!');
+        return;
+    }
+    
+    try {
+        //adds converted data into payload
+       for(const [ticketTypeId, quantity] of selectedTickets){
+            const payload = {
+                ticketTypeId: Number(ticketTypeId),
+                quantity: quantity
+            };
+            //sends it to the cart
+            const response = await fetch('/addToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            }); 
+
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error('Could not add tickets to cart');
+            }
+       }
+       fillConfModal();
+        document.getElementById('confirmation-modal').classList.remove('hidden');
+        document.getElementById('reservation-modal').classList.add('hidden');
+
+    } catch (error) {
+        alert(error.message || 'Something went wrong.');
+    }
 });
 
+const goToCartBtn = document.getElementById('go-to-cart');
+if(goToCartBtn){
+    goToCartBtn.addEventListener('click', () => {
+        window.location.href = '/checkout';
+    })
+}
+
+//for calulating price of ticket
 function updateSummary(){
     let subtotal = 0;
     const summaryContainer = document.querySelector('#summary-container');
@@ -144,11 +222,17 @@ function updateSummary(){
         const qty = state.tickets[id];
         if(qty === 0) continue;
 
-        const price = ticketPrices[id];
+        const price = ticketPrices[id] || 0;
         const name = ticketNames[id];
         const total = qty * price;
-
+        
         subtotal += total;
+        console.log('tickets: ' , state.tickets);
+        console.log('names: ' , ticketNames);
+        console.log('prices: ' , ticketPrices);
+        console.log('ID:', id);
+        console.log('Price:', ticketPrices[id]);
+
 
         html += `
            <div class="flex justify-between">
@@ -171,4 +255,39 @@ function updateSummary(){
     </div>`;
 
     summaryContainer.innerHTML = html;
+}
+
+function fillConfModal(){
+    //build ticket summary 
+    let ticketSummary = '';
+    let total = 0;
+
+    for (const id in state.tickets) {
+        const qty = state.tickets[id];
+        if (qty === 0) continue;
+
+        const name = ticketNames[id];
+        const price = ticketPrices[id];
+
+        ticketSummary += `${qty}x ${name}, `;
+        total += qty * price;
+    }
+
+    ticketSummary = ticketSummary.slice(0, -2); //remove the last comma
+    const finalTotal = total + (total > 0 ? reservationFee : 0);
+
+    //fill the buttons with the used data
+    document.getElementById('confirm-day').textContent =
+        state.selectedDateLabel?.split(' ')[0] || '';
+
+    document.getElementById('confirm-date').textContent =
+        state.selectedDateLabel || '';
+
+    document.getElementById('confirm-details').innerHTML =
+        `${state.selectedDate} • ${state.selectedTime}`;
+
+    document.getElementById('confirm-tickets').textContent = ticketSummary;
+
+    document.getElementById('confirm-total').textContent =
+        `€ ${finalTotal.toFixed(2)}`;
 }
