@@ -47,6 +47,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 -- Order Item fields
                 oi.orderitem_id,
                 oi.order_id as oi_order_id,
+                oi.qr_code_hash as oi_qr_code_hash,
                 oi.ticket_type_id,
                 oi.quantity,
                 oi.unit_price,

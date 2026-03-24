@@ -91,17 +91,14 @@ class StripeWebhookController extends BaseController
         $fileName = $this->ticketFulfillmentService->generatePDFName($order);
         $ticketPdfPath =  __DIR__ .  '/../../public/Assets/documents/' . $fileName . '.pdf';
         try {
-            $this->logService->info('StripeWebhook', 'Preparing to send ticket email for order', ['order_id' => $order->order_id]);
             
             if(!isset($order)){
                 $order = $this->orderService->createSessionCart();
             }
-            
-            $this->logService->info('StripeWebhook', 'Order user email', ['email' => $order->user->email ?? 'NO EMAIL']);
+            $this->orderService->generateTicketHashes($order->order_id);
+            $order = $this->orderService->getOrderById($order->order_id);
 
             $viewModel = new ShoppingCartViewModel($order);
-            $this->logService->info('StripeWebhook', 'ViewModel created', ['items_count' => count($viewModel->orderItems ?? [])]);
-
             
             $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), $fileName);
             

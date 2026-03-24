@@ -35,7 +35,7 @@ class OrderItem
         $item->order_id = $data['order_id'] ?? null;
         $item->quantity = isset($data['quantity']) ? (int)$data['quantity'] : 0;
         
-        $item->qr_code_hash = $data['qr_code_hash'] ?? null;
+        $item->qr_code_hash = $data['qr_code_hash'] ?? $data['oi_qr_code_hash'] ?? null;
         $item->is_scanned = isset($data['is_scanned']) ? (bool)$data['is_scanned'] : false;
         $item->scanned_at = $data['scanned_at'] ?? null;
 
