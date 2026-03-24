@@ -338,4 +338,8 @@ class OrderService implements IOrderService
 
         return $paidItems;
     }
+        public function getOrdersWhereStatusIn(array $statuses): array
+        {
+            return $this->orderRepository->getOrdersWhereStatusIn($statuses);
+        }
 }

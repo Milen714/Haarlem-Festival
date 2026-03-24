@@ -31,4 +31,5 @@ interface IOrderService
     public function getOrderItemByHash(string $hash): ?OrderItem;
     public function markAsScanned(int $orderItemId): bool;
     public function getPaidOrderItemsByUserId(int $userId): array;
+    public function getOrdersWhereStatusIn(array $statuses): array;
 }

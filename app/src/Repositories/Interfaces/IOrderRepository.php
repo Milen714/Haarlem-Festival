@@ -22,4 +22,5 @@ interface IOrderRepository
     public function updateItemHash(int $orderItemId, string $hash): bool;
     public function markAsScanned(int $orderItemId): bool;
     public function getOrderItemByHash(string $hash): ?OrderItem;
+    public function getOrdersWhereStatusIn(array $statuses): array;
 }

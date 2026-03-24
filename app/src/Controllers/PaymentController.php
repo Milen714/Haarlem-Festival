@@ -50,7 +50,7 @@ class PaymentController extends BaseController
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
-
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function personalProgram(){
         $userId = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : null;
         if (!$userId) {
@@ -83,14 +83,14 @@ class PaymentController extends BaseController
             'tickets' => $tickets
         ]);
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function createCheckoutSession(array $params = [])
     {
         try {
@@ -135,12 +135,12 @@ class PaymentController extends BaseController
             echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
         }
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function return(array $params = [])
     {
         $this->view('ShoppingCart/CheckoutSuccess');
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function status(array $params = [])
     {
         header('Content-Type: application/json');

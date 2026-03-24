@@ -802,4 +802,49 @@ class OrderRepository extends Repository implements IOrderRepository
             throw new \RuntimeException("Error fetching order item by hash: " . $e->getMessage());
         }
     }
+    public function getOrdersWhereStatusIn(array $statuses): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $placeholders = implode(', ', array_fill(0, count($statuses), '?'));
+
+            $query = $this->getBaseQuery() . " WHERE o.status IN ($placeholders)
+            AND o.created_at <= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+            ORDER BY o.order_date DESC, o.order_id DESC";
+            $stmt  = $pdo->prepare($query);
+            foreach ($statuses as $index => $status) {
+                $statusValue = $status instanceof OrderStatus ? $status->value : (string)$status;
+                $stmt->bindValue($index + 1, $statusValue, PDO::PARAM_STR);
+            }
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $orders = [];
+            $orderMap = [];
+
+            foreach ($rows as $row) {
+                $orderId = $row['order_id'];
+
+                if (!isset($orderMap[$orderId])) {
+                    $order = new Order();
+                    $order->fromPDOData($row);
+                    $orders[] = $order;
+                    $orderMap[$orderId] = $order;
+                } else {
+                    $order = $orderMap[$orderId];
+                }
+
+                if (!is_null($row['orderitem_id']) && !in_array($row['orderitem_id'], array_column($order->orderItems, 'orderitem_id'))) {
+                    $orderItem = new OrderItem();
+                    $orderItem = $orderItem->fromPdo($row);
+                    $order->orderItems[] = $orderItem;
+                }
+            }
+
+            return $orders;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching orders by status: " . $e->getMessage());
+        }
+    }
 }
