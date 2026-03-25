@@ -19,11 +19,11 @@ namespace App\Views\Yummy\Components;
                     <img
                         src="<?= htmlspecialchars($item->media->file_path ?? '/assets/images/default_cuisine.webp') ?>"
                         class="rounded mb-4"
-                        alt="<?= htmlspecialchars($item->media->imageAlt ?? 'Featured Cuisine') ?>"
+                        alt="<?= htmlspecialchars($item->imageAlt ?? 'Featured Cuisine') ?>"
                     />
 
                     <h3 class="text-lg font-semibold">
-                        <?= htmlspecialchars($item->media->title ?? 'Featured Cuisine') ?>
+                        <?= htmlspecialchars($item->alt_text ?? 'Featured Cuisine') ?>
                     </h3>
 
                     <p class="text-sm text-gray-300">

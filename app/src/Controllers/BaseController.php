@@ -67,4 +67,10 @@ class BaseController
         // The layout will use the $content variable to display the view content in the main tag 
         //Layout is foooter and header around the content
     }
+    protected function renderViewToString(string $viewPath, array $data = []): string {
+    ob_start();
+    extract($data);
+    include __DIR__ . '/../../Views/' . $viewPath . '.php';
+    return ob_get_clean();
+    }
 }

@@ -29,20 +29,7 @@ class ScheduleController extends BaseController
 
     public function __construct()
     {
-        $mediaService = new MediaService(new MediaRepository());
-
-        $venueService      = new VenueService(new VenueRepository(), $mediaService);
-        $artistService     = new ArtistService(new ArtistRepository(), $mediaService);
-        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
-        $landmarkService   = new LandmarkService();
-
-        $this->scheduleService = new ScheduleService(
-            new ScheduleRepository(),
-            $venueService,
-            $artistService,
-            $restaurantService,
-            $landmarkService
-        );
+        $this->scheduleService = new ScheduleService();
 
         $this->ticketService = new TicketService(new TicketRepository());
     }

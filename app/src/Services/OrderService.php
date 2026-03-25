@@ -66,9 +66,15 @@ class OrderService implements IOrderService
     {
         return $this->orderRepository->getOrderItemsByOrderId($orderId);
     }
+
+    public function getPaidTicketsByUser(int $userId): array
+    {
+        return $this->orderRepository->getPaidTicketsByUser($userId);
+    }
     public function createSessionCart(): Order
     {
         $order = new Order();
+        $order->generateReferenceNumber();
         $order->order_date = new \DateTime();
         $order->status = OrderStatus::In_Cart;
         if(!isset($_SESSION['session_cart'])){
@@ -333,4 +339,8 @@ class OrderService implements IOrderService
 
         return $paidItems;
     }
+        public function getOrdersWhereStatusIn(array $statuses): array
+        {
+            return $this->orderRepository->getOrdersWhereStatusIn($statuses);
+        }
 }

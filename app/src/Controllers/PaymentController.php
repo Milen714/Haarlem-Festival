@@ -16,6 +16,10 @@ use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
+use App\Services\MailService;
+use App\Services\Interfaces\IMailService;
+use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Services\TicketFulfillmentService;
 use DateTime;
 
 class PaymentController extends BaseController
@@ -24,11 +28,16 @@ class PaymentController extends BaseController
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
+    private IMailService $mailService;
+    private ITicketFulfillmentService $ticketFulfillmentService;
+
     public function __construct()
     {
         $this->ticketService = new TicketService();
         $this->paymentService = new PaymentService();
         $this->orderService = new OrderService();
+        $this->mailService = new MailService();
+        $this->ticketFulfillmentService = new TicketFulfillmentService();
     }
 
     public function index(array $params = [])
@@ -41,14 +50,47 @@ class PaymentController extends BaseController
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
+    public function personalProgram(){
+        $userId = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : null;
+        if (!$userId) {
+            //should show error
+            $this->notFound();
+            exit;
+        }
+
+        $tickets = $this->orderService->getPaidTicketsByUser($userId);
+        
+        //for each events
+        foreach ($tickets as $ticket) {
+            $ticket['title'] = $ticket['artist_name']
+                    ?? $ticket['restaurant_name']
+                    ?? $ticket['landmark_name']
+                    ?? 'Event';
+            $ticket['ticket_image'] = $ticket['artist_media_file_path']
+                    ?? $ticket['restaurant_media_file_path']
+                    ?? $ticket['landmark_media_file_path']
+                    ?? $ticket['venue_media_file_path'] 
+                    ?? $ticket['magic_media_file_path'];    
+            $ticket['alt_text'] = $ticket['artist_media_alt_text']
+                    ?? $ticket['restaurant_media_alt_text']
+                    ?? $ticket['landmark_media_alt_text']
+                    ?? $ticket['venue_media_alt_text'] 
+                    ?? $ticket['magic_media_alt_text'];   
+        }
+
+        $this->view('ShoppingCart/wishlist', [
+            'tickets' => $tickets
+        ]);
+    }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function createCheckoutSession(array $params = [])
     {
         try {
@@ -93,12 +135,12 @@ class PaymentController extends BaseController
             echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
         }
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function return(array $params = [])
     {
         $this->view('ShoppingCart/CheckoutSuccess');
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function status(array $params = [])
     {
         header('Content-Type: application/json');
@@ -174,6 +216,45 @@ class PaymentController extends BaseController
                 'success' => true,
                 'cart' => $cart
             ], JSON_PRETTY_PRINT);
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function sendTicketEmail(array $params = []): void
+    {
+
+        try {
+            
+            /**
+             * @var Order $order
+             */
+            $order= $this->orderService->getSessionCart();
+        if(!isset($order)){
+            $order = $this->orderService->createSessionCart();
+        }
+        // foreach($order->orderItems as $item){
+        //     $item->qrPic = $item->generateQrCode();
+        // }
+            $viewModel = new ShoppingCartViewModel($order);
+           // In your PaymentController->sendTicketEmail() method:
+            $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/Tickets (4).pdf';
+
+            $this->mailService->sendEmail(
+            'paami97@gmail.com',
+            "Your Festival Tickets",
+            $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel]),
+            [$ticketPdfPath]  // Pass PDF as attachment
+            );
+            //$this->view('Email/TicketsMailBody', ['viewModel' => $viewModel]);
+            
+            // foreach($order->orderItems as $item){
+            //         echo $this->ticketFulfillmentService->generateQrCode($item);
+            //     }
+                $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), 'Tickets21');
+                $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
         } catch (\Throwable $e) {
             $this->jsonResponse([
                 'success' => false,

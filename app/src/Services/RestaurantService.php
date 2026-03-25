@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Restaurant;
+use App\Models\Yummy\Session;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
+use App\Repositories\CuisineRepository;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\IMediaService;
 
@@ -58,6 +60,19 @@ class RestaurantService implements IRestaurantService
     {
         return $this->restaurantRepository->deleteRestaurant($id);
     }
+    public function getAllSessionsTypes(): array{
+        return $this->restaurantRepository->getAllSessionsTypes();
+    }
+    public function getSessionsByRestaurant(int $restaurantId): array{
+        return $this->restaurantRepository->getSessionsByRestaurant($restaurantId);
+    }
+    public function createSession(Session $session): Session
+    {
+        return $this->restaurantRepository->createSession($session);
+    }
+    public function deleteSessionsByRestaurant(int $restaurantId): bool{
+        return $this->restaurantRepository->deleteSessionsByRestaurant($restaurantId);
+    }
 
     public function getRestaurantDetail(int $id){
         $restaurant = $this->restaurantRepository->getRestaurantById($id);
@@ -66,7 +81,7 @@ class RestaurantService implements IRestaurantService
             return null;
         }
         $restaurant->sessions = $this->restaurantRepository->getSessionsByRestaurant($id);
-        $restaurant->dishes = $this->restaurantRepository->getDishessByRestaurant($id);
+        // $restaurant->dishes = $this->restaurantRepository->getDishessByRestaurant($id);
        
         return $restaurant;
     }
@@ -101,13 +116,18 @@ class RestaurantService implements IRestaurantService
         //adds event to database
         $restaurant->event_id = 1; //Yummy event
 
-        $this->restaurantRepository->createRestaurant($restaurant);
+        $restaurantId = $this->restaurantRepository->createRestaurant($restaurant);
+        $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
+        $cuisineIds = $postData['cuisines'] ?? [];
+        $cuisineIds = array_slice($cuisineIds, 0, 3);
+        $this->handleSessions($restaurantId, $postData);
+        $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
+
         return $restaurant;
     }
 
     public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant {
         $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
-
         if(!$restaurant){
             throw new \Exception('Restaurant not found');
         }
@@ -115,6 +135,12 @@ class RestaurantService implements IRestaurantService
         $restaurant = $this->processRestaurantRequest($restaurant, $postData, $files);
 
         $this->restaurantRepository->updateRestaurant($restaurant);
+        $cuisineIds = $postData['cuisines'] ?? [];
+        $cuisineIds = array_slice($cuisineIds, 0, 3);
+        $this->replaceRestaurantGalleryImages($restaurant, $files);
+        $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
+        $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
+       $this->handleSessions($restaurantId, $postData);
         return $restaurant;
     }
 
@@ -172,5 +198,106 @@ class RestaurantService implements IRestaurantService
         }
 
         return $restaurant;
+    }
+
+    public function uploadRestauratGallery(int $restaurantId, ?Restaurant $restaurant, array $files): void{
+        if (empty($files['name'])) {
+            return;
+        }
+
+        $pdoGalleryId = $restaurant?->gallery?->gallery_id;
+        if (!$pdoGalleryId) {
+            $pdoGalleryId = $this->restaurantRepository->createGalleryForRestaurant($restaurantId, ($restaurant->name ?? 'Restaurant') . ' Gallery' );
+        }
+
+        //looping the files to upload multiple at one
+        foreach($files['name'] as $i => $name){
+            if (empty($name) || $files['error'][$i] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $file = [
+                'name' => $files['name'][$i],
+                'type' => $files['type'][$i],
+                'tmp_name' => $files['tmp_name'][$i],
+                'error' => $files['error'][$i],
+                'size' => $files['size'][$i],
+            ];
+
+            $altText = ($restaurant->name ?? 'Dish') . ' Image';
+            $result = $this->mediaService->uploadAndCreate($file, 'Yummy/Restaurant', $altText);
+
+            if (!($result['success'] ?? false)) {
+                continue;
+            }
+
+            $order = $this->restaurantRepository->getNextGalleryOrder($pdoGalleryId);
+
+            $this->restaurantRepository->addMediaToGallery(
+                $pdoGalleryId,
+                $result['media']->media_id,
+                $order
+            );
+        }
+
+    }
+
+    public function replaceRestaurantGalleryImages(?Restaurant $restaurant, array $files){
+        if (!$restaurant?->gallery->gallery_id) {
+            return;
+        }
+
+        foreach ($files as $key => $file) {
+            if (!str_starts_with($key, 'gallery_replace_')) {
+                continue;
+            }
+
+            $mediaId = (int)str_replace('gallery_replace_', '', $key);
+
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            $altText = ($restaurant->name ?? 'Dish') . ' Image';
+
+            $result = $this->mediaService->replaceMedia(
+                $mediaId,
+                $file,
+                'Yummy/Restaurant',
+                $altText
+            );
+            if (!($result['success'] ?? false)) {
+                throw new \Exception(('Failed to replace image'));
+            }
+        }
+    }
+
+    public function removeGalleryImage(int $restaurantId, int $mediaId): bool{
+        $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
+        if (!$restaurant?->gallery?->gallery_id) {
+        return false;
+        }   
+
+        return $this->restaurantRepository->removeMediaFromGallery(
+            $restaurant->gallery->gallery_id,
+            $mediaId
+        );
+    }
+
+    private function handleSessions(int $restaurantId, array $postData){
+        $this->restaurantRepository->deleteSessionsByRestaurant($restaurantId);
+        foreach ($postData['sessions'] ?? [] as $index => $data) {
+            if(empty($data['type']) && empty($data['start']) && empty($data['end'])){
+                continue;
+            }
+
+            $session = new Session();
+            $session->session_id = (int)$data['session_type_id'];
+            $session->restaurantId = $restaurantId;
+            $session->start_time = new \DateTime($data['start_time']);
+            $session->end_time = new \DateTime($data['end_time']);
+            $session->session_number = $index = 1;
+
+            $this->restaurantRepository->createSession($session);
+        }
     }
 }

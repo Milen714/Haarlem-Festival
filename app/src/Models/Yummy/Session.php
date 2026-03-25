@@ -20,7 +20,7 @@ class Session
 
     public function fromPDOData(array $data): void
     {
-        $this->session_id = isset($data['session_id']) ? (int)$data['session_id'] : null;
+        $this->session_id = isset($data['session_type_id']) ? (int)$data['session_type_id'] : null;
         $this->restaurantId = isset($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
         $this->session_type_name = $data['session_type_name'] ?? null;
         $this->name = $data['session_type_name'] ?? null;
