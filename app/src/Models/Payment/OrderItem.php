@@ -89,14 +89,7 @@ class OrderItem
     }
     public function generateQrCode(): void
     {
-        
-        $data = [
-            'id' => $this->orderitem_id,
-            'hash' => $this->qr_code_hash
-        ];
-        $qrData = "" . json_encode($data);
-        
-        $img = '<img style="width: 150px; height: 150px;" src="'.(new QRCode)->render($qrData).'" alt="QR Code" />';
+        $img = '<img style="width: 150px; height: 150px;" src="'.(new QRCode)->render($this->qr_code_hash).'" alt="QR Code" />';
         echo $img;
     }
 }
