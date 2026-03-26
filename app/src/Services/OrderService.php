@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Enums\OrderStatus;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Models\Payment\Order;
 use App\Models\User;
 use App\Models\Payment\OrderItem;
@@ -47,9 +48,9 @@ class OrderService implements IOrderService
         return $order;
     }
 
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
-        return $this->orderRepository->updateOrderStatus($orderId, $status);
+        return $this->orderRepository->updateOrderStatus($orderId, $status, $pdf);
     }
 
     public function addOrderItem(OrderItem $orderItem): bool
@@ -73,6 +74,7 @@ class OrderService implements IOrderService
     public function createSessionCart(): Order
     {
         $order = new Order();
+        $order->generateReferenceNumber();
         $order->order_date = new \DateTime();
         $order->status = OrderStatus::In_Cart;
         if(!isset($_SESSION['session_cart'])){
@@ -164,14 +166,28 @@ class OrderService implements IOrderService
         $order->calculateTotals();
 
         if (!$ticketsAlreadyLocked) {
-            // Build items array and reserve all seats in a single transaction
+            // Build items array and reserve all seats in a single transaction.
+            // For pass-type tickets, expand to all sibling ticket types sharing the same scheme
+            // so that 1 pass purchase deducts 1 slot from every schedule for that pass.
             $items = [];
             foreach ($order->orderItems as $item) {
                 $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+                $schemeEnum   = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+                $schemeId     = $item->ticket_type?->ticket_scheme?->ticket_scheme_id ?? null;
+                $quantity     = (int)$item->quantity;
+
                 if ($ticketTypeId === null) {
                     continue;
                 }
-                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => (int)$item->quantity];
+
+                if ($schemeEnum !== null && TicketSchemeEnum::isPassType($schemeEnum) && $schemeId !== null) {
+                    $siblingIds = $this->ticketService->getTicketTypeIdsBySchemeId($schemeId);
+                    foreach ($siblingIds as $siblingId) {
+                        $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
+                    }
+                } else {
+                    $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+                }
             }
 
             if (!empty($items) && !$this->ticketService->reserveMultiple($items)) {
@@ -262,6 +278,7 @@ class OrderService implements IOrderService
         $cart->calculateTotals();
         $this->hydrateSessionCart($cart);
         if ($cart->order_id !== null && $itemToRemove->orderitem_id !== null) {
+            $this->ticketService->releaseOrderItems([$itemToRemove]);
             $this->orderRepository->removeOrderItem($itemToRemove->orderitem_id);
             $this->orderRepository->updateOrderTotals($cart);
         }
@@ -273,6 +290,9 @@ class OrderService implements IOrderService
         if ($cart === null) {
             throw new \RuntimeException('No session cart found when trying to update order item.');
         }
+        /**
+         * @var OrderItem $itemToUpdate
+         */
         $itemToUpdate = $this->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
         if ($itemToUpdate === null) {
             throw new \RuntimeException("No order item found in cart with sessionOrderitem_id {$sessionOrderItemId}.");
@@ -288,4 +308,43 @@ class OrderService implements IOrderService
         }
     }
 
+    public function generateTicketHashes(int $orderId): void
+    {
+        $items = $this->orderRepository->getOrderItemsByOrderId($orderId);
+
+        foreach ($items as $item) {
+            $uniqueHash = bin2hex(random_bytes(8));
+
+            $this->orderRepository->updateItemHash($item->orderitem_id, $uniqueHash);
+        }
+    }
+
+    public function getOrderItemByHash(string $hash): ?OrderItem
+    {
+        return $this->orderRepository->getOrderItemByHash($hash);
+    }
+
+    public function markAsScanned(int $orderItemId): bool
+    {
+        return $this->orderRepository->markAsScanned($orderItemId);
+    }
+
+    public function getPaidOrderItemsByUserId(int $userId): array
+    {
+        $orders = $this->getOrdersByUserId($userId);
+        $paidItems = [];
+
+        foreach ($orders as $order) {
+            if ($order->status === OrderStatus::Fulfilled) {
+                $items = $this->getOrderItemsByOrderId($order->order_id);
+                $paidItems = array_merge($paidItems, $items);
+            }
+        }
+
+        return $paidItems;
+    }
+        public function getOrdersWhereStatusIn(array $statuses): array
+        {
+            return $this->orderRepository->getOrdersWhereStatusIn($statuses);
+        }
 }

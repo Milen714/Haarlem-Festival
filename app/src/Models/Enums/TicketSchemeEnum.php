@@ -18,4 +18,33 @@ enum TicketSchemeEnum: string
     case HISTORY_FAMILY_TICKET = 'HISTORY_FAMILY_TICKET';
     case MAGIC_LORENTZ_FORMULA = 'MAGIC_LORENTZ_FORMULA';
     case MAGIC_SECRETS = 'MAGIC_SECRETS';
+
+    public static function isPassType(self $enum): bool
+    {
+        return in_array($enum, [
+            self::JAZZ_DAY_PASS,
+            self::DANCE_ALL_DAY,
+            self::DANCE_WEEK_PASS,
+        ], true);
+    }
+
+    /** Returns the venue label for this ticket type, or '' to fall back to the schedule's venue name. */
+    public function getVenueLabel(): string
+    {
+        if (self::isPassType($this)) {
+            return 'All Venues & Stages';
+        }
+        return '';
+    }
+
+    /** Returns the duration/coverage label for this ticket type, or '' to fall back to getDurationInMinutes(). */
+    public function getDurationLabel(float $price = 0): string
+    {
+        return match($this) {
+            self::JAZZ_DAY_PASS   => $price >= 60 ? 'Thu, Fri & Sat' : 'All Day',
+            self::DANCE_ALL_DAY   => 'All Day',
+            self::DANCE_WEEK_PASS => 'Full Week',
+            default               => '',
+        };
+    }
 }

@@ -16,6 +16,10 @@ use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
+use App\Services\MailService;
+use App\Services\Interfaces\IMailService;
+use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Services\TicketFulfillmentService;
 use DateTime;
 
 class PaymentController extends BaseController
@@ -24,11 +28,16 @@ class PaymentController extends BaseController
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
+    private IMailService $mailService;
+    private ITicketFulfillmentService $ticketFulfillmentService;
+
     public function __construct()
     {
         $this->ticketService = new TicketService();
         $this->paymentService = new PaymentService();
         $this->orderService = new OrderService();
+        $this->mailService = new MailService();
+        $this->ticketFulfillmentService = new TicketFulfillmentService();
     }
 
     public function index(array $params = [])
@@ -41,7 +50,7 @@ class PaymentController extends BaseController
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
-
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function personalProgram(){
         $userId = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : null;
         if (!$userId) {
@@ -51,6 +60,7 @@ class PaymentController extends BaseController
         }
 
         $tickets = $this->orderService->getPaidTicketsByUser($userId);
+        
         //for each events
         foreach ($tickets as $ticket) {
             $ticket['title'] = $ticket['artist_name']
@@ -73,14 +83,14 @@ class PaymentController extends BaseController
             'tickets' => $tickets
         ]);
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function checkout(array $params = [])
     {
         $order=$this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function createCheckoutSession(array $params = [])
     {
         try {
@@ -125,31 +135,51 @@ class PaymentController extends BaseController
             echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
         }
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function return(array $params = [])
     {
-        $sessionId = $_GET['session_id'] ?? null;
-        if ($sessionId !== null) {
-            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-            if ($order !== null && $order->status === OrderStatus::Paid) {
-                $this->orderService->clearSessionCart();
+        try {
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($_GET['session_id'] ?? '');
+            if ($order === null) {
+                throw new \Exception('No active cart found.');
             }
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/CheckoutSuccess', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            error_log('Error loading checkout success page: ' . $e->getMessage());
+            // Optionally, you could redirect to an error page or show a user-friendly message here.
         }
-        $this->view('ShoppingCart/CheckoutSuccess');
     }
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function status(array $params = [])
     {
         header('Content-Type: application/json');
-        try{
+        try {
             $jsonString = file_get_contents('php://input');
-            $jsonData = json_decode($jsonString, true);
-            $this->paymentService->stripeCheckoutStatus($jsonData);
+            $jsonData   = json_decode($jsonString, true);
+            $sessionId  = $jsonData['session_id'] ?? null;
 
-        }catch (\Exception $e) {
-             error_log('Error checking payment status: ' . $e->getMessage());
+            $data = $this->paymentService->stripeCheckoutStatus($jsonData);
+
+            // If Stripe confirms payment, update the order in DB and clear the session cart.
+            // This handles the case where the webhook fires after the redirect (race condition).
+            if (
+                ($data['status'] ?? '')          === 'complete' &&
+                ($data['payment_status'] ?? '')  === 'paid'     &&
+                $sessionId !== null
+            ) {
+                $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+                
+                $this->orderService->clearSessionCart();
+            }
+
+            http_response_code(200);
+            echo json_encode($data);
+
+        } catch (\Exception $e) {
+            error_log('Error checking payment status: ' . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'An error occurred while checking the payment status.' . $e->getMessage()]);
+            echo json_encode(['error' => 'An error occurred while checking the payment status.']);
         }
     }
     public function details(array $params = [])
@@ -159,50 +189,5 @@ class PaymentController extends BaseController
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
     }
-    public function test(array $params = [])
-    {
-         header('Content-Type: application/json');
-         $sessionCart = $this->orderService->getSessionCart();
-         $user = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser'] : new User();
-          $this->orderService->persistSessionCart($sessionCart, $user);
-          $this->orderService->hydrateSessionCart($sessionCart);
-
-         //$viewModel = new ShoppingCartViewModel($order);
-        
-        // echo json_encode($viewModel, JSON_PRETTY_PRINT);   
-        //$this->view('ShoppingCart/WishlistMain', ['viewModel' => null]);
-    }
-
-    public function createTestOrder(array $params = []): void
-    {
-        header('Content-Type: application/json; charset=utf-8');
-
-        try {
-            $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
-                throw new \Exception('Invalid JSON input');
-            }
-            
-            $ticketType = $this->ticketService->getTicketTypeById($jsonData['ticketTypeId']);
-             if (!$ticketType) {
-                throw new \Exception('Ticket type not found');
-            }
-            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
-            $this->orderService->addOrderItemToSessionCart($orderItem);
-            $cart = $this->orderService->getSessionCart();
-            echo json_encode([
-                'success' => true,
-                'cart' => $cart
-            ], JSON_PRETTY_PRINT);
-        } catch (\Throwable $e) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-
-
-
+    
 }

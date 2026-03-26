@@ -10,6 +10,7 @@ use App\Services\VenueService;
 use App\Services\ArtistService;
 use App\Services\RestaurantService;
 use App\Services\LandmarkService;
+
 class ScheduleService implements IScheduleService
 {
     private ScheduleRepository $scheduleRepository;
@@ -19,7 +20,8 @@ class ScheduleService implements IScheduleService
     private RestaurantService $restaurantService;
     private LandmarkService $landmarkService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->scheduleRepository = new ScheduleRepository();
         $this->ticketRepository   = new TicketRepository();
         $this->venueService       = new VenueService();
@@ -156,7 +158,6 @@ class ScheduleService implements IScheduleService
         $schedule->restaurant_id  = !empty($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
         $schedule->landmark_id    = !empty($data['landmark_id'])   ? (int)$data['landmark_id']   : null;
 
-        // Safely create DateTime objects with error handling
         try {
             $schedule->date       = !empty($data['date'])       ? new \DateTime($data['date'])       : null;
             $schedule->start_time = !empty($data['start_time']) ? new \DateTime($data['start_time']) : null;
@@ -185,6 +186,15 @@ class ScheduleService implements IScheduleService
 
             $dateKey = $s->date->format('Y-m-d');
 
+            $ticketTypes  = $this->ticketRepository->getTicketTypesByScheduleId($s->schedule_id);
+            $ticketPrice  = null;
+            foreach ($ticketTypes as $tt) {
+                $price = $tt->ticket_scheme?->price ?? null;
+                if ($price !== null && ($ticketPrice === null || $price < $ticketPrice)) {
+                    $ticketPrice = $price;
+                }
+            }
+
             $grouped[$dateKey][] = [
                 'schedule_id'    => $s->schedule_id,
                 'date'           => $s->date,
@@ -197,6 +207,7 @@ class ScheduleService implements IScheduleService
                 'venue_capacity' => $s->venue?->capacity,
                 'total_capacity' => $s->total_capacity,
                 'is_sold_out'    => $this->isScheduleSoldOut($s->schedule_id),
+                'ticket_price'   => $ticketPrice,
             ];
         }
 

@@ -62,7 +62,14 @@ class AccountController extends BaseController
                 // Successful login
                 //additionally check if user is admin and redirect to cms if so
                 if ($user->role === UserRole::ADMIN) {
-                    $this->jsonResponse(['success' => true, 'redirect' => '/cms' ], 200);
+                    $redirectAdmin = '/cms';
+                    if($redirect === '/payment-details') {
+                        $redirectAdmin = '/payment-details';
+                    }
+                    $this->jsonResponse(['success' => true, 'redirect' => $redirectAdmin ], 200);
+                }
+                 else if($user->role === UserRole::EMPLOYEE) {
+                    $this->jsonResponse(['success' => true, 'redirect' => '/qr-code/scan' ], 200);
                 } else {
                     // Regular user login
                     $this->jsonResponse(['success' => true, 'redirect' => $redirect], 200);

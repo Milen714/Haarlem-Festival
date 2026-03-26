@@ -16,17 +16,22 @@ use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 use Stripe\ApiOperations\Update;
+use App\Services\MailService;
+use App\Services\Interfaces\IMailService;
+use FontLib\Table\Type\head;
 
 class OrderController extends BaseController
 {
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
+    private IMailService $mailService;
     public function __construct()
     {
         $this->ticketService = new TicketService();
         $this->paymentService = new PaymentService();
         $this->orderService = new OrderService();
+        $this->mailService = new MailService();
     }
 
     public function addToCart(array $params = []): void
@@ -150,4 +155,60 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
+    public function showUserTickets(): void
+    {
+        /** @var \App\Models\User $user */
+        $user = $_SESSION['loggedInUser'];
+        
+        if (!$user->id) {
+            header('Location: /login');
+            exit;
+        }
+
+        $this->orderService->generateTicketHashes(69);
+
+        $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
+
+         $this->view('Orders/my-tickets',[
+            'orderItems' => $orderItems
+        ]);
+    }
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
+    public function downloadTickets(array $params = []): void
+    {
+        $pdfName = $_GET['ticket_name'] ?? null;
+    try {
+        $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/' . $pdfName;
+        
+        // 1. Check if file exists
+        if (!file_exists($ticketPdfPath)) {
+            http_response_code(404);
+            echo "File not found";
+            return;
+        }
+        
+        // 2. Get file info
+        $fileName = basename($ticketPdfPath);
+        $fileSize = filesize($ticketPdfPath);
+        
+        // 3. Set HTTP headers BEFORE any output
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        header('Content-Length: ' . $fileSize);
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        // 4. Send file to browser
+        readfile($ticketPdfPath);
+        exit;
+        
+    } catch (\Throwable $e) {
+        http_response_code(500);
+        echo "Error: " . $e->getMessage();
+    }
+}
+    
 }
