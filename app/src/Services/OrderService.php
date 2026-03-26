@@ -278,6 +278,7 @@ class OrderService implements IOrderService
         $cart->calculateTotals();
         $this->hydrateSessionCart($cart);
         if ($cart->order_id !== null && $itemToRemove->orderitem_id !== null) {
+            $this->ticketService->releaseOrderItems([$itemToRemove]);
             $this->orderRepository->removeOrderItem($itemToRemove->orderitem_id);
             $this->orderRepository->updateOrderTotals($cart);
         }
@@ -289,6 +290,9 @@ class OrderService implements IOrderService
         if ($cart === null) {
             throw new \RuntimeException('No session cart found when trying to update order item.');
         }
+        /**
+         * @var OrderItem $itemToUpdate
+         */
         $itemToUpdate = $this->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
         if ($itemToUpdate === null) {
             throw new \RuntimeException("No order item found in cart with sessionOrderitem_id {$sessionOrderItemId}.");

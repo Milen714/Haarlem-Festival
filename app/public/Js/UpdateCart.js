@@ -69,7 +69,7 @@ function createOrderItemRow(orderItem, sessionOrderItemId) {
 
            <button
                id="save-changes"
-               class="mt-5 w-full rounded-lg bg-orange-500 px-4 py-2 font-medium text-white hover:bg-orange-600"
+               class="save_changes_button"
            >Save Changes</button>
        </div>
     `;

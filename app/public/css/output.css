@@ -2304,10 +2304,6 @@ select:focus,
   border-top-width: 4px;
 }
 
-.border-l-2{
-  border-left-width: 2px;
-}
-
 .border-dashed{
   border-style: dashed;
 }
@@ -2504,11 +2500,6 @@ select:focus,
 .border-gray-300{
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
-}
-
-.border-gray-500{
-  --tw-border-opacity: 1;
-  border-color: rgb(107 114 128 / var(--tw-border-opacity, 1));
 }
 
 .border-gray-600{
@@ -2994,6 +2985,11 @@ select:focus,
 .bg-indigo-100{
   --tw-bg-opacity: 1;
   background-color: rgb(224 231 255 / var(--tw-bg-opacity, 1));
+}
+
+.bg-orange-500{
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 115 22 / var(--tw-bg-opacity, 1));
 }
 
 .bg-purple-100{
@@ -3516,10 +3512,6 @@ select:focus,
 
 .pt-\[45vh\]{
   padding-top: 45vh;
-}
-
-.pr-2{
-  padding-right: 0.5rem;
 }
 
 .text-left{
@@ -4351,6 +4343,26 @@ select:focus,
 
 .checkout_login_button:is(.dark *){
   background-color: var(--text-home-high-contrast-primary);
+}
+
+.save_changes_button{
+  margin-top: 1.25rem;
+  width: 100%;
+  border-radius: 0.5rem;
+  --tw-bg-opacity: 1;
+  background-color: rgb(249 115 22 / var(--tw-bg-opacity, 1));
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-weight: 500;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.save_changes_button:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(234 88 12 / var(--tw-bg-opacity, 1));
 }
 
 .download_tickets_button{
@@ -5575,6 +5587,11 @@ select:focus,
 .hover\:bg-indigo-200:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(199 210 254 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-orange-600:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(234 88 12 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-red-200:hover{
