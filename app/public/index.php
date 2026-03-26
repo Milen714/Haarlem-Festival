@@ -16,7 +16,22 @@ use App\Controllers\HomeController;
 use App\Controllers\AccountController;
 use App\Controllers\CMS\CmsMediaController;
 use App\Services\AuthService;
+use App\Services\MailService;
+use App\Services\OrderService;
+use App\Services\UserService;
+use App\Services\Interfaces\IAuthService;
+use App\Services\Interfaces\IMailService;
+use App\Services\Interfaces\IOrderService;
+use App\Services\Interfaces\IUserService;
 use App\Middleware\RoleMiddleware;
+
+$container = new \App\Framework\Container();
+
+$container->singleton(IUserService::class, fn() => new UserService());
+$container->singleton(IMailService::class, fn() => new MailService());
+$container->singleton(IOrderService::class, fn() => new OrderService());
+$container->singleton(IAuthService::class, fn($c) => new AuthService($c->get(IUserService::class)));
+$container->singleton(AuthService::class, fn($c) => $c->get(IAuthService::class));
 
 /**
  * Define the routes for the application.
@@ -231,7 +246,7 @@ switch ($routeInfo[0]) {
         // TODO: pass the dynamic route data to the controller method
         // When done, visiting `http://localhost/hello/dan-the-man` should output "Hi, dan-the-man!"
 
-        $controller = new $routeInfo[1][0]();
+        $controller = $container->make($routeInfo[1][0]);
         $method = $routeInfo[1][1];
         $params = $routeInfo[2];
 
@@ -239,8 +254,7 @@ switch ($routeInfo[0]) {
         //     session_start();
         // }
 
-
-        $authService = new AuthService();
+    $authService = $container->get(IAuthService::class);
         $roleMiddleware = new RoleMiddleware($authService);
 
         // Run the middleware check

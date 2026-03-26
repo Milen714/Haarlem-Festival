@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\ScheduleService;
 use App\Services\VenueService;
 use App\Services\PageService;

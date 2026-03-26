@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Services\UserService;
@@ -22,12 +22,17 @@ class AccountController extends BaseController
     private IMailService $mailService;
     private IAuthService $authService;
     private IOrderService $orderService;
-    public function __construct()
+    public function __construct(
+        ?IUserService $userService = null,
+        ?IMailService $mailService = null,
+        ?IAuthService $authService = null,
+        ?IOrderService $orderService = null
+    )
     {
-        $this->userService = new UserService();
-        $this->mailService = new MailService();
-        $this->authService = new AuthService();
-        $this->orderService = new OrderService();
+        $this->userService = $userService ?? new UserService();
+        $this->mailService = $mailService ?? new MailService();
+        $this->authService = $authService ?? new AuthService($this->userService);
+        $this->orderService = $orderService ?? new OrderService();
     }
     public function login($vars = [])
     {

@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Models\Enums\OrderStatus;
@@ -31,13 +31,19 @@ class PaymentController extends BaseController
     private IMailService $mailService;
     private ITicketFulfillmentService $ticketFulfillmentService;
 
-    public function __construct()
+    public function __construct(
+        ?ITicketService $ticketService = null,
+        ?IPaymentService $paymentService = null,
+        ?IOrderService $orderService = null,
+        ?IMailService $mailService = null,
+        ?ITicketFulfillmentService $ticketFulfillmentService = null
+    )
     {
-        $this->ticketService = new TicketService();
-        $this->paymentService = new PaymentService();
-        $this->orderService = new OrderService();
-        $this->mailService = new MailService();
-        $this->ticketFulfillmentService = new TicketFulfillmentService();
+        $this->ticketService = $ticketService ?? new TicketService();
+        $this->paymentService = $paymentService ?? new PaymentService();
+        $this->orderService = $orderService ?? new OrderService();
+        $this->mailService = $mailService ?? new MailService();
+        $this->ticketFulfillmentService = $ticketFulfillmentService ?? new TicketFulfillmentService();
     }
 
     public function index(array $params = [])

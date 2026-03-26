@@ -10,9 +10,9 @@ class AuthService implements IAuthService {
     private ?User $user = null;
     private IUserService $userService;
 
-    public function __construct()
+    public function __construct(?IUserService $userService = null)
     {
-        $this->userService = new UserService();
+        $this->userService = $userService ?? new UserService();
     }
     public function getLoggedInUser(): ?User {
         if ($this->user === null && isset($_SESSION['loggedInUser'])) {

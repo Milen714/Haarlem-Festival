@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Exceptions\ApplicationException;

@@ -12,7 +12,7 @@ use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\IAlbumService;
 use App\Services\Interfaces\ITicketService;
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\Gallery;
 
 class DanceArtistController extends BaseController

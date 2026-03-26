@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\ArtistRepository;

@@ -2,7 +2,7 @@
 
 namespace App\Controllers\CMS;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\MediaService;
 use App\Services\Interfaces\IMediaService;
 

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controllers;
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Services\UserService;
 use App\Models\User;
@@ -15,10 +15,10 @@ class UserController extends BaseController
 {
     private IUserService $userService;
     private IAuthService $authService;
-    public function __construct()
+    public function __construct(?IUserService $userService = null, ?IAuthService $authService = null)
     {
-        $this->userService = new UserService();
-        $this->authService = new AuthService();
+        $this->userService = $userService ?? new UserService();
+        $this->authService = $authService ?? new AuthService($this->userService);
     }
 
     #[RequireRole([UserRole::ADMIN])]

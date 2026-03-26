@@ -5,10 +5,10 @@ use App\Controllers\HomeController;
 use ReflectionMethod;
 use App\Models\UserRole;
 use App\Models\User;
-use App\Services\AuthService;
+use App\Services\Interfaces\IAuthService;
 
 class RoleMiddleware{
-    public function __construct(public AuthService $authService){}
+    public function __construct(public IAuthService $authService){}
     public function check(object $controller, string $methodName){
         try {
         $reflectionMethod = new ReflectionMethod($controller, $methodName);

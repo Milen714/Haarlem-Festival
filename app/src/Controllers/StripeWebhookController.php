@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Framework\BaseController;
 use App\Models\Enums\OrderStatus;
 use App\Models\Payment\Order;
 use App\Models\Payment\OrderItem;

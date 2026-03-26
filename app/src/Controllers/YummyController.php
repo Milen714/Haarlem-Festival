@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\UserService;
 use App\Services\ScheduleService;
 use App\Services\RestaurantService;

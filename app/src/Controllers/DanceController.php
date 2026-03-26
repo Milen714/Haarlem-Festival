@@ -1,7 +1,7 @@
 <?php 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\PageService;
 use App\Services\ArtistService;
 use App\Services\MediaService;
