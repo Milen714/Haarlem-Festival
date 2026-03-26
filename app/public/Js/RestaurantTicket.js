@@ -1,8 +1,6 @@
 const state = {
     selectedDate: null,
-    selectedDateLabel: null,
     selectedScheduleId: null,
-    selectedTime: null,
     tickets: {} //for the quantity of tickets
 }
 
@@ -197,7 +195,6 @@ document.querySelector('.confirm-btn').addEventListener('click', async () => {
                 throw new Error('Could not add tickets to cart');
             }
        }
-       fillConfModal();
         document.getElementById('confirmation-modal').classList.remove('hidden');
         document.getElementById('reservation-modal').classList.add('hidden');
 
@@ -257,37 +254,37 @@ function updateSummary(){
     summaryContainer.innerHTML = html;
 }
 
-function fillConfModal(){
-    //build ticket summary 
-    let ticketSummary = '';
-    let total = 0;
+// function fillConfModal(){
+//     //build ticket summary 
+//     let ticketSummary = '';
+//     let total = 0;
 
-    for (const id in state.tickets) {
-        const qty = state.tickets[id];
-        if (qty === 0) continue;
+//     for (const id in state.tickets) {
+//         const qty = state.tickets[id];
+//         if (qty === 0) continue;
 
-        const name = ticketNames[id];
-        const price = ticketPrices[id];
+//         const name = ticketNames[id];
+//         const price = ticketPrices[id];
 
-        ticketSummary += `${qty}x ${name}, `;
-        total += qty * price;
-    }
+//         ticketSummary += `${qty}x ${name}, `;
+//         total += qty * price;
+//     }
 
-    ticketSummary = ticketSummary.slice(0, -2); //remove the last comma
-    const finalTotal = total + (total > 0 ? reservationFee : 0);
+//     ticketSummary = ticketSummary.slice(0, -2); //remove the last comma
+//     const finalTotal = total + (total > 0 ? reservationFee : 0);
 
-    //fill the buttons with the used data
-    document.getElementById('confirm-day').textContent =
-        state.selectedDateLabel?.split(' ')[0] || '';
+//     //fill the buttons with the used data
+//     document.getElementById('confirm-day').textContent =
+//         state.selectedDateLabel?.split(' ')[0] || '';
 
-    document.getElementById('confirm-date').textContent =
-        state.selectedDateLabel || '';
+//     document.getElementById('confirm-date').textContent =
+//         state.selectedDateLabel || '';
 
-    document.getElementById('confirm-details').innerHTML =
-        `${state.selectedDate} • ${state.selectedTime}`;
+//     document.getElementById('confirm-details').innerHTML =
+//         `${state.selectedDate} • ${state.selectedTime}`;
 
-    document.getElementById('confirm-tickets').textContent = ticketSummary;
+//     document.getElementById('confirm-tickets').textContent = ticketSummary;
 
-    document.getElementById('confirm-total').textContent =
-        `€ ${finalTotal.toFixed(2)}`;
-}
+//     document.getElementById('confirm-total').textContent =
+//         `€ ${finalTotal.toFixed(2)}`;
+// }

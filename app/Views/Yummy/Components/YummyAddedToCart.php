@@ -18,9 +18,9 @@ namespace App\Views\Yummy\Components;
     <hr class="border-[#d4a356]/40 w-3/4 mx-auto mb-8">
 
     <h2 class="text-3xl font-serif mb-2">Added to your Cart!</h2>
-    <p class="text-gray-300 text-lg mb-10">Your reservation has been successfully staged for purchase.</p>
+    <p class="text-gray-300 text-lg mb-10">Your reservation with <?= $restaurant->name ?> has been successfully staged for purchase.</p>
 
-    <article class="relative flex items-center bg-white rounded-md overflow-hidden text-left mb-12 shadow-xl">
+    <!-- <article class="relative flex items-center bg-white rounded-md overflow-hidden text-left mb-12 shadow-xl">
       <div class="w-2 self-stretch bg-red-600"></div>
       
       <div class="flex flex-col md:flex-row w-full p-4 items-center justify-between">
@@ -42,7 +42,7 @@ namespace App\Views\Yummy\Components;
           <span id="confirm-total" class="text-2xl font-black text-gray-900">€ 175,00</span>
         </div>
       </div>
-    </article>
+    </article> -->
 
     <hr class="border-[#d4a356]/40 w-3/4 mx-auto mb-10">
 
