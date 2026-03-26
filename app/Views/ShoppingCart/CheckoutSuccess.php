@@ -1,7 +1,11 @@
 <?php
 namespace App\Views\ShoppingCart;
+use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
 use function App\Views\ShoppingCart\Components\displaySteps;
+/** @var ShoppingCartViewModel|null $viewModel */
+$viewModel = $viewModel ?? null;
+$order = $viewModel?->order;
 
 ?>
 
@@ -11,48 +15,58 @@ use function App\Views\ShoppingCart\Components\displaySteps;
 
 
 <section id="success" class="hidden pb-5  
-flex flex-col  bg_colors_home  overflow-x-hidden w-[90%] mx-auto mt-5 justify-center items-center">
-    <section
-        class="bg-[#DCFCE7] flex flex-col gap-6 w-full p-6 rounded-t-xl border-b-2 border-[#78d498] items-center justify-center">
-        <article class="confirmed_article flex items-center gap-4 w-[80%]">
-            <img src="/Assets/Home/PaymentSuccessIcon.svg" alt="Payment Success Icon" class="w-16 h-16 flex-shrink-0">
-            <header>
-                <h1>Payment Confirmed!</h1>
-                <p>Your order has been successfully processed. Tickets and
-                    confirmation details
-                    have been sent to your
-                    email. <span id="customer-email"></span></p>
-            </header>
-        </article>
-    </section>
-    <section class="w-full flex flex-col gap-6 items-center justify-center bg-white py-5">
-
-        <section class="w-[80%] ml-5 whats_next_list">
-            <h2>What's Next?</h2>
-            <p>Check your inbox for ticket confirmation email.
-            </p>
-            <p>Download or save your tickets to your phone.
-            </p>
-            <p>Present QR code at the venue entrance.
-            </p>
+flex flex-col xl:flex-row gap-3 bg_colors_home  overflow-x-hidden w-[90%] mx-auto mt-5 justify-center items-center">
+    <section class="flex flex-col">
+        <section
+            class="bg-[#DCFCE7] flex flex-col gap-6 w-full p-6 rounded-t-xl border-b-2 border-[#78d498] items-center justify-center">
+            <article class="confirmed_article flex items-center gap-4 w-[80%]">
+                <img src="/Assets/Home/PaymentSuccessIcon.svg" alt="Payment Success Icon"
+                    class="w-16 h-16 flex-shrink-0">
+                <header>
+                    <h1>Payment Confirmed!</h1>
+                    <p>Your order has been successfully processed. Tickets and
+                        confirmation details
+                        have been sent to your
+                        email. <span id="customer-email"></span></p>
+                </header>
+            </article>
+        </section>
+        <section class="w-full flex flex-col gap-6 items-center justify-center bg-white py-5">
+            <section class="w-[80%] ml-5 whats_next_list">
+                <h2>What's Next?</h2>
+                <p>Check your inbox for ticket confirmation email.
+                </p>
+                <p>Download or save your tickets to your phone.
+                </p>
+                <p>Present QR code at the venue entrance.
+                </p>
+            </section>
+            <section
+                class="w-[80%] ml-5 flex flex-col sm:flex-row  items-center sm:justify-between rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] p-5">
+                <div class="flex flex-col">
+                    <span>Order Reference</span>
+                    <p class="text-black font-bold text-lg">
+                        <?php echo htmlspecialchars($order->reference_number ?? 'N/A'); ?></p>
+                </div>
+                <div class="flex flex-col">
+                    <span>Date</span>
+                    <p class="text-black font-bold text-lg"><?php echo htmlspecialchars($order->created_at ?? 'N/A'); ?>
+                    </p>
+                </div>
+            </section>
         </section>
         <section
-            class="w-[80%] ml-5 flex flex-col sm:flex-row  items-center sm:justify-between rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] p-5">
-            <div class="flex flex-col">
-                <span>Order Reference</span>
-                <p class="text-black font-bold text-lg">#123456789</p>
-            </div>
-            <div class="flex flex-col">
-                <span>Date</span>
-                <p class="text-black font-bold text-lg">26 Jan 2026</p>
-            </div>
+            class="flex p-5 bg-[#F9FAFB] w-full justify-around items-center gap-4 border-t border-[#E5E7EB] rounded-b-xl">
+            <a href="/payment/downloadTickets?ticket_name=<?php echo htmlspecialchars($order->ticket_pdf_path ?? 'N/A'); ?>"
+                class="download_tickets_button">Download Tickets</a>
+            <a href="/" class="back_home_button">Return to Home</a>
         </section>
     </section>
-
-    <section
-        class="flex p-5 bg-[#F9FAFB] w-full justify-around items-center gap-4 border-t border-[#E5E7EB] rounded-b-xl">
-        <a href="#" class="download_tickets_button">Download Tickets</a>
-        <a href="#" class="back_home_button">Return to Home</a>
+    <section class="w-full md:w-[40%]">
+        <?php
+            $showProceedButton = false;
+            include __DIR__ . '/Components/OrderSummaryRows.php';
+        ?>
     </section>
 </section>
 

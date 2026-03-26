@@ -48,9 +48,9 @@ class OrderService implements IOrderService
         return $order;
     }
 
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
-        return $this->orderRepository->updateOrderStatus($orderId, $status);
+        return $this->orderRepository->updateOrderStatus($orderId, $status, $pdf);
     }
 
     public function addOrderItem(OrderItem $orderItem): bool

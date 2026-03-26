@@ -138,7 +138,17 @@ class PaymentController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function return(array $params = [])
     {
-        $this->view('ShoppingCart/CheckoutSuccess');
+        try {
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($_GET['session_id'] ?? '');
+            if ($order === null) {
+                throw new \Exception('No active cart found.');
+            }
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/CheckoutSuccess', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            error_log('Error loading checkout success page: ' . $e->getMessage());
+            // Optionally, you could redirect to an error page or show a user-friendly message here.
+        }
     }
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function status(array $params = [])
@@ -159,9 +169,7 @@ class PaymentController extends BaseController
                 $sessionId !== null
             ) {
                 $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-                if ($order !== null && $order->status !== OrderStatus::Paid) {
-                    $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Paid);
-                }
+                
                 $this->orderService->clearSessionCart();
             }
 
@@ -181,89 +189,5 @@ class PaymentController extends BaseController
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
     }
-    public function test(array $params = [])
-    {
-         header('Content-Type: application/json');
-         $sessionCart = $this->orderService->getSessionCart();
-         $user = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser'] : new User();
-          $this->orderService->persistSessionCart($sessionCart, $user);
-          $this->orderService->hydrateSessionCart($sessionCart);
-
-         //$viewModel = new ShoppingCartViewModel($order);
-        
-        // echo json_encode($viewModel, JSON_PRETTY_PRINT);   
-        //$this->view('ShoppingCart/WishlistMain', ['viewModel' => null]);
-    }
-
-    public function createTestOrder(array $params = []): void
-    {
-        header('Content-Type: application/json; charset=utf-8');
-
-        try {
-            $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
-                throw new \Exception('Invalid JSON input');
-            }
-            
-            $ticketType = $this->ticketService->getTicketTypeById($jsonData['ticketTypeId']);
-             if (!$ticketType) {
-                throw new \Exception('Ticket type not found');
-            }
-            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
-            $this->orderService->addOrderItemToSessionCart($orderItem);
-            $cart = $this->orderService->getSessionCart();
-            echo json_encode([
-                'success' => true,
-                'cart' => $cart
-            ], JSON_PRETTY_PRINT);
-        } catch (\Throwable $e) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-    public function sendTicketEmail(array $params = []): void
-    {
-
-        try {
-            
-            /**
-             * @var Order $order
-             */
-            $order= $this->orderService->getSessionCart();
-        if(!isset($order)){
-            $order = $this->orderService->createSessionCart();
-        }
-        // foreach($order->orderItems as $item){
-        //     $item->qrPic = $item->generateQrCode();
-        // }
-            $viewModel = new ShoppingCartViewModel($order);
-           // In your PaymentController->sendTicketEmail() method:
-            $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/Tickets (4).pdf';
-
-            $this->mailService->sendEmail(
-            'paami97@gmail.com',
-            "Your Festival Tickets",
-            $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel]),
-            [$ticketPdfPath]  // Pass PDF as attachment
-            );
-            //$this->view('Email/TicketsMailBody', ['viewModel' => $viewModel]);
-            
-            // foreach($order->orderItems as $item){
-            //         echo $this->ticketFulfillmentService->generateQrCode($item);
-            //     }
-                $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), 'Tickets21');
-                $this->view('Email/TicketsPDF', ['viewModel' => $viewModel]);
-        } catch (\Throwable $e) {
-            $this->jsonResponse([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-
-
-
+    
 }

@@ -34,6 +34,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 o.stripe_customer_id,
                 o.created_at as order_created_at,
                 o.paid_at,
+                o.ticket_pdf_path,
 
                 -- User fields
                 u.id as user_id,
@@ -531,21 +532,22 @@ class OrderRepository extends Repository implements IOrderRepository
         }
     }
 
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
         try {
             $pdo = $this->connect();
 
             $query = "
                 UPDATE `ORDER` SET
-                    status = :status
+                    status = :status,
+                    ticket_pdf_path = :pdf
                 WHERE order_id = :order_id
             ";
 
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':order_id', $orderId, PDO::PARAM_INT);
             $stmt->bindValue(':status', $status->value);
-
+            $stmt->bindValue(':pdf', $pdf, $pdf === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $executed = $stmt->execute();
             if (!$executed) {
                 return false;

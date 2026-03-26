@@ -22,6 +22,7 @@ class Order
     public ?string $stripe_checkout_session_id = null;
     public ?string $created_at = null;
     public ?string $paid_at = null;
+    public ?string $ticket_pdf_path = null;
 
     /** @var OrderItem[] */
     public array $orderItems = [];
@@ -46,7 +47,7 @@ class Order
         $this->created_at = $data['order_created_at'] ?? $data['created_at'] ?? null;
         $this->paid_at = $data['paid_at'] ?? null;
         $this->order_date = isset($data['order_date']) ? new DateTime($data['order_date']) : null;
-
+        $this->ticket_pdf_path = $data['ticket_pdf_path'] ?? null;
         // Hydrate User object
         $user = new User();
         $user->fromPDOData($data);
