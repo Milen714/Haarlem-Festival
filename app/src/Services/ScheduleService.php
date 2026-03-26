@@ -20,6 +20,12 @@ class ScheduleService implements IScheduleService
     private RestaurantService $restaurantService;
     private LandmarkService $landmarkService;
 
+    /**
+     * Wires up all collaborating repositories and services needed for schedule operations.
+     * TicketRepository is used directly (not via a service) to check sold-out status per slot.
+     * VenueService, ArtistService, RestaurantService, and LandmarkService are used to populate
+     * CMS form dropdowns without requiring extra repository calls in the controller.
+     */
     public function __construct()
     {
         $this->scheduleRepository = new ScheduleRepository();
@@ -105,6 +111,10 @@ class ScheduleService implements IScheduleService
         return $this->artistService->getAllArtists();
     }
 
+    /**
+     * Swallows exceptions from RestaurantService rather than propagating them, so a broken
+     * restaurant query doesn't block the entire schedule form from loading.
+     */
     public function getAllRestaurants(): array
     {
         try {
@@ -120,6 +130,10 @@ class ScheduleService implements IScheduleService
         return $this->landmarkService->getAllLandmarks();
     }
 
+    /**
+     * Returns false (not throws) when scheduleId is null or when no ticket types exist at all —
+     * an unconfigured slot should never be treated as sold out.
+     */
     private function isScheduleSoldOut(?int $scheduleId): bool
     {
         if ($scheduleId === null) return false;
@@ -131,6 +145,9 @@ class ScheduleService implements IScheduleService
         );
     }
 
+    /**
+     * Validates that event_id, date, start_time, end_time, and total_capacity (≥ 1) are all present.
+     */
     private function validateScheduleData(array $data): void
     {
         if (empty($data['event_id'])) {
@@ -150,6 +167,10 @@ class ScheduleService implements IScheduleService
         }
     }
 
+    /**
+     * Maps post data onto an existing Schedule object without touching schedule_id.
+     * Date/time strings are parsed into DateTime objects; throws if the format is invalid.
+     */
     private function buildScheduleFromPostData(Schedule $schedule, array $data): Schedule
     {
         $schedule->event_id       = (int)($data['event_id'] ?? 0);
@@ -170,6 +191,11 @@ class ScheduleService implements IScheduleService
         return $schedule;
     }
 
+    /**
+     * Pulls all event schedules then filters in PHP (not SQL) so we avoid an extra query.
+     * For each matching slot the lowest ticket price is resolved and sold-out state is checked
+     * via isScheduleSoldOut(). Slots within each date are sorted by start_time timestamp.
+     */
     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array
     {
         $all = $this->scheduleRepository->getSchedulesByEventId($eventId);

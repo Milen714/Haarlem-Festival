@@ -27,6 +27,10 @@ class ScheduleController extends BaseController
     private ScheduleService $scheduleService;
     private TicketService $ticketService;
 
+    /**
+     * Wires up ScheduleService for all schedule CRUD and TicketService for attaching
+     * ticket type data to schedule rows in the listing and edit views.
+     */
     public function __construct()
     {
         $this->scheduleService = new ScheduleService();
@@ -34,6 +38,17 @@ class ScheduleController extends BaseController
         $this->ticketService = new TicketService(new TicketRepository());
     }
 
+    /**
+     * Renders the CMS schedule listing page with optional filtering by event type and date.
+     * Persists the active filters in the session so they survive a page reload.
+     * Visiting with ?clear in the URL resets the filters and redirects.
+     * Also fetches ticket types in bulk for all visible schedules to show sold-out status.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function index($vars = []): void
     {
@@ -85,6 +100,15 @@ class ScheduleController extends BaseController
         }
     }
 
+    /**
+     * Renders the empty schedule create form with all dropdown data pre-loaded.
+     * Redirects to the listing with an error if the form data cannot be assembled.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
@@ -108,6 +132,16 @@ class ScheduleController extends BaseController
         }
     }
 
+    /**
+     * Handles the schedule create form submission.
+     * Passes $_POST to ScheduleService, sets a success flash, and redirects to the listing.
+     * On validation or other failure, stores the error in the session and redirects back to the form.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
@@ -127,6 +161,15 @@ class ScheduleController extends BaseController
         }
     }
 
+    /**
+     * Renders the schedule edit form pre-populated with the current schedule data and all dropdowns.
+     * Redirects to the listing with an error if the schedule does not exist.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the schedule's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
@@ -162,6 +205,16 @@ class ScheduleController extends BaseController
         }
     }
 
+    /**
+     * Handles the schedule update form submission.
+     * Delegates to ScheduleService, then redirects to the listing on success
+     * or back to the edit form with a session error on failure.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the schedule's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
@@ -182,6 +235,16 @@ class ScheduleController extends BaseController
         }
     }
 
+    /**
+     * Handles the schedule delete action.
+     * Delegates to ScheduleService and sets a flash message for the result.
+     * Always redirects to the schedule listing regardless of outcome.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the schedule's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
@@ -201,6 +264,12 @@ class ScheduleController extends BaseController
         $this->redirect('/cms/schedules');
     }
 
+    /**
+     * Ensures the PHP session is started before writing to $_SESSION.
+     * Safe to call multiple times — checks session_status() before calling session_start().
+     *
+     * @return void
+     */
     private function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {

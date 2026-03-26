@@ -14,13 +14,18 @@ use PDOException;
 
 class ArtistRepository extends Repository implements IArtistRepository
 {
+    /**
+     * Checks both EVENT_ARTIST and SCHEDULE so an artist linked via either table is found.
+     * Headliner status is MAX'd and performance_order is MIN'd across rows to handle
+     * artists appearing in multiple schedules within the same event.
+     */
     public function getArtistsByEventId(int $eventId): array
     {
         try {
             $pdo = $this->connect();
 
             $query = "
-                SELECT 
+                SELECT
                     a.artist_id,
                     a.name,
                     a.slug,
@@ -69,13 +74,17 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /**
+     * Runs three separate queries (artist, gallery media, albums) to avoid a cartesian product
+     * from joining all three at once. Gallery rows are ordered by display_order; albums by release_year DESC.
+     */
     public function getArtistBySlug(string $slug): ?Artist
     {
         try {
             $pdo = $this->connect();
 
             $query = "
-            SELECT 
+            SELECT
                 a.*,
                 m.media_id,
                 m.file_path,
@@ -106,7 +115,7 @@ class ArtistRepository extends Repository implements IArtistRepository
             // Fetch gallery + media items if artist has a gallery
             if (!empty($result['gallery_id'])) {
                 $galleryQuery = "
-                SELECT 
+                SELECT
                     g.gallery_id,
                     g.title AS gallery_title,
                     g.created_at,
@@ -156,7 +165,7 @@ class ArtistRepository extends Repository implements IArtistRepository
 
             // Fetch albums
             $albumQuery = "
-            SELECT 
+            SELECT
                 al.album_id,
                 al.artist_id,
                 al.name,
@@ -205,7 +214,7 @@ class ArtistRepository extends Repository implements IArtistRepository
             $pdo = $this->connect();
 
             $query = "
-                SELECT 
+                SELECT
                     a.*,
                     m.media_id,
                     m.file_path,
@@ -242,7 +251,7 @@ class ArtistRepository extends Repository implements IArtistRepository
             $pdo = $this->connect();
 
             $query = "
-                SELECT 
+                SELECT
                 a.*,
                 a.profile_image_id,
                 m.media_id,
@@ -277,6 +286,7 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /** Sets artist_id to the generated auto-increment value on success. */
     public function create(Artist $artist): bool
     {
         try {
@@ -284,8 +294,8 @@ class ArtistRepository extends Repository implements IArtistRepository
 
             $query = "
                 INSERT INTO ARTIST (
-                    name, 
-                    slug, 
+                    name,
+                    slug,
                     special_event,
                     bio,
                     featured_quote,
@@ -385,6 +395,7 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /** Soft-delete only — sets deleted_at to NOW(). The row is kept but excluded from all listings. */
     public function delete(int $artistId): bool
     {
         try {
@@ -401,6 +412,10 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /**
+     * Uses two EXISTS sub-queries (EVENT_ARTIST and SCHEDULE) so either link counts.
+     * Returns false on DB error rather than throwing — safe for use as an access guard.
+     */
     public function isArtistInEvent(int $artistId, int $eventId): bool
     {
         try {
@@ -434,6 +449,10 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /**
+     * If a gallery_id exists but has no media rows, attaches an empty Gallery shell so the
+     * CMS edit form can still render the upload widget without showing a null gallery.
+     */
     public function getArtistByIdWithGallery(int $artistId): ?Artist
     {
         try {
@@ -533,6 +552,7 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /** Runs inside a transaction — rolls back if either the INSERT or the UPDATE fails. */
     public function createGalleryForArtist(int $artistId, string $title = 'Artist Gallery'): int
     {
         try {
@@ -579,6 +599,7 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /** Deletes the GALLERY_MEDIA link only — the MEDIA record itself is left untouched. */
     public function removeMediaFromGallery(int $galleryId, int $mediaId): bool
     {
         try {
@@ -627,6 +648,11 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
+    /**
+     * Full delete-then-reinsert pattern inside a transaction — all existing EVENT_ARTIST rows
+     * for this artist are removed first, then the supplied IDs are inserted fresh.
+     * New rows default to is_headliner = 0 and performance_order = 0.
+     */
     public function syncArtistEvents(int $artistId, array $eventIds): void
     {
         try {

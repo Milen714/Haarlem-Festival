@@ -12,11 +12,24 @@ class VenueController extends BaseController
 {
     private IVenueService $venueService;
 
+    /**
+     * Wires up VenueService, which handles all venue CRUD operations including
+     * image upload and validation.
+     */
     public function __construct()
     {
         $this->venueService = new VenueService();
     }
 
+    /**
+     * Renders the CMS venue listing page showing all venues with their image and event count.
+     * On failure, renders the page with an empty list and an error message rather than crashing.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function index($vars = []): void
     {
@@ -36,6 +49,15 @@ class VenueController extends BaseController
             ]);
         }
     }
+
+    /**
+     * Renders the empty venue create form.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
@@ -46,6 +68,16 @@ class VenueController extends BaseController
         ]);
     }
 
+    /**
+     * Handles the venue create form submission.
+     * Passes $_POST and $_FILES to VenueService, then redirects to the listing on success
+     * or back to the create form with a session error on failure.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
@@ -65,6 +97,15 @@ class VenueController extends BaseController
         }
     }
 
+    /**
+     * Renders the venue edit form pre-populated with the current venue data.
+     * Redirects to the CMS home with an error if the venue does not exist.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the venue's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
@@ -89,6 +130,16 @@ class VenueController extends BaseController
         }
     }
 
+    /**
+     * Handles the venue update form submission.
+     * Delegates to VenueService, then redirects to the listing on success
+     * or back to the edit form with a session error on failure.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the venue's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
@@ -109,6 +160,16 @@ class VenueController extends BaseController
         }
     }
 
+    /**
+     * Handles the venue delete action.
+     * Fetches the venue first to get its name for the success message, then permanently deletes it.
+     * Redirects to the venue listing regardless of outcome.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the venue's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
@@ -134,6 +195,12 @@ class VenueController extends BaseController
         $this->redirect('/cms/venues');
     }
 
+    /**
+     * Ensures the PHP session is started before writing to $_SESSION.
+     * Safe to call multiple times — checks session_status() before calling session_start().
+     *
+     * @return void
+     */
     private function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -141,7 +208,14 @@ class VenueController extends BaseController
         }
     }
 
-
+    /**
+     * Stores an error message in the session and redirects to the CMS home.
+     * Used as a fallback when a venue cannot be loaded for the edit form.
+     *
+     * @param string $message  The error message to show the user.
+     *
+     * @return void
+     */
     private function handleError(string $message): void
     {
         $this->startSession();

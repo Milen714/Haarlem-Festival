@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\MusicEvent;
 
 use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
@@ -15,11 +15,24 @@ class ArtistController extends BaseController
 {
     private IArtistService $artistService;
 
+    /**
+     * Wires up ArtistService, which handles all artist CRUD operations including
+     * profile image and gallery uploads, validation, and soft-deletion.
+     */
     public function __construct()
     {
         $this->artistService = new ArtistService();
     }
 
+    /**
+     * Renders the CMS artist listing page showing all active artists.
+     * Redirects to the listing with a session error if data cannot be loaded.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function index($vars = []): void
     {
@@ -37,6 +50,14 @@ class ArtistController extends BaseController
         }
     }
 
+    /**
+     * Renders the empty artist create form.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
@@ -47,6 +68,17 @@ class ArtistController extends BaseController
         ]);
     }
 
+    /**
+     * Handles the artist create form submission.
+     * Passes $_POST and $_FILES to ArtistService, sets a flash message, and redirects.
+     * Distinguishes between ValidationException (user error) and other failures (server error)
+     * so the right message is shown.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
@@ -67,6 +99,16 @@ class ArtistController extends BaseController
         }
     }
 
+    /**
+     * Renders the artist edit form pre-populated with the current artist data including gallery.
+     * Uses getArtistByIdWithGallery() so the gallery section renders with existing images.
+     * Redirects to the listing with an error if the artist does not exist.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the artist's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
@@ -94,6 +136,16 @@ class ArtistController extends BaseController
         }
     }
 
+    /**
+     * Handles the artist update form submission, including profile image and gallery operations.
+     * Delegates to updateArtistWithGalleryFromRequest() which handles all update logic in one call.
+     * On success, redirects back to the edit form so the user can see their changes.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the artist's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
@@ -114,6 +166,16 @@ class ArtistController extends BaseController
         }
     }
 
+    /**
+     * Handles the artist delete action.
+     * Fetches the artist first to get their name for the success message, then soft-deletes them.
+     * Always redirects to the artist listing regardless of outcome.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the artist's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
@@ -140,6 +202,15 @@ class ArtistController extends BaseController
         $this->redirect('/cms/artists');
     }
 
+    /**
+     * Removes a single image from an artist's gallery by unlinking it from GALLERY_MEDIA.
+     * Redirects back to the artist edit page so the gallery renders without the removed image.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects 'artistId' and 'mediaId' keys.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function removeGalleryImage($vars = []): void
     {

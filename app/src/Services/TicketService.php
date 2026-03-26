@@ -110,6 +110,7 @@ class TicketService implements ITicketService
         return $this->ticketRepository->reserveMultiple($items);
     }
 
+
     public function releaseSeats(int $ticketTypeId, int $quantity): bool
     {
         return $this->ticketRepository->atomicDecrementTicketsSold($ticketTypeId, $quantity);

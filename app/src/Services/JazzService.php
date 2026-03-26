@@ -19,6 +19,11 @@ class JazzService implements JazzServiceInterface
     private ScheduleService $scheduleService;
     private TicketService $ticketService;
 
+    /**
+     * Wires up all collaborating services needed to build Jazz page data:
+     * PageService for CMS content, ArtistService and VenueService for lineup and locations,
+     * ScheduleService for performance slots, and TicketService for day-pass ticket types.
+     */
     public function __construct()
     {
         $this->pageService = new PageService();
@@ -28,6 +33,11 @@ class JazzService implements JazzServiceInterface
         $this->ticketService = new TicketService();
     }
 
+    /**
+     * Venue loading uses a three-step fallback: event query → extract from schedule objects →
+     * filter all venues by event category. This guards against DB linkage gaps where venues
+     * exist in SCHEDULE rows but aren't linked via the event query's JOIN path.
+     */
     public function loadJazzOverview(): array
     {
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
@@ -121,6 +131,10 @@ class JazzService implements JazzServiceInterface
         ];
     }
 
+    /**
+     * Artist access is guarded by isArtistInEvent() — an artist who exists in the DB but
+     * isn't booked for Jazz returns a 404, not their profile. This prevents cross-event leakage.
+     */
     public function loadJazzArtistProfile(string $artistSlug): array
     {
         if ($artistSlug === '') {
@@ -159,6 +173,10 @@ class JazzService implements JazzServiceInterface
         ];
     }
 
+    /**
+     * Centralises the "page not found" guard so individual load methods stay readable.
+     * Throws ResourceNotFoundException when the page is missing or has no page_id.
+     */
     private function loadPageBySlugOrFail(string $pageSlug, string $pageName): object
     {
         $page = $this->pageService->getPageBySlug($pageSlug);
@@ -170,6 +188,9 @@ class JazzService implements JazzServiceInterface
         return $page;
     }
 
+    /**
+     * Groups schedules by Y-m-d key and sorts chronologically so templates can iterate in order.
+     */
     private function groupSchedulesByDate(array $schedules): array
     {
         $grouped = [];
@@ -181,6 +202,10 @@ class JazzService implements JazzServiceInterface
         return $grouped;
     }
 
+    /**
+     * Every Jazz page must have an event category set in the CMS; without it we cannot
+     * know which artists, venues, and schedules to load — throws ApplicationException.
+     */
     private function extractEventIdOrFail(object $pageData, string $pageSlug): int
     {
         $eventId = $pageData->event_category->event_id ?? null;
