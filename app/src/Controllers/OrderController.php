@@ -179,13 +179,27 @@ class OrderController extends BaseController
     public function downloadTickets(array $params = []): void
     {
         $pdfName = $_GET['ticket_name'] ?? null;
+        $sessionId = $_GET['session_id'] ?? null;
     try {
-        $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/' . $pdfName;
+        $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+        if (!$order) {
+            http_response_code(404);
+            echo 'Order not found for this checkout session.';
+            return;
+        }
+
+        if (!$order->ticket_pdf_path) {
+            http_response_code(409);
+            echo 'Your tickets are still being generated. Please wait a few seconds and try again.';
+            return;
+        }
+
+        $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/' . $order->ticket_pdf_path;
         
         // 1. Check if file exists
         if (!file_exists($ticketPdfPath)) {
-            http_response_code(404);
-            echo "File not found";
+            http_response_code(409);
+            echo 'Your tickets are still being prepared. Please retry shortly.';
             return;
         }
         

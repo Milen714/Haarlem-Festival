@@ -160,6 +160,9 @@ class PaymentController extends BaseController
             $sessionId  = $jsonData['session_id'] ?? null;
 
             $data = $this->paymentService->stripeCheckoutStatus($jsonData);
+            $order = null;
+            $ticketReady = false;
+            $orderStatus = null;
 
             // If Stripe confirms payment, update the order in DB and clear the session cart.
             // This handles the case where the webhook fires after the redirect (race condition).
@@ -169,9 +172,24 @@ class PaymentController extends BaseController
                 $sessionId !== null
             ) {
                 $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-                
+
                 $this->orderService->clearSessionCart();
             }
+
+            if ($order === null && $sessionId !== null) {
+                $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            }
+
+            if ($order !== null) {
+                $orderStatus = $order->status->value;
+                if (!empty($order->ticket_pdf_path)) {
+                    $pdfPath = __DIR__ . '/../../public/Assets/documents/' . $order->ticket_pdf_path;
+                    $ticketReady = file_exists($pdfPath);
+                }
+            }
+
+            $data['ticket_ready'] = $ticketReady;
+            $data['order_status'] = $orderStatus;
 
             http_response_code(200);
             echo json_encode($data);

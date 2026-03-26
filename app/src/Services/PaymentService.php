@@ -26,6 +26,7 @@ class PaymentService implements IPaymentService
         return $stripe->checkout->sessions->create([
             'ui_mode' => 'embedded',
             'mode' => 'payment',
+            'payment_method_types' => ['card', 'ideal'],
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'eur',

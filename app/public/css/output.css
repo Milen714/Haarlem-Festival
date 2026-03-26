@@ -996,6 +996,11 @@ select:focus,
 .right-3{
   right: 0.75rem;
 }
+
+.right-4{
+  right: 1rem;
+}
+
 .start-0{
   inset-inline-start: 0px;
 }
@@ -1601,10 +1606,12 @@ select:focus,
   width: 6rem;
 }
 
-.w-3\/4{
-  width: 75%;
 .w-3{
   width: 0.75rem;
+}
+
+.w-3\/4{
+  width: 75%;
 }
 
 .w-32{
@@ -1742,6 +1749,10 @@ select:focus,
 
 .min-w-\[64px\]{
   min-width: 64px;
+}
+
+.min-w-\[80px\]{
+  min-width: 80px;
 }
 
 .min-w-\[900px\]{
@@ -5625,11 +5636,6 @@ select:focus,
   background-color: rgb(199 210 254 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-orange-600:hover{
-  --tw-bg-opacity: 1;
-  background-color: rgb(234 88 12 / var(--tw-bg-opacity, 1));
-}
-
 .hover\:bg-red-200:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(254 202 202 / var(--tw-bg-opacity, 1));
@@ -6176,6 +6182,8 @@ select:focus,
 
   .md\:mb-0{
     margin-bottom: 0px;
+  }
+
   .md\:mb-12{
     margin-bottom: 3rem;
   }
