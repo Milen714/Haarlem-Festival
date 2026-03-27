@@ -84,7 +84,8 @@ class TicketFulfillmentService implements ITicketFulfillmentService
      */
     private function storageDir(): string
     {
-        $dir = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'tickets' . DIRECTORY_SEPARATOR;
+        // Store PDFs in a backend-only directory (not web-accessible)
+        $dir = __DIR__ . '/../../TicketPDFs/';
 
         if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
             throw new \RuntimeException("Unable to create ticket storage directory: {$dir}");

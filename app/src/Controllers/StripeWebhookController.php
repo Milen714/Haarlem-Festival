@@ -83,6 +83,7 @@ class StripeWebhookController extends BaseController
             }
             $this->jsonResponse(['received' => true], 200);
         } catch (\Throwable $e) {
+            $this->logService->error('StripeWebhook', 'Unhandled exception in handle()', [], $e->getTraceAsString());
             $this->jsonResponse(['error' => 'temporary failure'], 500);
         }
     }
@@ -107,6 +108,10 @@ class StripeWebhookController extends BaseController
                 false,  // never stream PDF to HTTP response from the webhook
                 true    // always save to disk
             );
+
+            // Set ticket_pdf_path and persist it using the service (not repo)
+            $order->ticket_pdf_path = $fileName . '.pdf';
+            $this->orderService->updateOrderStatus($order->order_id, $order->status, $order->ticket_pdf_path);
 
             $this->logService->info('StripeWebhook', 'PDF generated', ['path' => $ticketPdfPath]);
 
