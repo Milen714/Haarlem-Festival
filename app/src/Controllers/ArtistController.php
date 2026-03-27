@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\MusicEvent;
+namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;

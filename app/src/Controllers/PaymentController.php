@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\Controllers;
 
@@ -45,17 +45,18 @@ class PaymentController extends BaseController
     }
 
     public function index(array $params = [])
-    {
+    {   // try catch plase 
         //$order=$this->orderService->getOrderById(2);
-        $order= $this->orderService->getSessionCart();
-        if(!isset($order)){
+        $order = $this->orderService->getSessionCart();
+        if (!isset($order)) {
             $order = $this->orderService->createSessionCart();
         }
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
-    public function personalProgram(){
+    public function personalProgram()
+    {
         $userId = isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : null;
         if (!$userId) {
             //should show error
@@ -64,23 +65,23 @@ class PaymentController extends BaseController
         }
 
         $tickets = $this->orderService->getPaidTicketsByUser($userId);
-        
+
         //for each events
         foreach ($tickets as $ticket) {
             $ticket['title'] = $ticket['artist_name']
-                    ?? $ticket['restaurant_name']
-                    ?? $ticket['landmark_name']
-                    ?? 'Event';
+                ?? $ticket['restaurant_name']
+                ?? $ticket['landmark_name']
+                ?? 'Event';
             $ticket['ticket_image'] = $ticket['artist_media_file_path']
-                    ?? $ticket['restaurant_media_file_path']
-                    ?? $ticket['landmark_media_file_path']
-                    ?? $ticket['venue_media_file_path'] 
-                    ?? $ticket['magic_media_file_path'];    
+                ?? $ticket['restaurant_media_file_path']
+                ?? $ticket['landmark_media_file_path']
+                ?? $ticket['venue_media_file_path']
+                ?? $ticket['magic_media_file_path'];
             $ticket['alt_text'] = $ticket['artist_media_alt_text']
-                    ?? $ticket['restaurant_media_alt_text']
-                    ?? $ticket['landmark_media_alt_text']
-                    ?? $ticket['venue_media_alt_text'] 
-                    ?? $ticket['magic_media_alt_text'];   
+                ?? $ticket['restaurant_media_alt_text']
+                ?? $ticket['landmark_media_alt_text']
+                ?? $ticket['venue_media_alt_text']
+                ?? $ticket['magic_media_alt_text'];
         }
 
         $this->view('ShoppingCart/wishlist', [
@@ -90,7 +91,7 @@ class PaymentController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function checkout(array $params = [])
     {
-        $order=$this->orderService->getSessionCart();
+        $order = $this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
     }
@@ -197,7 +198,6 @@ class PaymentController extends BaseController
 
             http_response_code(200);
             echo json_encode($data);
-
         } catch (\Exception $e) {
             $this->logService->exception('Payment', $e);
             http_response_code(500);
@@ -207,9 +207,8 @@ class PaymentController extends BaseController
     public function details(array $params = [])
     {
         //$order=$this->orderService->getOrderById(1);
-        $order=$this->orderService->getSessionCart();
+        $order = $this->orderService->getSessionCart();
         $viewModel = new ShoppingCartViewModel($order);
         $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
     }
-    
 }

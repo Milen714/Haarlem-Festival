@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
@@ -35,17 +36,17 @@ class OrderController extends BaseController
     }
 
     public function addToCart(array $params = []): void
-    {
+    {   /// begone
         header('Content-Type: application/json; charset=utf-8');
 
         try {
             $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
+            if (!$jsonData) {
                 throw new \Exception('Invalid JSON input');
             }
-            
+
             $ticketType = $this->ticketService->getTicketTypeById($jsonData['ticketTypeId']);
-             if (!$ticketType) {
+            if (!$ticketType) {
                 throw new \Exception('Ticket type not found');
             }
             $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
@@ -91,10 +92,10 @@ class OrderController extends BaseController
 
         try {
             $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
+            if (!$jsonData) {
                 throw new \Exception('Invalid JSON input');
             }
-            
+
             $this->orderService->removeOrderItemFromSessionCart($jsonData['sessionOrderitem_id']);
             //$cart = $this->orderService->getSessionCart();
             echo json_encode([
@@ -112,11 +113,11 @@ class OrderController extends BaseController
         try {
             $sessionOrderItemId = $_GET['sessionOrderitem_id'] ?? null;
             $cart = $this->orderService->getSessionCart();
-            
+
             $item = $this->orderService->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
-                if (!$item) {
-                    throw new \Exception('Order item not found in cart');
-                }
+            if (!$item) {
+                throw new \Exception('Order item not found in cart');
+            }
             $this->jsonResponse([
                 'success' => true,
                 'data' => ['orderItem' => $item]
@@ -134,7 +135,7 @@ class OrderController extends BaseController
 
         try {
             $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
+            if (!$jsonData) {
                 throw new \Exception('Invalid JSON input');
             }
             $sessionOrderItemId = $jsonData['sessionOrderitem_id'] ?? null;
@@ -161,7 +162,7 @@ class OrderController extends BaseController
     {
         /** @var \App\Models\User $user */
         $user = $_SESSION['loggedInUser'];
-        
+
         if (!$user->id) {
             header('Location: /login');
             exit;
@@ -171,7 +172,7 @@ class OrderController extends BaseController
 
         $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
 
-         $this->view('Orders/my-tickets',[
+        $this->view('Orders/my-tickets', [
             'orderItems' => $orderItems
         ]);
     }
@@ -180,49 +181,47 @@ class OrderController extends BaseController
     {
         $pdfName = $_GET['ticket_name'] ?? null;
         $sessionId = $_GET['session_id'] ?? null;
-    try {
-        $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-        if (!$order) {
-            http_response_code(404);
-            echo 'Order not found for this checkout session.';
-            return;
-        }
+        try {
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            if (!$order) {
+                http_response_code(404);
+                echo 'Order not found for this checkout session.';
+                return;
+            }
 
-        if (!$order->ticket_pdf_path) {
-            http_response_code(409);
-            echo 'Your tickets are still being generated. Please wait a few seconds and try again.';
-            return;
-        }
+            if (!$order->ticket_pdf_path) {
+                http_response_code(409);
+                echo 'Your tickets are still being generated. Please wait a few seconds and try again.';
+                return;
+            }
 
-        $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/' . $order->ticket_pdf_path;
-        
-        // 1. Check if file exists
-        if (!file_exists($ticketPdfPath)) {
-            http_response_code(409);
-            echo 'Your tickets are still being prepared. Please retry shortly.';
-            return;
+            $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/' . $order->ticket_pdf_path;
+
+            // 1. Check if file exists
+            if (!file_exists($ticketPdfPath)) {
+                http_response_code(409);
+                echo 'Your tickets are still being prepared. Please retry shortly.';
+                return;
+            }
+
+            // 2. Get file info
+            $fileName = basename($ticketPdfPath);
+            $fileSize = filesize($ticketPdfPath);
+
+            // 3. Set HTTP headers BEFORE any output
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="' . $fileName . '"');
+            header('Content-Length: ' . $fileSize);
+            header('Cache-Control: no-cache, no-store, must-revalidate');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+
+            // 4. Send file to browser
+            readfile($ticketPdfPath);
+            exit;
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo "Error: " . $e->getMessage();
         }
-        
-        // 2. Get file info
-        $fileName = basename($ticketPdfPath);
-        $fileSize = filesize($ticketPdfPath);
-        
-        // 3. Set HTTP headers BEFORE any output
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
-        header('Content-Length: ' . $fileSize);
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-        
-        // 4. Send file to browser
-        readfile($ticketPdfPath);
-        exit;
-        
-    } catch (\Throwable $e) {
-        http_response_code(500);
-        echo "Error: " . $e->getMessage();
     }
-}
-    
 }

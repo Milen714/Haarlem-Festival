@@ -94,18 +94,16 @@ class StripeWebhookController extends BaseController
         $fileName = $this->ticketFulfillmentService->generatePDFName($order);
         $ticketPdfPath =  __DIR__ .  '/../../public/Assets/documents/' . $fileName . '.pdf';
         try {
-            
-            if(!isset($order)){
-                $order = $this->orderService->createSessionCart();
-            }
+
+
             $this->orderService->generateTicketHashes($order->order_id);
             $order = $this->orderService->getOrderById($order->order_id);
-            
+
             // ViewModel to aggregate the data for the  email template and pdf generation
             $viewModel = new ShoppingCartViewModel($order);
-            
+
             $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), $fileName);
-            
+
             $this->logService->info('StripeWebhook', 'PDF generated', ['path' => $ticketPdfPath]);
 
             $mailTo = $order->user->email ?? 'paami97@gmail.com';
@@ -116,12 +114,9 @@ class StripeWebhookController extends BaseController
                 $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel]),
                 [$ticketPdfPath]
             );
-            
-            
         } catch (\Throwable $e) {
             $this->logService->error('StripeWebhook', 'Failed to send ticket email', ['to' => $mailTo], $e->getTraceAsString());
         }
         return $fileName . '.pdf';
     }
-
 }
