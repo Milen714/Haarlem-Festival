@@ -44,4 +44,5 @@
   </div>
 </section>
 <?php include 'YummyTicketPopup.php'; ?>
-<script src="/app/public/Js/RestaurantTicket.js"></script>
+<?php include 'YummyAddedToCart.php'; ?>
+<script src="/Js/RestaurantTicket.js"></script>

@@ -48,9 +48,9 @@ class OrderService implements IOrderService
         return $order;
     }
 
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
-        return $this->orderRepository->updateOrderStatus($orderId, $status);
+        return $this->orderRepository->updateOrderStatus($orderId, $status, $pdf);
     }
 
     public function addOrderItem(OrderItem $orderItem): bool
@@ -278,6 +278,7 @@ class OrderService implements IOrderService
         $cart->calculateTotals();
         $this->hydrateSessionCart($cart);
         if ($cart->order_id !== null && $itemToRemove->orderitem_id !== null) {
+            $this->ticketService->releaseOrderItems([$itemToRemove]);
             $this->orderRepository->removeOrderItem($itemToRemove->orderitem_id);
             $this->orderRepository->updateOrderTotals($cart);
         }
@@ -289,6 +290,9 @@ class OrderService implements IOrderService
         if ($cart === null) {
             throw new \RuntimeException('No session cart found when trying to update order item.');
         }
+        /**
+         * @var OrderItem $itemToUpdate
+         */
         $itemToUpdate = $this->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
         if ($itemToUpdate === null) {
             throw new \RuntimeException("No order item found in cart with sessionOrderitem_id {$sessionOrderItemId}.");

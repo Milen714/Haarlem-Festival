@@ -67,7 +67,10 @@ class StripeWebhookController extends BaseController
                         'items_count' => count($order->orderItems ?? [])
                     ]);
                     $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Paid);
-                    $this->sendTicketEmail($order);
+
+                    $pdf_path = $this->sendTicketEmail($order); // Generate PDF and send email with tickets
+
+                    $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Fulfilled, $pdf_path);
                     break;
 
                 case 'checkout.session.expired':
@@ -86,7 +89,7 @@ class StripeWebhookController extends BaseController
             echo json_encode(['error' => 'temporary failure']);
         }
     }
-    private function sendTicketEmail(Order $order): void
+    private function sendTicketEmail(Order $order): string
     {
         $fileName = $this->ticketFulfillmentService->generatePDFName($order);
         $ticketPdfPath =  __DIR__ .  '/../../public/Assets/documents/' . $fileName . '.pdf';
@@ -97,7 +100,8 @@ class StripeWebhookController extends BaseController
             }
             $this->orderService->generateTicketHashes($order->order_id);
             $order = $this->orderService->getOrderById($order->order_id);
-
+            
+            // ViewModel to aggregate the data for the  email template and pdf generation
             $viewModel = new ShoppingCartViewModel($order);
             
             $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), $fileName);
@@ -105,7 +109,6 @@ class StripeWebhookController extends BaseController
             $this->logService->info('StripeWebhook', 'PDF generated', ['path' => $ticketPdfPath]);
 
             $mailTo = $order->user->email ?? 'paami97@gmail.com';
-            $this->logService->info('StripeWebhook', 'Sending ticket email', ['to' => $mailTo]);
 
             $this->mailService->sendEmail(
                 $mailTo,
@@ -114,11 +117,11 @@ class StripeWebhookController extends BaseController
                 [$ticketPdfPath]
             );
             
-            $this->logService->info('StripeWebhook', 'Ticket email sent successfully', ['to' => $mailTo]);
             
         } catch (\Throwable $e) {
             $this->logService->error('StripeWebhook', 'Failed to send ticket email', ['to' => $mailTo], $e->getTraceAsString());
         }
+        return $fileName . '.pdf';
     }
 
 }

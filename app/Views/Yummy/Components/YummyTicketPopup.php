@@ -1,11 +1,11 @@
-
 <?php
-  $selectedSchedule = $schedules[0] ?? null;
+namespace App\Views\Yummy\Components;
+
+  $selectedSchedules = $schedules[0] ?? null;
 ?>
 
 <div id="reservation-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-    
+
     <section class="relative w-full max-w-4xl bg-[#4a0e0e] border-2 border-[#d4a356] rounded-xl shadow-2xl overflow-hidden text-white font-sans">
       
       <header class="bg-[#1a0505] py-6 text-center border-b border-[#d4a356]/30">
@@ -28,10 +28,13 @@
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
             <?php
 
-            foreach ($schedules as $schedule):?>
-              <button  class="date-btn border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition"  data-date="<?= $schedule->date->format('Y-m-d') ?>">
-                <span class="block text-[10px] uppercase"><?= $schedule->date->format('l') ?></span>
-                <span class="block font-bold"><?= $schedule->date->format('d M') ?></span>
+            foreach ($groupedSchedules as $date => $daySchedules):?>
+              <button  class="date-btn border border-[#d4a356]/50 p-3 rounded hover:bg-[#d4a356] hover:text-black transition"  
+              data-date="<?= $date?>"
+              data-date-label="<?= date('l d M', strtotime($date)) ?>"
+              >
+                <span class="block text-[10px] uppercase"><?= date('l', strtotime($date)) ?></span>
+                <span class="block font-bold"><?= date('d M', strtotime($date))  ?></span>
               </button>
             <?php endforeach ?>
           </div>
@@ -39,11 +42,15 @@
 
         <fieldset>
           <legend class="text-[#d4a356] text-xs font-bold uppercase mb-3 flex items-center">
-            <input type="checkbox" checked class="mr-2 accent-[#d4a356]"> Select Session (2h duration)
+            <input type="checkbox" checked class="mr-2 accent-[#d4a356]"> Select Session
           </legend>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <?php $i = 1; foreach($schedules as $schedule): ?>
-                <button data-schedule-id="<?= $schedule->schedule_id ?>" data-date="<?= $schedule->date->format('Y-m-d') ?>" class="session-btn hidden border border-[#d4a356] p-4 rounded text-left flex justify-between items-center group hover:bg-[#d4a356]/10">
+            <?php $i = 1; foreach($groupedSchedules as $date => $daySchedules): ?>
+              <?php foreach($daySchedules as $schedule): ?>
+                <button 
+                data-schedule-id="<?= $schedule->schedule_id ?>"
+                data-date="<?= $date?>" 
+                data-time="<?= $schedule->start_time->format('H:i') ?>" class="session-btn hidden border border-[#d4a356] p-4 rounded text-left flex justify-between items-center group hover:bg-[#d4a356]/10">
                   <div>
                     <span class="block font-bold">
                     Session <?= $i++ ?>
@@ -51,6 +58,7 @@
                   </div>
                   <span class="text-xl font-serif"><?= $schedule->start_time->format('H:i') ?></span>
                 </button>
+                <?php endforeach ?>
             <?php endforeach ?>
           </div>
         </fieldset>
@@ -63,33 +71,44 @@
           ></textarea>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <?php foreach($selectedSchedule->ticketTypes as $ticket): ?>
-            <div class="bg-[#1a0505] border border-[#d4a356]/30 rounded p-4">
-            <div class="flex justify-between items-center mb-4">
-              <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->description) ?> : 
-              <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->price) ?></span></span>
-              <span class="text-[10px] opacity-50">per person</span>
-            </div>
-            <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
-              <button 
-              type="button" 
-              class="decrement btn p-2 text-[#d4a356] font-bold"
-              data-ticket-id="<?= $ticket->ticket_type_id ?>"
-              >
-              -
-              </button>
-              <span class="font-bold quantity" data-ticket-id="<?= $ticket->ticket_type_id ?>">0</span>
-              <button 
-              type="button" 
-              class="increment btn p-2 text-[#d4a356] font-bold"
-              data-ticket-id="<?= $ticket->ticket_type_id ?>"
-              >+</button>
-            </div>
-          </div>
+        <div class="ticket-container grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Displays ticket and price calculation -->
+          <?php foreach($schedules as $schedule): ?>
+              <?php foreach($schedule->ticketTypes as $ticket): ?>
+                <!-- used to check if tickets are sold out -->
+                <?php $isSoldOut = $ticket->is_sold_out || ($ticket->capacity !== null && $ticket->tickets_sold >=$ticket->capacity); ?>
+                <div class="ticket-item <?= $isSoldOut ? 'opacity-50 pointer-events-none' : '' ?> hidden bg-[#1a0505] border border-[#d4a356]/30 rounded p-4"
+                  data-schedule-id="<?= $schedule->schedule_id ?>"
+                  data-sold-out="<?= $isSoldOut ? '1' : '0' ?>"
+                >
+                <div class="flex justify-between items-center mb-4">
+                  <span class="text-xs font-bold uppercase tracking-widest"><?= htmlspecialchars($ticket->ticket_scheme?->name ?? 'Ticket') ?> : 
+                  <span class="text-[#d4a356]">€ <?= htmlspecialchars($ticket->ticket_scheme?->price ?? 0) ?></span></span>
+                  <?php if ($isSoldOut):?>
+                    <span class="text-red-400 text-md font-bold">Sold Out</span>
+                  <?php endif ?>
+                  <span class="text-[10px] opacity-50">per person</span>
+                </div>
+                <div class="flex items-center justify-between border border-[#d4a356] rounded px-2">
+                  <button 
+                  type="button" 
+                  class="decrement btn p-2 text-[#d4a356] font-bold"
+                  data-ticket-id="<?= $ticket->ticket_type_id ?>"
+                  >
+                  -
+                  </button>
+                  <span class="font-bold quantity" data-ticket-id="<?= $ticket->ticket_type_id ?>">0</span>
+                  <button 
+                  type="button" 
+                  class="increment btn p-2 text-[#d4a356] font-bold"
+                  data-ticket-id="<?= $ticket->ticket_type_id ?>"
+                  >+</button>
+                </div>
+              </div>
+            <?php endforeach ?>
           <?php endforeach ?>
         </div>
-
+        <!-- starter summary till user adds amount -->
         <footer class="border-t border-[#d4a356]/30 pt-4 space-y-2">
           <dl id="summary-container" class="text-xs font-medium space-y-1">
             <div class="flex justify-between">
@@ -122,19 +141,25 @@
       </div>
     </section>
   </div>
-</div>
-
 
 
 <script>
-const ticketPrices = <?= json_encode(
-    array_column($selectedSchedule->ticketTypes, 'price', 'ticket_type_id')
-) ?>;
+  //variables for price and name of ticket type plus reservation fee
+const ticketPrices = {
+  <?php foreach($schedules as $schedule): ?>
+    <?php foreach($schedule->ticketTypes as $ticket): ?>
+      "<?= $ticket->ticket_type_id ?>": <?= $ticket->ticket_scheme?->price ?? 0 ?>,
+    <?php endforeach ?>
+  <?php endforeach ?>
+};
 
-const ticketNames = <?= json_encode(
-    array_column($selectedSchedule->ticketTypes, 'description', 'ticket_type_id')
-) ?>;
+const ticketNames = {
+  <?php foreach($schedules as $schedule): ?>
+    <?php foreach($schedule->ticketTypes as $ticket): ?>
+      "<?= $ticket->ticket_type_id ?>": "<?= $ticket->ticket_scheme?->name ?? 'Ticket' ?>",
+    <?php endforeach ?>
+  <?php endforeach ?>
+};
 
 const reservationFee = 10;
 </script>
-<script src="/app/public/Js/RestaurantTicket.js"></script>
