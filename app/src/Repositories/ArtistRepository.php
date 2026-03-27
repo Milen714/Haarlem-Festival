@@ -683,7 +683,6 @@ class ArtistRepository extends Repository implements IArtistRepository
             if (isset($pdo) && $pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            error_log("Error syncing artist events: " . $e->getMessage());
             throw new PDOException("Failed to sync artist events", 0, $e);
         }
     }

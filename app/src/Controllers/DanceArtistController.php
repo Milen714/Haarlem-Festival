@@ -12,6 +12,8 @@ use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\IAlbumService;
 use App\Services\Interfaces\ITicketService;
+use App\Services\Interfaces\ILogService;
+use App\Services\LogService;
 use App\Controllers\BaseController;
 use App\Models\Gallery;
 
@@ -24,6 +26,7 @@ class DanceArtistController extends BaseController
     private IAlbumService $albumService;
     private IMediaService $mediaService;
     private ITicketService $ticketService;
+    private ILogService $logService;
 
     /**
      * Wires up all services needed to build a Dance artist detail page.
@@ -38,6 +41,7 @@ class DanceArtistController extends BaseController
         $this->scheduleService = new ScheduleService();
         $this->albumService = new AlbumService();
         $this->ticketService = new TicketService();
+        $this->logService = new LogService();
     }
 
     /**
@@ -77,7 +81,7 @@ class DanceArtistController extends BaseController
                 'ticketLookup' => $ticketLookup
             ]);
         } catch (\Exception $e) {
-            error_log("Dance artist detail error: " . $e->getMessage());
+            $this->logService->exception('Dance', $e);
             $this->notFound();
         }
     }

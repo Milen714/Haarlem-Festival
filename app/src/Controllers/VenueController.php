@@ -5,12 +5,15 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Services\VenueService;
 use App\Services\Interfaces\IVenueService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class VenueController extends BaseController
 {
     private IVenueService $venueService;
+    private ILogService $logService;
 
     /**
      * Wires up VenueService, which handles all venue CRUD operations including
@@ -19,6 +22,7 @@ class VenueController extends BaseController
     public function __construct()
     {
         $this->venueService = new VenueService();
+        $this->logService = new LogService();
     }
 
     /**
@@ -41,7 +45,7 @@ class VenueController extends BaseController
                 'venues' => $venues
             ]);
         } catch (\Exception $e) {
-            error_log("Venue list error: " . $e->getMessage());
+            $this->logService->exception('Venue', $e);
             $this->cmsLayout('Cms/Venues/Index', [
                 'title' => 'Manage Venues',
                 'venues' => [],
@@ -91,7 +95,7 @@ class VenueController extends BaseController
             }
             $this->redirect('/cms/venues');
         } catch (\Exception $e) {
-            error_log("Venue create error: " . $e->getMessage());
+            $this->logService->exception('Venue', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/venues/create');
         }
@@ -125,7 +129,7 @@ class VenueController extends BaseController
                 'action' => "/cms/venues/update/{$venueId}"
             ]);
         } catch (\Exception $e) {
-            error_log("Venue edit error: " . $e->getMessage());
+            $this->logService->exception('Venue', $e);
             $this->handleError('Failed to load venue: ' . $e->getMessage());
         }
     }
@@ -154,7 +158,7 @@ class VenueController extends BaseController
             }
             $this->redirect('/cms/venues');
         } catch (\Exception $e) {
-            error_log("Venue update error: " . $e->getMessage());
+            $this->logService->exception('Venue', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/venues/edit/{$venueId}");
         }
@@ -188,7 +192,7 @@ class VenueController extends BaseController
 
             $_SESSION['success'] = "Venue '{$venueName}' deleted successfully!";
         } catch (\Exception $e) {
-            error_log("Venue delete error: " . $e->getMessage());
+            $this->logService->exception('Venue', $e);
             $_SESSION['error'] = $e->getMessage();
         }
 

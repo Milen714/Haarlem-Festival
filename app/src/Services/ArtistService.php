@@ -8,6 +8,7 @@ use App\Exceptions\ValidationException;
 use App\Repositories\ArtistRepository;
 use App\Services\Interfaces\IArtistService;
 use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\ILogService;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Models\MusicEvent\Artist;
 
@@ -15,6 +16,7 @@ class ArtistService implements IArtistService
 {
     private IArtistRepository $artistRepository;
     private IMediaService $mediaService;
+    private ILogService $logService;
 
     /**
      * Wires up the ArtistRepository for data access and MediaService for handling
@@ -23,6 +25,7 @@ class ArtistService implements IArtistService
     public function __construct() {
         $this->artistRepository = new ArtistRepository();
         $this->mediaService = new MediaService();
+        $this->logService = new LogService();
     }
 
     public function getArtistsByEventId(int $eventId): array
@@ -246,7 +249,7 @@ class ArtistService implements IArtistService
                 $order = $this->artistRepository->getNextGalleryOrder($galleryId);
                 $this->artistRepository->addMediaToGallery($galleryId, $result['media']->media_id, $order);
             } else {
-                error_log("Gallery image upload failed: " . ($result['error'] ?? 'unknown'));
+                $this->logService->warning('Artist', 'Gallery image upload failed', ['error' => $result['error'] ?? 'unknown']);
             }
         }
     }

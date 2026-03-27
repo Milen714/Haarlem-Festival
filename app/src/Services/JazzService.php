@@ -6,6 +6,7 @@ use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Services\Interfaces\JazzServiceInterface;
+use App\Services\Interfaces\ILogService;
 use App\Services\TicketService;
 
 class JazzService implements JazzServiceInterface
@@ -18,6 +19,7 @@ class JazzService implements JazzServiceInterface
     private VenueService $venueService;
     private ScheduleService $scheduleService;
     private TicketService $ticketService;
+    private ILogService $logService;
 
     /**
      * Wires up all collaborating services needed to build Jazz page data:
@@ -31,6 +33,7 @@ class JazzService implements JazzServiceInterface
         $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
         $this->ticketService = new TicketService();
+        $this->logService = new LogService();
     }
 
     /**
@@ -96,8 +99,8 @@ class JazzService implements JazzServiceInterface
                 }
             }
 
-            error_log(sprintf(
-                'Jazz venues fallback debug: event_id=%d, schedules=%d, event_query=%d, from_schedules=%d, final=%d',
+            $this->logService->debug('Jazz', sprintf(
+                'Venues fallback: event_id=%d, schedules=%d, event_query=%d, from_schedules=%d, final=%d',
                 $jazzEventId,
                 count($allSchedules),
                 $venuesFromEventQueryCount,

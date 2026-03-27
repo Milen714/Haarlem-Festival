@@ -16,6 +16,8 @@ use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ITicketService;
 use App\Services\Interfaces\IDanceService;
+use App\Services\Interfaces\ILogService;
+use App\Services\LogService;
 use App\ViewModels\Dance\LineupViewModel;
 use App\ViewModels\Dance\VenueViewModel;
 
@@ -31,6 +33,7 @@ class DanceController extends BaseController
     private IScheduleService $scheduleService;
     private ITicketService $ticketService;
     private IDanceService $danceService;
+    private ILogService $logService;
 
     public function __construct()
     {
@@ -47,6 +50,7 @@ class DanceController extends BaseController
             $this->artistService,
             $this->pageService
         );
+        $this->logService = new LogService();
     }
 
     public function index()
@@ -65,7 +69,7 @@ class DanceController extends BaseController
             $this->view('Dance/index', $viewData);
 
         } catch (\Exception $e) {
-            error_log("Dance Index Error: " . $e->getMessage());
+            $this->logService->exception('Dance', $e);
             $this->notFound();
         }
     }
@@ -92,7 +96,7 @@ class DanceController extends BaseController
                 'ticketLookup' => $ticketLookup
             ]);
         } catch (\Exception $e) {
-            error_log($e->getMessage());
+            $this->logService->exception('Dance', $e);
             $this->notFound();
         }
     }
@@ -110,7 +114,7 @@ class DanceController extends BaseController
                 'vm' => $viewModel
             ]);
         } catch (\Exception $e) {
-            error_log("Error in DanceController venues method: " . $e->getMessage());
+            $this->logService->exception('Dance', $e);
             $this->notFound();
         }
     }

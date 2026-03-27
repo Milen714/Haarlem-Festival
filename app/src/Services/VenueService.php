@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\ILogService;
 use App\Repositories\VenueRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Models\Venue;
@@ -12,6 +13,7 @@ class VenueService implements IVenueService
 {
     private IVenueRepository $venueRepository;
     private IMediaService $mediaService;
+    private ILogService $logService;
 
     /**
      * Wires up the VenueRepository for data access and MediaService for handling
@@ -20,6 +22,7 @@ class VenueService implements IVenueService
     public function __construct() {
         $this->venueRepository = new VenueRepository();
         $this->mediaService = new MediaService();
+        $this->logService = new LogService();
     }
 
     public function getVenuesByEventId(int $eventId): array
@@ -160,7 +163,7 @@ class VenueService implements IVenueService
                 throw new \Exception('Failed to upload image: ' . $errorMsg);
             }
         } catch (\Exception $e) {
-            error_log("Image upload error for venue '{$venue->name}': " . $e->getMessage());
+            $this->logService->exception('Venue', $e, ['venue' => $venue->name]);
             throw new \Exception('Failed to upload venue image: ' . $e->getMessage());
         }
 

@@ -6,12 +6,15 @@ use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Services\JazzService;
+use App\Services\LogService;
 use App\Services\TicketService;
+use App\Services\Interfaces\ILogService;
 
 class JazzController extends BaseController
 {
     private JazzService $jazzService;
     private TicketService $ticketService;
+    private ILogService $logService;
 
     /**
      * Wires up JazzService (which handles all Jazz page data assembly) and TicketService
@@ -21,6 +24,7 @@ class JazzController extends BaseController
     {
         $this->jazzService = new JazzService();
         $this->ticketService = new TicketService();
+        $this->logService = new LogService();
     }
 
     /**
@@ -40,11 +44,11 @@ class JazzController extends BaseController
             $this->notFound();
         } catch (ApplicationException $e) {
 
-            error_log("Jazz page configuration error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         } catch (\Throwable $e) {
 
-            error_log("Jazz page error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         }
     }
@@ -94,11 +98,11 @@ class JazzController extends BaseController
             $this->notFound();
         } catch (ApplicationException $e) {
 
-            error_log("Jazz schedule configuration error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         } catch (\Throwable $e) {
 
-            error_log("Jazz schedule page error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         }
     }

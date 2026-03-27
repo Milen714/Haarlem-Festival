@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Schedule;
 use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\ILogService;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\TicketRepository;
 use App\Services\VenueService;
@@ -19,6 +20,7 @@ class ScheduleService implements IScheduleService
     private ArtistService $artistService;
     private RestaurantService $restaurantService;
     private LandmarkService $landmarkService;
+    private ILogService $logService;
 
     /**
      * Wires up all collaborating repositories and services needed for schedule operations.
@@ -34,6 +36,7 @@ class ScheduleService implements IScheduleService
         $this->artistService      = new ArtistService();
         $this->restaurantService  = new RestaurantService();
         $this->landmarkService    = new LandmarkService();
+        $this->logService         = new LogService();
     }
 
     public function getScheduleById(int $scheduleId): ?Schedule
@@ -120,7 +123,7 @@ class ScheduleService implements IScheduleService
         try {
             return $this->restaurantService->showAllRestaurants();
         } catch (\Exception $e) {
-            error_log("ScheduleService: could not load restaurants - " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             return [];
         }
     }

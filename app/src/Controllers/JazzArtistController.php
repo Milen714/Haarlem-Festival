@@ -6,10 +6,13 @@ use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Services\JazzService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 
 class JazzArtistController extends BaseController
 {
     private JazzService $jazzService;
+    private ILogService $logService;
 
     /**
      * Wires up JazzService, which is responsible for validating the artist belongs to
@@ -18,6 +21,7 @@ class JazzArtistController extends BaseController
     public function __construct()
     {
         $this->jazzService = new JazzService();
+        $this->logService = new LogService();
     }
 
     /**
@@ -45,11 +49,11 @@ class JazzArtistController extends BaseController
             $this->notFound();
         } catch (ApplicationException $e) {
 
-            error_log('Jazz event configuration error: ' . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         } catch (\Throwable $e) {
 
-            error_log('Jazz artist detail error: ' . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         }
     }

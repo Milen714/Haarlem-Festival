@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Models\Log;
 use App\Repositories\LogRepository;
+use App\Repositories\Interfaces\ILogRepository;
+use App\Services\Interfaces\ILogService;
 use Exception;
 
-class LogService
+class LogService implements ILogService
 {
-    private LogRepository $logRepository;
+    private ILogRepository $logRepository;
 
     public function __construct()
     {

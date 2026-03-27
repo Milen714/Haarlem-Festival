@@ -20,16 +20,19 @@ use App\Services\MailService;
 use App\Services\Interfaces\IMailService;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Services\TicketFulfillmentService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 use DateTime;
 
 class PaymentController extends BaseController
 {
-    
+
     private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
     private IMailService $mailService;
     private ITicketFulfillmentService $ticketFulfillmentService;
+    private ILogService $logService;
 
     public function __construct()
     {
@@ -38,6 +41,7 @@ class PaymentController extends BaseController
         $this->orderService = new OrderService();
         $this->mailService = new MailService();
         $this->ticketFulfillmentService = new TicketFulfillmentService();
+        $this->logService = new LogService();
     }
 
     public function index(array $params = [])
@@ -130,7 +134,7 @@ class PaymentController extends BaseController
             http_response_code(200);
             echo json_encode(['clientSecret' => $stripeSession->client_secret]);
         } catch (\Throwable $e) {
-            error_log('Error creating checkout session: ' . $e->getMessage());
+            $this->logService->exception('Payment', $e);
             http_response_code(500);
             echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
         }
@@ -169,7 +173,7 @@ class PaymentController extends BaseController
             echo json_encode($data);
 
         } catch (\Exception $e) {
-            error_log('Error checking payment status: ' . $e->getMessage());
+            $this->logService->exception('Payment', $e);
             http_response_code(500);
             echo json_encode(['error' => 'An error occurred while checking the payment status.']);
         }

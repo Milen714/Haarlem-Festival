@@ -2,11 +2,20 @@
 
 namespace App\Services;
 
+use App\Services\Interfaces\ILogService;
+
 class FileUploadService
 {
     private const UPLOAD_DIR = __DIR__ . '/../../public/Assets/';
     private const MAX_FILE_SIZE = 5242880; // 5MB
     private const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+
+    private ILogService $logService;
+
+    public function __construct()
+    {
+        $this->logService = new LogService();
+    }
 
     public function upload(array $file, string $category): array
     {
@@ -78,6 +87,7 @@ class FileUploadService
 
             return ['success' => true, 'file_path' => null, 'error' => null];
         } catch (\Exception $e) {
+            $this->logService->exception('FileUpload', $e);
             return $this->error('Conversion error: ' . $e->getMessage());
         }
     }
@@ -124,6 +134,7 @@ class FileUploadService
 
     private function error(string $message): array
     {
+        $this->logService->warning('FileUpload', $message);
         return ['success' => false, 'file_path' => null, 'error' => $message];
     }
 }

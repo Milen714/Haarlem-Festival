@@ -47,7 +47,6 @@ class VenueRepository extends Repository implements IVenueRepository
 
             return $venues;
         } catch (PDOException $e) {
-            error_log("Error fetching venues by event: " . $e->getMessage());
             throw new PDOException("Failed to fetch venues for event {$eventId}", 0, $e);
         }
     }
@@ -87,7 +86,6 @@ class VenueRepository extends Repository implements IVenueRepository
             $venue->fromPDOData($result);
             return $venue;
         } catch (PDOException $e) {
-            error_log("Error fetching venue by ID: " . $e->getMessage());
             throw new PDOException("Failed to fetch venue by ID: {$venueId}", 0, $e);
         }
     }
@@ -115,7 +113,6 @@ class VenueRepository extends Repository implements IVenueRepository
 
             return $stmt->execute();
         } catch (PDOException $e) {
-            error_log("Error deleting venue: " . $e->getMessage());
             throw new PDOException("Failed to delete venue", 0, $e);
         }
     }
@@ -158,7 +155,6 @@ class VenueRepository extends Repository implements IVenueRepository
 
         return $venues;
     } catch (PDOException $e) {
-        error_log("Error fetching all venues: " . $e->getMessage());
         throw new PDOException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
     }
     }

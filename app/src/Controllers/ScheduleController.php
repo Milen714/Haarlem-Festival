@@ -21,11 +21,14 @@ use App\Repositories\MediaRepository;
 use App\Repositories\TicketRepository;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 
 class ScheduleController extends BaseController
 {
     private ScheduleService $scheduleService;
     private TicketService $ticketService;
+    private ILogService $logService;
 
     /**
      * Wires up ScheduleService for all schedule CRUD and TicketService for attaching
@@ -34,8 +37,8 @@ class ScheduleController extends BaseController
     public function __construct()
     {
         $this->scheduleService = new ScheduleService();
-
         $this->ticketService = new TicketService(new TicketRepository());
+        $this->logService = new LogService();
     }
 
     /**
@@ -88,7 +91,7 @@ class ScheduleController extends BaseController
                 'filterDate'     => $date,
             ]);
         } catch (\Throwable $e) {
-            error_log("Schedule list error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $this->cmsLayout('Cms/Schedules/Index', [
                 'title'          => 'Manage Schedules',
                 'schedules'      => [],
@@ -125,7 +128,7 @@ class ScheduleController extends BaseController
                 'ticketTypes'    => [],
             ]);
         } catch (\Throwable $e) {
-            error_log("Schedule create form error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $this->startSession();
             $_SESSION['error'] = 'Failed to load schedule form.';
             $this->redirect('/cms/schedules');
@@ -155,7 +158,7 @@ class ScheduleController extends BaseController
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules/create');
         } catch (\Throwable $e) {
-            error_log("Schedule store error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $_SESSION['error'] = 'Failed to create schedule.';
             $this->redirect('/cms/schedules/create');
         }
@@ -198,7 +201,7 @@ class ScheduleController extends BaseController
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
         } catch (\Throwable $e) {
-            error_log("Schedule edit error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $this->startSession();
             $_SESSION['error'] = 'Failed to load schedule.';
             $this->redirect('/cms/schedules');
@@ -229,7 +232,7 @@ class ScheduleController extends BaseController
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/edit/{$scheduleId}");
         } catch (\Throwable $e) {
-            error_log("Schedule update error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $_SESSION['error'] = 'Failed to update schedule.';
             $this->redirect("/cms/schedules/edit/{$scheduleId}");
         }
@@ -257,7 +260,7 @@ class ScheduleController extends BaseController
         } catch (ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
         } catch (\Throwable $e) {
-            error_log("Schedule delete error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $_SESSION['error'] = 'Failed to delete schedule.';
         }
 

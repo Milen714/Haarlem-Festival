@@ -8,12 +8,15 @@ use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Services\ArtistService;
 use App\Services\Interfaces\IArtistService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 
 class ArtistController extends BaseController
 {
     private IArtistService $artistService;
+    private ILogService $logService;
 
     /**
      * Wires up ArtistService, which handles all artist CRUD operations including
@@ -22,6 +25,7 @@ class ArtistController extends BaseController
     public function __construct()
     {
         $this->artistService = new ArtistService();
+        $this->logService = new LogService();
     }
 
     /**
@@ -44,7 +48,7 @@ class ArtistController extends BaseController
                 'artists' => $artists
             ]);
         } catch (\Throwable $e) {
-            error_log("Artist list error: " . $e->getMessage());
+            $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to load artists.';
             $this->redirect('/cms/artists');
         }
@@ -93,7 +97,7 @@ class ArtistController extends BaseController
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/artists/create');
         } catch (ApplicationException | \Throwable $e) {
-            error_log("Artist create error: " . $e->getMessage());
+            $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to create artist.';
             $this->redirect('/cms/artists/create');
         }
@@ -130,7 +134,7 @@ class ArtistController extends BaseController
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/artists');
         } catch (\Throwable $e) {
-            error_log("Artist edit error: " . $e->getMessage());
+            $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to load artist.';
             $this->redirect('/cms/artists');
         }
@@ -160,7 +164,7 @@ class ArtistController extends BaseController
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/artists/edit/{$artistId}");
         } catch (ApplicationException | \Throwable $e) {
-            error_log("Artist update error: " . $e->getMessage());
+            $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to update artist.';
             $this->redirect("/cms/artists/edit/{$artistId}");
         }
@@ -195,7 +199,7 @@ class ArtistController extends BaseController
         } catch (ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
         } catch (\Throwable $e) {
-            error_log("Artist delete error: " . $e->getMessage());
+            $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to delete artist.';
         }
 
@@ -221,7 +225,7 @@ class ArtistController extends BaseController
             $this->artistService->removeGalleryImage($artistId, $mediaId);
             $_SESSION['success'] = 'Gallery image removed.';
         } catch (\Throwable $e) {
-            error_log("Remove gallery image error: " . $e->getMessage());
+            $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to remove gallery image.';
         }
 
