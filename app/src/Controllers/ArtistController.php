@@ -8,6 +8,8 @@ use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
 use App\Services\ArtistService;
 use App\Services\Interfaces\IArtistService;
+use App\Services\AlbumService;
+use App\Services\Interfaces\IAlbumService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
 use App\Models\Enums\UserRole;
@@ -16,16 +18,17 @@ use App\Middleware\RequireRole;
 class ArtistController extends BaseController
 {
     private IArtistService $artistService;
+    private IAlbumService $albumService;
     private ILogService $logService;
 
     /**
-     * Wires up ArtistService, which handles all artist CRUD operations including
-     * profile image and gallery uploads, validation, and soft-deletion.
+     * Wires up ArtistService, AlbumService, and LogService.
      */
     public function __construct()
     {
         $this->artistService = new ArtistService();
-        $this->logService = new LogService();
+        $this->albumService  = new AlbumService();
+        $this->logService    = new LogService();
     }
 
     /**
@@ -125,10 +128,14 @@ class ArtistController extends BaseController
             if (!$artist) {
                 throw new ResourceNotFoundException('Artist not found.');
             }
+
+            $albums = $this->albumService->getAlbumsByArtistId($artistId);
+
             $this->cmsLayout('Cms/Artists/Form', [
-                'title' => 'Edit Artist: ' . $artist->name,
-                'artist' => $artist,
-                'action' => "/cms/artists/update/{$artistId}"
+                'title'   => 'Edit Artist: ' . $artist->name,
+                'artist'  => $artist,
+                'action'  => "/cms/artists/update/{$artistId}",
+                'albums'  => $albums,
             ]);
         } catch (ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -227,6 +234,64 @@ class ArtistController extends BaseController
         } catch (\Throwable $e) {
             $this->logService->exception('Artist', $e);
             $_SESSION['error'] = 'Failed to remove gallery image.';
+        }
+
+        $this->redirect("/cms/artists/edit/{$artistId}");
+    }
+
+    /**
+     * Handles adding a new album for an artist from the edit form.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'artistId' key.
+     *
+     * @return void
+     */
+    #[RequireRole([UserRole::ADMIN])]
+    public function addAlbum($vars = []): void
+    {
+        $artistId = (int)($vars['artistId'] ?? 0);
+
+        try {
+            $albumData = [
+                'artist_id'    => $artistId,
+                'name'         => $_POST['album_name']         ?? '',
+                'release_year' => $_POST['album_release_year'] ?? '',
+                'description'  => $_POST['album_description']  ?? '',
+                'spotify_url'  => $_POST['album_spotify_url']  ?? '',
+            ];
+            $album = $this->albumService->createFromRequest($albumData, $_FILES);
+            $_SESSION['success'] = "Album '{$album->name}' added successfully!";
+        } catch (ValidationException $e) {
+            $_SESSION['error'] = $e->getMessage();
+        } catch (\Throwable $e) {
+            $this->logService->exception('Artist', $e);
+            $_SESSION['error'] = 'Failed to add album.';
+        }
+
+        $this->redirect("/cms/artists/edit/{$artistId}");
+    }
+
+    /**
+     * Handles removing an album from an artist.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects 'artistId' and 'albumId' keys.
+     *
+     * @return void
+     */
+    #[RequireRole([UserRole::ADMIN])]
+    public function removeAlbum($vars = []): void
+    {
+        $artistId = (int)($vars['artistId'] ?? 0);
+        $albumId  = (int)($vars['albumId']  ?? 0);
+
+        try {
+            $this->albumService->deleteAlbum($albumId);
+            $_SESSION['success'] = 'Album removed successfully.';
+        } catch (\Throwable $e) {
+            $this->logService->exception('Artist', $e);
+            $_SESSION['error'] = 'Failed to remove album.';
         }
 
         $this->redirect("/cms/artists/edit/{$artistId}");

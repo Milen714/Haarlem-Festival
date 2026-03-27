@@ -138,6 +138,113 @@ $action = $action ?? '/cms/artists/store';
             </div>
         </div>
 
+        <!-- Albums -->
+        <?php if ($isEdit): ?>
+            <?php
+            $albums = $albums ?? [];
+            ?>
+            <section aria-labelledby="albums-heading" class="bg-white border rounded-lg p-6 mb-6">
+                <h2 id="albums-heading" class="text-xl font-bold mb-1 border-b pb-2">Albums</h2>
+                <p class="text-sm text-gray-500 mb-4">Albums appear on the artist's public page. Each album can have a cover image and an optional Spotify link.</p>
+
+                <?php if (!empty($albums)): ?>
+                    <p class="text-sm font-semibold text-gray-700 mb-3">
+                        Current Albums (<?= count($albums) ?> album<?= count($albums) !== 1 ? 's' : '' ?>):
+                    </p>
+                    <ul class="mb-5 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        <?php foreach ($albums as $album): ?>
+                            <?php
+                            $coverPath = $album->cover_image?->file_path ?? '';
+                            if ($coverPath && !str_starts_with($coverPath, '/')) {
+                                $coverPath = '/' . $coverPath;
+                            }
+                            ?>
+                            <li class="rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                                <figure class="flex flex-col h-full m-0">
+                                    <img src="<?= $coverPath ? htmlspecialchars($coverPath) : '/Assets/Home/ImagePlaceholder.png' ?>"
+                                        alt="<?= htmlspecialchars($album->name ?? '') ?> cover"
+                                        class="w-full h-40 object-cover block"
+                                        onerror="this.onerror=null; this.src='/Assets/Home/ImagePlaceholder.png';">
+                                    <figcaption class="flex flex-col gap-1 px-2 py-2 bg-white border-t border-gray-100 text-xs text-gray-700 flex-1">
+                                        <span class="font-semibold truncate"><?= htmlspecialchars($album->name ?? '') ?></span>
+                                        <?php if ($album->release_year): ?>
+                                            <span class="text-gray-500"><?= htmlspecialchars($album->release_year) ?></span>
+                                        <?php endif; ?>
+                                        <?php if ($album->spotify_url): ?>
+                                            <a href="<?= htmlspecialchars($album->spotify_url) ?>" target="_blank" rel="noopener"
+                                                class="text-green-600 hover:underline truncate">Spotify</a>
+                                        <?php endif; ?>
+                                        <button type="submit"
+                                            formaction="/cms/artists/<?= (int)$artist->artist_id ?>/albums/remove/<?= (int)$album->album_id ?>"
+                                            formmethod="POST" formnovalidate
+                                            onclick="return confirm('Remove album \'<?= htmlspecialchars(addslashes($album->name ?? '')) ?>\'?');"
+                                            class="mt-1 self-start text-red-600 hover:text-red-800 font-semibold hover:underline">
+                                            Remove
+                                        </button>
+                                    </figcaption>
+                                </figure>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php else: ?>
+                    <p class="text-sm text-gray-400 italic mb-4">No albums yet. Add one below.</p>
+                <?php endif; ?>
+
+                <!-- Add New Album -->
+                <div class="border-t pt-4 mt-2">
+                    <h3 class="text-sm font-bold text-gray-700 mb-3">Add New Album</h3>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1" for="album_name">
+                                Album Name <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="album_name" name="album_name"
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Album title">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1" for="album_release_year">
+                                Release Year
+                            </label>
+                            <input type="text" id="album_release_year" name="album_release_year"
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="e.g. 2024">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1" for="album_description">
+                                Description
+                            </label>
+                            <textarea id="album_description" name="album_description" rows="2"
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Short album description..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1" for="album_spotify_url">
+                                Spotify URL
+                            </label>
+                            <input type="url" id="album_spotify_url" name="album_spotify_url"
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="https://open.spotify.com/album/...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1" for="cover_image">
+                                Cover Image
+                            </label>
+                            <input type="file" id="cover_image" name="cover_image" accept="image/jpeg,image/png,image/webp"
+                                class="w-full text-sm">
+                            <p class="text-[10px] text-gray-500 mt-1">Max 5MB • JPG, PNG, or WebP</p>
+                        </div>
+                    </div>
+                    <button type="submit"
+                        formaction="/cms/artists/<?= (int)$artist->artist_id ?>/albums/store"
+                        formmethod="POST" formnovalidate
+                        class="mt-4 rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700 transition">
+                        Add Album
+                    </button>
+                </div>
+            </section>
+        <?php endif; ?>
+
         <!-- Gallery Images -->
         <?php if ($isEdit): ?>
             <section aria-labelledby="gallery-heading" class="bg-white border rounded-lg p-6 mb-6">

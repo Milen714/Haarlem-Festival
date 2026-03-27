@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Models\Enums\OrderStatus;
 use App\Models\Payment\Order;
-use App\Models\Payment\OrderItem;
 use App\Services\Interfaces\IOrderService;
 use App\Services\Interfaces\IPaymentService;
 use App\Services\Interfaces\ITicketService;
@@ -15,9 +14,9 @@ use App\Services\MailService;
 use App\Services\Interfaces\IMailService;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Services\TicketFulfillmentService;
-use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
-use Exception;
+use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
+use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
 
 class StripeWebhookController extends BaseController
 {
@@ -26,7 +25,7 @@ class StripeWebhookController extends BaseController
     private ITicketService  $ticketService;
     private IMailService    $mailService;
     private ITicketFulfillmentService $ticketFulfillmentService;
-    private LogService $logService;
+    private ILogService $logService;
 
 
     public function __construct()
@@ -82,31 +81,34 @@ class StripeWebhookController extends BaseController
                     $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Cancelled);
                     break;
             }
-            http_response_code(200);
-            echo json_encode(['received' => true]);
+            $this->jsonResponse(['received' => true], 200);
         } catch (\Throwable $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'temporary failure']);
+            $this->jsonResponse(['error' => 'temporary failure'], 500);
         }
     }
     private function sendTicketEmail(Order $order): string
     {
-        $fileName = $this->ticketFulfillmentService->generatePDFName($order);
-        $ticketPdfPath =  __DIR__ .  '/../../public/Assets/documents/' . $fileName . '.pdf';
+        $fileName      = $this->ticketFulfillmentService->generatePDFName($order);
+        $ticketPdfPath = $this->ticketFulfillmentService->getTicketPdfPath($fileName . '.pdf');
+        $mailTo        = $order->user->email ?? 'paami97@gmail.com';
+
         try {
-
-
             $this->orderService->generateTicketHashes($order->order_id);
             $order = $this->orderService->getOrderById($order->order_id);
 
-            // ViewModel to aggregate the data for the  email template and pdf generation
+            $mailTo    = $order->user->email ?? $mailTo;
             $viewModel = new ShoppingCartViewModel($order);
 
-            $this->ticketFulfillmentService->generatePDF($this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]), $fileName);
+            $this->ticketFulfillmentService->generatePDF(
+                $this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]),
+                $fileName,
+                'A4',
+                'landscape',
+                false,  // never stream PDF to HTTP response from the webhook
+                true    // always save to disk
+            );
 
             $this->logService->info('StripeWebhook', 'PDF generated', ['path' => $ticketPdfPath]);
-
-            $mailTo = $order->user->email ?? 'paami97@gmail.com';
 
             $this->mailService->sendEmail(
                 $mailTo,
@@ -117,6 +119,7 @@ class StripeWebhookController extends BaseController
         } catch (\Throwable $e) {
             $this->logService->error('StripeWebhook', 'Failed to send ticket email', ['to' => $mailTo], $e->getTraceAsString());
         }
+
         return $fileName . '.pdf';
     }
 }
