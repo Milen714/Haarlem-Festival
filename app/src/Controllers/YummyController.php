@@ -19,6 +19,8 @@ use App\Services\Interfaces\ICuisineService;
 use App\Models\Yummy\RestaurantListViewModel;
 use App\Services\MediaService;
 use App\Services\CuisineService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 
 class YummyController extends BaseController
 {
@@ -28,7 +30,8 @@ class YummyController extends BaseController
     private IRestaurantService $restaurantService;
     private IVenueService $venueService;
     private ICuisineService $cuisineService;
-    
+    private ILogService $logService;
+
     public function __construct()
     {
         $this->pageService = new PageService();
@@ -37,6 +40,7 @@ class YummyController extends BaseController
         $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
         $this->cuisineService = new CuisineService();
+        $this->logService = new LogService();
     }
     public function index()
     {
@@ -45,7 +49,7 @@ class YummyController extends BaseController
             $pageData = $this->pageService->getPageBySlug('events-yummy');
             
             if (!$pageData) {
-                error_log("Yummy page data not found for slug: {$slug}");
+                $this->logService->warning('Yummy', "Page data not found for slug: {$slug}");
                 $this->notFound();
                 return;
             }
@@ -61,7 +65,7 @@ class YummyController extends BaseController
                 'restaurants' => $restaurants,
             ]);
         } catch (\Exception $e) {
-            error_log("Error in YummyController index method: " . $e->getMessage());
+            $this->logService->exception('Yummy', $e);
             $this->notFound();
         }
     }
@@ -73,7 +77,7 @@ class YummyController extends BaseController
             
             
             if (!$pageData) {
-                error_log("Yummy page data not found for slug: events-yummy");
+                $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy');
                 $this->notFound();
                 return;
             }
@@ -108,14 +112,14 @@ class YummyController extends BaseController
             $_SESSION['error'] = 'Failed to fetch Yummy event homepage';
          }
     }
-    
+
     public function displayRestaurants(){
         try{
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants');
             
             
             if (!$pageData) {
-                error_log("Yummy page data not found for slug: events-yummy-restaurants");
+                $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy-restaurants');
                 $this->notFound();
                 return;
             }
@@ -151,7 +155,7 @@ class YummyController extends BaseController
             
             
             if (!$pageData) {
-                error_log("Yummy page data not found for slug: events-yummy-restaurants");
+                $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy-restaurants');
                 $this->notFound();
                 return;
             }

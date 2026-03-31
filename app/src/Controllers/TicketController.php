@@ -17,11 +17,14 @@ use App\Services\RestaurantService;
 use App\Services\ScheduleService;
 use App\Services\TicketService;
 use App\Services\VenueService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 
 class TicketController extends BaseController
 {
     private TicketService $ticketService;
     private ScheduleService $scheduleService;
+    private ILogService $logService;
 
     public function __construct()
     {
@@ -39,6 +42,7 @@ class TicketController extends BaseController
             $restaurantService,
             $landmarkService
         );
+        $this->logService = new LogService();
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -55,7 +59,7 @@ class TicketController extends BaseController
                 'ticketTypes' => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
         } catch (\Exception $e) {
-            error_log('Schedule ticket list error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $this->startSession();
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
@@ -78,7 +82,7 @@ class TicketController extends BaseController
                 'action' => "/cms/schedules/{$scheduleId}/tickets/store",
             ]);
         } catch (\Exception $e) {
-            error_log('Schedule ticket create form error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $this->startSession();
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
@@ -98,7 +102,7 @@ class TicketController extends BaseController
             $_SESSION['success'] = 'Ticket type #' . ($ticketType->ticket_type_id ?? '') . ' created successfully!';
             $this->redirect("/cms/schedules/{$scheduleId}/tickets");
         } catch (\Exception $e) {
-            error_log('Schedule ticket store error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/{$scheduleId}/tickets/create");
         }
@@ -122,7 +126,7 @@ class TicketController extends BaseController
                 'action' => "/cms/schedules/{$scheduleId}/tickets/update/{$ticketTypeId}",
             ]);
         } catch (\Exception $e) {
-            error_log('Schedule ticket edit error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $this->startSession();
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/{$scheduleId}/tickets");
@@ -142,7 +146,7 @@ class TicketController extends BaseController
             $_SESSION['success'] = 'Ticket type #' . ($ticketType->ticket_type_id ?? $ticketTypeId) . ' updated successfully!';
             $this->redirect("/cms/schedules/{$scheduleId}/tickets");
         } catch (\Exception $e) {
-            error_log('Schedule ticket update error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/{$scheduleId}/tickets/edit/{$ticketTypeId}");
         }
@@ -160,7 +164,7 @@ class TicketController extends BaseController
             $this->ticketService->delete($ticketTypeId);
             $_SESSION['success'] = 'Ticket type deleted successfully!';
         } catch (\Exception $e) {
-            error_log('Schedule ticket delete error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $_SESSION['error'] = $e->getMessage();
         }
 
@@ -177,7 +181,7 @@ class TicketController extends BaseController
                 'usageCounts' => $this->ticketService->getTicketSchemeUsageCounts(),
             ]);
         } catch (\Exception $e) {
-            error_log('Ticket scheme list error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $this->cmsLayout('Cms/TicketSchemes/Index', [
                 'title' => 'Manage Ticket Schemes',
                 'ticketSchemes' => [],
@@ -207,7 +211,7 @@ class TicketController extends BaseController
             $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' created successfully!";
             $this->redirect('/cms/ticket-schemes');
         } catch (\Exception $e) {
-            error_log('Ticket scheme create error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/ticket-schemes/create');
         }
@@ -231,7 +235,7 @@ class TicketController extends BaseController
                 'action' => "/cms/ticket-schemes/update/{$ticketSchemeId}",
             ]);
         } catch (\Exception $e) {
-            error_log('Ticket scheme edit error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $this->startSession();
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/ticket-schemes');
@@ -249,7 +253,7 @@ class TicketController extends BaseController
             $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' updated successfully!";
             $this->redirect('/cms/ticket-schemes');
         } catch (\Exception $e) {
-            error_log('Ticket scheme update error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/ticket-schemes/edit/{$ticketSchemeId}");
         }
@@ -271,7 +275,7 @@ class TicketController extends BaseController
             $this->ticketService->deleteTicketSchemeSafely($ticketSchemeId);
             $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' deleted successfully!";
         } catch (\Exception $e) {
-            error_log('Ticket scheme delete error: ' . $e->getMessage());
+            $this->logService->exception('Ticket', $e);
             $_SESSION['error'] = $e->getMessage();
         }
 

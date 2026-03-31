@@ -13,6 +13,10 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     private MediaRepository $mediaRepository;
     private TicketRepository $ticketRepository;
 
+    /**
+     * Wires up the MediaRepository (for potential future media operations) and
+     * TicketRepository (used by getSchedulesByRestaurant to attach ticket types per slot).
+     */
     public function __construct()
     {
         $this->mediaRepository = new MediaRepository();
@@ -20,12 +24,16 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     }
 
     /**
-     * Base query with all JOINs for nested objects including media
+     * Returns the shared SELECT … FROM SCHEDULE … LEFT JOIN … string used by most read methods.
+     * Centralises the long multi-table JOIN so individual query methods only need to append
+     * a WHERE clause, keeping the SQL consistent and reducing duplication.
+     *
+     * @return string  A complete SQL fragment from SELECT through to the last LEFT JOIN.
      */
     private function getBaseQuery(): string
     {
         return "
-            SELECT 
+            SELECT
                 s.schedule_id,
                 s.event_id,
                 s.date,
@@ -35,7 +43,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 s.artist_id,
                 s.restaurant_id,
                 s.landmark_id,
-                
+
                 -- Venue fields
                 v.venue_id,
                 v.name as venue_name,
@@ -53,7 +61,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 venue_media.media_id as venue_media_id,
                 venue_media.file_path as venue_media_file_path,
                 venue_media.alt_text as venue_media_alt_text,
-                
+
                 -- Artist fields
                 a.artist_id,
                 a.name as artist_name,
@@ -69,12 +77,12 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 a.profile_image_id as artist_profile_image_id,
                 a.collaborations as artist_collaborations,
                 a.deleted_at as artist_deleted_at,
-                
+
                 -- Artist Media fields
                 artist_media.media_id as artist_media_id,
                 artist_media.file_path as artist_media_file_path,
                 artist_media.alt_text as artist_media_alt_text,
-                
+
                 -- Restaurant fields
                 r.restaurant_id,
                 r.name as restaurant_name,
@@ -88,18 +96,18 @@ class ScheduleRepository extends Repository implements IScheduleRepository
 
                 -- Session field
                 rs.session_number,
-                
+
                 -- Restaurant Media fields
                 restaurant_media.media_id as restaurant_media_id,
                 restaurant_media.file_path as restaurant_media_file_path,
                 restaurant_media.alt_text as restaurant_media_alt_text,
-                
+
                 -- Restaurant Media fields
                 restaurant_media.media_id as restaurant_media_id,
                 restaurant_media.file_path as restaurant_media_file_path,
                 restaurant_media.alt_text as restaurant_media_alt_text,
-                
-               
+
+
                 -- Landmark fields (DB-compatible + keeps expected aliases)
                 l.landmark_id,
                 l.name as landmark_name,
@@ -108,19 +116,19 @@ class ScheduleRepository extends Repository implements IScheduleRepository
                 -- l.has_detail_page as landmark_has_detail_page, (column removed from DB)
                 l.landmark_slug,
                 l.main_image_id,
-                
+
                 -- Landmark Media fields
                 landmark_media.media_id as landmark_media_id,
                 landmark_media.file_path as landmark_media_file_path,
                 landmark_media.alt_text as landmark_media_alt_text,
-                
+
                 -- Event Category fields
                 ec.event_id as event_category_id,
                 ec.type as event_category_type,
                 ec.title as event_category_title,
                 ec.category_description as event_category_description,
                 ec.slug as event_category_slug
-                
+
             FROM SCHEDULE s
             LEFT JOIN VENUE v ON s.venue_id = v.venue_id
             LEFT JOIN MEDIA venue_media ON v.venue_image_id = venue_media.media_id
@@ -135,10 +143,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         ";
     }
 
-    /**
-     * Gets a single schedule by ID
-     * @return Schedule|null
-     */
     public function getScheduleById(int $scheduleId): ?Schedule
     {
         try {
@@ -162,12 +166,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets all schedules with optional filters
-     * @param string|null $eventType Filter by event type (e.g., 'Yummy', 'Jazz', 'Magic')
-     * @param string|null $date Filter by date (format: 'Y-m-d')
-     * @return Schedule[]
-     */
     public function getAllSchedules(?string $eventType = null, ?string $date = null): array
     {
         try {
@@ -207,10 +205,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets a single schedule for an event (first upcoming one)
-     * @return Schedule|null
-     */
     public function getOneScheduleByEventId(int $eventId): ?Schedule
     {
         try {
@@ -238,10 +232,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets all the schedules for a specific event
-     * @return Schedule[]
-     */
     public function getSchedulesByEventId(int $eventId): array
     {
         try {
@@ -263,9 +253,18 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             throw new PDOException("Error fetching schedule by event: " . $e->getMessage(), 0, $e);
         }
     }
+
     /**
-     * @param int $eventId
-     * @return \App\Models\Schedule[] 
+     * Returns all schedule slots for an event where the linked artist is flagged as a special event act.
+     * Uses a targeted JOIN query (rather than the base query) to filter on ARTIST.special_event = 1,
+     * and only selects the columns needed to keep the payload lean.
+     * Used to populate the "back-to-back specials" section on Jazz event pages.
+     *
+     * @param int $eventId  The event to search within.
+     *
+     * @return Schedule[]  All special-event artist slots, ordered by date then start time.
+     *
+     * @throws PDOException  If the database query fails.
      */
     public function getBackToBackSpecialsByEventId(int $eventId): array
     {
@@ -273,18 +272,18 @@ class ScheduleRepository extends Repository implements IScheduleRepository
             $pdo = $this->connect();
 
             $query = "
-                SELECT 
-                    s.*, 
+                SELECT
+                    s.*,
                     -- Artist Data
                     a.name AS artist_name, a.slug AS artist_slug, a.special_event AS artist_special_event,
                     -- Artist Media (Required by hydrateSchedule)
-                    m.media_id AS artist_media_id, 
-                    m.file_path AS artist_media_file_path, 
+                    m.media_id AS artist_media_id,
+                    m.file_path AS artist_media_file_path,
                     m.alt_text AS artist_media_alt_text,
                     -- Venue Data
                     v.name AS venue_name, v.street_address AS venue_address,
                     -- Event Category (Required by hydrateEventCategory)
-                    ec.type AS event_category_type, 
+                    ec.type AS event_category_type,
                     ec.title AS event_title
                 FROM SCHEDULE s
                 JOIN ARTIST a ON s.artist_id = a.artist_id
@@ -308,6 +307,16 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
+    /**
+     * Returns all schedule slots linked to a specific restaurant, with ticket types attached to each slot.
+     * Iterates the result set and calls TicketRepository per row, so the caller gets fully enriched
+     * Schedule objects ready for display on a restaurant's booking page.
+     *
+     * @param int $restaurantId  The restaurant whose schedule slots you want.
+     *
+     * @return Schedule[]  All schedule slots for the restaurant, ordered by date then start time,
+     *                     each with its ticketTypes array populated.
+     */
     public function getSchedulesByRestaurant(int $restaurantId): array
     {
         //needed to make a new one, because it was looping 3x with the based. and only takes what is needed so simpler
@@ -363,7 +372,14 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     }
 
     /**
-     * Create a new schedule record
+     * Inserts a new schedule row and writes the generated schedule_id back onto the Schedule object.
+     * Dates and times are formatted to database-compatible strings before binding.
+     *
+     * @param Schedule $schedule  The schedule to persist; schedule_id is set on success.
+     *
+     * @return bool  True if the INSERT succeeded.
+     *
+     * @throws PDOException  If the database query fails.
      */
     public function create(Schedule $schedule): bool
     {
@@ -400,7 +416,14 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     }
 
     /**
-     * Update an existing schedule record
+     * Updates every editable field on an existing schedule row identified by schedule_id.
+     * DateTime objects are formatted to strings before binding so PDO receives clean values.
+     *
+     * @param Schedule $schedule  The schedule with updated values and a valid schedule_id.
+     *
+     * @return bool  True if the UPDATE executed successfully.
+     *
+     * @throws PDOException  If the database query fails.
      */
     public function update(Schedule $schedule): bool
     {
@@ -442,7 +465,14 @@ class ScheduleRepository extends Repository implements IScheduleRepository
     }
 
     /**
-     * Delete a schedule by ID
+     * Permanently deletes a schedule row by its primary key.
+     * This is a hard delete — there is no soft-delete mechanism on the SCHEDULE table.
+     *
+     * @param int $scheduleId  The primary key of the schedule to remove.
+     *
+     * @return bool  True if the DELETE executed successfully.
+     *
+     * @throws PDOException  If the database query fails.
      */
     public function delete(int $scheduleId): bool
     {
@@ -457,9 +487,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Get all event categories (for dropdowns in the cms )
-     */
     public function getAllEventCategories(): array
     {
         try {

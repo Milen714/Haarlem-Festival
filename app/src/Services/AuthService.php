@@ -6,13 +6,16 @@ use App\Models\User;
 use App\Services\UserService;
 use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\IAuthService;
+use App\Services\Interfaces\ILogService;
 class AuthService implements IAuthService {
     private ?User $user = null;
     private IUserService $userService;
+    private ILogService $logService;
 
     public function __construct()
     {
         $this->userService = new UserService();
+        $this->logService  = new LogService();
     }
     public function getLoggedInUser(): ?User {
         if ($this->user === null && isset($_SESSION['loggedInUser'])) {
@@ -43,6 +46,7 @@ class AuthService implements IAuthService {
         $this->userService->updateUser($user);
         return $token;
         } catch (\Exception $e) {
+            $this->logService->exception('Auth', $e);
             die("Error generating password reset token: " . $e->getMessage());
         }
     }
@@ -50,9 +54,10 @@ class AuthService implements IAuthService {
         try {
         $token = $this->generateSecureToken();
         $user->verification_token = $token;
-        
+
         return $token;
         } catch (\Exception $e) {
+            $this->logService->exception('Auth', $e);
             die("Error generating verification token: " . $e->getMessage());
         }
     }

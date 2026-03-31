@@ -8,6 +8,7 @@
  */
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../config/config.php';
 
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
@@ -175,6 +176,13 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
     $r->addRoute('GET', '/getOrderItemData', ['App\Controllers\OrderController', 'getOrderItemDataForUpdate']);
     $r->addRoute('POST', '/updateOrderItem', ['App\Controllers\OrderController', 'updateOrderItemInCart']);
+    $r->addRoute('GET', '/test-mail-view', ['App\Controllers\PaymentController', 'sendTicketEmail']);
+    $r->addRoute('GET', '/payment/downloadTickets', ['App\Controllers\OrderController', 'downloadTickets']);
+
+    /* Qr code */
+    $r->addRoute('GET', '/my-tickets', ['App\Controllers\OrderController', 'showUserTickets']);
+    $r->addRoute('GET', '/qr-code/scan', ['App\Controllers\EmployeeController', 'scanPage']);
+    $r->addRoute('POST', '/qr-code/validate', ['App\Controllers\EmployeeController', 'validateScan']);
 });
 
 

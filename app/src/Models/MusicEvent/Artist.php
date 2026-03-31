@@ -31,8 +31,18 @@ class Artist
 	public ?bool $is_headliner = null;
 	public ?int $performance_order = null;
 
+	/** Empty constructor; all properties are populated via fromPDOData() or createFromPostData(). */
 	public function __construct() {}
 
+	/**
+	 * Factory method that creates a new Artist from raw form POST data.
+	 * Instantiates a blank Artist and delegates all field mapping to applyPostData(),
+	 * so this is the right entry point when handling a "create artist" form submission.
+	 *
+	 * @param array $data  The raw $_POST array from the artist create form.
+	 *
+	 * @return self  A fully populated Artist instance ready to be passed to the repository.
+	 */
 	public static function createFromPostData(array $data): self
 	{
 		$artist = new self();
@@ -46,6 +56,10 @@ class Artist
 	 * Trims all string fields, generates a URL slug from the name,
 	 * and sets optional fields to null if they are empty.
 	 * Use this when updating an existing artist (e.g. in the CMS update action).
+	 *
+	 * @param array $data  The raw $_POST array from the artist create/edit form.
+	 *
+	 * @return void
 	 */
 	public function applyPostData(array $data): void
 	{
@@ -62,6 +76,13 @@ class Artist
 		$this->collaborations = self::optionalTrimmedValue($data, 'collaborations');
 	}
 
+	/**
+	 * Returns the web-accessible path to the artist's profile image.
+	 * Ensures the path always starts with a leading slash so it works as an absolute URL.
+	 * Falls back to a generic placeholder image if no media record is attached.
+	 *
+	 * @return string  A root-relative image path, e.g. '/uploads/artists/john.jpg'.
+	 */
 	public function getProfileImagePath(): string
 	{
 		if ($this->profile_image && $this->profile_image->file_path) {
@@ -72,6 +93,12 @@ class Artist
 		return '/Assets/Home/ImagePlaceholder.png';
 	}
 
+	/**
+	 * Returns the alt text for the artist's profile image.
+	 * Falls back to the artist's name if no alt text is stored, and to 'Artist' as a last resort.
+	 *
+	 * @return string  A descriptive alt string suitable for the HTML img alt attribute.
+	 */
 	public function getProfileImageAlt(): string
 	{
 		return $this->profile_image?->alt_text ?? $this->name ?? 'Artist';
@@ -81,12 +108,21 @@ class Artist
 	 * Returns the first letter of the artist's name in uppercase.
 	 * Used as a visual placeholder (avatar initial) when no profile image is available.
 	 * Defaults to 'A' if the name is not set.
+	 *
+	 * @return string  A single uppercase letter, e.g. 'M' for 'Miles Davis'.
 	 */
 	public function getInitial(): string
 	{
 		return strtoupper(substr($this->name ?? 'A', 0, 1));
 	}
 
+	/**
+	 * Returns true if this artist has a Media record with a non-empty file path attached.
+	 * Use this before calling getProfileImagePath() to decide whether to show a real image
+	 * or fall back to an initial/avatar placeholder in templates.
+	 *
+	 * @return bool  True if a profile image is set, false otherwise.
+	 */
 	public function hasProfileImage(): bool
 	{
 		return $this->profile_image !== null && !empty($this->profile_image->file_path);
@@ -98,11 +134,15 @@ class Artist
 	 * 'artist_name' or 'name' depending on the query. Both are checked.
 	 * Also hydrates the nested Media (profile image) and Gallery objects
 	 * if the relevant columns are present in the row.
+	 *
+	 * @param array $data  A single row from PDO::FETCH_ASSOC, potentially with aliased columns.
+	 *
+	 * @return void
 	 */
 	public function fromPDOData(array $data): void
 	{
 		$this->artist_id = isset($data['artist_id']) ? (int)$data['artist_id'] : null;
-		$this->name = $data['name'] ?? $data['artist_name'] ?? null;
+		$this->name = $data['artist_name'] ?? $data['name'] ?? null;
 		$this->slug = $data['artist_slug'] ?? $data['slug'] ?? null;
 		$this->special_event = isset($data['special_event']) ? (bool)$data['special_event'] : (isset($data['special_event']) ? (bool)$data['special_event'] : null);
 		$this->bio = $data['artist_bio'] ?? $data['bio'] ?? null;
@@ -144,10 +184,16 @@ class Artist
 			]);
 		}
 	}
+
 	/**
 	 * Safely reads an optional string field from a data array.
 	 * Returns null if the key is missing or empty, otherwise returns the trimmed string.
 	 * Prevents storing empty strings in the database for optional fields.
+	 *
+	 * @param array  $data  The source array (typically $_POST or a PDO row).
+	 * @param string $key   The key to look up in the array.
+	 *
+	 * @return string|null  The trimmed value, or null if blank/missing.
 	 */
 	private static function optionalTrimmedValue(array $data, string $key): ?string
 	{
@@ -158,6 +204,15 @@ class Artist
 		return trim((string)$data[$key]);
 	}
 
+	/**
+	 * Converts a plain-text name into a URL-safe slug (lowercase, hyphens instead of
+	 * spaces and special characters). Used automatically when saving an artist so the
+	 * slug stays in sync with the name without any manual input.
+	 *
+	 * @param string $text  The raw artist name, e.g. 'Chet Baker'.
+	 *
+	 * @return string  A lowercase hyphenated slug, e.g. 'chet-baker'.
+	 */
 	private static function generateSlug(string $text): string
 	{
 		$text = strtolower($text);

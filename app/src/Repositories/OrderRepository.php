@@ -21,6 +21,7 @@ class OrderRepository extends Repository implements IOrderRepository
             SELECT
                 o.order_id,
                 o.user_id,
+                o.reference_number as order_reference_number,
                 o.order_date,
                 o.subtotal,
                 o.total,
@@ -33,6 +34,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 o.stripe_customer_id,
                 o.created_at as order_created_at,
                 o.paid_at,
+                o.ticket_pdf_path,
 
                 -- User fields
                 u.id as user_id,
@@ -46,6 +48,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 -- Order Item fields
                 oi.orderitem_id,
                 oi.order_id as oi_order_id,
+                oi.qr_code_hash as oi_qr_code_hash,
                 oi.ticket_type_id,
                 oi.quantity,
                 oi.unit_price,
@@ -175,6 +178,9 @@ class OrderRepository extends Repository implements IOrderRepository
                 oi.quantity,
                 oi.unit_price,
                 oi.reservation_fee,
+                oi.qr_code_hash,
+                oi.is_scanned,
+                oi.scanned_at,
 
                 -- Ticket Type fields
                 tt.ticket_type_id,
@@ -203,8 +209,6 @@ class OrderRepository extends Repository implements IOrderRepository
                 s.start_time,
                 s.end_time,
                 s.total_capacity,
-                s.tickets_sold,
-                s.is_sold_out,
                 s.venue_id,
                 s.artist_id,
                 s.restaurant_id,
@@ -223,7 +227,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 v.venue_image_id as venue_image_id,
                 v.email as venue_email,
 
-                --venue media fields
+                -- Venue media fields
                 venue_media.media_id as venue_media_id,
                 venue_media.file_path as venue_media_file_path,
                 venue_media.alt_text as venue_media_alt_text,
@@ -299,6 +303,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 INSERT INTO `ORDER` (
                     user_id,
                     order_date,
+                    reference_number,
                     subtotal,
                     total,
                     serviceFee,
@@ -313,6 +318,7 @@ class OrderRepository extends Repository implements IOrderRepository
                 ) VALUES (
                     :user_id,
                     :order_date,
+                    :reference_number,
                     :subtotal,
                     :total,
                     :serviceFee,
@@ -330,6 +336,7 @@ class OrderRepository extends Repository implements IOrderRepository
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $order->user?->id, PDO::PARAM_INT);
             $stmt->bindValue(':order_date', $order->order_date?->format('Y-m-d H:i:s'));
+            $stmt->bindValue(':reference_number', $order->reference_number);
             $stmt->bindValue(':subtotal', $order->subtotal ?? 0.0);
             $stmt->bindValue(':total', $order->total ?? 0.0);
             $stmt->bindValue(':serviceFee', $order->serviceFee ?? 0.0);
@@ -434,20 +441,32 @@ class OrderRepository extends Repository implements IOrderRepository
     }
 
     public function getPaidTicketsByUser(int $userId): array
-    {
-        $pdo = $this->connect();
-        $sql = $this->getBaseQuery() . '
-            WHERE o.user_id = :user_id
-            AND o.status = "Paid", "Fulfilled"
-            AND o.paid_at IS NOT NULL
-            ORDER BY s.date, s.start_time
-            GROUP BY oi.orderitem_id
-        ';
-        $getItems = $this->pdo->prepare($sql);
-        $getItems->execute([
-            'user_id' => $userId
-        ]);
-        return $getItems->fetchAll(PDO::FETCH_ASSOC);
+    {   
+        try {
+            $pdo = $this->connect();
+            $query = $this->getBaseQuery() . '
+                WHERE o.user_id = :user_id
+                AND (o.status = \'Paid\' OR o.status = \'Fulfilled\')
+                
+                ORDER BY s.date, s.start_time
+            ';
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $orderItems = [];
+            foreach ($rows as $row) {
+                if (!is_null($row['orderitem_id'])) {
+                    $orderItem = new OrderItem();
+                    $orderItems[] = $orderItem->fromPdo($row);
+                }
+            }
+            return $orderItems;
+
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching paid tickets by user ID: " . $e->getMessage());
+        }
+        
     }
 
     public function getOpenOrderByUserId(int $userId, ?array $statuses = null): ?Order{
@@ -513,21 +532,22 @@ class OrderRepository extends Repository implements IOrderRepository
         }
     }
 
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
         try {
             $pdo = $this->connect();
 
             $query = "
                 UPDATE `ORDER` SET
-                    status = :status
+                    status = :status,
+                    ticket_pdf_path = :pdf
                 WHERE order_id = :order_id
             ";
 
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':order_id', $orderId, PDO::PARAM_INT);
             $stmt->bindValue(':status', $status->value);
-
+            $stmt->bindValue(':pdf', $pdf, $pdf === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $executed = $stmt->execute();
             if (!$executed) {
                 return false;
@@ -628,6 +648,11 @@ class OrderRepository extends Repository implements IOrderRepository
                 }
             }
 
+            // If no items were found from the join, explicitly fetch them
+            if (empty($order->orderItems) && !is_null($order->order_id)) {
+                $order->orderItems = $this->getOrderItemsByOrderId($order->order_id);
+            }
+
             return $order;
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching order by Stripe checkout session ID: " . $e->getMessage());
@@ -716,6 +741,122 @@ class OrderRepository extends Repository implements IOrderRepository
             return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             throw new \RuntimeException("Failed to update order item: " . $e->getMessage());
+        }
+    }
+    public function updateItemHash(int $orderitemId, string $hash): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE ORDER_ITEM SET
+                    qr_code_hash = :hash
+                WHERE orderitem_id = :orderitem_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderitemId, PDO::PARAM_INT);
+            $stmt->bindValue(':hash', $hash, PDO::PARAM_STR);
+
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to update order item hash: " . $e->getMessage());
+        }
+    }
+    public function markAsScanned(int $orderitemId): bool
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = "
+                UPDATE ORDER_ITEM 
+                SET is_scanned = 1, 
+                    scanned_at = NOW() 
+                WHERE orderitem_id = :orderitem_id
+            ";
+
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':orderitem_id', $orderitemId, PDO::PARAM_INT);
+            $executed = $stmt->execute();
+            if (!$executed) {
+                return false;
+            }
+
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Failed to mark order item as scanned: " . $e->getMessage());
+        }
+    }
+
+    public function getOrderItemByHash(string $hash): ?OrderItem
+    {
+        try {
+            $pdo = $this->connect();
+
+            $query = $this->getOrderItemsBaseQuery() . " WHERE oi.qr_code_hash = :hash LIMIT 1";
+            $stmt  = $pdo->prepare($query);
+            $stmt->bindValue(':hash', $hash, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                return null;
+            }
+
+            $orderItem = new OrderItem();
+            return $orderItem->fromPdo($row);
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching order item by hash: " . $e->getMessage());
+        }
+    }
+    public function getOrdersWhereStatusIn(array $statuses): array
+    {
+        try {
+            $pdo = $this->connect();
+
+            $placeholders = implode(', ', array_fill(0, count($statuses), '?'));
+
+            $query = $this->getBaseQuery() . " WHERE o.status IN ($placeholders)
+            AND o.created_at <= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+            ORDER BY o.order_date DESC, o.order_id DESC";
+            $stmt  = $pdo->prepare($query);
+            foreach ($statuses as $index => $status) {
+                $statusValue = $status instanceof OrderStatus ? $status->value : (string)$status;
+                $stmt->bindValue($index + 1, $statusValue, PDO::PARAM_STR);
+            }
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $orders = [];
+            $orderMap = [];
+
+            foreach ($rows as $row) {
+                $orderId = $row['order_id'];
+
+                if (!isset($orderMap[$orderId])) {
+                    $order = new Order();
+                    $order->fromPDOData($row);
+                    $orders[] = $order;
+                    $orderMap[$orderId] = $order;
+                } else {
+                    $order = $orderMap[$orderId];
+                }
+
+                if (!is_null($row['orderitem_id']) && !in_array($row['orderitem_id'], array_column($order->orderItems, 'orderitem_id'))) {
+                    $orderItem = new OrderItem();
+                    $orderItem = $orderItem->fromPdo($row);
+                    $order->orderItems[] = $orderItem;
+                }
+            }
+
+            return $orders;
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error fetching orders by status: " . $e->getMessage());
         }
     }
 }

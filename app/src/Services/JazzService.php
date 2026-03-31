@@ -6,6 +6,7 @@ use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Services\Interfaces\JazzServiceInterface;
+use App\Services\Interfaces\ILogService;
 use App\Services\TicketService;
 
 class JazzService implements JazzServiceInterface
@@ -18,7 +19,13 @@ class JazzService implements JazzServiceInterface
     private VenueService $venueService;
     private ScheduleService $scheduleService;
     private TicketService $ticketService;
+    private ILogService $logService;
 
+    /**
+     * Wires up all collaborating services needed to build Jazz page data:
+     * PageService for CMS content, ArtistService and VenueService for lineup and locations,
+     * ScheduleService for performance slots, and TicketService for day-pass ticket types.
+     */
     public function __construct()
     {
         $this->pageService = new PageService();
@@ -26,10 +33,13 @@ class JazzService implements JazzServiceInterface
         $this->venueService = new VenueService();
         $this->scheduleService = new ScheduleService();
         $this->ticketService = new TicketService();
+        $this->logService = new LogService();
     }
 
     /**
-     * Load the jazz festival overview page with featured artists and venues
+     * Venue loading uses a three-step fallback: event query → extract from schedule objects →
+     * filter all venues by event category. This guards against DB linkage gaps where venues
+     * exist in SCHEDULE rows but aren't linked via the event query's JOIN path.
      */
     public function loadJazzOverview(): array
     {
@@ -84,14 +94,13 @@ class JazzService implements JazzServiceInterface
                     static fn($v) => (int) ($v->event_category?->event_id ?? 0) === $jazzEventId
                 ));
 
-                // Last-resort fallback to keep homepage populated while mappings are repaired.
                 if (empty($venues)) {
                     $venues = $allVenues;
                 }
             }
 
-            error_log(sprintf(
-                'Jazz venues fallback debug: event_id=%d, schedules=%d, event_query=%d, from_schedules=%d, final=%d',
+            $this->logService->debug('Jazz', sprintf(
+                'Venues fallback: event_id=%d, schedules=%d, event_query=%d, from_schedules=%d, final=%d',
                 $jazzEventId,
                 count($allSchedules),
                 $venuesFromEventQueryCount,
@@ -100,7 +109,7 @@ class JazzService implements JazzServiceInterface
             ));
         }
 
-        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS', 'JAZZ_WEEKEND_PASS']);
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
 
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
@@ -113,9 +122,6 @@ class JazzService implements JazzServiceInterface
         ];
     }
 
-    /**
-     * Load the jazz festival schedule organized by performance date
-     */
     public function loadJazzSchedule(): array
     {
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
@@ -129,10 +135,8 @@ class JazzService implements JazzServiceInterface
     }
 
     /**
-     * Load a specific jazz artist's profile with their performance schedule
-     *
-     * @throws ResourceNotFoundException if artist not found or doesn't perform at jazz event
-     * @throws ApplicationException if jazz event data is misconfigured
+     * Artist access is guarded by isArtistInEvent() — an artist who exists in the DB but
+     * isn't booked for Jazz returns a 404, not their profile. This prevents cross-event leakage.
      */
     public function loadJazzArtistProfile(string $artistSlug): array
     {
@@ -149,7 +153,6 @@ class JazzService implements JazzServiceInterface
             throw new ResourceNotFoundException('Artist not found.');
         }
 
-        // Verify this artist performs at the jazz event
         if (!$this->artistService->isArtistInEvent((int) $requestedArtist->artist_id, $jazzEventId)) {
             throw new ResourceNotFoundException('Artist not found.');
         }
@@ -162,18 +165,20 @@ class JazzService implements JazzServiceInterface
             )
         );
 
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
+
         return [
-            'title' => $artistViewModel->title,
-            'vm' => $artistViewModel,
-            'pageData' => $jazzArtistPageData,
-            'sections' => $jazzArtistPageData->content_sections ?? [],
+            'title'          => $artistViewModel->title,
+            'vm'             => $artistViewModel,
+            'pageData'       => $jazzArtistPageData,
+            'sections'       => $jazzArtistPageData->content_sections ?? [],
+            'passTicketTypes' => $passTicketTypes,
         ];
     }
 
     /**
-     * Load a page by its slug, ensure it exists, or throw exception
-     *
-     * @throws ResourceNotFoundException if page not found
+     * Centralises the "page not found" guard so individual load methods stay readable.
+     * Throws ResourceNotFoundException when the page is missing or has no page_id.
      */
     private function loadPageBySlugOrFail(string $pageSlug, string $pageName): object
     {
@@ -186,6 +191,9 @@ class JazzService implements JazzServiceInterface
         return $page;
     }
 
+    /**
+     * Groups schedules by Y-m-d key and sorts chronologically so templates can iterate in order.
+     */
     private function groupSchedulesByDate(array $schedules): array
     {
         $grouped = [];
@@ -197,6 +205,10 @@ class JazzService implements JazzServiceInterface
         return $grouped;
     }
 
+    /**
+     * Every Jazz page must have an event category set in the CMS; without it we cannot
+     * know which artists, venues, and schedules to load — throws ApplicationException.
+     */
     private function extractEventIdOrFail(object $pageData, string $pageSlug): int
     {
         $eventId = $pageData->event_category->event_id ?? null;
