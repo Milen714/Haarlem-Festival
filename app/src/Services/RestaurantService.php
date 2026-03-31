@@ -88,6 +88,7 @@ class RestaurantService implements IRestaurantService
 
     public function fillRestaurantFromPostData(Restaurant $restaurant, array $data){
         $restaurant->name = trim($data['name']);
+        $restaurant->event_id = isset($postData['event_id']) ? (int)$data['event_id'] : 1;
         $restaurant->short_description = !empty($data['short_description']) ? trim($data['short_description']) : null;
         $restaurant->welcome_text = !empty($data['welcome_text']) ?  trim($data['welcome_text']) : null;
         $restaurant->price_category = !empty($data['price_category']) ?  (int)$data['price_category'] : null;
@@ -113,13 +114,12 @@ class RestaurantService implements IRestaurantService
         $restaurant = new Restaurant();
         $restaurant = $this->processRestaurantRequest($restaurant, $postData, $files);
 
-        //adds event to database
-        $restaurant->event_id = 1; //Yummy event
-
         $restaurantId = $this->restaurantRepository->createRestaurant($restaurant);
         $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
+        //get the cuisines by id and slice it so only up to 3 are displayed
         $cuisineIds = $postData['cuisines'] ?? [];
         $cuisineIds = array_slice($cuisineIds, 0, 3);
+        //get the sessions
         $this->handleSessions($restaurantId, $postData);
         $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
 
@@ -284,18 +284,19 @@ class RestaurantService implements IRestaurantService
     }
 
     private function handleSessions(int $restaurantId, array $postData){
+        //delete old pairing
         $this->restaurantRepository->deleteSessionsByRestaurant($restaurantId);
         foreach ($postData['sessions'] ?? [] as $index => $data) {
-            if(empty($data['type']) && empty($data['start']) && empty($data['end'])){
+            if(empty($data['session_type_id']) && empty($data['start_time']) && empty($data['end_time'])){
                 continue;
-            }
-
+            }       
+            //create new sessions pairing
             $session = new Session();
             $session->session_id = (int)$data['session_type_id'];
             $session->restaurantId = $restaurantId;
             $session->start_time = new \DateTime($data['start_time']);
             $session->end_time = new \DateTime($data['end_time']);
-            $session->session_number = $index = 1;
+            $session->session_number = $index + 1;
 
             $this->restaurantRepository->createSession($session);
         }

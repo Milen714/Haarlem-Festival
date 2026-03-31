@@ -36,7 +36,7 @@ class CuisineRepository extends Repository implements ICuisineRepository{
             return $cuisines;
         } catch (PDOException $e) {
             error_log("Error fetching cuisines: " . $e->getMessage());
-            throw new \Exception("Failed to fetch cuisines");
+            throw new PDOException("Failed to fetch cuisines");
         }
     }
     public function getCuisineById(int $id): ?Cuisine
