@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\ArtistRepository;
@@ -28,20 +29,14 @@ class TicketController extends BaseController
 
     public function __construct()
     {
-        $mediaService = new MediaService(new MediaRepository());
-        $venueService = new VenueService(new VenueRepository(), $mediaService);
-        $artistService = new ArtistService(new ArtistRepository(), $mediaService);
-        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
+        $mediaService = new MediaService();
+        $venueService = new VenueService();
+        $artistService = new ArtistService();
+        $restaurantService = new RestaurantService();
         $landmarkService = new LandmarkService();
 
         $this->ticketService = new TicketService(new TicketRepository());
-        $this->scheduleService = new ScheduleService(
-            new ScheduleRepository(),
-            $venueService,
-            $artistService,
-            $restaurantService,
-            $landmarkService
-        );
+        $this->scheduleService = new ScheduleService();
         $this->logService = new LogService();
     }
 

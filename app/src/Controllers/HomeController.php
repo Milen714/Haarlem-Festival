@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\ScheduleService;
 use App\Services\VenueService;
 use App\Services\PageService;
@@ -16,20 +16,25 @@ use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\ViewModels\Home\ScheduleList;
 use App\ViewModels\Home\StartingPoints;
+use App\Services\Interfaces\ILogService;
+use App\Services\LogService;
 
 class HomeController extends BaseController
 {
     
     private IPageService $pageService;
     private ILandmarkService $landmarkService;
-        private IScheduleService $scheduleService;
+    private IScheduleService $scheduleService;
     private IVenueService $venueService;
+    private ILogService $logService;
+
     public function __construct()
     {
         $this->pageService = new PageService();
         $this->venueService = new VenueService();
         $this->landmarkService = new LandmarkService();
         $this->scheduleService = new ScheduleService();
+        $this->logService = new LogService();
     }
 
     public function index($vars = [])
@@ -77,17 +82,20 @@ class HomeController extends BaseController
             // Set a cookie wit 30 day expiry for the selected theme
             setcookie('theme', $theme, time() + (86400 * 30), '/');
 
-            echo json_encode(['success' => true, 'theme' => $theme]);
+            $this->sendSuccessResponse(['success' => true, 'theme' => $theme], 200);
         } else {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'No theme selected']);
+            $this->sendSuccessResponse(['success' => false, 'message' => 'No theme selected'], 400);
         }
     }
 
     public function notFound($vars = [])
     {
-        http_response_code(404);
-        $this->view('Errors/404', ['title' => 'Page Not Found']);
+        try {
+            http_response_code(404);
+            $this->view('Errors/404', ['title' => 'Page Not Found']);
+        } catch (\Exception $e) {
+            $this->logService->exception('PageNotFound', $e);
+        }
     }
 
     public function getStartingPoints($vars = [])
@@ -99,8 +107,7 @@ class HomeController extends BaseController
             $startingPoints = new StartingPoints($landmarks, $venues);
             echo require_once '/app/Views/Home/Components/HomeMap.php';
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => $e->getMessage()]);
+            $this->sendErrorResponse(['error' => $e->getMessage()], 500);
         }
     }
     public function getScheduleDates($vars = [])
@@ -108,10 +115,9 @@ class HomeController extends BaseController
         header('Content-Type: application/json');
         try {
             $dates = $this->scheduleService->getAvailableDates();
-            echo json_encode(['success' => true, 'dates' => $dates], JSON_PRETTY_PRINT);
+            $this->sendSuccessResponse(['success' => true, 'dates' => $dates], 200);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            $this->sendSuccessResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }

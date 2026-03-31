@@ -6,6 +6,7 @@ use App\Repositories\UserRepository;
 use App\Repositories\Interfaces\IUserRepository;
 use App\Services\Interfaces\IUserService;
 use App\Models\User;
+
 class UserService implements IUserService{
     private IUserRepository $userRepository;
 

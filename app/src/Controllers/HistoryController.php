@@ -3,7 +3,7 @@ namespace App\Controllers;
 
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;
 use App\Services\LogService;

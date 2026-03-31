@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\Interfaces\ILogService;
 use App\Services\LandmarkService;

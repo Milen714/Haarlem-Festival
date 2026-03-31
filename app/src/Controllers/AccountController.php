@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Services\UserService;
@@ -24,9 +24,10 @@ class AccountController extends BaseController
     private IOrderService $orderService;
     public function __construct()
     {
+        $this->authService = new AuthService();
         $this->userService = new UserService();
         $this->mailService = new MailService();
-        $this->authService = new AuthService();
+        
         $this->orderService = new OrderService();
     }
     public function login($vars = [])
@@ -39,22 +40,22 @@ class AccountController extends BaseController
     }
     public function loginPost($vars = [])
     {
-        header('Content-Type: application/json; charset=utf-8');
         try {
-            $data = json_decode(file_get_contents('php://input'), true);
-            // var_dump($data);
-            // die();
+            $data = $this->getPostData();
+            
              if (!$data) {
-                throw new \Exception('Invalid JSON input');
+                $this->sendErrorResponse('Invalid JSON payload.', 400);
+                return;
             }
              if (empty($data['email']) || empty($data['password'])) {
-                throw new \Exception('Email and password are required.');
+                $this->sendErrorResponse('Email and password are required.', 400);
+                return;
             }
-             // Validate reCAPTCHA token    
+               
             $user = $this->userService->authenticateUser($data['email'], $data['password']);
 
             if ($user) {
-                $_SESSION['loggedInUser'] = $user;
+                $this->setLoggedInUser($user); // Store user in session upon successful login
                 // Consolidate cart merge logic in one place.
                 $this->orderService->hydrateSessionCartFormDbOnLogin($user);
                 $redirect = $data['redirect'] ?? '/';
@@ -66,24 +67,24 @@ class AccountController extends BaseController
                     if($redirect === '/payment-details') {
                         $redirectAdmin = '/payment-details';
                     }
-                    $this->jsonResponse(['success' => true, 'redirect' => $redirectAdmin ], 200);
+                    $this->sendSuccessResponse(['success' => true, 'redirect' => $redirectAdmin ], 200);
                 }
                  else if($user->role === UserRole::EMPLOYEE) {
-                    $this->jsonResponse(['success' => true, 'redirect' => '/qr-code/scan' ], 200);
+                    $this->sendSuccessResponse(['success' => true, 'redirect' => '/qr-code/scan' ], 200);
                 } else {
                     // Regular user login
-                    $this->jsonResponse(['success' => true, 'redirect' => $redirect], 200);
+                    $this->sendSuccessResponse(['success' => true, 'redirect' => $redirect], 200);
                 }
             } else {
                 // Failed login
-                $this->jsonResponse([
+                $this->sendSuccessResponse([
                     'success' => false,
                     'message' => 'Login failed. Please check your credentials and try again.',
                     'user' => ['email' => $data['email']]
                 ], 401);
             }
         } catch (\Throwable $e) {
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
@@ -102,65 +103,32 @@ class AccountController extends BaseController
     {
         $this->view('Account/Signup', ['title' => 'Signup Page']);
     }
-    private function validateCaptchaToken($token)
-    {
-        if (empty($token)) {
-            throw new \Exception("reCAPTCHA token is missing.");
-        }
-
-        $secretKey = Secrets::$reCapchaSecretKey;
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
-
-        $request = file_get_contents($url);
-        $response = json_decode($request);
-
-        // Check if it failed OR if the score is too low
-        if (!$response->success || $response->score < 0.5) {
-            throw new \Exception("reCAPTCHA verification failed. Are you a bot?");
-        }
-
-        return true;
-    }
     public function signupPost($vars = [])
     {
-        header('Content-Type: application/json; charset=utf-8');
 
-        $data = json_decode(file_get_contents('php://input'), true);
+        $data = $this->getPostData();
         $user = new User();
         $user = $user->fromArray($data);
 
         try {
-            // validate password strength
-            $passwordValidation = $this->authService->validatePassword($user->password_hash);
-            if (!$passwordValidation['valid']) {
-                $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
-                throw new \Exception($errorMsg);
-            }
+            $recaptchaToken = $data['recaptcha'] ?? '';
+            $this->authService->registerUserWithVerification($user, $recaptchaToken);
 
-            // Validate reCAPTCHA token
-            $token = $data['recaptcha'] ?? '';
-            $this->validateCaptchaToken($token);
-            // Check if email already exists
-            $existingUser = $this->userService->getUserByEmail($user->email);
-            if ($existingUser) {
-                throw new \Exception("This email is already in use.");
-            }
-            // Generate verification token and send verification email
-            $token = $this->authService->generateVerificationToken($user);
-            $verificationLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
-            // Save the user to the database
-            $this->userService->createUser($user);
-            $this->mailService->accountVerificationMail($user->email, $verificationLink);
-            // Return success response
-            echo json_encode(['success' => true, 'message' => 'Signup successful. Please check your email to verify your account.']);
+            $this->sendSuccessResponse([
+                'success' => true,
+                'message' => 'Signup successful. Please check your email to verify your account.',
+            ], 201);
         } catch (\Exception $e) {
             if (str_contains($e->getMessage(), 'email')) {
-                $errorMsg = "This email is already in use.";
-                echo json_encode(['success' => false, 'message' => $errorMsg]);
+                $this->sendSuccessResponse([
+                    'success' => false,
+                    'message' => "This email is already in use."
+                ], 400);
             } else {
-                $errorMsg = "An error occurred during signup: " . $e->getMessage();
-                echo json_encode(['success' => false, 'message' => $errorMsg]);
+                $this->sendSuccessResponse([
+                    'success' => false,
+                    'message' => "An error occurred during signup: " . $e->getMessage()
+                ], 500);
             }
         }
     }
@@ -251,11 +219,11 @@ class AccountController extends BaseController
 
     public function settings($vars = [])
     {
-        if (!isset($_SESSION['loggedInUser'])) {
+        $loggedUser = $this->getLoggedInUser();
+        if (!isset($loggedUser)) {
             header("Location: /login");
             exit();
         }
-        $loggedUser = $_SESSION['loggedInUser'];
         $user = $this->userService->getUserById($loggedUser->id);
 
         if ($user->role === UserRole::ADMIN) {
@@ -267,19 +235,19 @@ class AccountController extends BaseController
 
     public function update($vars = [])
     {
-        if (!isset($_SESSION['loggedInUser'])) {
+        $loggedUser = $this->getLoggedInUser();
+        if (!isset($loggedUser)) {
             header("Location: /login");
             exit();
         }
 
+        $user = $this->userService->getUserById($loggedUser->id);
         try {
-            $loggedUser = $_SESSION['loggedInUser'];
-            $user = $this->userService->getUserById($loggedUser->id);
 
             $user->fromPDOData($_POST);
             $this->userService->updateUser($user);
 
-            $_SESSION['loggedInUser'] = $user;
+            $this->setLoggedInUser($user); // Update session with new user data
 
             if ($user->role === UserRole::ADMIN) {
                 header("Location: /cms/profile");

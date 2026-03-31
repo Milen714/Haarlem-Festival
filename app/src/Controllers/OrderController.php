@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Services\Interfaces\ITicketService;
@@ -41,12 +41,12 @@ class OrderController extends BaseController
             $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
             $this->orderService->addOrderItemToSessionCart($orderItem);
             $cart = $this->orderService->getSessionCart();
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => true,
                 'cart'    => $cart,
             ], 200);
         } catch (\Throwable $e) {
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
@@ -58,15 +58,15 @@ class OrderController extends BaseController
         try {
             $cart = $this->orderService->getSessionCart();
             if (!$cart) {
-                $this->jsonResponse(['success' => true, 'numberOfItems' => 0], 200);
+                $this->sendSuccessResponse(['success' => true, 'numberOfItems' => 0], 200);
                 return;
             }
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success'       => true,
                 'numberOfItems' => count($cart->orderItems),
             ], 200);
         } catch (\Throwable $e) {
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
@@ -82,9 +82,9 @@ class OrderController extends BaseController
             }
 
             $this->orderService->removeOrderItemFromSessionCart($jsonData['sessionOrderitem_id']);
-            $this->jsonResponse(['success' => true], 200);
+            $this->sendSuccessResponse(['success' => true], 200);
         } catch (\Throwable $e) {
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
@@ -101,12 +101,12 @@ class OrderController extends BaseController
             if (!$item) {
                 throw new \Exception('Order item not found in cart');
             }
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => true,
                 'data'    => ['orderItem' => $item],
             ], 200);
         } catch (\Throwable $e) {
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
@@ -127,9 +127,9 @@ class OrderController extends BaseController
             }
 
             $this->orderService->updateOrderItemInSessionCart($sessionOrderItemId, $newQuantity);
-            $this->jsonResponse(['success' => true], 200);
+            $this->sendSuccessResponse(['success' => true], 200);
         } catch (\Throwable $e) {
-            $this->jsonResponse([
+            $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
@@ -168,11 +168,9 @@ class OrderController extends BaseController
 
             // Ownership check — only the owning user or an ADMIN may download
             $loggedInUser = $this->getLoggedInUser();
-            if (
-                $loggedInUser?->role !== UserRole::ADMIN &&
-                ($order->user_id ?? null) !== ($loggedInUser?->id ?? null)
-            ) {
-                $this->forbidden();
+            if ($loggedInUser->id !== $order->user->id && $loggedInUser->role !== UserRole::ADMIN) {
+                http_response_code(403);
+                echo 'You do not have permission to access these tickets.';
                 return;
             }
 

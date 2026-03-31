@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Models\Enums\OrderStatus;
 use App\Middleware\RequireRole;
@@ -33,36 +33,48 @@ class PaymentController extends BaseController
 
     public function index(array $params = [])
     {
-        $order = $this->orderService->getSessionCart();
-        if (!isset($order)) {
-            $order = $this->orderService->createSessionCart();
+        try{
+            $order = $this->orderService->getSessionCart();
+            if (!isset($order)) {
+                $order = $this->orderService->createSessionCart();
+            }
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('ShoppingCartIndex', $e);
+            $this->view('ShoppingCart/ShoppingCart', ['viewModel' => null, 'error' => 'An error occurred while loading your shopping cart. Please try again later.']);
         }
-        $viewModel = new ShoppingCartViewModel($order);
-        $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
 
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function personalProgram()
     {
-        $userId = $this->getLoggedInUser()?->id;
-        if (!$userId) {
-            $this->notFound();
-            exit;
+        try {
+            $userId = $this->getLoggedInUser()?->id;
+            if (!$userId) {
+                $this->notFound();
+                return;
+            }
+
+            $tickets = $this->orderService->getPaidTicketsByUser($userId);
+            $this->view('ShoppingCart/wishlist', ['tickets' => $tickets]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('PersonalProgram', $e);
+            $this->view('ShoppingCart/wishlist', ['tickets' => [], 'error' => 'An error occurred while loading your personal program. Please try again later.']);
         }
-
-        $tickets = $this->orderService->getPaidTicketsByUser($userId);
-
-        $this->view('ShoppingCart/wishlist', [
-            'tickets' => $tickets,
-        ]);
     }
 
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function checkout(array $params = [])
-    {
-        $order     = $this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($order);
-        $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
+    {   
+        try {
+            $order     = $this->orderService->getSessionCart();
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Checkout', $e);
+            $this->view('ShoppingCart/Checkout', ['viewModel' => null, 'error' => 'An error occurred while loading the checkout page. Please try again later.']);
+        }
     }
 
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
@@ -72,15 +84,14 @@ class PaymentController extends BaseController
             $order = $this->orderService->getSessionCart();
 
             if ($order === null || empty($order->orderItems)) {
-                $this->jsonResponse(['error' => 'No active cart found.'], 400);
+                $this->sendErrorResponse('No active cart found.', 400);
                 return;
             }
 
             if ($order->order_id === null) {
                 $user = $this->getLoggedInUser();
                 if ($user !== null) {
-                    $orderId = $this->orderService->persistSessionCart($order, $user);
-                    $order   = $this->orderService->getOrderById($orderId);
+                    $order   = $this->orderService->persistSessionCart($order, $user);
                     $this->orderService->hydrateSessionCart($order);
                 }
             }
@@ -98,10 +109,10 @@ class PaymentController extends BaseController
                 $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Pending_Payment);
             }
 
-            $this->jsonResponse(['clientSecret' => $stripeSession->client_secret], 200);
+            $this->sendSuccessResponse(['clientSecret' => $stripeSession->client_secret], 200);
         } catch (\Throwable $e) {
             $this->logService->exception('Payment', $e);
-            $this->jsonResponse(['error' => 'An error occurred while creating the checkout session.'], 500);
+            $this->sendErrorResponse('An error occurred while creating the checkout session.', 500);
         }
     }
 
@@ -117,6 +128,7 @@ class PaymentController extends BaseController
             $this->view('ShoppingCart/CheckoutSuccess', ['viewModel' => $viewModel]);
         } catch (\Throwable $e) {
             $this->logService->exception('Payment', $e);
+            $this->sendErrorResponse('An error occurred while processing the return.', 500);
         }
     }
 
@@ -136,10 +148,10 @@ class PaymentController extends BaseController
                 $this->orderService->clearSessionCart();
             }
 
-            $this->jsonResponse($data, 200);
+            $this->sendSuccessResponse($data, 200);
         } catch (\Exception $e) {
             $this->logService->exception('Payment', $e);
-            $this->jsonResponse(['error' => 'An error occurred while checking the payment status.'], 500);
+            $this->sendErrorResponse('An error occurred while checking the payment status.', 500);
         }
     }
 
@@ -151,29 +163,34 @@ class PaymentController extends BaseController
             $sessionId = $jsonData['session_id'] ?? null;
 
             if (!$sessionId) {
-                $this->jsonResponse(['error' => 'session_id is required.'], 400);
+                $this->sendErrorResponse('session_id is required.', 400);
                 return;
             }
 
             $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
             if (!$order) {
-                $this->jsonResponse(['error' => 'Order not found.'], 404);
+                $this->sendErrorResponse('Order not found.', 404);
                 return;
             }
 
             $ticketReady = $this->ticketFulfillmentService->isTicketPdfReady($order->ticket_pdf_path ?? '');
 
-            $this->jsonResponse(['ticket_ready' => $ticketReady], 200);
+            $this->sendSuccessResponse(['ticket_ready' => $ticketReady], 200);
         } catch (\Throwable $e) {
             $this->logService->exception('Payment', $e);
-            $this->jsonResponse(['error' => 'An error occurred while checking ticket readiness.'], 500);
+            $this->sendErrorResponse('An error occurred while checking ticket readiness.', 500);
         }
     }
 
     public function details(array $params = [])
     {
-        $order     = $this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($order);
-        $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
+        try {
+            $order     = $this->orderService->getSessionCart();
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('PaymentDetails', $e);
+            $this->view('ShoppingCart/Details', ['viewModel' => null, 'error' => 'An error occurred while loading your order details. Please try again later.']);
+        }
     }
 }

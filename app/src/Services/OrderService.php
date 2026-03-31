@@ -180,7 +180,7 @@ class OrderService implements IOrderService
         $this->hydrateSessionCart($cart);
     }
     // Saves the session cart to the DB and returns the new order ID.
-    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): int
+    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): Order
     {
         $order->user = $user;
         $order->order_id = null;
@@ -232,7 +232,7 @@ class OrderService implements IOrderService
             throw new \RuntimeException('Failed to persist session cart: missing order ID after insert.');
         }
 
-        return $order->order_id;
+        return $order;
     }
     public function hydrateSessionCart(Order $order): void
     {
@@ -264,8 +264,7 @@ class OrderService implements IOrderService
                 $dbCart = $this->getOpenOrderByUserId($user->id, $openStatuses);
             }
 
-            $newOrderId = $this->persistSessionCart($sessionCart, $user);
-            $persistedOrder = $this->getOrderById($newOrderId);
+            $persistedOrder = $this->persistSessionCart($sessionCart, $user);;
             if ($persistedOrder !== null) {
                 $this->hydrateSessionCart($persistedOrder);
             } else {

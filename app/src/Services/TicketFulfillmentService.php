@@ -4,11 +4,27 @@ namespace App\Services;
 use Dompdf\Dompdf;
 use chillerlan\QRCode\QRCode;
 use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Services\Interfaces\IOrderService;
+use App\Services\OrderService;
+use App\Services\Interfaces\IMailService;
+use App\Services\MailService;
+use App\Services\Interfaces\ILogService;
+use App\Services\LogService;
 use App\Models\Payment\OrderItem;
 use App\Models\Payment\Order;
 
 class TicketFulfillmentService implements ITicketFulfillmentService
 {
+    private IOrderService $orderService;
+    private IMailService $mailService;
+    private ILogService $logService;
+
+    public function __construct() {
+        $this->orderService = new OrderService();
+        $this->mailService = new MailService();
+        $this->logService = new LogService();
+    }
+
     public function fulfillTicketsForOrder(int $orderId): void
     {
         // Logic to mark tickets as fulfilled in the database
@@ -92,5 +108,60 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         }
 
         return $dir;
+    }
+
+    /**
+     * Generate ticket PDF, send email with attachment, and return PDF filename.
+     *
+     * @param Order $order The order to generate tickets for
+     * @param string $pdfHtml The rendered HTML for the PDF
+     * @param string $emailHtml The rendered HTML for the email body
+     * @return string The filename of the generated PDF (without path)
+     */
+    public function sendTicketEmail(Order $order, string $pdfHtml, string $emailHtml): string
+    {
+        $fileName      = $this->generatePDFName($order);
+        $ticketPdfPath = $this->getTicketPdfPath($fileName . '.pdf');
+        $mailTo        = $order->user->email ?? '';
+
+        try {
+            // Generate ticket hashes for QR codes
+            $this->orderService->generateTicketHashes($order->order_id);
+
+            // Re-fetch order with updated hashes
+            $order = $this->orderService->getOrderById($order->order_id);
+            $mailTo = $order->user->email ?? $mailTo;
+
+            // Generate the PDF and save to disk
+            $this->generatePDF(
+                $pdfHtml,
+                $fileName,
+                'A4',
+                'landscape',
+                false,  // never stream PDF to HTTP response
+                true    // always save to disk
+            );
+
+            // Update order with PDF path
+            $order->ticket_pdf_path = $fileName . '.pdf';
+            $this->orderService->updateOrderStatus($order->order_id, $order->status, $order->ticket_pdf_path);
+
+            $this->logService->info('TicketFulfillment', 'PDF generated', ['path' => $ticketPdfPath]);
+
+            // Send email with PDF attachment
+            $this->mailService->sendEmail(
+                $mailTo,
+                "Your Festival Tickets - " . $order->reference_number,
+                $emailHtml,
+                [$ticketPdfPath]
+            );
+
+            $this->logService->info('TicketFulfillment', 'Ticket email sent', ['to' => $mailTo]);
+
+        } catch (\Throwable $e) {
+            $this->logService->error('TicketFulfillment', 'Failed to send ticket email', ['to' => $mailTo], $e->getTraceAsString());
+        }
+
+        return $fileName . '.pdf';
     }
 }

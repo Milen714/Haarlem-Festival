@@ -9,5 +9,8 @@ interface IAuthService {
     public function generatePasswordResetToken(User $user): string;
     public function generateVerificationToken(User $user): string;
     function validatePassword(string $password): array;
+    public function validateCaptchaToken($token) : bool;
+
+    public function registerUserWithVerification(User $user, string $recaptchaToken): void;
 
 }

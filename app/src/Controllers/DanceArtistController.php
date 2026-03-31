@@ -14,7 +14,7 @@ use App\Services\Interfaces\IAlbumService;
 use App\Services\Interfaces\ITicketService;
 use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Models\Gallery;
 
 class DanceArtistController extends BaseController
