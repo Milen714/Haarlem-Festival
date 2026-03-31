@@ -3,12 +3,13 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Services\UserService;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ApplicationException;
 use App\Services\ScheduleService;
 use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\VenueService;
-use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\IPageService;
@@ -16,15 +17,11 @@ use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\ICuisineService;
 use App\Models\Yummy\RestaurantListViewModel;
-use App\Models\User;
-use App\Models\Enums\UserRole;
-use App\Middleware\RequireRole;
 use App\Services\MediaService;
 use App\Services\CuisineService;
 
 class YummyController extends BaseController
 {
-    private IUserService $userService;
     private IPageService $pageService;
     private IMediaService $mediaService;
     private IScheduleService $scheduleService;
@@ -34,7 +31,6 @@ class YummyController extends BaseController
     
     public function __construct()
     {
-        $this->userService = new UserService();
         $this->pageService = new PageService();
         $this->mediaService = new MediaService();
         $this->restaurantService = new RestaurantService();
@@ -89,13 +85,15 @@ class YummyController extends BaseController
             $gallery = null;
 
             foreach ($pageData->content_sections as $section) {
-                if (!empty($section->gallery_id)) {
+                if (!empty($section->gallery->gallery_id)) {
                     $gallery = $this->mediaService->getGalleryById($section->gallery->gallery_id);
                     break;
                 }
             }
 
             $galleryItems = $gallery->media_items ?? [];
+            // var_dump($galleryItems);
+            // die();
             
             $this->view('Yummy/index', [
                 'title' => $pageData->title ?? 'Yummy Event',
@@ -105,10 +103,10 @@ class YummyController extends BaseController
                 'restaurants' => $restaurants,
                 'galleryItems' => $galleryItems
             ]);
-        } catch (\Exception $e) {
-            error_log("Error in YummyController index method: " . $e->getMessage());
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
-        }
+        } catch (ResourceNotFoundException $e) {
+            error_log('Failed to fetch Yummy homepage:' . $e->getMessage());
+            $_SESSION['error'] = 'Failed to fetch Yummy event homepage';
+         }
     }
     
     public function displayRestaurants(){
@@ -140,11 +138,10 @@ class YummyController extends BaseController
             ]);
 
              
-        }
-        catch(\Exception $e){
-            error_log("Error in YummyController index method: " . $e->getMessage());
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
-        }
+        }catch (ResourceNotFoundException $e) {
+            error_log('Restaurants listing error:' . $e->getMessage());
+            $_SESSION['error'] = 'Failed to fetch all restaurants';
+         }
     }
 
     public function restaurantDetail($vars = []){
@@ -178,9 +175,9 @@ class YummyController extends BaseController
                 'schedules' => $schedules
             ]);
         }
-        catch(\Exception $e){
-            error_log("Error in YummyController index method: " . $e->getMessage());
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
-        }
+        catch (ResourceNotFoundException $e) {
+            error_log('Restaurant loading error:' . $e->getMessage());
+            $_SESSION['error'] = 'Failed to fetch restaurant' . $restaurant->name;
+         }
     }
 }
