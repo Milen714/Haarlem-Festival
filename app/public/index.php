@@ -91,6 +91,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
     $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
     $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
+    $r->addRoute('POST', '/cms/artists/{artistId:\d+}/albums/store', ['App\Controllers\ArtistController', 'addAlbum']);
+    $r->addRoute('POST', '/cms/artists/{artistId:\d+}/albums/remove/{albumId:\d+}', ['App\Controllers\ArtistController', 'removeAlbum']);
 
     /*CMS Restaurant Management */
     $r->addRoute('GET', '/cms/restaurants', ['App\Controllers\RestaurantController', 'index']);
@@ -167,6 +169,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/create-checkout-session', ['App\Controllers\PaymentController', 'createCheckoutSession']);
     $r->addRoute('GET', '/return', ['App\Controllers\PaymentController', 'return']);
     $r->addRoute('POST', '/payment-status', ['App\Controllers\PaymentController', 'status']);
+    $r->addRoute('POST', '/payment/ticket-ready', ['App\Controllers\PaymentController', 'ticketReady']);
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);

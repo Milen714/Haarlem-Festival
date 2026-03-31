@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\User;
+
 class BaseController
 {
     protected function view($viewName, $vars = [], $layout = 'layouts/mainLayout')
@@ -67,10 +69,36 @@ class BaseController
         // The layout will use the $content variable to display the view content in the main tag 
         //Layout is foooter and header around the content
     }
-    protected function renderViewToString(string $viewPath, array $data = []): string {
-    ob_start();
-    extract($data);
-    include __DIR__ . '/../../Views/' . $viewPath . '.php';
-    return ob_get_clean();
+    protected function renderViewToString(string $viewPath, array $data = []): string
+    {
+        ob_start();
+        extract($data);
+        include __DIR__ . '/../../Views/' . $viewPath . '.php';
+        return ob_get_clean();
+    }
+
+    protected function sendSuccessResponse($data = [], $code = 200)
+    {
+        header('Content-Type: application/json');
+        http_response_code($code);
+        echo json_encode($data, JSON_PRETTY_PRINT);
+    }
+
+    protected function sendErrorResponse($message, $code = 500)
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code($code);
+        echo json_encode(['error' => $message], JSON_PRETTY_PRINT);
+    }
+
+    protected function getPostData(): ?array
+    {
+        $input = file_get_contents('php://input');
+        return json_decode($input, true);
+    }
+
+    protected function getLoggedInUser(): ?User
+    {
+        return $_SESSION['loggedInUser'] ?? null;
     }
 }

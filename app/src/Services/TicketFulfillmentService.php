@@ -1,7 +1,7 @@
-<?php 
+<?php
 namespace App\Services;
-use Dompdf\Dompdf;
 
+use Dompdf\Dompdf;
 use chillerlan\QRCode\QRCode;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Models\Payment\OrderItem;
@@ -12,67 +12,85 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     public function fulfillTicketsForOrder(int $orderId): void
     {
         // Logic to mark tickets as fulfilled in the database
-        // This could involve updating ticket status, sending notifications, etc.
     }
 
     public function generateQrCode(OrderItem $item): string
     {
         $qrData = "Ticket for Order Item ID: {$item->orderitem_id}, Hash: {$item->qr_code_hash}";
-        
-        $img = '<img style="width: 150px; height: 150px;" src="'.(new QRCode)->render($qrData).'" alt="QR Code" />';
+        $img = '<img style="width: 150px; height: 150px;" src="' . (new QRCode)->render($qrData) . '" alt="QR Code" />';
         return $img;
     }
+
     /**
- * Generate and output a PDF
- * 
- * @param string $html The HTML content to convert to PDF
- * @param string $filename The filename for the PDF (without .pdf extension)
- * @param string $paperSize The paper size (default: 'A4')
- * @param string $orientation The orientation (default: 'landscape')
- * @param bool $download Whether to download the PDF (default: true)
- * @param bool $save Whether to save to server (default: false)
- * @param string $savePath The path to save the PDF (default: 'documents/')
- * @return void
- */
-
-    public function generatePDF($html, $filename, $paperSize ='A4', $orientation = 'landsacpe', 
-    $download = true, $save = true, $savePath = 'Assets/documents/') : void
-    {
+     * Generate a PDF from HTML.
+     *
+     * @param bool   $download Stream the PDF to the browser (true) or suppress output (false).
+     * @param bool   $save     Persist the file to disk.
+     * @param string $savePath Override the save directory. Defaults to the private storage dir.
+     */
+    public function generatePDF(
+        $html,
+        $filename,
+        $paperSize   = 'A4',
+        $orientation = 'landscape',
+        $download    = false,
+        $save        = true,
+        $savePath    = ''
+    ): void {
         $dompdf = new Dompdf();
-
-        // this loads the html content
         $dompdf->loadHtml($html);
-
-        //sets up the size and orientation of orientation
         $dompdf->setPaper($paperSize, $orientation);
-
-        //renders the PDF 
         $dompdf->render();
         $output = $dompdf->output();
 
-        //if you wish to save it to the server
         if ($save) {
-            if (!is_dir($savePath)) {
-                mkdir($savePath, 0755, true);
-            }
-            file_put_contents($savePath . $filename . '.pdf', $output);
+            $dir = $savePath !== '' ? $savePath : $this->storageDir();
+            file_put_contents($dir . $filename . '.pdf', $output);
         }
 
-        if($download){
-            header("Content-Type: application/pdf");
-            header("Content-Disposition: attachment; filename=" . $filename . ".pdf");
+        if ($download) {
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="' . $filename . '.pdf"');
             echo $output;
-            
         }
     }
-    public function generatePDFName(Order $order) : string
+
+    public function generatePDFName(Order $order): string
     {
-        return "Tickets_" . $order->reference_number . "_" . date('YmdHis');
+        return 'Tickets_' . $order->reference_number . '_' . date('YmdHis');
     }
-    public function generatePDFAndReturnPath($html, Order $order, bool $download, bool $save, string $savePath = '/../../public/Assets/documents/') : string
+
+    public function generatePDFAndReturnPath($html, Order $order, bool $download, bool $save, string $savePath = ''): string
     {
         $fileName = $this->generatePDFName($order);
-        $this->generatePDF($html, $fileName, 'A4', 'landscape', $download, $save, $savePath);
-        return $savePath . $fileName . '.pdf';
+        $dir      = $savePath !== '' ? $savePath : $this->storageDir();
+        $this->generatePDF($html, $fileName, 'A4', 'landscape', $download, $save, $dir);
+        return $dir . $fileName . '.pdf';
+    }
+
+    public function getTicketPdfPath(string $filename): string
+    {
+        return $this->storageDir() . $filename;
+    }
+
+    public function isTicketPdfReady(string $filename): bool
+    {
+        return !empty($filename) && file_exists($this->getTicketPdfPath($filename));
+    }
+
+    /**
+     * Returns the absolute path to the private ticket storage directory,
+     * creating it if it does not already exist.
+     */
+    private function storageDir(): string
+    {
+        // Store PDFs in a backend-only directory (not web-accessible)
+        $dir = __DIR__ . '/../../TicketPDFs/';
+
+        if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
+            throw new \RuntimeException("Unable to create ticket storage directory: {$dir}");
+        }
+
+        return $dir;
     }
 }

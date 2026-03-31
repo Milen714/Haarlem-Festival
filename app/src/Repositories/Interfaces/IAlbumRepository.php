@@ -1,17 +1,13 @@
 <?php
 namespace App\Repositories\Interfaces;
 
+use App\Models\MusicEvent\Album;
+
 interface IAlbumRepository
 {
     public function getAlbumsByArtistId(int $artistId): array;
-    
-    // public function getAlbumBySlug(string $slug);
-    
-    // public function getAlbumById(int $albumId);
-
-    // public function createAlbum(array $albumData);
-    
-    // public function updateAlbum(int $albumId, array $albumData);
-
-    // public function deleteAlbum(int $albumId): bool;
+    public function getAlbumById(int $albumId): ?Album;
+    public function create(Album $album): bool;
+    public function update(Album $album): bool;
+    public function delete(int $albumId): bool;
 }

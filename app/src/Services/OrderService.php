@@ -69,7 +69,30 @@ class OrderService implements IOrderService
 
     public function getPaidTicketsByUser(int $userId): array
     {
-        return $this->orderRepository->getPaidTicketsByUser($userId);
+        $tickets = $this->orderRepository->getPaidTicketsByUser($userId);
+        return $this->enrichTicketsWithEventDetails($tickets);
+    }
+
+    private function enrichTicketsWithEventDetails(array $tickets): array
+    {
+        foreach ($tickets as &$ticket) {
+            $ticket['title'] = $ticket['artist_name']
+                ?? $ticket['restaurant_name']
+                ?? $ticket['landmark_name']
+                ?? 'Event';
+            $ticket['ticket_image'] = $ticket['artist_media_file_path']
+                ?? $ticket['restaurant_media_file_path']
+                ?? $ticket['landmark_media_file_path']
+                ?? $ticket['venue_media_file_path']
+                ?? $ticket['magic_media_file_path'];
+            $ticket['alt_text'] = $ticket['artist_media_alt_text']
+                ?? $ticket['restaurant_media_alt_text']
+                ?? $ticket['landmark_media_alt_text']
+                ?? $ticket['venue_media_alt_text']
+                ?? $ticket['magic_media_alt_text'];
+        }
+        unset($ticket);
+        return $tickets;
     }
     public function createSessionCart(): Order
     {

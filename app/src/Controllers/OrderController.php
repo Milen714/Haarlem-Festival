@@ -1,51 +1,41 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\User;
 use App\Models\Enums\UserRole;
-use App\Models\Enums\OrderStatus;
 use App\Middleware\RequireRole;
 use App\Services\Interfaces\ITicketService;
 use App\Services\TicketService;
-use App\Services\Interfaces\IPaymentService;
 use App\Services\Interfaces\IOrderService;
-use App\Services\PaymentService;
 use App\Services\OrderService;
-use App\Models\Payment\Order;
+use App\Services\Interfaces\ITicketFulfillmentService;
+use App\Services\TicketFulfillmentService;
 use App\Models\Payment\OrderItem;
-use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
-use Stripe\ApiOperations\Update;
-use App\Services\MailService;
-use App\Services\Interfaces\IMailService;
-use FontLib\Table\Type\head;
 
 class OrderController extends BaseController
 {
     private ITicketService $ticketService;
-    private IPaymentService $paymentService;
     private IOrderService $orderService;
-    private IMailService $mailService;
+    private ITicketFulfillmentService $ticketFulfillmentService;
+
     public function __construct()
     {
-        $this->ticketService = new TicketService();
-        $this->paymentService = new PaymentService();
-        $this->orderService = new OrderService();
-        $this->mailService = new MailService();
+        $this->ticketService            = new TicketService();
+        $this->orderService             = new OrderService();
+        $this->ticketFulfillmentService = new TicketFulfillmentService();
     }
 
     public function addToCart(array $params = []): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
         try {
-            $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
+            $jsonData = $this->getPostData();
+            if (!$jsonData) {
                 throw new \Exception('Invalid JSON input');
             }
-            
+
             $ticketType = $this->ticketService->getTicketTypeById($jsonData['ticketTypeId']);
-             if (!$ticketType) {
+            if (!$ticketType) {
                 throw new \Exception('Ticket type not found');
             }
             $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
@@ -53,7 +43,7 @@ class OrderController extends BaseController
             $cart = $this->orderService->getSessionCart();
             $this->jsonResponse([
                 'success' => true,
-                'cart' => $cart
+                'cart'    => $cart,
             ], 200);
         } catch (\Throwable $e) {
             $this->jsonResponse([
@@ -62,21 +52,18 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+
     public function getNumberOfCartItems(array $params = []): void
     {
         try {
             $cart = $this->orderService->getSessionCart();
             if (!$cart) {
-                $this->jsonResponse([
-                    'success' => true,
-                    'numberOfItems' => 0
-                ], 200);
+                $this->jsonResponse(['success' => true, 'numberOfItems' => 0], 200);
                 return;
             }
-            $numberOfItems = count($cart->orderItems);
             $this->jsonResponse([
-                'success' => true,
-                'numberOfItems' => $numberOfItems
+                'success'       => true,
+                'numberOfItems' => count($cart->orderItems),
             ], 200);
         } catch (\Throwable $e) {
             $this->jsonResponse([
@@ -85,21 +72,17 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+
     public function removeOrderItemFromCart(array $params = []): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
         try {
-            $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
+            $jsonData = $this->getPostData();
+            if (!$jsonData) {
                 throw new \Exception('Invalid JSON input');
             }
-            
+
             $this->orderService->removeOrderItemFromSessionCart($jsonData['sessionOrderitem_id']);
-            //$cart = $this->orderService->getSessionCart();
-            echo json_encode([
-                'success' => true
-            ], JSON_PRETTY_PRINT);
+            $this->jsonResponse(['success' => true], 200);
         } catch (\Throwable $e) {
             $this->jsonResponse([
                 'success' => false,
@@ -107,19 +90,20 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+
     public function getOrderItemDataForUpdate(array $params = []): void
     {
         try {
             $sessionOrderItemId = $_GET['sessionOrderitem_id'] ?? null;
             $cart = $this->orderService->getSessionCart();
-            
+
             $item = $this->orderService->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
-                if (!$item) {
-                    throw new \Exception('Order item not found in cart');
-                }
+            if (!$item) {
+                throw new \Exception('Order item not found in cart');
+            }
             $this->jsonResponse([
                 'success' => true,
-                'data' => ['orderItem' => $item]
+                'data'    => ['orderItem' => $item],
             ], 200);
         } catch (\Throwable $e) {
             $this->jsonResponse([
@@ -128,26 +112,22 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+
     public function updateOrderItemInCart(array $params = []): void
     {
-        header('Content-Type: application/json; charset=utf-8');
-
         try {
-            $jsonData = json_decode(file_get_contents('php://input'), true);
-             if (!$jsonData) {
+            $jsonData = $this->getPostData();
+            if (!$jsonData) {
                 throw new \Exception('Invalid JSON input');
             }
             $sessionOrderItemId = $jsonData['sessionOrderitem_id'] ?? null;
-            $newQuantity = $jsonData['quantity'] ?? null;
+            $newQuantity        = $jsonData['quantity'] ?? null;
             if ($sessionOrderItemId === null || $newQuantity === null) {
                 throw new \Exception('Missing required fields: sessionOrderitem_id and quantity');
             }
 
             $this->orderService->updateOrderItemInSessionCart($sessionOrderItemId, $newQuantity);
-
-            $this->jsonResponse([
-                'success' => true
-            ], 200);
+            $this->jsonResponse(['success' => true], 200);
         } catch (\Throwable $e) {
             $this->jsonResponse([
                 'success' => false,
@@ -159,70 +139,71 @@ class OrderController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function showUserTickets(): void
     {
-        /** @var \App\Models\User $user */
-        $user = $_SESSION['loggedInUser'];
-        
-        if (!$user->id) {
-            header('Location: /login');
-            exit;
-        }
+        $user = $this->getLoggedInUser();
 
-        $this->orderService->generateTicketHashes(69);
+        if (!$user?->id) {
+            $this->redirect('/login');
+        }
 
         $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
 
-         $this->view('Orders/my-tickets',[
-            'orderItems' => $orderItems
+        $this->view('Orders/my-tickets', [
+            'orderItems' => $orderItems,
         ]);
     }
+
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function downloadTickets(array $params = []): void
     {
-        $pdfName = $_GET['ticket_name'] ?? null;
-        $sessionId = $_GET['session_id'] ?? null;
-    try {
-        $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-        if (!$order) {
-            http_response_code(404);
-            echo 'Order not found for this checkout session.';
-            return;
-        }
+        $pdfName   = $_GET['ticket_name'] ?? null;
+        $sessionId = $_GET['session_id']  ?? null;
 
-        if (!$order->ticket_pdf_path) {
-            http_response_code(409);
-            echo 'Your tickets are still being generated. Please wait a few seconds and try again.';
-            return;
-        }
+        try {
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            if (!$order) {
+                http_response_code(404);
+                echo 'Order not found for this checkout session.';
+                return;
+            }
 
-        $ticketPdfPath = __DIR__ . '/../../public/Assets/documents/' . $order->ticket_pdf_path;
-        
-        // 1. Check if file exists
-        if (!file_exists($ticketPdfPath)) {
-            http_response_code(409);
-            echo 'Your tickets are still being prepared. Please retry shortly.';
-            return;
+            // Ownership check — only the owning user or an ADMIN may download
+            $loggedInUser = $this->getLoggedInUser();
+            if (
+                $loggedInUser?->role !== UserRole::ADMIN &&
+                ($order->user_id ?? null) !== ($loggedInUser?->id ?? null)
+            ) {
+                $this->forbidden();
+                return;
+            }
+
+            if (!$order->ticket_pdf_path) {
+                http_response_code(409);
+                echo 'Your tickets are still being generated. Please wait a few seconds and try again.';
+                return;
+            }
+
+            if (!$this->ticketFulfillmentService->isTicketPdfReady($order->ticket_pdf_path)) {
+                http_response_code(409);
+                echo 'Your tickets are still being prepared. Please retry shortly.';
+                return;
+            }
+
+            $ticketPdfPath = $this->ticketFulfillmentService->getTicketPdfPath($order->ticket_pdf_path);
+            $fileName      = basename($ticketPdfPath);
+            $fileSize      = filesize($ticketPdfPath);
+
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: attachment; filename="' . $fileName . '"');
+            header('Content-Length: ' . $fileSize);
+            header('Cache-Control: no-cache, no-store, must-revalidate');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+
+            readfile($ticketPdfPath);
+            exit;
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo 'Error: ' . $e->getMessage();
         }
-        
-        // 2. Get file info
-        $fileName = basename($ticketPdfPath);
-        $fileSize = filesize($ticketPdfPath);
-        
-        // 3. Set HTTP headers BEFORE any output
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $fileName . '"');
-        header('Content-Length: ' . $fileSize);
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-        
-        // 4. Send file to browser
-        readfile($ticketPdfPath);
-        exit;
-        
-    } catch (\Throwable $e) {
-        http_response_code(500);
-        echo "Error: " . $e->getMessage();
     }
-}
-    
 }
