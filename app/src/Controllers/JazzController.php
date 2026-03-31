@@ -6,19 +6,35 @@ use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Services\JazzService;
+use App\Services\LogService;
 use App\Services\TicketService;
+use App\Services\Interfaces\ILogService;
 
 class JazzController extends BaseController
 {
     private JazzService $jazzService;
     private TicketService $ticketService;
+    private ILogService $logService;
 
+    /**
+     * Wires up JazzService (which handles all Jazz page data assembly) and TicketService
+     * (used directly by getTicketTypes for the AJAX ticket-type endpoint).
+     */
     public function __construct()
     {
         $this->jazzService = new JazzService();
         $this->ticketService = new TicketService();
+        $this->logService = new LogService();
     }
 
+    /**
+     * Renders the main Jazz overview page with artists, venues, schedule, and ticket types.
+     * Delegates all data assembly to JazzService and maps known exceptions to HTTP responses.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     public function index($vars = [])
     {
         try {
@@ -28,15 +44,24 @@ class JazzController extends BaseController
             $this->notFound();
         } catch (ApplicationException $e) {
 
-            error_log("Jazz page configuration error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         } catch (\Throwable $e) {
 
-            error_log("Jazz page error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         }
     }
 
+    /**
+     * AJAX endpoint that returns the ticket types for a given schedule slot as JSON.
+     * Reads schedule_id from the query string and responds with the ticket types array,
+     * or a 400/404/500 JSON error if the parameter is missing, no types are found, or a failure occurs.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     public function getTicketTypes($vars = []): void
     {
         $scheduleId = $_GET['schedule_id'] ?? null;
@@ -56,6 +81,14 @@ class JazzController extends BaseController
         }
     }
 
+    /**
+     * Renders the Jazz schedule page, which shows the full timetable grouped by date.
+     * Maps known exceptions to appropriate HTTP responses.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     public function schedule($vars = []): void
     {
         try {
@@ -65,11 +98,11 @@ class JazzController extends BaseController
             $this->notFound();
         } catch (ApplicationException $e) {
 
-            error_log("Jazz schedule configuration error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         } catch (\Throwable $e) {
 
-            error_log("Jazz schedule page error: " . $e->getMessage());
+            $this->logService->exception('Jazz', $e);
             $this->internalServerError();
         }
     }

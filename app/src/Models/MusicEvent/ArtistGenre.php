@@ -9,8 +9,18 @@ class ArtistGenre
 
     public ?Genre $genre = null;
 
+    /** Empty constructor; populate via fromPDOData() after fetching from the ARTIST_GENRE table. */
     public function __construct() {}
 
+    /**
+     * Hydrates this link record from a raw database row.
+     * Maps the artist–genre association columns and the is_primary flag,
+     * which indicates whether this genre is the artist's main/primary genre.
+     *
+     * @param array $data  A single ARTIST_GENRE row from PDO::FETCH_ASSOC.
+     *
+     * @return void
+     */
     public function fromPDOData(array $data): void
     {
         $this->artist_id  = isset($data['artist_id']) ? (int)$data['artist_id'] : null;

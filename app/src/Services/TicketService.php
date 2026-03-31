@@ -90,22 +90,26 @@ class TicketService implements ITicketService
         return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
     }
 
+    public function getTicketTypeIdsBySchemeId(int $schemeId): array
+    {
+        return $this->ticketRepository->getTicketTypeIdsBySchemeId($schemeId);
+    }
+
     public function getAvailableCapacity(int $ticketTypeId): int
     {
         return $this->ticketRepository->getAvailableCapacity($ticketTypeId);
     }
 
-    // Hard-locks seats. Call at checkout, not at add-to-cart.
     public function reserveSeats(int $ticketTypeId, int $quantity): bool
     {
         return $this->ticketRepository->atomicIncrementTicketsSold($ticketTypeId, $quantity);
     }
 
-    // Reserves seats for multiple ticket types in one transaction. All or nothing.
     public function reserveMultiple(array $items): bool
     {
         return $this->ticketRepository->reserveMultiple($items);
     }
+
 
     public function releaseSeats(int $ticketTypeId, int $quantity): bool
     {
@@ -113,13 +117,26 @@ class TicketService implements ITicketService
     }
 
     // Releases all tickets from an order's items in one transaction. Used by the webhook on session expiry.
+    // For pass-type tickets, releases from all sibling ticket types sharing the same scheme.
     public function releaseOrderItems(array $orderItems): void
     {
         $items = [];
         foreach ($orderItems as $item) {
             $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+            $schemeEnum   = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+            $schemeId     = $item->ticket_type?->ticket_scheme?->ticket_scheme_id ?? null;
             $quantity     = (int)($item->quantity ?? 0);
-            if ($ticketTypeId !== null && $quantity > 0) {
+
+            if ($ticketTypeId === null || $quantity <= 0) {
+                continue;
+            }
+
+            if ($schemeEnum !== null && TicketSchemeEnum::isPassType($schemeEnum) && $schemeId !== null) {
+                $siblingIds = $this->ticketRepository->getTicketTypeIdsBySchemeId($schemeId);
+                foreach ($siblingIds as $siblingId) {
+                    $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
+                }
+            } else {
                 $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
             }
         }
@@ -128,14 +145,13 @@ class TicketService implements ITicketService
         }
     }
 
-    // Throws if adding this capacity would exceed the venue's limit. Pass excludeTicketTypeId when editing an existing type.
     public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void
     {
         $existing     = $this->ticketRepository->getTotalAllocatedCapacityForSchedule($scheduleId, $excludeTicketTypeId);
         $venueCapacity = $this->ticketRepository->getVenueCapacityForSchedule($scheduleId);
 
         if ($venueCapacity === null) {
-            // No venue or venue has no capacity set — skip validation
+
             return;
         }
 
@@ -143,7 +159,7 @@ class TicketService implements ITicketService
         if ($total > $venueCapacity) {
             throw new \OverflowException(
                 "Total ticket capacity ({$total}) would exceed the venue capacity ({$venueCapacity}). " .
-                "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
+                    "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
             );
         }
     }

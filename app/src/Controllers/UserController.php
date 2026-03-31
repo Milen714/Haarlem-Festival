@@ -8,17 +8,21 @@ use App\Models\User;
 use App\Middleware\RequireRole;
 use App\Services\Interfaces\IAuthService;
 use App\Services\Interfaces\IUserService;
+use App\Services\Interfaces\ILogService;
 use App\Services\AuthService;
+use App\Services\LogService;
 
 
 class UserController extends BaseController
 {
     private IUserService $userService;
     private IAuthService $authService;
+    private ILogService $logService;
     public function __construct()
     {
         $this->userService = new UserService();
         $this->authService = new AuthService();
+        $this->logService  = new LogService();
     }
 
     #[RequireRole([UserRole::ADMIN])]
@@ -32,7 +36,7 @@ class UserController extends BaseController
                 'users' => $users
             ]);
         } catch (\Exception $e) {
-            error_log("User list error: " . $e->getMessage());
+            $this->logService->exception('User', $e);
             // Don't redirect - show error on the same page
             $this->cmsLayout('Cms/Users/Index', [
                 'title' => 'Manage Users',
@@ -52,7 +56,7 @@ class UserController extends BaseController
                 'action' => '/cms/users/store'
             ]);
         } catch (\Exception $e) {
-            error_log("User create form error: " . $e->getMessage());
+            $this->logService->exception('User', $e);
             $this->cmsLayout('Cms/Users/Form', [
                 'title' => 'Create New User',
                 'user' => null,
@@ -86,7 +90,7 @@ class UserController extends BaseController
             header('Location: /cms/users');
             exit();
         } catch (\Exception $e) {
-            error_log("User store error: " . $e->getMessage());
+            $this->logService->exception('User', $e);
             $_SESSION['error'] = 'Failed to create user: ' . $e->getMessage();
             header('Location: /cms/users/create');
             exit();
@@ -108,7 +112,7 @@ class UserController extends BaseController
                 'action' => "/cms/users/update/{$userId}"
             ]);
         } catch (\Exception $e) {
-            error_log("User edit error: " . $e->getMessage());
+            $this->logService->exception('User', $e);
             $_SESSION['error'] = 'Failed to load user: ' . $e->getMessage();
             header('Location: /cms/users');
             exit(); 
@@ -147,7 +151,7 @@ class UserController extends BaseController
             $_SESSION['success'] = "User '{$user->email}' updated successfully.";
             $this->redirect('/cms/users');
         } catch (\Exception $e) {
-            error_log("User update error: " . $e->getMessage());
+            $this->logService->exception('User', $e);
             $_SESSION['error'] = 'Failed to update user: ' . $e->getMessage();
             $this->redirect('/cms/users/edit/' . $userId);
         }
@@ -167,7 +171,7 @@ class UserController extends BaseController
             header('Location: /cms/users');
             exit();
         } catch (\Exception $e) {
-            error_log("User delete error: " . $e->getMessage());
+            $this->logService->exception('User', $e);
             $_SESSION['error'] = 'Failed to delete user: ' . $e->getMessage();
             header('Location: /cms/users');
             exit();
