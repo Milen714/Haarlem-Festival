@@ -5,7 +5,6 @@ use App\Models\Media;
 use App\Models\Gallery;
 use App\Models\Venue;
 use App\Models\Cuisine;
-use App\Models\Yummy\Dish;
 use App\Models\Yummy\Session;
 use Dom\Text;
 
@@ -29,7 +28,6 @@ class Restaurant
     public ?Gallery $gallery = null;
     public ?array $cuisines = [];
     public ?array $sessions = [];
-    public ?array $dishes = [];
     public ?string $website_url = null;
     public ?\DateTime $deleted_at = null;
 

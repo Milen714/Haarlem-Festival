@@ -81,7 +81,6 @@ class RestaurantService implements IRestaurantService
             return null;
         }
         $restaurant->sessions = $this->restaurantRepository->getSessionsByRestaurant($id);
-        // $restaurant->dishes = $this->restaurantRepository->getDishessByRestaurant($id);
        
         return $restaurant;
     }
