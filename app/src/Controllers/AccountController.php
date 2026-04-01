@@ -13,8 +13,11 @@ use App\config\Secrets;
 use App\Services\Interfaces\IOrderService;
 use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\IMailService;
+use App\Services\Interfaces\ILogService;
 use App\Services\OrderService;
-
+use App\Services\LogService;
+use App\Exceptions\UserFacingException;
+use App\Exceptions\ValidationException;
 
 class AccountController extends BaseController
 {
@@ -22,13 +25,14 @@ class AccountController extends BaseController
     private IMailService $mailService;
     private IAuthService $authService;
     private IOrderService $orderService;
+    private ILogService $logService;
     public function __construct()
     {
         $this->authService = new AuthService();
         $this->userService = new UserService();
         $this->mailService = new MailService();
-        
         $this->orderService = new OrderService();
+        $this->logService = new LogService();
     }
     public function login($vars = [])
     {
@@ -83,10 +87,17 @@ class AccountController extends BaseController
                     'user' => ['email' => $data['email']]
                 ], 401);
             }
-        } catch (\Throwable $e) {
+        } catch (UserFacingException $e) {
+            $this->logService->info('Account', 'User-facing error: ' . $e->getMessage());
             $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An error occurred during login.',
             ], 500);
         }
     }
@@ -118,18 +129,24 @@ class AccountController extends BaseController
                 'success' => true,
                 'message' => 'Signup successful. Please check your email to verify your account.',
             ], 201);
-        } catch (\Exception $e) {
-            if (str_contains($e->getMessage(), 'email')) {
-                $this->sendSuccessResponse([
-                    'success' => false,
-                    'message' => "This email is already in use."
-                ], 400);
-            } else {
-                $this->sendSuccessResponse([
-                    'success' => false,
-                    'message' => "An error occurred during signup: " . $e->getMessage()
-                ], 500);
-            }
+        } catch (ValidationException $e) {
+            $this->logService->info('Account', 'Validation error: ' . $e->getMessage());
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (UserFacingException $e) {
+            $this->logService->info('Account', 'User-facing error: ' . $e->getMessage());
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An error occurred during signup.'
+            ], 500);
         }
     }
     public function forgotPassword()
@@ -149,8 +166,9 @@ class AccountController extends BaseController
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
             $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
-        } catch (\Exception $e) {
-            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
+            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => 'An error occurred. Please try again.']);
         }
     }
     public function resetPassword()
@@ -168,8 +186,9 @@ class AccountController extends BaseController
             }
             // Show reset password form
             $this->view('Account/ResetPassword', ['title' => 'Reset Password']);
-        } catch (\Exception $e) {
-            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
+            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => 'An error occurred. Please try again.']);
         }
         // Reset password logic here
     }
@@ -207,10 +226,11 @@ class AccountController extends BaseController
             $this->userService->updateUser($user);
             // Redirect to login with success message
             $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
             $this->view('Account/ResetPassword', [
                 'title' => 'Reset Password',
-                'error' => $e->getMessage(),
+                'error' => 'An error occurred. Please try again.',
                 "email" => $email,
                 "token" => $token
             ]);
@@ -224,12 +244,18 @@ class AccountController extends BaseController
             header("Location: /login");
             exit();
         }
-        $user = $this->userService->getUserById($loggedUser->id);
+        try {
+            $user = $this->userService->getUserById($loggedUser->id);
 
-        if ($user->role === UserRole::ADMIN) {
-            $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
-        } else {
-            $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+            if ($user->role === UserRole::ADMIN) {
+                $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
+            } else {
+                $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
+            }
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
+            header("Location: /login");
+            exit();
         }
     }
 
@@ -255,8 +281,9 @@ class AccountController extends BaseController
                 header("Location: /settings");
             }
             exit();
-        } catch (\Exception $e) {
-            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Account', $e);
+            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => 'An error occurred. Please try again.']);
         }
     }
 }

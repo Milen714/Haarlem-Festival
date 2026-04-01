@@ -11,6 +11,8 @@ use App\Repositories\GalleryRepository;
 use App\Repositories\MediaRepository;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\Interfaces\IMediaService;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
 
 class LandmarkService implements ILandmarkService
 {
@@ -71,7 +73,7 @@ class LandmarkService implements ILandmarkService
     {
         //validation fo empty name
         if (empty($postData['name'])) {
-            throw new \Exception("The landmark name is required.");
+            throw new ValidationException("The landmark name is required.");
         }
 
         $slug = $this->generateSlug($postData['name']); //generate new slug
@@ -91,12 +93,12 @@ class LandmarkService implements ILandmarkService
         $existingLandmark = $this->landmarkRepository->getById($id);
 
         if (!$existingLandmark) {
-            throw new \Exception("Landmark not found.");
+            throw new ResourceNotFoundException("Landmark not found.");
         }
 
         //name validation
         if (empty($postData['name'])) {
-            throw new \Exception("The landmark name is required.");
+            throw new ValidationException("The landmark name is required.");
         }
 
         if ($existingLandmark->gallery) {

@@ -32,4 +32,6 @@ interface IOrderService
     public function markAsScanned(int $orderItemId): bool;
     public function getPaidOrderItemsByUserId(int $userId): array;
     public function getOrdersWhereStatusIn(array $statuses): array;
+    public function canUserDownloadOrderTickets(User $user, Order $order): bool;
+    public function authorizeOrderOwnership(User $user, Order $order, callable $onUnauthorized): bool;
 }

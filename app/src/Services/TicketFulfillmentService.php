@@ -12,6 +12,7 @@ use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
 use App\Models\Payment\OrderItem;
 use App\Models\Payment\Order;
+use App\Exceptions\ValidationException;
 
 class TicketFulfillmentService implements ITicketFulfillmentService
 {
@@ -163,5 +164,18 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         }
 
         return $fileName . '.pdf';
+    }
+
+    public function validateAndGetTicketPdf(string $pdfPath): string
+    {
+        if (!$pdfPath) {
+            throw new ValidationException('Your tickets are still being generated. Please wait a few seconds and try again.');
+        }
+
+        if (!$this->isTicketPdfReady($pdfPath)) {
+            throw new ValidationException('Your tickets are still being prepared. Please retry shortly.');
+        }
+
+        return $this->getTicketPdfPath($pdfPath);
     }
 }

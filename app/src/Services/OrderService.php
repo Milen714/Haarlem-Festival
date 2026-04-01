@@ -10,6 +10,7 @@ use App\Models\Payment\OrderItem;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\OrderRepository;
 use App\Services\Interfaces\IOrderService;
+use App\Exceptions\ValidationException;
 
 class OrderService implements IOrderService
 {
@@ -146,7 +147,7 @@ class OrderService implements IOrderService
 
             if (($item->quantity + $alreadyInCart) > $available) {
                 $remaining = max(0, $available - $alreadyInCart);
-                throw new \OverflowException(
+                throw new ValidationException(
                     "Only {$remaining} seat(s) remaining for this ticket type."
                 );
             }
@@ -168,7 +169,7 @@ class OrderService implements IOrderService
             if ($ticketTypeId !== null) {
                 $reserved = $this->ticketService->reserveSeats($ticketTypeId, (int)$item->quantity);
                 if (!$reserved) {
-                    throw new \OverflowException(
+                    throw new ValidationException(
                         "Ticket type {$ticketTypeId} is sold out or has insufficient capacity."
                     );
                 }
@@ -214,7 +215,7 @@ class OrderService implements IOrderService
             }
 
             if (!empty($items) && !$this->ticketService->reserveMultiple($items)) {
-                throw new \OverflowException(
+                throw new ValidationException(
                     'One or more ticket types are sold out or have insufficient capacity. Please review your cart.'
                 );
             }
@@ -368,5 +369,19 @@ class OrderService implements IOrderService
         public function getOrdersWhereStatusIn(array $statuses): array
         {
             return $this->orderRepository->getOrdersWhereStatusIn($statuses);
+        }
+
+        public function canUserDownloadOrderTickets(User $user, Order $order): bool
+        {
+            return $user->id === $order->user->id || $user->role === \App\Models\Enums\UserRole::ADMIN;
+        }
+
+        public function authorizeOrderOwnership(User $user, Order $order, callable $onUnauthorized): bool
+        {
+            if ($user->id !== $order->user->id && $user->role !== \App\Models\Enums\UserRole::ADMIN) {
+                $onUnauthorized();
+                return false;
+            }
+            return true;
         }
 }

@@ -68,7 +68,8 @@ class StripeWebhookController extends BaseController
                     ]);
                     $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Paid);
 
-                    // Render views and have service generate PDF and send email
+                    // Render views for the email and pdf and have service generate PDF and send the email, 
+                    //then update order with PDF path and mark as fulfilled
                     $viewModel = new ShoppingCartViewModel($order);
                     $pdfHtml = $this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]);
                     $emailHtml = $this->renderViewToString('Email/TicketsMailBody', ['viewModel' => $viewModel]);

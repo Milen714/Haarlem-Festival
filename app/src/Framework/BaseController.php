@@ -49,7 +49,7 @@ class BaseController
     protected function forbidden()
     {
         http_response_code(403);
-        echo "403 Forbidden";
+        $this->view('Errors/403', ['title' => 'Access Denied']);
         exit();
     }
     protected function cmsLayout($viewName, $vars = [], $layout = 'layouts/CmsLayout')

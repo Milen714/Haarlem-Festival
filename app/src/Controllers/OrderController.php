@@ -12,7 +12,16 @@ use App\Services\OrderService;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Services\TicketFulfillmentService;
 use App\Models\Payment\OrderItem;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\UserFacingException;
 
+/**
+ * OrderController
+ * 
+ * Handles shopping cart operations and ticket management.
+ * Manages adding/removing items from cart, updating quantities, ticket downloads, and order history.
+ */
 class OrderController extends BaseController
 {
     private ITicketService $ticketService;
@@ -26,17 +35,20 @@ class OrderController extends BaseController
         $this->ticketFulfillmentService = new TicketFulfillmentService();
     }
 
+    /**
+     * Add a ticket to the session cart
+     */
     public function addToCart(array $params = []): void
     {
         try {
             $jsonData = $this->getPostData();
             if (!$jsonData) {
-                throw new \Exception('Invalid JSON input');
+                throw new ValidationException('Invalid JSON input');
             }
 
             $ticketType = $this->ticketService->getTicketTypeById($jsonData['ticketTypeId']);
             if (!$ticketType) {
-                throw new \Exception('Ticket type not found');
+                throw new ResourceNotFoundException('Ticket type not found');
             }
             $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
             $this->orderService->addOrderItemToSessionCart($orderItem);
@@ -45,14 +57,22 @@ class OrderController extends BaseController
                 'success' => true,
                 'cart'    => $cart,
             ], 200);
-        } catch (\Throwable $e) {
+        } catch (UserFacingException $e) {
             $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An unexpected error occurred.',
             ], 500);
         }
     }
 
+    /**
+     * Get the current number of items in the cart
+     */
     public function getNumberOfCartItems(array $params = []): void
     {
         try {
@@ -73,24 +93,35 @@ class OrderController extends BaseController
         }
     }
 
+    /**
+     * Remove an item from the cart
+     */
     public function removeOrderItemFromCart(array $params = []): void
     {
         try {
             $jsonData = $this->getPostData();
             if (!$jsonData) {
-                throw new \Exception('Invalid JSON input');
+                throw new ValidationException('Invalid JSON input');
             }
 
             $this->orderService->removeOrderItemFromSessionCart($jsonData['sessionOrderitem_id']);
             $this->sendSuccessResponse(['success' => true], 200);
-        } catch (\Throwable $e) {
+        } catch (UserFacingException $e) {
             $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An unexpected error occurred.',
             ], 500);
         }
     }
 
+    /**
+     * Get order item data for quantity update
+     */
     public function getOrderItemDataForUpdate(array $params = []): void
     {
         try {
@@ -99,94 +130,101 @@ class OrderController extends BaseController
 
             $item = $this->orderService->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
             if (!$item) {
-                throw new \Exception('Order item not found in cart');
+                throw new ResourceNotFoundException('Order item not found in cart');
             }
             $this->sendSuccessResponse([
                 'success' => true,
                 'data'    => ['orderItem' => $item],
             ], 200);
-        } catch (\Throwable $e) {
+        } catch (UserFacingException $e) {
             $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An unexpected error occurred.',
             ], 500);
         }
     }
 
+    /**
+     * Update the quantity of an item in the cart
+     */
     public function updateOrderItemInCart(array $params = []): void
     {
         try {
             $jsonData = $this->getPostData();
             if (!$jsonData) {
-                throw new \Exception('Invalid JSON input');
+                throw new ValidationException('Invalid JSON input');
             }
             $sessionOrderItemId = $jsonData['sessionOrderitem_id'] ?? null;
             $newQuantity        = $jsonData['quantity'] ?? null;
             if ($sessionOrderItemId === null || $newQuantity === null) {
-                throw new \Exception('Missing required fields: sessionOrderitem_id and quantity');
+                throw new ValidationException('Missing required fields: sessionOrderitem_id and quantity');
             }
 
             $this->orderService->updateOrderItemInSessionCart($sessionOrderItemId, $newQuantity);
             $this->sendSuccessResponse(['success' => true], 200);
-        } catch (\Throwable $e) {
+        } catch (UserFacingException $e) {
             $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An unexpected error occurred.',
             ], 500);
         }
     }
 
+    /**
+     * Display user's purchased tickets
+     */
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function showUserTickets(): void
     {
-        $user = $this->getLoggedInUser();
+        try {
+            $user = $this->getLoggedInUser();
 
-        if (!$user?->id) {
-            $this->redirect('/login');
-        }
+            if (!$user?->id) {
+                $this->redirect('/login');
+            }
 
-        $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
+            $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
 
-        $this->view('Orders/my-tickets', [
+            $this->view('Orders/my-tickets', [
             'orderItems' => $orderItems,
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            $this->view('Orders/my-tickets', [
+            'orderItems' => null,
+            ]);
+        }
     }
 
+    /**
+     * Download ticket PDF for an order. Authorizes ownership before serving file.
+     */
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function downloadTickets(array $params = []): void
     {
-        $pdfName   = $_GET['ticket_name'] ?? null;
-        $sessionId = $_GET['session_id']  ?? null;
+        $sessionId = $_GET['session_id'] ?? null;
 
         try {
             $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
             if (!$order) {
-                http_response_code(404);
-                echo 'Order not found for this checkout session.';
-                return;
+                throw new ResourceNotFoundException('Order not found for this checkout session.');
             }
 
-            // Ownership check — only the owning user or an ADMIN may download
             $loggedInUser = $this->getLoggedInUser();
-            if ($loggedInUser->id !== $order->user->id && $loggedInUser->role !== UserRole::ADMIN) {
-                http_response_code(403);
-                echo 'You do not have permission to access these tickets.';
-                return;
+            if (!$this->orderService->canUserDownloadOrderTickets($loggedInUser, $order)) {
+                throw new \App\Exceptions\UnauthorizedException('You do not have permission to access these tickets.');
             }
 
-            if (!$order->ticket_pdf_path) {
-                http_response_code(409);
-                echo 'Your tickets are still being generated. Please wait a few seconds and try again.';
-                return;
-            }
-
-            if (!$this->ticketFulfillmentService->isTicketPdfReady($order->ticket_pdf_path)) {
-                http_response_code(409);
-                echo 'Your tickets are still being prepared. Please retry shortly.';
-                return;
-            }
-
-            $ticketPdfPath = $this->ticketFulfillmentService->getTicketPdfPath($order->ticket_pdf_path);
+            $ticketPdfPath = $this->ticketFulfillmentService->validateAndGetTicketPdf($order->ticket_pdf_path);
             $fileName      = basename($ticketPdfPath);
             $fileSize      = filesize($ticketPdfPath);
 
@@ -199,9 +237,15 @@ class OrderController extends BaseController
 
             readfile($ticketPdfPath);
             exit;
+        } catch (ResourceNotFoundException $e) {
+            http_response_code(404);
+            echo $e->getMessage();
+        } catch (\App\Exceptions\UnauthorizedException $e) {
+            http_response_code(403);
+            echo $e->getMessage();
         } catch (\Throwable $e) {
             http_response_code(500);
-            echo 'Error: ' . $e->getMessage();
+            echo 'An error occurred while processing your request.';
         }
     }
 }

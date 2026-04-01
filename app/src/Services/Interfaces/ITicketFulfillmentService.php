@@ -12,4 +12,5 @@ interface ITicketFulfillmentService {
     public function getTicketPdfPath(string $filename): string;
     public function isTicketPdfReady(string $filename): bool;
     public function sendTicketEmail(Order $order, string $pdfHtml, string $emailHtml): string;
+    public function validateAndGetTicketPdf(string $pdfPath): string;
 }

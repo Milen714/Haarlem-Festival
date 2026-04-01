@@ -18,6 +18,7 @@ use App\ViewModels\Home\ScheduleList;
 use App\ViewModels\Home\StartingPoints;
 use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
+use App\Exceptions\UserFacingException;
 
 class HomeController extends BaseController
 {
@@ -37,6 +38,11 @@ class HomeController extends BaseController
         $this->logService = new LogService();
     }
 
+    /**
+     * Display the home landing page with schedules, venues, and landmarks.
+     * Retrieves filtered schedule data based on event type and date query parameters.
+     * Falls back to 500 error if page or schedule data cannot be loaded.
+     */
     public function index($vars = [])
     {
         $eventFilter = $_GET['event']  ?? null;  
@@ -54,11 +60,19 @@ class HomeController extends BaseController
 
             //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
             $this->view('Home/Landing',['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
-        } catch (\Exception $e) {
-            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        } catch (UserFacingException $e) {
+            $this->logService->info('Home', 'User-facing error: ' . $e->getMessage());
+            $this->internalServerError('An error occurred while loading the homepage.');
+        } catch (\Throwable $e) {
+            $this->logService->exception('Home', $e);
+            $this->internalServerError('An error occurred while loading the homepage.');
         }
     }
 
+    /**
+     * Returns a partial HTML view of the schedule list for dynamic filtering.
+     * Respects event type and date filter parameters from GET request.
+     */
     public function getSchedulePartial($vars = [])
     {
         $eventFilter = $_GET['event']  ?? null;  
@@ -69,22 +83,35 @@ class HomeController extends BaseController
             $scheduleList = new ScheduleList($schedule);
             
             echo require_once '/app/Views/Home/Components/ScheduleList.php';
-        } catch (\Exception $e) {
-            $this->internalServerError("Error loading schedule: " . $e->getMessage());
+        } catch (UserFacingException $e) {
+            $this->logService->info('Home', 'User-facing error: ' . $e->getMessage());
+            $this->internalServerError('An error occurred while loading the schedule.');
+        } catch (\Throwable $e) {
+            $this->logService->exception('Home', $e);
+            $this->internalServerError('An error occurred while loading the schedule.');
         }
     }
 
+    /**
+     * Sets the user's theme preference via cookie.
+     * Expects a POST parameter 'theme' with the theme name.
+     */
     public function setTheme($vars = [])
     {
-        header('Content-Type: application/json');
-        if (isset($_POST['theme'])) {
+        try {
+            if (!isset($_POST['theme'])) {
+                $this->sendSuccessResponse(['success' => false, 'message' => 'No theme selected'], 400);
+                return;
+            }
+            
             $theme = $_POST['theme'];
-            // Set a cookie wit 30 day expiry for the selected theme
+            // Set a cookie with 30 day expiry for the selected theme
             setcookie('theme', $theme, time() + (86400 * 30), '/');
 
             $this->sendSuccessResponse(['success' => true, 'theme' => $theme], 200);
-        } else {
-            $this->sendSuccessResponse(['success' => false, 'message' => 'No theme selected'], 400);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Home', $e);
+            $this->sendSuccessResponse(['success' => false, 'message' => 'An error occurred while setting the theme.'], 500);
         }
     }
 
@@ -98,6 +125,9 @@ class HomeController extends BaseController
         }
     }
 
+    /**
+     * Returns a partial HTML view of the map with venues and landmarks as starting points.
+     */
     public function getStartingPoints($vars = [])
     {
        
@@ -106,18 +136,29 @@ class HomeController extends BaseController
             $landmarks = $this->landmarkService->getAllLandmarks();
             $startingPoints = new StartingPoints($landmarks, $venues);
             echo require_once '/app/Views/Home/Components/HomeMap.php';
-        } catch (\Exception $e) {
-            $this->sendErrorResponse(['error' => $e->getMessage()], 500);
+        } catch (UserFacingException $e) {
+            $this->logService->info('Home', 'User-facing error: ' . $e->getMessage());
+            $this->sendErrorResponse(['error' => 'An error occurred while loading the map.'], 500);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Home', $e);
+            $this->sendErrorResponse(['error' => 'An error occurred while loading the map.'], 500);
         }
     }
+    /**
+     * Returns available festival dates as a JSON array.
+     * Used for populating date filters on the frontend.
+     */
     public function getScheduleDates($vars = [])
     {
-        header('Content-Type: application/json');
         try {
             $dates = $this->scheduleService->getAvailableDates();
             $this->sendSuccessResponse(['success' => true, 'dates' => $dates], 200);
-        } catch (\Exception $e) {
-            $this->sendSuccessResponse(['success' => false, 'message' => $e->getMessage()], 500);
+        } catch (UserFacingException $e) {
+            $this->logService->info('Home', 'User-facing error: ' . $e->getMessage());
+            $this->sendSuccessResponse(['success' => false, 'message' => 'An error occurred while loading dates.'], 400);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Home', $e);
+            $this->sendSuccessResponse(['success' => false, 'message' => 'An error occurred while loading dates.'], 500);
         }
     }
 }

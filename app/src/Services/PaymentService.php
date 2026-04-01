@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Services\Interfaces\IPaymentService;
 use App\config\Secrets;
+use App\Exceptions\ValidationException;
 
 
 
@@ -48,7 +49,7 @@ class PaymentService implements IPaymentService
             $stripe = new \Stripe\StripeClient($stripeSecret);
             $sessionId = $jsonData['session_id'] ?? null;
             if (!$sessionId) {
-                throw new \InvalidArgumentException('Missing session_id in request data.');
+                throw new ValidationException('Missing session_id in request data.');
             }
 
             $session = $stripe->checkout->sessions->retrieve($sessionId);

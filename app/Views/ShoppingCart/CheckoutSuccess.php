@@ -56,7 +56,8 @@ flex flex-col xl:flex-row gap-3 bg_colors_home  overflow-x-hidden w-[90%] mx-aut
             </section>
         </section>
         <section
-            class="flex p-5 bg-[#F9FAFB] w-full justify-around items-center gap-4 border-t border-[#E5E7EB] rounded-b-xl">
+            class="flex p-5 bg-[#F9FAFB] w-full justify-around items-center gap-4 border-t border-[#E5E7EB] rounded-b-xl flex-col sm:flex-row">
+            <div id="error-container"></div>
             <a href="/payment/downloadTickets?session_id=<?php echo htmlspecialchars($order->stripe_checkout_session_id ?? 'N/A'); ?>"
                 class="download_tickets_button" id="download-tickets-btn" aria-disabled="true"
                 style="pointer-events:none; opacity:0.6;">Download Tickets</a>
@@ -72,6 +73,7 @@ flex flex-col xl:flex-row gap-3 bg_colors_home  overflow-x-hidden w-[90%] mx-aut
     </section>
 </section>
 
+<script src="/Js/ShowError.js"></script>
 <script>
 initialize();
 
@@ -98,11 +100,82 @@ function setDownloadButtonReady(isReady) {
 async function postJson(url, body) {
     const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(body),
     });
     const text = await response.text();
     return JSON.parse(text);
+}
+
+function initializeDownloadButton() {
+    const button = document.getElementById('download-tickets-btn');
+    if (!button) return;
+
+    button.addEventListener('click', async function(e) {
+        e.preventDefault();
+
+        const errorContainer = document.getElementById('error-container');
+        if (errorContainer) {
+            errorContainer.innerHTML = '';
+        }
+
+        const sessionId = new URLSearchParams(window.location.search).get('session_id');
+        if (!sessionId) {
+            showError('Session ID not found. Please try again.');
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `/payment/downloadTickets?session_id=${encodeURIComponent(sessionId)}`);
+
+            // Check for HTTP errors
+            if (!response.ok) {
+                const errorText = await response.text();
+                showError(`Error (${response.status}): ${errorText}`);
+                return;
+            }
+
+            // Verify the response is actually a PDF
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/pdf')) {
+                const errorText = await response.text();
+                showError(`Unexpected response: ${errorText}`);
+                return;
+            }
+
+            // Download the PDF as a blob
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            // Extract filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('content-disposition');
+            let fileName = 'tickets.pdf';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (match) {
+                    fileName = match[1];
+                }
+            }
+
+            // Trigger download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = fileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // Clean up
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            showError(`Failed to download tickets: ${error.message}`);
+        }
+    });
 }
 
 async function initialize() {
@@ -112,6 +185,7 @@ async function initialize() {
     if (!sessionId) return;
 
     setDownloadButtonReady(false);
+    initializeDownloadButton();
 
     const statusText = document.getElementById('ticket-ready-status');
 
@@ -122,7 +196,9 @@ async function initialize() {
 
     for (let attempt = 0; attempt < maxPaymentAttempts; attempt++) {
         try {
-            const session = await postJson('/payment-status', { session_id: sessionId });
+            const session = await postJson('/payment-status', {
+                session_id: sessionId
+            });
 
             if (session.status === 'open') {
                 window.location.replace('/checkout');
@@ -143,7 +219,8 @@ async function initialize() {
     }
 
     if (!paymentComplete) {
-        if (statusText) statusText.textContent = 'Still finalizing your tickets. Please wait a few seconds and try again.';
+        if (statusText) statusText.textContent =
+            'Still finalizing your tickets. Please wait a few seconds and try again.';
         return;
     }
 
@@ -156,7 +233,9 @@ async function initialize() {
 
     for (let attempt = 0; attempt < maxTicketAttempts; attempt++) {
         try {
-            const result = await postJson('/payment/ticket-ready', { session_id: sessionId });
+            const result = await postJson('/payment/ticket-ready', {
+                session_id: sessionId
+            });
 
             if (result.ticket_ready === true) {
                 setDownloadButtonReady(true);
@@ -170,6 +249,7 @@ async function initialize() {
         await sleep(1500);
     }
 
-    if (statusText) statusText.textContent = 'Still finalizing your tickets. Please wait a few seconds and try again.';
+    if (statusText) statusText.textContent =
+        'Still finalizing your tickets. Please wait a few seconds and try again.';
 }
 </script>

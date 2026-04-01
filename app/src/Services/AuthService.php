@@ -11,6 +11,8 @@ use App\Services\Interfaces\IMailService;
 use App\Services\MailService;
 use App\Services\LogService;
 use App\config\Secrets;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ApplicationException;
 class AuthService implements IAuthService {
     private ?User $user = null;
     private ?IUserService $userService;
@@ -108,7 +110,7 @@ class AuthService implements IAuthService {
     public function validateCaptchaToken($token) : bool
     {
         if (empty($token)) {
-            throw new \Exception("reCAPTCHA token is missing.");
+            throw new ValidationException("reCAPTCHA token is missing.");
         }
 
         $secretKey = Secrets::$reCapchaSecretKey;
@@ -120,7 +122,7 @@ class AuthService implements IAuthService {
 
         // Check if it failed OR if the score is too low
         if (!$response->success || $response->score < 0.5) {
-            throw new \Exception("reCAPTCHA verification failed. Are you a bot?");
+            throw new ValidationException("reCAPTCHA verification failed. Are you a bot?");
         }
 
         return true;
@@ -137,39 +139,33 @@ class AuthService implements IAuthService {
      */
     public function registerUserWithVerification(User $user, string $recaptchaToken): void
     {
-        
-
-        try {
-            // Validate password strength
-            $passwordValidation = $this->validatePassword($user->password_hash);
-            if (!$passwordValidation['valid']) {
-                $errors = implode(", ", $passwordValidation['errors']);
-                throw new \Exception("Password does not meet the following criteria: {$errors}");
-            }
-
-            // Validate reCAPTCHA token
-            $this->validateCaptchaToken($recaptchaToken);
-
-            // Check if email already exists
-            $existingUser = $this->userService->getUserByEmail($user->email);
-            if ($existingUser) {
-                throw new \Exception("This email is already in use.");
-            }
-
-            // Generate verification token
-            $token = $this->generateVerificationToken($user);
-
-            // Build verification link
-            $verificationLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
-
-            // Save user to database
-            $this->userService->createUser($user);
-
-            // Send verification email
-            $this->mailService->accountVerificationMail($user->email, $verificationLink);
-        } catch (\Throwable $e) {
-            throw new \Exception($e->getMessage());
+        // Validate password strength
+        $passwordValidation = $this->validatePassword($user->password_hash);
+        if (!$passwordValidation['valid']) {
+            $errors = implode(", ", $passwordValidation['errors']);
+            throw new ValidationException("Password does not meet the following criteria: {$errors}");
         }
+
+        // Validate reCAPTCHA token
+        $this->validateCaptchaToken($recaptchaToken);
+
+        // Check if email already exists
+        $existingUser = $this->userService->getUserByEmail($user->email);
+        if ($existingUser) {
+            throw new ValidationException("This email is already in use.");
+        }
+
+        // Generate verification token
+        $token = $this->generateVerificationToken($user);
+
+        // Build verification link
+        $verificationLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+
+        // Save user to database
+        $this->userService->createUser($user);
+
+        // Send verification email
+        $this->mailService->accountVerificationMail($user->email, $verificationLink);
     }
     
 
