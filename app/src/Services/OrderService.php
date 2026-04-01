@@ -394,7 +394,24 @@ class OrderService implements IOrderService
             return $this->orderRepository->getAllOrdersForExport($requestedColumns, $paidAfter);
         }
 
-        
+        /**
+         * Generate and download/save a CSV file from order data
+         * 
+         * Converts array of associative arrays into a properly formatted CSV with UTF-8 BOM
+         * for Excel compatibility. Supports dynamic column selection and optional file saving.
+         * 
+         * @param array $data Array of associative arrays containing order data
+         * @param string $filename Filename without extension (will add .csv)
+         * @param array $requestedColumns Array of column names to include in export (if empty, includes all)
+         * @param bool $download Whether to send file as download (default: true)
+         * @param bool $save Whether to save file to server (default: false)
+         * @param string $savePath Path to save file when $save is true (default: 'Assets/documents/')
+         * 
+         * @return bool True if successful
+         * 
+         * @throws ValidationException If $data is not an array, is empty, or $requestedColumns is not an array
+         * @throws \Exception If memory stream creation or file operations fail
+         */
         function generateCSV($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/')
         {
             try {
@@ -485,6 +502,25 @@ class OrderService implements IOrderService
             }
         }
 
+        /**
+         * Generate and download/save an Excel file from order data using HTML table format
+         * 
+         * Converts array of associative arrays into a formatted HTML table with inline styles
+         * that Excel recognizes. Includes colored headers, alternating row colors, and borders.
+         * Supports dynamic column selection and optional file saving.
+         * 
+         * @param array $data Array of associative arrays containing order data
+         * @param string $filename Filename without extension (will add .xls)
+         * @param array $requestedColumns Array of column names to include in export (if empty, includes all)
+         * @param bool $download Whether to send file as download (default: true)
+         * @param bool $save Whether to save file to server (default: false)
+         * @param string $savePath Path to save file when $save is true (default: 'Assets/documents/')
+         * 
+         * @return bool True if successful
+         * 
+         * @throws ValidationException If $data is not an array or is empty
+         * @throws \Exception If file operations fail
+         */
         public function generateExcelViaHtml($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/')
         {
             try {

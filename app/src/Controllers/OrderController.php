@@ -253,6 +253,11 @@ class OrderController extends BaseController
         }
     }
 
+    /**
+     * Summary of getOrderColumns
+     * @param array $params
+     * @return void
+     */
     public function getOrderColumns(array $params = []): void
     {
         try {
@@ -309,6 +314,13 @@ class OrderController extends BaseController
             ], 500);
         }
     }
+    /**
+     * Summary of exportOrdersExcel
+     * @param array $params
+     * @throws ValidationException
+     * @throws \Exception
+     * @return void
+     */
     public function exportOrdersExcel(array $params = []): void
     {
         try {
