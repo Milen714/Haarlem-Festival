@@ -21,7 +21,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.restaurant_id,
             r.event_id,
             r.venue_id,
-            r.head_chef_id,
             r.name AS restaurant_name,
             r.short_description AS restaurant_short_description,
             r.welcome_text AS restaurant_welcome_text,

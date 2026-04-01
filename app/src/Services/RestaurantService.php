@@ -87,15 +87,15 @@ class RestaurantService implements IRestaurantService
 
     public function fillRestaurantFromPostData(Restaurant $restaurant, array $data){
         $restaurant->name = trim($data['name']);
-        $restaurant->event_id = isset($postData['event_id']) ? (int)$data['event_id'] : 1;
-        $restaurant->short_description = !empty($data['short_description']) ? trim($data['short_description']) : null;
-        $restaurant->welcome_text = !empty($data['welcome_text']) ?  trim($data['welcome_text']) : null;
-        $restaurant->price_category = !empty($data['price_category']) ?  (int)$data['price_category'] : null;
-        $restaurant->stars = !empty($data['stars']) ?  (int)$data['stars'] : null;
-        $restaurant->review_count = !empty($data['review_count']) ?  (int)$data['review_count'] : null;
-        $restaurant->website_url = !empty($data['website_url']) ? trim($data['website_url']) : null;
-        $restaurant->chef_name = !empty($data['chef_name']) ? trim($data['chef_name']) : null;
-        $restaurant->chef_bio_text = !empty($data['chef_bio_text']) ? trim($data['chef_bio_chef']) : null;
+        $restaurant->event_id = isset($data['event_id']) ? (int)$data['event_id'] : ($restaurant->event_id ?? 1);
+        $restaurant->short_description = !empty($data['short_description']) ? trim($data['short_description']) : ($restaurant->short_description ?? null);
+        $restaurant->welcome_text = !empty($data['welcome_text']) ?  trim($data['welcome_text']) : ($restaurant->welcome_text ?? null);
+        $restaurant->price_category = !empty($data['price_category']) ?  (int)$data['price_category'] : ($restaurant->price_category ?? null);
+        $restaurant->stars = !empty($data['stars']) ?  (int)$data['stars'] : ($restaurant->stars ?? null);
+        $restaurant->review_count = !empty($data['review_count']) ?  (int)$data['review_count'] : ($restaurant->review_count ?? null);
+        $restaurant->website_url = !empty($data['website_url']) ? trim($data['website_url']) : ($restaurant->website_url ?? null);
+        $restaurant->chef_name = !empty($data['chef_name']) ? trim($data['chef_name']) : ($restaurant->chef_name ?? null);
+        $restaurant->chef_bio_text = !empty($data['chef_bio_text']) ? trim($data['chef_bio_text']) : ($restaurant->chef_bio_text ?? null);
 
         return $restaurant;
     }
