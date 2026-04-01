@@ -384,4 +384,198 @@ class OrderService implements IOrderService
             }
             return true;
         }
+
+        public function getAllowedExportColumns(): array
+        {
+            return $this->orderRepository->getAllowedExportColumns();
+        }
+        public function getAllOrdersForExport(array $requestedColumns, ?string $paidAfter = null): array
+        {
+            return $this->orderRepository->getAllOrdersForExport($requestedColumns, $paidAfter);
+        }
+
+        
+        function generateCSV($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/')
+        {
+            try {
+                // Ensure $data is an array
+                if (!is_array($data)) {
+                    throw new ValidationException('Data must be an array. Received: ' . gettype($data));
+                }
+
+                // Validate data is not empty
+                if (empty($data)) {
+                    throw new ValidationException('No data provided for CSV export');
+                }
+
+                // Validate requestedColumns is an array
+                if (!is_array($requestedColumns)) {
+                    throw new ValidationException('Requested columns must be an array. Received: ' . gettype($requestedColumns));
+                }
+
+                // Ensure data format - already arrays from repository
+                // No conversion needed; data from getAllOrdersForExport is already arrays
+                $csvData = $data;
+
+                // Filter to only requested columns if provided
+                if (!empty($requestedColumns)) {
+                    $csvData = array_map(function($row) use ($requestedColumns) {
+                        $filtered = [];
+                        foreach ($requestedColumns as $col) {
+                            $filtered[$col] = $row[$col] ?? '';
+                        }
+                        return $filtered;
+                    }, $csvData);
+                }
+
+                // Create CSV in memory
+                $output = fopen('php://memory', 'r+');
+                if (!$output) {
+                    throw new \Exception('Failed to create memory stream');
+                }
+
+                // Write header row
+                $headers = array_keys($csvData[0]);
+                fputcsv($output, $headers, ',', '"', '\\');
+
+                // Write data rows
+                foreach($csvData as $row){
+                    fputcsv($output, array_values($row), ',', '"', '\\');
+                }
+
+                // Get CSV content
+                rewind($output);
+                $csvContent = stream_get_contents($output);
+                fclose($output);
+
+                // Add UTF-8 BOM for Excel compatibility (tells Excel to use comma delimiter)
+                $csvContent = "\xEF\xBB\xBF" . $csvContent;
+
+                // Save to server if requested
+                if($save){
+                    if (!is_dir($savePath)) {
+                        mkdir($savePath, 0755, true);
+                    }
+                    file_put_contents($savePath . $filename . '.csv', $csvContent);
+                }
+
+                // Download as CSV file
+                if($download){
+                    // Clear any previous output/buffering before sending headers
+                    while (ob_get_level() > 0) {
+                        ob_end_clean();
+                    }
+                    
+                    // Set headers for file download
+                    header('Content-Type: text/csv; charset=utf-8');
+                    header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+                    header('Content-Length: ' . strlen($csvContent));
+                    header('Pragma: no-cache');
+                    header('Expires: 0');
+                    header('Cache-Control: no-cache, no-store, must-revalidate');
+                    header('Connection: close');
+                    
+                    echo $csvContent;
+                    exit;
+                }
+
+                return true;
+            } catch (\Exception $e) {
+                throw new \Exception("CSV generation failed: " . $e->getMessage());
+            }
+        }
+
+        public function generateExcelViaHtml($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/')
+        {
+            try {
+                // Ensure data is an array
+                if (!is_array($data)) {
+                    throw new ValidationException('Data must be an array. Received: ' . gettype($data));
+                }
+
+                // Validate data is not empty
+                if (empty($data)) {
+                    throw new ValidationException('No data provided for Excel export');
+                }
+
+                // Ensure data is array of associative arrays
+                $htmlData = $data;
+
+                // Filter to only requested columns if provided
+                if (!empty($requestedColumns)) {
+                    $htmlData = array_map(function($row) use ($requestedColumns) {
+                        $filtered = [];
+                        foreach ($requestedColumns as $col) {
+                            $filtered[$col] = $row[$col] ?? '';
+                        }
+                        return $filtered;
+                    }, $htmlData);
+                }
+
+                // Get headers from first row
+                $headers = array_keys($htmlData[0]);
+
+                // Build HTML table with inline styles for Excel compatibility
+                $html = '<!DOCTYPE html>
+                    <html>
+                        <head>
+                            <meta charset="UTF-8">
+                        </head>
+                        <body>
+                            <table style="border-collapse: collapse; width: 100%;">';
+
+                // Write header row with inline styles
+                $html .= '<tr>';
+                foreach ($headers as $header) {
+                    $html .= '<th style="background-color: #4472C4; color: white; padding: 12px; border: 1px solid #ddd; font-weight: bold; text-align: left;">' 
+                        . htmlspecialchars($header) . '</th>';
+                }
+                $html .= '</tr>';
+
+                // Add data rows with alternating colors
+                $rowCount = 0;
+                foreach ($htmlData as $row) {
+                    $bgColor = ($rowCount % 2 === 0) ? '#ffffff' : '#f9f9f9';
+                    $html .= '<tr style="background-color: ' . $bgColor . ';">';
+                    foreach ($row as $value) {
+                        $html .= '<td style="padding: 8px; border: 1px solid #ddd;">' 
+                            . htmlspecialchars($value ?? '') . '</td>';
+                    }
+                    $html .= '</tr>';
+                    $rowCount++;
+                }
+                $html .= '</table></body></html>';
+
+                // Save to server if requested
+                if ($save) {
+                    if (!is_dir($savePath)) {
+                        mkdir($savePath, 0755, true);
+                    }
+                    file_put_contents($savePath . $filename . '.html', $html);
+                }
+
+                // Download as Excel file
+                if ($download) {
+                    // Clear any previous output/buffering before sending headers
+                    while (ob_get_level() > 0) {
+                        ob_end_clean();
+                    }
+
+                    // Set headers for Excel download
+                    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+                    header('Content-Disposition: attachment; filename="' . $filename . '.xls"');
+                    header('Pragma: no-cache');
+                    header('Expires: 0');
+                    header('Cache-Control: no-cache, no-store, must-revalidate');
+
+                    echo $html;
+                    exit;
+                }
+
+                return true;
+
+            } catch (\Exception $e) {
+                throw new \Exception("Excel generation failed: " . $e->getMessage());
+            }
+        }
 }

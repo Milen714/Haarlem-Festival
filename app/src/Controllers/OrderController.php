@@ -15,6 +15,8 @@ use App\Models\Payment\OrderItem;
 use App\Exceptions\ValidationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\UserFacingException;
+use App\Services\Interfaces\ILogService;
+use App\Services\LogService;
 
 /**
  * OrderController
@@ -27,12 +29,14 @@ class OrderController extends BaseController
     private ITicketService $ticketService;
     private IOrderService $orderService;
     private ITicketFulfillmentService $ticketFulfillmentService;
+    private ILogService $logService;
 
     public function __construct()
     {
         $this->ticketService            = new TicketService();
         $this->orderService             = new OrderService();
         $this->ticketFulfillmentService = new TicketFulfillmentService();
+        $this->logService               = new LogService();
     }
 
     /**
@@ -246,6 +250,106 @@ class OrderController extends BaseController
         } catch (\Throwable $e) {
             http_response_code(500);
             echo 'An error occurred while processing your request.';
+        }
+    }
+
+    public function getOrderColumns(array $params = []): void
+    {
+        try {
+            $columns = $this->orderService->getAllowedExportColumns();
+            $this->sendSuccessResponse([
+                'success' => true,
+                'columns' => $columns,
+            ], 200);
+        } catch (\Throwable $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => 'An unexpected error occurred.',
+            ], 500);
+        }
+    }
+    public function exportOrders(array $params = []): void
+    {
+        try {
+            $jsonData = $this->getPostData();
+            if (!$jsonData) {
+                throw new ValidationException('Invalid JSON input');
+            }
+            $requestedColumns = $jsonData['columns'] ?? [];
+            $paidAfter       = $jsonData['paidAfter'] ?? null;
+
+            if (empty($requestedColumns)) {
+                throw new ValidationException('No columns specified for export');
+            }
+
+            $ordersData = $this->orderService->getAllOrdersForExport($requestedColumns, $paidAfter);
+            
+            if (!is_array($ordersData)) {
+                throw new \Exception('Export data must be an array');
+            }
+            
+            $filename = 'orders_export_CSV_' . date('Ymd_His');
+
+            $this->orderService->generateCSV($ordersData, $filename, $requestedColumns, true, false);
+        } catch (ValidationException $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (UserFacingException $e) {
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->logService->error("CSV Export error: " . $e->getMessage(), $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function exportOrdersExcel(array $params = []): void
+    {
+        try {
+            $jsonData = $this->getPostData();
+            if (!$jsonData) {
+                throw new ValidationException('Invalid JSON input');
+            }
+            $requestedColumns = $jsonData['columns'] ?? [];
+            $paidAfter       = $jsonData['paidAfter'] ?? null;
+
+            if (empty($requestedColumns)) {
+                throw new ValidationException('No columns specified for export');
+            }
+
+            $ordersData = $this->orderService->getAllOrdersForExport($requestedColumns, $paidAfter);
+            
+            if (!is_array($ordersData)) {
+                throw new \Exception('Export data must be an array');
+            }
+            
+            $filename = 'orders_export_' . date('Ymd_His');
+
+            $this->orderService->generateExcelViaHtml($ordersData, $filename, $requestedColumns, true, false);
+        } catch (ValidationException $e) {
+            $this->logService->error("Excel Export validation error: " . $e->getMessage(), $e->getMessage());
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (UserFacingException $e) {
+            $this->logService->error("Excel Export user error: " . $e->getMessage(), $e->getMessage());
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            $this->logService->error("Excel Export error: " . $e->getMessage(), $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 }

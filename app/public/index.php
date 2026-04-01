@@ -160,6 +160,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
     $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
+    /* CMS Export */
+    $r->addRoute('GET', '/cms/export-orders', ['App\Controllers\CmsController', 'exportOrders']);
+
     /* Stripe Webhook */
     $r->addRoute('POST', '/stripe/webhook', ['App\Controllers\StripeWebhookController', 'handle']);
 
@@ -186,6 +189,11 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/my-tickets', ['App\Controllers\OrderController', 'showUserTickets']);
     $r->addRoute('GET', '/qr-code/scan', ['App\Controllers\EmployeeController', 'scanPage']);
     $r->addRoute('POST', '/qr-code/validate', ['App\Controllers\EmployeeController', 'validateScan']);
+
+    /* Export */
+    $r->addRoute('GET', '/getOrderColumns', ['App\Controllers\OrderController', 'getOrderColumns']);
+    $r->addRoute('POST', '/exportOrders', ['App\Controllers\OrderController', 'exportOrders']);
+    $r->addRoute('POST', '/exportOrdersExcel', ['App\Controllers\OrderController', 'exportOrdersExcel']);
 });
 
 

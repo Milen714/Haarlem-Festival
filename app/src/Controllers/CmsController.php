@@ -31,4 +31,16 @@ class CmsController extends BaseController
         }
         
     }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function exportOrders($vars = []): void
+    {
+        try {
+            $this->cmsLayout('Cms/CMSExport/Index', [
+                'title' => 'Export Orders'
+            ]);
+        } catch (\Exception $e) {
+            $this->internalServerError("Error loading export page: " . $e->getMessage());
+        }
+    }
 }
