@@ -165,7 +165,7 @@ class OrderController extends BaseController
 
         $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
 
-         $this->view('Orders/my-tickets',[
+        $this->view('Orders/my-tickets',[
             'orderItems' => $orderItems
         ]);
     }

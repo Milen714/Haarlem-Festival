@@ -1,15 +1,18 @@
 <?php
 namespace App\ViewModels\Dance;
 
-class BaseViewModel {
+class BaseViewModel 
+{
     public array $breadcrumbs = [];
     public $pageData;
 
-    public function __construct($pageData = null) {
+    public function __construct($pageData = null) 
+    {
         $this->pageData = $pageData;
     }
-
-    public function addBreadcrumb(?string $label, ?string $url = null): void {
+    
+    public function addBreadcrumb(?string $label, ?string $url = null): void 
+    {
         if (empty($label)) {
             return;
         }

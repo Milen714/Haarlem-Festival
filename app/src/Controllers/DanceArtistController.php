@@ -14,6 +14,9 @@ use App\Services\Interfaces\IAlbumService;
 use App\Services\Interfaces\ITicketService;
 use App\Controllers\BaseController;
 use App\Models\Gallery;
+use App\Exceptions\ArtistNotFoundException;
+use App\Exceptions\ScheduleNotFoundException;
+use App\Exceptions\ApplicationException;
 
 class DanceArtistController extends BaseController
 {
@@ -39,30 +42,39 @@ class DanceArtistController extends BaseController
         $slug = $vars['slug'] ?? null;
 
         if (!$slug) {
-            $this->notFound();
-            return;
+            throw new ArtistNotFoundException('Artist slug is required');
         }
+        
         try {
             $artist = $this->artistService->getArtistBySlug($slug);
+            
             if (!$artist) {
-                $this->notFound();
-                return;
+                throw new ArtistNotFoundException("Artist with slug '{$slug}' not found");
             }
+            
             $album = $this->albumService->getAlbumsByArtistId($artist->artist_id);
             $gallery = $artist->gallery;
             $scheduleByDate = $this->scheduleService->getSchedulesForArtistInEvent(
                 (int) $artist->artist_id,
                 self::DANCE_EVENT_ID
             );
+            
+            if (empty($scheduleByDate)) {
+                throw new ScheduleNotFoundException("No schedule found for artist '{$artist->name}'");
+            }
+            
             $ticketLookup = $this->getTicketLookupForSchedules($scheduleByDate);
             $vm = new \App\ViewModels\Dance\ArtistDetailViewModel($artist, $scheduleByDate, $album, $gallery);
             $this->view('Dance/artist-detail', [
                 'vm' => $vm,
                 'ticketLookup' => $ticketLookup
             ]);
-        } catch (\Exception $e) {
+        } catch (ArtistNotFoundException | ScheduleNotFoundException $e) {
             error_log("Dance artist detail error: " . $e->getMessage());
             $this->notFound();
+        } catch (\Exception $e) {
+            error_log("Dance artist detail error: " . $e->getMessage());
+            throw new ApplicationException('Failed to load artist detail page', 0, $e);
         }
     }
     private function getTicketLookupForSchedules(array $groupedSchedules): array

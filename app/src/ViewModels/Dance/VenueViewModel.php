@@ -1,10 +1,12 @@
 <?php
 namespace App\ViewModels\Dance;
 
-class VenueViewModel extends BaseViewModel {
+class VenueViewModel extends BaseViewModel 
+{
     public $venues;
 
-    public function __construct($pageData, $venues) {
+    public function __construct($pageData, $venues) 
+    {
         parent::__construct($pageData);
         $this->venues = $venues;
 
