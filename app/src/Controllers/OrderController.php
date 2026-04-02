@@ -57,7 +57,7 @@ class OrderController extends BaseController
             ], 500);
         }
     }
-    
+
     public function getNumberOfCartItems(array $params = []): void
     {
         try {
@@ -150,5 +150,20 @@ class OrderController extends BaseController
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function personalProgram(){
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
+        }
+        $loggedUser = $_SESSION['loggedInUser'];
+
+        // Solo trae los tickets (como objetos OrderItem) y mándalos a la vista
+        $tickets = $this->orderService->getPaidTicketsByUser($loggedUser->id);
+
+        $this->view('ShoppingCart/wishlist', [
+            'tickets' => $tickets
+        ]);
     }
 }

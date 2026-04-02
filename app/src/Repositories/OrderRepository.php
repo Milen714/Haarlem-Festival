@@ -435,19 +435,34 @@ class OrderRepository extends Repository implements IOrderRepository
 
     public function getPaidTicketsByUser(int $userId): array
     {
-        $pdo = $this->connect();
-        $sql = $this->getBaseQuery() . '
-            WHERE o.user_id = :user_id
-            AND o.status = "Paid", "Fulfilled"
-            AND o.paid_at IS NOT NULL
-            ORDER BY s.date, s.start_time
-            GROUP BY oi.orderitem_id
-        ';
-        $getItems = $this->pdo->prepare($sql);
-        $getItems->execute([
-            'user_id' => $userId
-        ]);
-        return $getItems->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $pdo = $this->connect();
+            
+            $sql = $this->getBaseQuery() . "
+                WHERE o.user_id = :user_id
+                AND o.status IN ('Paid', 'Fulfilled')
+                ORDER BY s.date ASC, s.start_time ASC
+            ";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':user_id', $userId, \PDO::PARAM_INT);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $paidItems = [];
+            
+            foreach ($rows as $row) {
+                if (!is_null($row['orderitem_id'])) {
+                    $orderItem = new OrderItem();
+                    $paidItems[] = $orderItem->fromPdo($row);
+                }
+            }
+
+            return $paidItems;
+            
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to fetch paid tickets: ' . $e->getMessage());
+        }
     }
 
     public function getOpenOrderByUserId(int $userId, ?array $statuses = null): ?Order{
@@ -718,4 +733,5 @@ class OrderRepository extends Repository implements IOrderRepository
             throw new \RuntimeException("Failed to update order item: " . $e->getMessage());
         }
     }
+
 }

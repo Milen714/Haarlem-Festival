@@ -70,6 +70,7 @@ class OrderService implements IOrderService
     {
         return $this->orderRepository->getPaidTicketsByUser($userId);
     }
+    
     public function createSessionCart(): Order
     {
         $order = new Order();
@@ -287,5 +288,7 @@ class OrderService implements IOrderService
             $this->orderRepository->updateOrderTotals($cart);
         }
     }
+
+  
 
 }

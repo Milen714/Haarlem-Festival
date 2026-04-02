@@ -168,7 +168,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
-    $r->addRoute('GET', '/personal-program', ['App\Controllers\PaymentController', 'personalProgram']);
+    $r->addRoute('GET', '/personal-program', ['App\Controllers\OrderController', 'personalProgram']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);

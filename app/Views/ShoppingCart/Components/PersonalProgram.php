@@ -1,124 +1,107 @@
 <?php
 namespace App\Views\ShoppingCart\Components;
-
+use App\Models\Enums\EventType;
+use App\Models\Media;
 ?>
 <main class="bg-gray-50 min-h-screen py-10 px-4">
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-4xl mx-auto">
         <header class="mb-8">
-            <nav class="text-xs text-gray-400 mb-4" aria-label="Breadcrumb">Home</nav>
-            <h1 class="text-3xl font-bold text-[#1e4b6e]">My Tickets</h1>
+            <h1 class="text-3xl font-bold text-[#1e4b6e]">My Personal Program</h1>
+            <p class="text-sm text-gray-500 mt-1">Here are all the tickets and reservations you have successfully purchased.</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <section class="lg:col-span-2 space-y-6">
-                <nav class="flex bg-gray-200 p-1 rounded-md w-fit" aria-label="Ticket Tabs">
-                    <button class="px-4 py-2 text-xs font-bold text-gray-500">My Program (3)</button>
-                    <button class="px-4 py-2 text-xs font-bold bg-white text-[#1e4b6e] rounded shadow-sm">My
-                        Tickets</button>
-                    <button class="px-4 py-2 text-xs font-bold text-gray-500">Shopping Cart</button>
-                </nav>
-
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <div class="flex space-x-px mb-6 overflow-hidden rounded-md border border-gray-200">
-                        <button class="flex-1 py-2 text-center bg-blue-50 text-[#1e4b6e] border-r border-gray-200">
-                            <p class="text-[10px] uppercase">Thursday</p>
-                            <p class="font-bold">24</p>
-                        </button>
-                        <button class="flex-1 py-2 text-center bg-blue-50 text-[#1e4b6e] border-r border-gray-200">
-                            <p class="text-[10px] uppercase">Friday</p>
-                            <p class="font-bold">25</p>
-                        </button>
-                        <button class="flex-1 py-2 text-center bg-[#004a7c] text-white">
-                            <p class="text-[10px] uppercase">Saturday</p>
-                            <p class="font-bold">26</p>
-                        </button>
-                        <button class="flex-1 py-2 text-center bg-blue-50 text-[#1e4b6e]">
-                            <p class="text-[10px] uppercase">Sunday</p>
-                            <p class="font-bold">27</p>
-                        </button>
+        <section class="space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                
+                <?php if (empty($tickets)): ?>
+                    <div class="text-center py-12">
+                        <span class="text-4xl">🎟️</span>
+                        <h3 class="text-lg font-bold text-gray-700 mt-4">Your program is empty</h3>
                     </div>
-                <?php foreach($tickets as $ticket): 
-                ?>
-                    <article class="relative flex border border-gray-200 rounded-md overflow-hidden bg-white mb-6">
-                        <div class="w-2 bg-yellow-400"></div>
-                        <div class="p-4 flex-grow">
-                            <span class="text-[10px] font-bold text-amber-600 uppercase tracking-tighter">Haarlem
-                                <?= htmlspecialchars($ticket['event_category_title'] ?? 'Event') ?>    
-                            </span>
-                            <div class="flex justify-between items-start mt-1">
+                <?php else: ?>
+
+                    <?php 
+                    /** @var \App\Models\Payment\OrderItem $item */
+                    foreach($tickets as $item): 
+                        
+                        // LÓGICA IDÉNTICA A LA DE TU CARRITO (TicketItemRow.php)
+                        $scheduleRef = $item->ticket_type->schedule; 
+                        $eventType = $scheduleRef->event_category?->type ?? null;
+                        
+                        $cardStyles = ['side' => 'bg-gray-400', 'text' => 'text-gray-800'];
+                        $eventLabel = $scheduleRef->event_category?->title ?? 'Event';
+                        $eventName = $item->ticket_type->ticket_scheme->name ?? 'Ticket';
+                        $cardImage = new Media();
+                        $cardImage->file_path = '/Assets/Home/ImagePlaceholder.png';
+
+                        // Colores e imágenes dinámicas según el evento
+                        switch ($eventType) {
+                            case EventType::Jazz:
+                                $cardStyles = ['side' => 'bg-[var(--home-jazz-accent)]'];
+                                $cardImage = $scheduleRef->artist?->profile_image ?? $cardImage;
+                                $eventName = $scheduleRef->artist?->name . ' - ' . $eventName;
+                                break;
+                            case EventType::Dance:
+                                $cardStyles = ['side' => 'bg-[var(--home-dance-accent)]'];
+                                $cardImage = $scheduleRef->artist?->profile_image ?? $cardImage;
+                                $eventName = $scheduleRef->artist?->name . ' - ' . $eventName;
+                                break;
+                            case EventType::Yummy:
+                                $cardStyles = ['side' => 'bg-[var(--home-yummy-accent)]'];
+                                $cardImage = $scheduleRef->restaurant?->main_image ?? $cardImage;
+                                $eventName = $scheduleRef->restaurant?->name . ' - ' . $eventName;
+                                break;
+                            case EventType::History:
+                                $cardStyles = ['side' => 'bg-[var(--home-history-accent)]'];
+                                $cardImage = $scheduleRef->landmark?->main_image_id ?? $cardImage;
+                                $eventName = $scheduleRef->landmark?->name ?? 'History Tour';
+                                break;
+                            case EventType::Magic:
+                                $cardStyles = ['side' => 'bg-[var(--home-magic-accent)]'];
+                                $eventName = 'Magic: ' . $eventName;
+                                break;
+                        }
+                    ?>
+                        <article class="relative flex flex-col sm:flex-row border border-gray-200 rounded-md overflow-hidden bg-white mb-6 hover:shadow-md transition-shadow">
+                            
+                            <div class="w-full sm:w-3 <?= $cardStyles['side'] ?>"></div> 
+                            
+                            <div class="p-4 flex-grow flex flex-col justify-between">
                                 <div>
-                                    <h2 class="font-bold text-lg"><?= htmlspecialchars($ticket['title']) ?></h2>
-                                    <p class="text-xs text-gray-500">📅 <?= $ticket['date'] ?> · <?= $ticket['start_time'] ?> - <?= $ticket['end_time'] ?></p>
-                                    <p class="text-xs text-gray-500">📍 <?= $ticket['venue_name'] ?? 'Location TBA' ?></p>
-                                    <p class="text-xs text-gray-500">👤 x <?= $ticket['quantity'] ?></p>
+                                    <span class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">
+                                        Haarlem <?= htmlspecialchars($eventLabel) ?>
+                                    </span>
+                                    <div class="flex justify-between items-start mt-1">
+                                        <div>
+                                            <h2 class="font-bold text-lg text-gray-800"><?= htmlspecialchars($eventName) ?></h2>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                📅 <?= $scheduleRef->date?->format('l, d M Y') ?? 'TBA' ?> · 
+                                                <?= $scheduleRef->start_time?->format('H:i') ?? 'TBA' ?> - 
+                                                <?= $scheduleRef->end_time?->format('H:i') ?? 'TBA' ?>
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                📍 <?= htmlspecialchars($scheduleRef->venue?->name ?? $scheduleRef->landmark?->name ?? 'Location TBA') ?>
+                                            </p>
+                                            <p class="text-sm font-semibold text-black mt-2">👤 <?= $item->quantity ?>x Tickets</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="text-right">
-                                    <p class="text-xl font-bold">€ <?= number_format($ticket['unit_price'], 2) ?></p>
-                                </div>
+                                
+                                <footer class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                                    <button class="text-xs text-blue-600 font-bold uppercase tracking-wide hover:underline">📥 Download PDF</button>
+                                    <span class="bg-green-100 text-green-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Paid</span>
+                                </footer>
                             </div>
-                            <footer class="mt-4 flex items-center justify-between border-t pt-2">
-                                <button class="text-[10px] text-blue-600 font-bold uppercase tracking-widest">🎟 View
-                                    Ticket</button>
-                                <span class="bg-[#00c9a7] text-white text-[10px] px-3 py-1 rounded-full">Owned</span>
-                            </footer>
-                        </div>
-                        <figure class="w-32 bg-gray-100">
-                            <img src="<?= $ticket['ticket_image'] ?>" alt="<?= $ticket['alt_text'] ?>" class="w-full h-full object-cover grayscale">
-                        </figure>
-                    </article>
-                <?php endforeach ?>
-                    <aside class="flex items-start bg-amber-50 p-4 rounded-md border border-amber-100">
-                        <span class="mr-3 text-amber-500">ℹ️</span>
-                        <div>
-                            <h4 class="text-xs font-bold text-amber-900">Your Program is saved automatically</h4>
-                            <p class="text-xs text-amber-800 opacity-80 mt-1 leading-relaxed">Share with friends or
-                                convert saved Tickets to order when ready. Items in your Program are not confirmed until
-                                payment is completed.</p>
-                        </div>
-                    </aside>
-                </div>
-            </section>
+                            
+                            <figure class="w-full sm:w-48 bg-gray-100 flex-shrink-0">
+                                <img src="<?= htmlspecialchars($cardImage->file_path) ?>" alt="Event Image" class="w-full h-full object-cover">
+                            </figure>
+                        </article>
+                    <?php endforeach; ?>
+                    
+                <?php endif; ?>
 
-            <aside class="space-y-4">
-                <button
-                    class="w-full bg-[#004a7c] text-white py-3 rounded-md font-bold text-sm flex items-center justify-center">
-                    <span class="mr-2">🔗</span> Share Program
-                </button>
-
-                <section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-lg border-b-2 border-[#1e4b6e] pb-2 mb-6 w-fit">Order Summary</h3>
-
-                    <dl class="space-y-4 text-xs font-medium text-gray-600">
-                        <div class="flex justify-between">
-                            <dt>Haarlem Jazz (0 Tickets)</dt>
-                            <dd class="font-bold text-black">€00.00</dd>
-                        </div>
-                        <div class="flex justify-between">
-                            <dt>Yummy! (0 Reservations)</dt>
-                            <dd class="font-bold text-black">€00.00</dd>
-                        </div>
-                        <div class="flex justify-between">
-                            <dt>Dance! (0 Day Pass)</dt>
-                            <dd class="font-bold text-black">€00.00</dd>
-                        </div>
-                        <hr class="border-gray-100 my-4">
-                        <div class="flex justify-between">
-                            <dt>Subtotal</dt>
-                            <dd class="font-bold text-black">€00.00</dd>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <dt class="flex items-center">Service Fee (2.5%) <span
-                                    class="ml-1 text-blue-500 cursor-help">ⓘ</span></dt>
-                            <dd class="font-bold text-black">€00.00</dd>
-                        </div>
-                    </dl>
-
-                    <div class="mt-8 flex justify-between items-end">
-                        <span class="text-2xl font-bold text-gray-800">Total</span>
-                        <span class="text-3xl font-bold text-black">€00.00</span>
-                    </div>
-                </section>
-            </aside>
-        </div>
+            </div>
+        </section>
     </div>
 </main>
