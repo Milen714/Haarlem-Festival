@@ -11,6 +11,7 @@ use App\Services\Interfaces\IOrderService;
 use App\Services\PaymentService;
 use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
+use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Services\TicketFulfillmentService;
 use App\Services\LogService;
@@ -19,6 +20,7 @@ use App\Exceptions\ValidationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\UserFacingException;
+use DateTime;
 
 /**
  * PaymentController
@@ -60,26 +62,7 @@ class PaymentController extends BaseController
         }
     }
 
-    /**
-     * Display user's personal program (paid tickets)
-     */
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
-    public function personalProgram()
-    {
-        try {
-            $userId = $this->getLoggedInUser()?->id;
-            if (!$userId) {
-                $this->notFound();
-                return;
-            }
-
-            $tickets = $this->orderService->getPaidTicketsByUser($userId);
-            $this->view('ShoppingCart/wishlist', ['tickets' => $tickets]);
-        } catch (\Throwable $e) {
-            $this->logService->exception('PersonalProgram', $e);
-            $this->view('ShoppingCart/wishlist', ['tickets' => [], 'error' => 'An error occurred while loading your personal program. Please try again later.']);
-        }
-    }
+    
 
     /**
      * Display checkout page with payment form

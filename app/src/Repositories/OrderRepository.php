@@ -448,18 +448,28 @@ class OrderRepository extends Repository implements IOrderRepository
         }
     }
 
-    public function getPaidTicketsByUser(int $userId): array
+    public function getPaidTicketsByUser(int $userId, ?string $date = null): array
     {   
         try {
             $pdo = $this->connect();
+            
+            $dateClause = '';
+            if ($date !== null) {
+                $dateClause = "AND s.date = :date";
+            }
+            
             $query = $this->getBaseQuery() . '
                 WHERE o.user_id = :user_id
-                AND (o.status = \'Paid\' OR o.status = \'Fulfilled\')
+                AND o.status = \'Fulfilled\'
+                ' . $dateClause . '
                 
                 ORDER BY s.date, s.start_time
             ';
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            if ($date !== null) {
+                $stmt->bindValue(':date', $date, PDO::PARAM_STR);
+            }
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $orderItems = [];
