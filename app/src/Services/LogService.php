@@ -4,11 +4,14 @@ namespace App\Services;
 
 use App\Models\Log;
 use App\Repositories\LogRepository;
+use App\Repositories\Interfaces\ILogRepository;
+use App\Services\Interfaces\ILogService;
 use Exception;
+use Throwable;
 
-class LogService
+class LogService implements ILogService
 {
-    private LogRepository $logRepository;
+    private ILogRepository $logRepository;
 
     public function __construct()
     {
@@ -35,7 +38,7 @@ class LogService
         $this->log('DEBUG', $category, $message, $context);
     }
 
-    public function exception(string $category, Exception $exception, ?array $context = null): void
+    public function exception(string $category, Throwable $exception, ?array $context = null): void
     {
         $this->log('ERROR', $category, $exception->getMessage(), $context, $exception->getTraceAsString());
     }

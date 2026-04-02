@@ -2,9 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\Interfaces\ILandmarkService;
+use App\Services\Interfaces\ILogService;
 use App\Services\LandmarkService;
+use App\Services\LogService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Models\Landmark;
@@ -12,10 +14,12 @@ use App\Models\Landmark;
 class LandmarkController extends BaseController
 {
     private ILandmarkService $landmarkService;
+    private ILogService $logService;
 
     public function __construct()
-    {        
+    {
         $this->landmarkService = new LandmarkService();
+        $this->logService = new LogService();
     }
     
     private function startSession(): void
@@ -90,7 +94,7 @@ class LandmarkController extends BaseController
             
         } 
         catch (\Exception $e) {
-            error_log("Landmark create error: " . $e->getMessage());
+            $this->logService->exception('Landmark', $e);
         }
     }
 
@@ -121,7 +125,7 @@ class LandmarkController extends BaseController
 
         } 
         catch (\Exception $e) {
-            error_log("Landmark edit error: " . $e->getMessage());
+            $this->logService->exception('Landmark', $e);
         }
     }
 
@@ -139,7 +143,7 @@ class LandmarkController extends BaseController
             
         } 
         catch (\Exception $e) {
-            error_log("Landmark update error: " . $e->getMessage());
+            $this->logService->exception('Landmark', $e);
             die("An error occurred while updating the landmark: " . $e->getMessage());
         }
     }
@@ -154,7 +158,7 @@ class LandmarkController extends BaseController
             $this->landmarkService->deleteLandmark($id);
         } 
         catch (\Exception $e) {
-            error_log("Landmark delete error: " . $e->getMessage());
+            $this->logService->exception('Landmark', $e);
         }
 
         $this->redirect('/cms/landmarks');

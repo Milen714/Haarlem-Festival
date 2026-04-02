@@ -2,11 +2,15 @@
 namespace App\Controllers;
 
 use App\Services\Interfaces\IPageService;
+use App\Services\PageService;
+use App\Framework\BaseController;
 use App\Services\PageService;          
 use App\Controllers\BaseController;
 use App\Models\Enums\TicketSchemeEnum;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\HistoryService;
 use App\ViewModels\History\TicketHistoryViewModel;
@@ -21,16 +25,18 @@ class HistoryController extends BaseController
 {
     private IPageService $pageService;
     private ILandmarkService $landmarkService;
+    private ILogService $logService;
     private IHistoryService $historyService;
     private ITicketService $ticketService;
     private IOrderService $orderService;
 
-    const HISTORY_SLUG = 'events-history'; 
+    const HISTORY_SLUG = 'events-history';
 
     public function __construct()
     {
         $this->pageService = new PageService();
         $this->landmarkService = new LandmarkService();
+        $this->logService = new LogService();
         $this->historyService = new HistoryService();
         $this->ticketService = new TicketService();
         $this->orderService = new OrderService();
@@ -78,7 +84,7 @@ class HistoryController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            error_log("History error: " . $e->getMessage());
+            $this->logService->exception('History', $e);
         }
     }
 
@@ -130,7 +136,7 @@ class HistoryController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            error_log("History Tour error: " . $e->getMessage());
+            $this->logService->exception('History', $e);
             $this->internalServerError();
         }
     }

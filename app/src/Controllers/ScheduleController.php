@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
@@ -21,19 +21,37 @@ use App\Repositories\MediaRepository;
 use App\Repositories\TicketRepository;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 
 class ScheduleController extends BaseController
 {
     private ScheduleService $scheduleService;
     private TicketService $ticketService;
+    private ILogService $logService;
 
+    /**
+     * Wires up ScheduleService for all schedule CRUD and TicketService for attaching
+     * ticket type data to schedule rows in the listing and edit views.
+     */
     public function __construct()
     {
         $this->scheduleService = new ScheduleService();
-
         $this->ticketService = new TicketService(new TicketRepository());
+        $this->logService = new LogService();
     }
 
+    /**
+     * Renders the CMS schedule listing page with optional filtering by event type and date.
+     * Persists the active filters in the session so they survive a page reload.
+     * Visiting with ?clear in the URL resets the filters and redirects.
+     * Also fetches ticket types in bulk for all visible schedules to show sold-out status.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function index($vars = []): void
     {
@@ -73,7 +91,7 @@ class ScheduleController extends BaseController
                 'filterDate'     => $date,
             ]);
         } catch (\Throwable $e) {
-            error_log("Schedule list error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $this->cmsLayout('Cms/Schedules/Index', [
                 'title'          => 'Manage Schedules',
                 'schedules'      => [],
@@ -85,6 +103,15 @@ class ScheduleController extends BaseController
         }
     }
 
+    /**
+     * Renders the empty schedule create form with all dropdown data pre-loaded.
+     * Redirects to the listing with an error if the form data cannot be assembled.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
@@ -101,13 +128,23 @@ class ScheduleController extends BaseController
                 'ticketTypes'    => [],
             ]);
         } catch (\Throwable $e) {
-            error_log("Schedule create form error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $this->startSession();
             $_SESSION['error'] = 'Failed to load schedule form.';
             $this->redirect('/cms/schedules');
         }
     }
 
+    /**
+     * Handles the schedule create form submission.
+     * Passes $_POST to ScheduleService, sets a success flash, and redirects to the listing.
+     * On validation or other failure, stores the error in the session and redirects back to the form.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables (unused here, required by the router contract).
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
@@ -118,15 +155,25 @@ class ScheduleController extends BaseController
             $_SESSION['success'] = "Schedule for " . ($schedule->date?->format('d M Y') ?? 'N/A') . " created successfully!";
             $this->redirect('/cms/schedules');
         } catch (ValidationException $e) {
+            $this->logService->info('Schedule', 'Validation error: ' . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules/create');
         } catch (\Throwable $e) {
-            error_log("Schedule store error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $_SESSION['error'] = 'Failed to create schedule.';
             $this->redirect('/cms/schedules/create');
         }
     }
 
+    /**
+     * Renders the schedule edit form pre-populated with the current schedule data and all dropdowns.
+     * Redirects to the listing with an error if the schedule does not exist.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the schedule's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
@@ -151,17 +198,28 @@ class ScheduleController extends BaseController
                 'ticketTypes'    => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
         } catch (ResourceNotFoundException $e) {
+            $this->logService->info('Schedule', 'Not found: ' . $e->getMessage());
             $this->startSession();
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
         } catch (\Throwable $e) {
-            error_log("Schedule edit error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $this->startSession();
             $_SESSION['error'] = 'Failed to load schedule.';
             $this->redirect('/cms/schedules');
         }
     }
 
+    /**
+     * Handles the schedule update form submission.
+     * Delegates to ScheduleService, then redirects to the listing on success
+     * or back to the edit form with a session error on failure.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the schedule's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
@@ -173,15 +231,26 @@ class ScheduleController extends BaseController
             $_SESSION['success'] = "Schedule for " . ($schedule->date?->format('d M Y') ?? 'N/A') . " updated successfully!";
             $this->redirect('/cms/schedules');
         } catch (ValidationException | ResourceNotFoundException $e) {
+            $this->logService->info('Schedule', 'Error: ' . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/edit/{$scheduleId}");
         } catch (\Throwable $e) {
-            error_log("Schedule update error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $_SESSION['error'] = 'Failed to update schedule.';
             $this->redirect("/cms/schedules/edit/{$scheduleId}");
         }
     }
 
+    /**
+     * Handles the schedule delete action.
+     * Delegates to ScheduleService and sets a flash message for the result.
+     * Always redirects to the schedule listing regardless of outcome.
+     * Restricted to ADMIN role.
+     *
+     * @param array $vars  Route variables — expects an 'id' key with the schedule's primary key.
+     *
+     * @return void
+     */
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
@@ -192,15 +261,22 @@ class ScheduleController extends BaseController
             $this->scheduleService->deleteSchedule($scheduleId);
             $_SESSION['success'] = "Schedule deleted successfully!";
         } catch (ResourceNotFoundException $e) {
+            $this->logService->info('Schedule', 'Not found: ' . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
         } catch (\Throwable $e) {
-            error_log("Schedule delete error: " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             $_SESSION['error'] = 'Failed to delete schedule.';
         }
 
         $this->redirect('/cms/schedules');
     }
 
+    /**
+     * Ensures the PHP session is started before writing to $_SESSION.
+     * Safe to call multiple times — checks session_status() before calling session_start().
+     *
+     * @return void
+     */
     private function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {

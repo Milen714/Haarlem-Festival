@@ -3,7 +3,6 @@
 namespace App\Repositories\Interfaces;
 
 use App\Models\Restaurant;
-use App\Models\Yummy\Dish;
 use App\Models\Yummy\Session;
 
 interface IRestaurantRepository
@@ -35,13 +34,5 @@ interface IRestaurantRepository
     public function removeMediaFromGallery(int $galleryId, int $mediaId): bool;
 
     public function getNextGalleryOrder(int $galleryId): int;
-    //Dish Crud
-
-    //  public function getDishes(): array;  
-    // public function getDishessByRestaurant(int $restaurantId): array;
-    // public function getDishById(int $id): ?Dish;
-    // public function createDish(Dish $dish): int;
-    // public function updateDish(Dish $dish): bool;
-    // public function deleteDish(int $id): bool;
 
 }

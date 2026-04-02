@@ -56,7 +56,8 @@ flex flex-col xl:flex-row gap-3 bg_colors_home  overflow-x-hidden w-[90%] mx-aut
             </section>
         </section>
         <section
-            class="flex p-5 bg-[#F9FAFB] w-full justify-around items-center gap-4 border-t border-[#E5E7EB] rounded-b-xl">
+            class="flex p-5 bg-[#F9FAFB] w-full justify-around items-center gap-4 border-t border-[#E5E7EB] rounded-b-xl flex-col sm:flex-row">
+            <div id="error-container"></div>
             <a href="/payment/downloadTickets?session_id=<?php echo htmlspecialchars($order->stripe_checkout_session_id ?? 'N/A'); ?>"
                 class="download_tickets_button" id="download-tickets-btn" aria-disabled="true"
                 style="pointer-events:none; opacity:0.6;">Download Tickets</a>
@@ -72,6 +73,7 @@ flex flex-col xl:flex-row gap-3 bg_colors_home  overflow-x-hidden w-[90%] mx-aut
     </section>
 </section>
 
+<script src="/Js/ShowError.js"></script>
 <script>
 initialize();
 
@@ -95,72 +97,159 @@ function setDownloadButtonReady(isReady) {
     button.setAttribute('aria-disabled', 'true');
 }
 
-async function initialize() {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const sessionId = urlParams.get('session_id');
+async function postJson(url, body) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body),
+    });
+    const text = await response.text();
+    return JSON.parse(text);
+}
 
-    if (!sessionId) {
-        return;
-    }
+function initializeDownloadButton() {
+    const button = document.getElementById('download-tickets-btn');
+    if (!button) return;
 
-    setDownloadButtonReady(false);
+    button.addEventListener('click', async function(e) {
+        e.preventDefault();
 
-    const statusText = document.getElementById('ticket-ready-status');
-    const maxAttempts = 20;
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const response = await fetch("/payment-status", {
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({
-                session_id: sessionId
-            }),
-        });
-
-        const text = await response.text();
-        let session;
-        try {
-            session = JSON.parse(text);
-        } catch (_e) {
-            console.error('Invalid JSON from /payment-status:', text);
-            if (statusText) {
-                statusText.textContent = 'We are still preparing your tickets. Please wait.';
-            }
-            await sleep(1500);
-            continue;
+        const errorContainer = document.getElementById('error-container');
+        if (errorContainer) {
+            errorContainer.innerHTML = '';
         }
 
-        if (session.status === 'open') {
-            window.location.replace('/checkout');
+        const sessionId = new URLSearchParams(window.location.search).get('session_id');
+        if (!sessionId) {
+            showError('Session ID not found. Please try again.');
             return;
         }
 
-        if (session.status === 'complete') {
-            document.getElementById('success').classList.remove('hidden');
-            document.getElementById('customer-email').textContent = session.customer_email || '';
+        try {
+            const response = await fetch(
+                `/payment/downloadTickets?session_id=${encodeURIComponent(sessionId)}`);
 
-            if (session.ticket_ready === true) {
-                setDownloadButtonReady(true);
-                if (statusText) {
-                    statusText.textContent = 'Your tickets are ready to download.';
-                }
+            // Check for HTTP errors
+            if (!response.ok) {
+                const errorText = await response.text();
+                showError(`Error (${response.status}): ${errorText}`);
                 return;
             }
 
-            if (statusText) {
-                statusText.textContent = 'Payment confirmed. Generating your ticket PDF...';
+            // Verify the response is actually a PDF
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/pdf')) {
+                const errorText = await response.text();
+                showError(`Unexpected response: ${errorText}`);
+                return;
             }
+
+            // Download the PDF as a blob
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            // Extract filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('content-disposition');
+            let fileName = 'tickets.pdf';
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (match) {
+                    fileName = match[1];
+                }
+            }
+
+            // Trigger download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = fileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // Clean up
+            window.URL.revokeObjectURL(url);
+
+        } catch (error) {
+            showError(`Failed to download tickets: ${error.message}`);
+        }
+    });
+}
+
+async function initialize() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+
+    if (!sessionId) return;
+
+    setDownloadButtonReady(false);
+    initializeDownloadButton();
+
+    const statusText = document.getElementById('ticket-ready-status');
+
+    // Step 1: Wait for Stripe payment to be complete
+    const maxPaymentAttempts = 20;
+    let paymentComplete = false;
+    let customerEmail = '';
+
+    for (let attempt = 0; attempt < maxPaymentAttempts; attempt++) {
+        try {
+            const session = await postJson('/payment-status', {
+                session_id: sessionId
+            });
+
+            if (session.status === 'open') {
+                window.location.replace('/checkout');
+                return;
+            }
+
+            if (session.status === 'complete') {
+                paymentComplete = true;
+                customerEmail = session.customer_email || '';
+                break;
+            }
+        } catch (_e) {
+            // parse error, keep retrying
+        }
+
+        if (statusText) statusText.textContent = 'We are still preparing your tickets. Please wait.';
+        await sleep(1500);
+    }
+
+    if (!paymentComplete) {
+        if (statusText) statusText.textContent =
+            'Still finalizing your tickets. Please wait a few seconds and try again.';
+        return;
+    }
+
+    document.getElementById('success').classList.remove('hidden');
+    document.getElementById('customer-email').textContent = customerEmail;
+    if (statusText) statusText.textContent = 'Payment confirmed. Generating your ticket PDF...';
+
+    // Step 2: Poll the dedicated ticket-ready endpoint until PDF is available
+    const maxTicketAttempts = 20;
+
+    for (let attempt = 0; attempt < maxTicketAttempts; attempt++) {
+        try {
+            const result = await postJson('/payment/ticket-ready', {
+                session_id: sessionId
+            });
+
+            if (result.ticket_ready === true) {
+                setDownloadButtonReady(true);
+                if (statusText) statusText.textContent = 'Your tickets are ready to download.';
+                return;
+            }
+        } catch (_e) {
+            // parse error, keep retrying
         }
 
         await sleep(1500);
     }
 
-    if (statusText) {
-        statusText.textContent = 'Still finalizing your tickets. Please wait a few seconds and try again.';
-    }
+    if (statusText) statusText.textContent =
+        'Still finalizing your tickets. Please wait a few seconds and try again.';
 }
 </script>

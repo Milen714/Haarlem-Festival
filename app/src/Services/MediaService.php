@@ -7,16 +7,19 @@ use App\Models\Gallery;
 use App\Repositories\MediaRepository;
 use App\Repositories\Interfaces\IMediaRepository;
 use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\ILogService;
 
 class MediaService implements IMediaService
 {
     private IMediaRepository $mediaRepository;
     private FileUploadService $fileUploadService;
+    private ILogService $logService;
 
     public function __construct()
     {
         $this->mediaRepository = new MediaRepository();
         $this->fileUploadService = new FileUploadService();
+        $this->logService = new LogService();
     }
 
     public function getMediaById(int $id): Media
@@ -58,6 +61,7 @@ class MediaService implements IMediaService
         if (!$created) {
             // Rollback: delete uploaded file if database insert fails
             $this->fileUploadService->delete($uploadResult['file_path']);
+            $this->logService->error('Media', 'DB insert failed after upload; file rolled back', ['file_path' => $uploadResult['file_path']]);
             return ['success' => false, 'media' => null, 'error' => 'Failed to create database record'];
         }
 
@@ -90,6 +94,7 @@ class MediaService implements IMediaService
         if (!$updated) {
             // Rollback: delete new file if database update fails
             $this->fileUploadService->delete($uploadResult['file_path']);
+            $this->logService->error('Media', 'DB update failed after upload; new file rolled back', ['media_id' => $mediaId, 'file_path' => $uploadResult['file_path']]);
             return ['success' => false, 'error' => 'Failed to update database'];
         }
 

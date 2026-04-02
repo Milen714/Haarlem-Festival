@@ -17,18 +17,14 @@ namespace App\Views\Yummy\Components;
                 <div class="bg-gray-800 p-4 rounded-lg">
                     
                     <img
-                        src="<?= htmlspecialchars($item->media->file_path ?? '/assets/images/default_cuisine.webp') ?>"
-                        class="rounded mb-4"
+                        src="<?= htmlspecialchars($item->media->file_path) ?>"
+                        class="img rounded mb-4" style="height: 15rem; width: 25rem;"
                         alt="<?= htmlspecialchars($item->imageAlt ?? 'Featured Cuisine') ?>"
                     />
 
                     <h3 class="text-lg font-semibold">
-                        <?= htmlspecialchars($item->alt_text ?? 'Featured Cuisine') ?>
+                        <?= htmlspecialchars($item->media->alt_text ?? 'Featured Cuisine') ?>
                     </h3>
-
-                    <p class="text-sm text-gray-300">
-                        <?= htmlspecialchars($item->media->alt_text ?? 'Featured cuisine description') ?>
-                    </p>
 
                 </div>
             <?php endforeach; ?>

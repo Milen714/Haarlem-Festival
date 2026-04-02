@@ -17,7 +17,7 @@ interface IOrderService
     public function createSessionCart(): Order;
     public function getSessionCart(): ?Order;
     public function clearSessionCart(): void;
-    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): int;
+    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): Order;
     public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order;
     public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool;
     public function addOrderItemToSessionCart(OrderItem $item): void;
@@ -32,4 +32,10 @@ interface IOrderService
     public function markAsScanned(int $orderItemId): bool;
     public function getPaidOrderItemsByUserId(int $userId): array;
     public function getOrdersWhereStatusIn(array $statuses): array;
+    public function canUserDownloadOrderTickets(User $user, Order $order): bool;
+    public function authorizeOrderOwnership(User $user, Order $order, callable $onUnauthorized): bool;
+    public function getAllowedExportColumns(): array;
+    public function getAllOrdersForExport(array $requestedColumns, ?string $paidAfter = null): array;
+    function generateCSV($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/');
+    public function generateExcelViaHtml($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/');
 }

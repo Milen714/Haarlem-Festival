@@ -1,63 +1,81 @@
-<?php 
+<?php
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
-use App\Models\User;
+use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Models\Enums\OrderStatus;
 use App\Middleware\RequireRole;
-use App\Services\Interfaces\ITicketService;
-use App\Services\TicketService;
 use App\Services\Interfaces\IPaymentService;
 use App\Services\Interfaces\IOrderService;
 use App\Services\PaymentService;
 use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
-use App\Models\Payment\Order;
-use App\Models\Payment\OrderItem;
-use App\Services\MailService;
-use App\Services\Interfaces\IMailService;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Services\TicketFulfillmentService;
-use DateTime;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\UnauthorizedException;
+use App\Exceptions\UserFacingException;
 
+/**
+ * PaymentController
+ * 
+ * Handles payment processing and checkout flow.
+ * Manages Stripe integration, payment status tracking, ticket fulfillment, and order return pages.
+ */
 class PaymentController extends BaseController
 {
-    
-    private ITicketService $ticketService;
     private IPaymentService $paymentService;
     private IOrderService $orderService;
-    private IMailService $mailService;
     private ITicketFulfillmentService $ticketFulfillmentService;
+    private ILogService $logService;
 
     public function __construct()
     {
-        $this->ticketService = new TicketService();
-        $this->paymentService = new PaymentService();
-        $this->orderService = new OrderService();
-        $this->mailService = new MailService();
+        $this->paymentService           = new PaymentService();
+        $this->orderService             = new OrderService();
         $this->ticketFulfillmentService = new TicketFulfillmentService();
+        $this->logService               = new LogService();
     }
 
+    /**
+     * Display shopping cart page
+     */
     public function index(array $params = [])
     {
-        //$order=$this->orderService->getOrderById(2);
-        $order= $this->orderService->getSessionCart();
-        if(!isset($order)){
-            $order = $this->orderService->createSessionCart();
+        try{
+            $order = $this->orderService->getSessionCart();
+            
+            if (!isset($order)) {
+                $order = $this->orderService->createSessionCart();
+            }
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('ShoppingCartIndex', $e);
+            $this->view('ShoppingCart/ShoppingCart', ['viewModel' => null, 'error' => 'An error occurred while loading your shopping cart. Please try again later.']);
         }
-        $viewModel = new ShoppingCartViewModel($order);
-        $this->view('ShoppingCart/ShoppingCart', ['viewModel' => $viewModel]);
     }
 
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
     public function checkout(array $params = [])
-    {
-        $order=$this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($order);
-        $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
+    {   
+        try {
+            $order     = $this->orderService->getSessionCart();
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/PaymentPartial', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Checkout', $e);
+            $this->view('ShoppingCart/Checkout', ['viewModel' => null, 'error' => 'An error occurred while loading the checkout page. Please try again later.']);
+        }
     }
+
+    /**
+     * Create Stripe checkout session for the current cart
+     */
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function createCheckoutSession(array $params = [])
     {
@@ -65,18 +83,13 @@ class PaymentController extends BaseController
             $order = $this->orderService->getSessionCart();
 
             if ($order === null || empty($order->orderItems)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'No active cart found.']);
-                return;
+                throw new ValidationException('No active cart found.');
             }
 
-            // If the cart hasn't been persisted to DB yet (user added items after login),
-            // persist it now so we can link the Stripe session to an order.
             if ($order->order_id === null) {
-                $user = $_SESSION['loggedInUser'] ?? null;
+                $user = $this->getLoggedInUser();
                 if ($user !== null) {
-                    $orderId = $this->orderService->persistSessionCart($order, $user);
-                    $order   = $this->orderService->getOrderById($orderId);
+                    $order   = $this->orderService->persistSessionCart($order, $user);
                     $this->orderService->hydrateSessionCart($order);
                 }
             }
@@ -94,86 +107,145 @@ class PaymentController extends BaseController
                 $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Pending_Payment);
             }
 
-            header('Content-Type: application/json');
-            http_response_code(200);
-            echo json_encode(['clientSecret' => $stripeSession->client_secret]);
+            $this->sendSuccessResponse(['clientSecret' => $stripeSession->client_secret], 200);
+        } catch (UserFacingException $e) {
+            $this->logService->exception('Payment', new \Exception($e->getMessage()));
+            $this->sendErrorResponse($e->getMessage(), 400);
         } catch (\Throwable $e) {
-            error_log('Error creating checkout session: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['error' => 'An error occurred while creating the checkout session.']);
+            $this->logService->exception('Payment', $e);
+            $this->sendErrorResponse('An error occurred while creating the checkout session.', 500);
         }
     }
+
+    /**
+     * Display payment success page with ticket download option. Authorizes order ownership.
+     */
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function return(array $params = [])
     {
         try {
             $order = $this->orderService->getOrderByStripeCheckoutSessionId($_GET['session_id'] ?? '');
             if ($order === null) {
-                throw new \Exception('No active cart found.');
+                throw new ResourceNotFoundException('No active cart found.');
             }
+
+            $loggedInUser = $this->getLoggedInUser();
+            if (!$this->orderService->authorizeOrderOwnership($loggedInUser, $order, function() {
+                throw new UnauthorizedException('You do not have permission to access this order.');
+            })) {
+                return;
+            }
+
             $viewModel = new ShoppingCartViewModel($order);
             $this->view('ShoppingCart/CheckoutSuccess', ['viewModel' => $viewModel]);
+        } catch (UnauthorizedException $e) {
+            $this->logService->info('Payment', 'Unauthorized access attempt: ' . $e->getMessage());
+            $this->forbidden();
+        } catch (UserFacingException $e) {
+            $this->logService->exception('Payment', new \Exception($e->getMessage()));
+            $this->sendErrorResponse($e->getMessage(), 400);
         } catch (\Throwable $e) {
-            error_log('Error loading checkout success page: ' . $e->getMessage());
-            // Optionally, you could redirect to an error page or show a user-friendly message here.
+            $this->logService->exception('Payment', $e);
+            $this->sendErrorResponse('An error occurred while processing the return.', 500);
         }
     }
+
+    /**
+     * Check Stripe checkout session status and payment completion. Authorizes order ownership.
+     */
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function status(array $params = [])
     {
-        header('Content-Type: application/json');
         try {
-            $jsonString = file_get_contents('php://input');
-            $jsonData   = json_decode($jsonString, true);
-            $sessionId  = $jsonData['session_id'] ?? null;
+            $jsonData = $this->getPostData();
+            $sessionId = $jsonData['session_id'] ?? null;
 
-            $data = $this->paymentService->stripeCheckoutStatus($jsonData);
-            $order = null;
-            $ticketReady = false;
-            $orderStatus = null;
-
-            // If Stripe confirms payment, update the order in DB and clear the session cart.
-            // This handles the case where the webhook fires after the redirect (race condition).
-            if (
-                ($data['status'] ?? '')          === 'complete' &&
-                ($data['payment_status'] ?? '')  === 'paid'     &&
-                $sessionId !== null
-            ) {
-                $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-
-                $this->orderService->clearSessionCart();
+            if (!$sessionId) {
+                throw new ValidationException('session_id is required.');
             }
 
-            if ($order === null && $sessionId !== null) {
-                $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
-            }
-
-            if ($order !== null) {
-                $orderStatus = $order->status->value;
-                if (!empty($order->ticket_pdf_path)) {
-                    $pdfPath = __DIR__ . '/../../public/Assets/documents/' . $order->ticket_pdf_path;
-                    $ticketReady = file_exists($pdfPath);
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            if ($order) {
+                $loggedInUser = $this->getLoggedInUser();
+                if (!$this->orderService->authorizeOrderOwnership($loggedInUser, $order, function() {
+                    throw new UnauthorizedException('You do not have permission to access this order.');
+                })) {
+                    return;
                 }
             }
 
-            $data['ticket_ready'] = $ticketReady;
-            $data['order_status'] = $orderStatus;
+            $data = $this->paymentService->stripeCheckoutStatus($jsonData);
 
-            http_response_code(200);
-            echo json_encode($data);
+            if (
+                ($data['status'] ?? '')         === 'complete' &&
+                ($data['payment_status'] ?? '') === 'paid'     &&
+                $sessionId !== null
+            ) {
+                $this->orderService->clearSessionCart();
+            }
 
+            $this->sendSuccessResponse($data, 200);
+        } catch (UserFacingException $e) {
+            $this->logService->info('Payment', 'User-facing error: ' . $e->getMessage());
+            $code = $e instanceof UnauthorizedException ? 403 : 400;
+            $this->sendErrorResponse($e->getMessage(), $code);
         } catch (\Exception $e) {
-            error_log('Error checking payment status: ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['error' => 'An error occurred while checking the payment status.']);
+            $this->logService->exception('Payment', $e);
+            $this->sendErrorResponse('An error occurred while checking the payment status.', 500);
         }
     }
+
+    /**
+     * Check if ticket PDF is ready for download. Authorizes order ownership.
+     */
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
+    public function ticketReady(array $params = [])
+    {
+        try {
+            $jsonData  = $this->getPostData();
+            $sessionId = $jsonData['session_id'] ?? null;
+
+            if (!$sessionId) {
+                throw new ValidationException('session_id is required.');
+            }
+
+            $order = $this->orderService->getOrderByStripeCheckoutSessionId($sessionId);
+            if (!$order) {
+                throw new ResourceNotFoundException('Order not found.');
+            }
+
+            $loggedInUser = $this->getLoggedInUser();
+            if (!$this->orderService->authorizeOrderOwnership($loggedInUser, $order, function() {
+                throw new UnauthorizedException('You do not have permission to access this order.');
+            })) {
+                return;
+            }
+
+            $ticketReady = $this->ticketFulfillmentService->isTicketPdfReady($order->ticket_pdf_path ?? '');
+
+            $this->sendSuccessResponse(['ticket_ready' => $ticketReady], 200);
+        } catch (UserFacingException $e) {
+            $this->logService->info('Payment', 'User-facing error: ' . $e->getMessage());
+            $code = $e instanceof ResourceNotFoundException ? 404 : ($e instanceof UnauthorizedException ? 403 : 400);
+            $this->sendErrorResponse($e->getMessage(), $code);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Payment', $e);
+            $this->sendErrorResponse('An error occurred while checking ticket readiness.', 500);
+        }
+    }
+
+    /**
+     * Display order details page
+     */
     public function details(array $params = [])
     {
-        //$order=$this->orderService->getOrderById(1);
-        $order=$this->orderService->getSessionCart();
-        $viewModel = new ShoppingCartViewModel($order);
-        $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
+        try {
+            $order     = $this->orderService->getSessionCart();
+            $viewModel = new ShoppingCartViewModel($order);
+            $this->view('ShoppingCart/DetailsCheckout', ['viewModel' => $viewModel]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('PaymentDetails', $e);
+            $this->view('ShoppingCart/Details', ['viewModel' => null, 'error' => 'An error occurred while loading your order details. Please try again later.']);
+        }
     }
-    
 }

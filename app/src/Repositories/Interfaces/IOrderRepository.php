@@ -23,4 +23,7 @@ interface IOrderRepository
     public function markAsScanned(int $orderItemId): bool;
     public function getOrderItemByHash(string $hash): ?OrderItem;
     public function getOrdersWhereStatusIn(array $statuses): array;
+    public function getAllowedExportColumns(): array;
+    public function getAllOrdersForExport(array $requestedColumns, ?string $paidAfter = null): array;
+    
 }

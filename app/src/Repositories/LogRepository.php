@@ -4,10 +4,11 @@ namespace App\Repositories;
 
 use App\Framework\Repository;
 use App\Models\Log;
+use App\Repositories\Interfaces\ILogRepository;
 use PDO;
 use PDOException;
 
-class LogRepository extends Repository
+class LogRepository extends Repository implements ILogRepository
 {
     public function create(Log $log): bool
     {
