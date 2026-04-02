@@ -159,6 +159,18 @@ class OrderService implements IOrderService
         if ($cart === null) {
             $cart = $this->createSessionCart();
         }
+        
+        // // If this is the first item AND user is logged in AND not yet persisted, create order in DB
+        $isFirstItem = empty($cart->orderItems);
+        $userIsLoggedIn = isset($_SESSION['loggedInUser']);
+        if ($isFirstItem && $userIsLoggedIn && $cart->order_id === null) {
+            $cart->user = $_SESSION['loggedInUser'];
+            $cart->order_date = new \DateTime();
+            $cart->status = OrderStatus::In_Cart;
+            $cart->calculateTotals();
+            $this->orderRepository->createOrder($cart);  // sets $cart->order_id
+        }
+        
         $cart->orderItems[] = $item;
         $this->assignSessionOrderItemIds($cart);
         $cart->calculateTotals();

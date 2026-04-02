@@ -48,6 +48,7 @@ class PaymentController extends BaseController
     {
         try{
             $order = $this->orderService->getSessionCart();
+            
             if (!isset($order)) {
                 $order = $this->orderService->createSessionCart();
             }
