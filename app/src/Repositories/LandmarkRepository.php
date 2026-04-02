@@ -151,11 +151,11 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         $sql = "INSERT INTO LANDMARK (
                     event_id, name, short_description, landmark_slug, 
                     intro_title, intro_content, why_visit_title, why_visit_content, 
-                    detail_history_title, detail_history_content, display_order
+                    detail_history_title, detail_history_content, display_order, latitude, longitude
                 ) VALUES (
                     :event_id, :name, :short_description, :landmark_slug, 
                     :intro_title, :intro_content, :why_visit_title, :why_visit_content, 
-                    :detail_history_title, :detail_history_content, :display_order
+                    :detail_history_title, :detail_history_content, :display_order, :latitude, :longitude
                 )";
 
         $stmt = $this->pdo->prepare($sql);
@@ -171,6 +171,8 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         $stmt->bindParam(':detail_history_title', $landmark->detail_history_title, PDO::PARAM_STR);
         $stmt->bindParam(':detail_history_content', $landmark->detail_history_content, PDO::PARAM_STR);
         $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
+        $stmt->bindParam(':latitude', $landmark->latitude);
+        $stmt->bindParam(':longitude', $landmark->longitude);
 
         $stmt->execute();
 
@@ -192,7 +194,9 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                     why_visit_content = :why_visit_content,
                     detail_history_title = :detail_history_title,
                     detail_history_content = :detail_history_content,
-                    display_order = :display_order
+                    display_order = :display_order,
+                    latitude = :latitude,
+                    longitude = :longitude
                 WHERE landmark_id = :landmark_id";
 
         $stmt = $this->pdo->prepare($sql);
@@ -209,6 +213,8 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         $stmt->bindParam(':detail_history_title', $landmark->detail_history_title, PDO::PARAM_STR);
         $stmt->bindParam(':detail_history_content', $landmark->detail_history_content, PDO::PARAM_STR);
         $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
+        $stmt->bindParam(':latitude', $landmark->latitude);
+        $stmt->bindParam(':longitude', $landmark->longitude);
 
         $stmt->execute();
 

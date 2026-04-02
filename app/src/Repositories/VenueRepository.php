@@ -125,7 +125,6 @@ class VenueRepository extends Repository implements IVenueRepository
             $query = "
             SELECT
                 v.*,
-                v.venue_image_id,
                 m.media_id,
                 m.file_path as image_path,
                 m.alt_text as image_alt,
@@ -185,6 +184,8 @@ class VenueRepository extends Repository implements IVenueRepository
                     capacity,
                     phone,
                     email,
+                    latitude,
+                    longitude,
                     venue_image_id
                 ) VALUES (
                     :name,
@@ -196,6 +197,8 @@ class VenueRepository extends Repository implements IVenueRepository
                     :capacity,
                     :phone,
                     :email,
+                    :latitude,
+                    :longitude,
                     :venue_image_id
                 )
             ";
@@ -210,6 +213,8 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt->bindValue(':capacity', $venue->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':phone', $venue->phone);
             $stmt->bindValue(':email', $venue->email);
+            $stmt->bindValue(':latitude', $venue->latitude);
+            $stmt->bindValue(':longitude', $venue->longitude);
 
             $venueImageId = $venue->venue_image?->media_id ?? null;
             $stmt->bindValue(':venue_image_id', $venueImageId, PDO::PARAM_INT);
@@ -243,6 +248,8 @@ class VenueRepository extends Repository implements IVenueRepository
                     capacity = :capacity,
                     phone = :phone,
                     email = :email,
+                    latitude = :latitude,
+                    longitude = :longitude,
                     venue_image_id = :venue_image_id
                 WHERE venue_id = :venue_id
             ";
@@ -258,6 +265,8 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt->bindValue(':capacity', $venue->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':phone', $venue->phone);
             $stmt->bindValue(':email', $venue->email);
+            $stmt->bindValue(':latitude', $venue->latitude);
+            $stmt->bindValue(':longitude', $venue->longitude);
 
             $venueImageId = $venue->venue_image?->media_id ?? null;
             $stmt->bindValue(':venue_image_id', $venueImageId, PDO::PARAM_INT);

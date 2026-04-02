@@ -125,6 +125,38 @@ $action = $action ?? '/cms/venues/store';
             </div>
         </div>
 
+        <!-- Map Coordinates -->
+        <div class="bg-white border rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">Map Coordinates</h2>
+            <p class="text-sm text-gray-600 mb-4">Precise latitude and longitude for map display and location tracking.</p>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <!-- Latitude -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2" for="latitude">
+                        Latitude
+                    </label>
+                    <input type="number" id="latitude" name="latitude" step="any"
+                        value="<?= htmlspecialchars($venue->latitude ?? '') ?>"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., 52.3876">
+                    <p class="text-sm text-gray-500 mt-1">Decimal format (e.g., 52.3876)</p>
+                </div>
+
+                <!-- Longitude -->
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2" for="longitude">
+                        Longitude
+                    </label>
+                    <input type="number" id="longitude" name="longitude" step="any"
+                        value="<?= htmlspecialchars($venue->longitude ?? '') ?>"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., 4.6364">
+                    <p class="text-sm text-gray-500 mt-1">Decimal format (e.g., 4.6364)</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Contact Info -->
         <div class="bg-white border rounded-lg p-6 mb-6">
             <h2 class="text-xl font-bold mb-4 border-b pb-2">Contact Information</h2>

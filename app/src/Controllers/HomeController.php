@@ -16,6 +16,7 @@ use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\ViewModels\Home\ScheduleList;
 use App\ViewModels\Home\StartingPoints;
+use App\ViewModels\MapMarker;
 use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
 use App\Exceptions\UserFacingException;
@@ -159,6 +160,34 @@ class HomeController extends BaseController
         } catch (\Throwable $e) {
             $this->logService->exception('Home', $e);
             $this->sendSuccessResponse(['success' => false, 'message' => 'An error occurred while loading dates.'], 500);
+        }
+    }
+    public function getVenues($vars = [])
+    {
+        try {
+            $venues = $this->venueService->getAllVenues();
+            $landmarks = $this->landmarkService->getAllLandmarks();
+            
+            // Combine venues and landmarks into MapMarker objects
+            $markers = [];
+            
+            foreach ($venues as $venue) {
+                $marker = new MapMarker($venue);
+                $markers[] = $marker->toArray();
+            }
+            
+            foreach ($landmarks as $landmark) {
+                $marker = new MapMarker($landmark);
+                $markers[] = $marker->toArray();
+            }
+            
+            $this->sendSuccessResponse(['success' => true, 'markers' => $markers, 'venues' => $venues, 'landmarks' => $landmarks], 200);
+        } catch (UserFacingException $e) {
+            $this->logService->info('Home', 'User-facing error: ' . $e->getMessage());
+            $this->sendSuccessResponse(['success' => false, 'message' => 'An error occurred while loading venues.'], 400);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Home', $e);
+            $this->sendSuccessResponse(['success' => false, 'message' => 'An error occurred while loading venues.'], 500);
         }
     }
 }

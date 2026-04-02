@@ -64,6 +64,8 @@ class LandmarkService implements ILandmarkService
         $landmark->detail_history_content = $postData['detail_history_content'] ?? null;
         
         $landmark->display_order = isset($postData['display_order']) ? (int)$postData['display_order'] : 0;
+        $landmark->latitude = isset($postData['latitude']) && $postData['latitude'] !== '' ? (float)$postData['latitude'] : null;
+        $landmark->longitude = isset($postData['longitude']) && $postData['longitude'] !== '' ? (float)$postData['longitude'] : null;
 
         return $landmark;
 
