@@ -4,8 +4,6 @@ namespace App\Controllers;
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;
 use App\Framework\BaseController;
-use App\Services\PageService;          
-use App\Controllers\BaseController;
 use App\Models\Enums\TicketSchemeEnum;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;

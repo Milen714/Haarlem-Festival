@@ -184,6 +184,35 @@ class OrderController extends BaseController
         }
     }
 
+      /**
+     * Display personal program (paid tickets grouped by day)
+     */
+    
+public function personalProgram(): void
+{
+    $user = $this->getLoggedInUser();
+    if (!$user?->id) {
+        $this->redirect('/login');
+        return;
+    }
+
+    $orderItems  = $this->orderService->getPaidOrderItemsByUserId($user->id);
+    $days        = \App\ViewModels\ShoppingCart\OrderItemViewModel::extractDays($orderItems);
+    $selectedDay = $_GET['date'] ?? array_key_first($days);
+
+    $items = array_values(array_filter(
+        $orderItems,
+        fn($item) => ($item->ticket_type->schedule->date?->format('Y-m-d') ?? 'unknown') === $selectedDay
+    ));
+
+    $this->view('ShoppingCart/PersonalProgram', [
+        'days'        => $days,
+        'items'       => $items,
+        'selectedDay' => $selectedDay,
+    ]);
+}
+
+
     /**
      * Display user's purchased tickets
      */
