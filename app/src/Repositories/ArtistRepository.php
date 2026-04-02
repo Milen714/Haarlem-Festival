@@ -434,9 +434,6 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
-    /**
-     * Fetch an artist by ID including their gallery and media items.
-     */
     public function getArtistByIdWithGallery(int $artistId): ?Artist
     {
         try {
@@ -467,7 +464,6 @@ class ArtistRepository extends Repository implements IArtistRepository
             $artist = new Artist();
             $artist->fromPDOData($result);
 
-            // Fetch gallery if artist has one
             $galleryId = $result['gallery_id'] ?? null;
             if ($galleryId) {
                 $galleryQuery = "
@@ -537,10 +533,6 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
-    /**
-     * Create a new GALLERY row and link it to the artist.
-     * Returns the new gallery_id.
-     */
     public function createGalleryForArtist(int $artistId, string $title = 'Artist Gallery'): int
     {
         try {
@@ -570,9 +562,6 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
-    /**
-     * Insert a media item into a gallery at the given display order.
-     */
     public function addMediaToGallery(int $galleryId, int $mediaId, int $displayOrder): bool
     {
         try {
@@ -590,9 +579,6 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
-    /**
-     * Remove a specific media item from a gallery.
-     */
     public function removeMediaFromGallery(int $galleryId, int $mediaId): bool
     {
         try {
@@ -609,9 +595,6 @@ class ArtistRepository extends Repository implements IArtistRepository
         }
     }
 
-    /**
-     * Get the next display_order value for a gallery (max + 1).
-     */
     public function getNextGalleryOrder(int $galleryId): int
     {
         try {

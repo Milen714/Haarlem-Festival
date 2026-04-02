@@ -7,5 +7,6 @@ namespace App\Views\Yummy;
     <?php include  'Components/YummyDetailChefPage.php'; ?>
     <?php include  'Components/YummyDetailFeaturedDish.php'; ?>
     <?php include  'Components/YummyDetailCourse.php'; ?>
+    
     <!-- <?php include  'Components/YummyDetailContact.php'; ?> -->
 </section>

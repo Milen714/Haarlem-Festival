@@ -139,6 +139,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
      * Gets a single schedule by ID
      * @return Schedule|null
      */
+    //
     public function getScheduleById(int $scheduleId): ?Schedule
     {
         try {
@@ -162,12 +163,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets all schedules with optional filters
-     * @param string|null $eventType Filter by event type (e.g., 'Yummy', 'Jazz', 'Magic')
-     * @param string|null $date Filter by date (format: 'Y-m-d')
-     * @return Schedule[]
-     */
+    // For CMS: get all schedules for a specific event category (e.g., 'Yummy') and/or date
     public function getAllSchedules(?string $eventType = null, ?string $date = null): array
     {
         try {
@@ -207,10 +203,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Gets a single schedule for an event (first upcoming one)
-     * @return Schedule|null
-     */
+    // Used for event pages to show the next schedule for that event
     public function getOneScheduleByEventId(int $eventId): ?Schedule
     {
         try {
@@ -267,6 +260,7 @@ class ScheduleRepository extends Repository implements IScheduleRepository
      * @param int $eventId
      * @return \App\Models\Schedule[] 
      */
+    //
     public function getBackToBackSpecialsByEventId(int $eventId): array
     {
         try {
@@ -310,19 +304,35 @@ class ScheduleRepository extends Repository implements IScheduleRepository
 
     public function getSchedulesByRestaurant(int $restaurantId): array
     {
+        //needed to make a new one, because it was looping 3x with the based. and only takes what is needed so simpler
         $pdo = $this->connect();
-        $sql = $this->getBaseQuery() . '
-            Where s.restaurant_id = :restaurant_id
-            ORDER BY s.date, s.start_time
-        ';  
+        $sql = "
+             SELECT 
+        s.schedule_id,
+        s.date,
+        s.start_time,
+        s.end_time,
+        s.restaurant_id,
+        s.event_id,
+
+        ec.type AS event_category_type
+
+        FROM SCHEDULE s
+        LEFT JOIN EVENT_CATEGORIES ec 
+            ON s.event_id = ec.event_id
+
+        WHERE s.restaurant_id = :restaurant_id
+        ORDER BY s.date, s.start_time
+        ";
+
         $getSchedule = $pdo->prepare($sql);
         $getSchedule->execute([
             'restaurant_id' => $restaurantId
         ]);
         $schedules = [];
         while ($row = $getSchedule->fetch(PDO::FETCH_ASSOC)) {
-            $schedule = new Schedule();
-            $schedule->hydrateSchedule($row);
+            $schedule = (new Schedule())->hydrateSchedule($row);
+            //adds tickets to the schedule 
             $schedule->ticketTypes = $this->ticketRepository->getTicketTypesByScheduleId($schedule->schedule_id);
             $schedules[] = $schedule;
         }
@@ -346,9 +356,8 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Create a new schedule record
-     */
+
+    //Create a new schedule record
     public function create(Schedule $schedule): bool
     {
         try {
@@ -383,9 +392,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Update an existing schedule record
-     */
     public function update(Schedule $schedule): bool
     {
         try {
@@ -425,9 +431,6 @@ class ScheduleRepository extends Repository implements IScheduleRepository
         }
     }
 
-    /**
-     * Delete a schedule by ID
-     */
     public function delete(int $scheduleId): bool
     {
         try {

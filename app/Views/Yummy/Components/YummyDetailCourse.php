@@ -3,7 +3,6 @@
 
 ?>
 
-
 <section class="bg-gradient-to-b from-[#d4a356] to-[#4a0e0e] py-16 px-6">
   <div class="max-w-4xl mx-auto bg-[#c5964a] p-10 rounded-sm shadow-inner text-[#1a0505]">
     <h2 class="text-3xl font-serif mb-4">Course Details</h2>
@@ -39,8 +38,11 @@
         <?php endforeach; ?>
       </div>
 
-    <a href="#" class="mt-12 bg-black text-white px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-900">
+    <a href="#" id="open-model" class="mt-12 bg-black text-white px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-gray-900">
       Make a Reservation
     </a>
   </div>
 </section>
+<?php include 'YummyTicketPopup.php'; ?>
+<?php include 'YummyAddedToCart.php'; ?>
+<script src="/Js/RestaurantTicket.js"></script>

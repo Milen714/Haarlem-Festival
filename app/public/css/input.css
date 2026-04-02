@@ -180,6 +180,9 @@
         @apply text-white font-semibold p-3 rounded-[5px] shadow-[-7px_-7px_0px_#000000] hover:shadow-[-4px_-4px_0px_#000000]
                    bg-[var(--text-home-primary)] dark:bg-[var(--text-home-high-contrast-primary)]  focus:outline-none focus:ring-2 ;
     }
+    .save_changes_button{
+        @apply mt-5 w-full rounded-lg bg-orange-500 px-4 py-2 font-medium text-white hover:bg-orange-600;
+    }
     .download_tickets_button{
         @apply bg-[var(--home-dance-accent)] text-black font-semibold py-3 px-6 rounded-lg hover:bg-[#059669] hover:text-white transition-colors;
     }
