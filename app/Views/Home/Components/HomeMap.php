@@ -3,6 +3,7 @@ namespace App\Views\Home\Components;
 use App\Models\History\Landmark;
 use App\Models\Venue;
 use App\ViewModels\Home\StartingPoints;
+use App\config\Secrets;
 /** @var StartingPoints $startingPoints */
 
 
@@ -27,7 +28,7 @@ use App\ViewModels\Home\StartingPoints;
         </ul>
     </article>
 </section>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8CaDgk492mpnptnImM-BdJWh75zbPfuo&v=weekly"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<?= Secrets::$mapsApiKey ?>&v=weekly"></script>
 <script>
 // Get icon configuration from SVG path
 function getIconConfig(iconPath) {
