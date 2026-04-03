@@ -11,6 +11,7 @@ use App\Services\Interfaces\IOrderService;
 use App\Services\PaymentService;
 use App\Services\OrderService;
 use App\ViewModels\ShoppingCart\ShoppingCartViewModel;
+use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
 use App\Services\Interfaces\ITicketFulfillmentService;
 use App\Services\TicketFulfillmentService;
 use App\Services\LogService;
@@ -19,6 +20,7 @@ use App\Exceptions\ValidationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\UnauthorizedException;
 use App\Exceptions\UserFacingException;
+use DateTime;
 
 /**
  * PaymentController
@@ -60,7 +62,12 @@ class PaymentController extends BaseController
         }
     }
 
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER])]
+    
+
+    /**
+     * Display checkout page with payment form
+     */
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function checkout(array $params = [])
     {   
         try {

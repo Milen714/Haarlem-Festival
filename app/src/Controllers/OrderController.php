@@ -183,56 +183,6 @@ class OrderController extends BaseController
             ], 500);
         }
     }
-
-      /**
-     * Display personal program (paid tickets grouped by day)
-     */
-    
-public function personalProgram(): void
-{
-    $user = $this->getLoggedInUser();
-    if (!$user?->id) {
-        $this->redirect('/login');
-        return;
-    }
-
-    $orderItems  = $this->orderService->getPaidOrderItemsByUserId($user->id);
-    $days        = \App\ViewModels\ShoppingCart\OrderItemViewModel::extractDays($orderItems);
-    $selectedDay = array_key_first($days) ?? '';
-
-    $this->view('ShoppingCart/PersonalProgram', [
-        'days'        => $days,
-        'items'       => $orderItems,
-        'selectedDay' => $selectedDay,
-    ]);
-}
-
-
-    /**
-     * Display user's purchased tickets
-     */
-    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
-    public function showUserTickets(): void
-    {
-        try {
-            $user = $this->getLoggedInUser();
-
-            if (!$user?->id) {
-                $this->redirect('/login');
-            }
-
-            $orderItems = $this->orderService->getPaidOrderItemsByUserId($user->id);
-
-            $this->view('Orders/my-tickets', [
-            'orderItems' => $orderItems,
-            ]);
-        } catch (\Throwable $e) {
-            $this->view('Orders/my-tickets', [
-            'orderItems' => null,
-            ]);
-        }
-    }
-
     /**
      * Download ticket PDF for an order. Authorizes ownership before serving file.
      */
