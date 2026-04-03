@@ -317,8 +317,15 @@ class OrderController extends BaseController
             
             $filename = 'orders_export_' . date('Ymd_His');
 
-        $this->view('Orders/my-tickets',[
-            'orderItems' => $orderItems
-        ]);
+            $this->view('Orders/my-tickets',[
+                'orderItems' => $orderItems
+            ]);
+        } catch (\Throwable $e) {
+            $this->logService->error("CSV Export error: " . $e->getMessage(), $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $this->sendSuccessResponse([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
