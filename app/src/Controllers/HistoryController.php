@@ -146,45 +146,52 @@ class HistoryController extends BaseController
 
     /** @param array $vars */
     public function detail(array $vars): void
-    {
-        $slug = $vars['slug'] ?? '';
-        
-        $landmark = $this->landmarkService->getLandmarkBySlug($slug);
-
-        if (!$landmark) {
-            $this->notFound(); 
-            return;
-        }
-
-        $introImage = '/Assets/Home/ImagePlaceholder.png';
-        $historyImage = '/Assets/Home/ImagePlaceholder.png';
-        $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
-
-        //if gallery exists and has the media items, the media items are taken out and assigned to variables for the view
-        if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
-            $items = array_values($landmark->gallery->media_items);
-
-            if (isset($items[0]) && !empty($items[0]->media)) {
-                $introImage = '/' . ltrim($items[0]->media->file_path, '/');
-            }
-            if (isset($items[1]) && !empty($items[1]->media)) {
-                $historyImage = '/' . ltrim($items[1]->media->file_path, '/');
-            }
-            if (isset($items[2]) && !empty($items[2]->media)) {
-                $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
-            }
-        }
-
-        //pass the images to the view as well
-        $this->view('History/HistoryDetail', [
-            'title' => $landmark->name . ' - Haarlem History',
-            'landmark' => $landmark,
-            'introImage' => $introImage,
-            'historyImage' => $historyImage,
-            'whyVisitImage' => $whyVisitImage
-        ]);
+{
+    $slug = $vars['slug'] ?? '';
     
+    $landmark = $this->landmarkService->getLandmarkBySlug($slug);
+
+    if (!$landmark) {
+        $this->notFound(); 
+        return;
     }
+
+    $introImage = '/Assets/Home/ImagePlaceholder.png';
+    $historyImage = '/Assets/Home/ImagePlaceholder.png';
+    $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
+
+    if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
+        $items = array_values($landmark->gallery->media_items);
+
+        if (isset($items[0]) && !empty($items[0]->media)) {
+            $introImage = '/' . ltrim($items[0]->media->file_path, '/');
+        }
+        if (isset($items[1]) && !empty($items[1]->media)) {
+            $historyImage = '/' . ltrim($items[1]->media->file_path, '/');
+        }
+        if (isset($items[2]) && !empty($items[2]->media)) {
+            $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
+        }
+    }
+
+    $otherLandmarks = [];
+    foreach ($this->landmarkService->getAllLandmarks() as $l) {
+        if ($l->landmark_slug !== $slug) {
+            $full = $this->landmarkService->getLandmarkById($l->landmark_id);
+            if ($full) $otherLandmarks[] = $full;
+        }
+    }
+
+    $this->view('History/HistoryDetail', [
+        'title'          => $landmark->name . ' - Haarlem History',
+        'landmark'       => $landmark,
+        'introImage'     => $introImage,
+        'historyImage'   => $historyImage,
+        'whyVisitImage'  => $whyVisitImage,
+        'otherLandmarks' => $otherLandmarks
+    ]);
+}
+
 }
 
 

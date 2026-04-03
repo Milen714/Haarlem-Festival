@@ -505,6 +505,54 @@
   width: 12rem;
   background-color: var(--history-light-brown);
 }
+
+.why-visit-content ul {
+  list-style: none !important;
+  padding-left: 0;
+}
+
+.why-visit-content ul li {
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+.why-visit-content ul li::marker {
+  content: none;
+}
+
+.why-visit-content ul li::before {
+  content: '•';
+  color: var(--history-accent-color);
+  font-size: 4.5rem;
+  line-height: 0;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.landmark-title-hover {
+  font-family: 'Nobile', sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--history-accent-color);
+  text-decoration: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  transition: color 0.2s;
+  display: block;
+}
+
+.landmark-title-hover:hover {
+  color: var(--history-light-brown);
+  font-size: 0;
+  text-decoration: none;
+}
+
+.landmark-title-hover:hover::after {
+  content: 'Get to know us';
+  font-size: 1.875rem;
+  color: var(--history-light-brown);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+}
   
 
 
