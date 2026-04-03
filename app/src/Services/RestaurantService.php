@@ -85,24 +85,9 @@ class RestaurantService implements IRestaurantService
         return $restaurant;
     }
 
-    public function fillRestaurantFromPostData(Restaurant $restaurant, array $data){
-        $restaurant->name = trim($data['name']);
-        $restaurant->event_id = isset($data['event_id']) ? (int)$data['event_id'] : ($restaurant->event_id ?? 1);
-        $restaurant->short_description = !empty($data['short_description']) ? trim($data['short_description']) : ($restaurant->short_description ?? null);
-        $restaurant->welcome_text = !empty($data['welcome_text']) ?  trim($data['welcome_text']) : ($restaurant->welcome_text ?? null);
-        $restaurant->price_category = !empty($data['price_category']) ?  (int)$data['price_category'] : ($restaurant->price_category ?? null);
-        $restaurant->stars = !empty($data['stars']) ?  (int)$data['stars'] : ($restaurant->stars ?? null);
-        $restaurant->review_count = !empty($data['review_count']) ?  (int)$data['review_count'] : ($restaurant->review_count ?? null);
-        $restaurant->website_url = !empty($data['website_url']) ? trim($data['website_url']) : ($restaurant->website_url ?? null);
-        $restaurant->chef_name = !empty($data['chef_name']) ? trim($data['chef_name']) : ($restaurant->chef_name ?? null);
-        $restaurant->chef_bio_text = !empty($data['chef_bio_text']) ? trim($data['chef_bio_text']) : ($restaurant->chef_bio_text ?? null);
-
-        return $restaurant;
-    }
-
     public function processRestaurantRequest(Restaurant $restaurant, array $postData, array $files): Restaurant{
 
-        $restaurant = $this->fillRestaurantFromPostData($restaurant, $postData);
+        $restaurant = Restaurant::createFromPostData($postData);
 
         $restaurant = $this->handleImageUpload($restaurant, $files);
 
@@ -110,16 +95,20 @@ class RestaurantService implements IRestaurantService
     }
 
     public function createFromRequest(array $postData, array $files): Restaurant{
-        $restaurant = new Restaurant();
-        $restaurant = $this->processRestaurantRequest($restaurant, $postData, $files);
+        //get the restaurant data from the post data and create a restaurant instance
+        $restaurant = Restaurant::createFromPostData($postData);
 
+        $restaurant = $this->handleImageUpload($restaurant, $files);
+        //create the restaurant to get the id for the gallery and the cuisine relation and sessions
         $restaurantId = $this->restaurantRepository->createRestaurant($restaurant);
+        //upload the gallery images if there are any
         $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
         //get the cuisines by id and slice it so only up to 3 are displayed
         $cuisineIds = $postData['cuisines'] ?? [];
         $cuisineIds = array_slice($cuisineIds, 0, 3);
         //get the sessions
         $this->handleSessions($restaurantId, $postData);
+        //sync the cuisines with the restaurant
         $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
 
         return $restaurant;
@@ -131,8 +120,8 @@ class RestaurantService implements IRestaurantService
             throw new \Exception('Restaurant not found');
         }
 
-        $restaurant = $this->processRestaurantRequest($restaurant, $postData, $files);
-
+        $restaurant = Restaurant::createFromPostData($postData);
+        $restaurant = $this->handleImageUpload($restaurant, $files);
         $this->restaurantRepository->updateRestaurant($restaurant);
         $cuisineIds = $postData['cuisines'] ?? [];
         $cuisineIds = array_slice($cuisineIds, 0, 3);
