@@ -11,6 +11,7 @@
             <h2 class="font-serif text-2xl md:text-3xl text-ink-900">
                 <?= htmlspecialchars($welcome->title) ?>
             </h2>
+            <div class="underline-history mx-auto"></div>
 
             <div class="mt-4 max-w-3xl mx-auto text-ink-700 leading-relaxed italic prose prose-sm max-w-none">
                 <?= $welcome->content_html ?>

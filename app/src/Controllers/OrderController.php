@@ -198,16 +198,11 @@ public function personalProgram(): void
 
     $orderItems  = $this->orderService->getPaidOrderItemsByUserId($user->id);
     $days        = \App\ViewModels\ShoppingCart\OrderItemViewModel::extractDays($orderItems);
-    $selectedDay = $_GET['date'] ?? array_key_first($days);
-
-    $items = array_values(array_filter(
-        $orderItems,
-        fn($item) => ($item->ticket_type->schedule->date?->format('Y-m-d') ?? 'unknown') === $selectedDay
-    ));
+    $selectedDay = array_key_first($days) ?? '';
 
     $this->view('ShoppingCart/PersonalProgram', [
         'days'        => $days,
-        'items'       => $items,
+        'items'       => $orderItems,
         'selectedDay' => $selectedDay,
     ]);
 }

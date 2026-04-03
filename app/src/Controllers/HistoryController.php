@@ -56,14 +56,11 @@ class HistoryController extends BaseController
             $hero = null;
             $welcome = null;
             $bookTour = null;
-            $landmarks = [];
 
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
                 if ($type === 'welcome') {
                     $welcome = $s;
-                } elseif ($type === 'landmark') {
-                    $landmarks[] = $s;
                 } elseif ($type === 'book_tour') {
                     $bookTour = $s;
                 }
@@ -72,7 +69,8 @@ class HistoryController extends BaseController
                 }
             }
 
-            
+            $landmarks = $this->landmarkService->getFeaturedLandmarks();
+
             $this->view('History/HistoryHomepage', [
                 'pageData'  => $pageData,
                 'hero'      => $hero,

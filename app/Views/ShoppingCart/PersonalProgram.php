@@ -28,14 +28,15 @@ $selectedDay = $selectedDay ?? '';
         <!-- Day Tabs -->
         <div class="flex gap-2 mb-6 flex-wrap">
             <?php foreach ($days as $dateKey => $day): ?>
-                <a href="?date=<?= $dateKey ?>"
-                   class="px-4 py-2 rounded-lg text-sm font-bold text-center transition-colors
-                          <?= $dateKey === $selectedDay
-                              ? 'bg-[var(--text-home-primary)] text-white'
-                              : 'bg-white text-gray-500 border border-gray-200 hover:border-[var(--home-gold-accent)]' ?>">
+                <button data-date="<?= $dateKey ?>"
+                        onclick="switchDay(this)"
+                        class="day-tab px-4 py-2 rounded-lg text-sm font-bold text-center transition-colors
+                               <?= $dateKey === $selectedDay
+                                   ? 'bg-[var(--text-home-primary)] text-white'
+                                   : 'bg-white text-gray-500 border border-gray-200 hover:border-[var(--home-gold-accent)]' ?>">
                     <?= $day['tabLabel'] ?><br>
                     <span class="text-base"><?= $day['tabDay'] ?></span>
-                </a>
+                </button>
             <?php endforeach; ?>
         </div>
 
@@ -46,62 +47,67 @@ $selectedDay = $selectedDay ?? '';
                 $schedule   = $item->ticket_type->schedule;
                 $cardStyles = $p->getCardStyles();
                 $cardImage  = $p->getCardImage();
+                $dateKey    = $schedule->date?->format('Y-m-d') ?? 'unknown';
             ?>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="program-item"
+                     data-date="<?= $dateKey ?>"
+                     <?= $dateKey !== $selectedDay ? 'style="display:none"' : '' ?>>
 
-                    <div class="px-4 pt-3">
-                        <span class="text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded
-                                     <?= $cardStyles['muted'] ?> text-[var(--text-home-primary)]">
-                            HAARLEM <?= strtoupper($p->getEventLabel()) ?>
-                        </span>
-                    </div>
-
-                    <div class="flex items-center gap-3 p-3">
-
-                        <div class="flex-shrink-0 flex flex-col items-center justify-center
-                                    <?= $cardStyles['muted'] ?> rounded-lg px-3 py-2 w-16 text-center">
-                            <span class="text-xs font-bold text-[var(--text-home-primary)] uppercase">
-                                <?= strtoupper($schedule->date?->format('D') ?? '') ?>
-                            </span>
-                            <span class="text-base font-black text-[var(--text-home-primary)]">
-                                <?= $schedule->start_time?->format('H:i') ?? '' ?>
-                            </span>
+                    <article class="flex flex-row w-full rounded-lg overflow-hidden shadow-md border border-gray-200">
+                        <div class="relative calendar-coils w-2 md:w-[0.65rem] <?= $cardStyles['side'] ?> text-transparent flex-shrink-0">
+                            hh
+                            <div class="absolute w-[1rem] h-[1rem] -bottom-[-2rem] -left-2.5 bg_colors_home rounded-full"></div>
                         </div>
 
-                        <div class="flex-grow min-w-0">
-                            <h2 class="font-bold text-[var(--text-home-primary)] text-sm truncate">
-                                <?= htmlspecialchars($p->getDisplayName()) ?>
-                            </h2>
-                            <p class="text-xs text-gray-500 mt-0.5">
-                                <?= $schedule->date?->format('Y-m-d') ?>
-                                &nbsp;<?= $schedule->start_time?->format('H:i') ?> - <?= $schedule->end_time?->format('H:i') ?>
-                            </p>
-                            <p class="text-xs text-gray-500"><?= htmlspecialchars($p->getVenueDisplay()) ?></p>
-                            <p class="text-xs font-semibold text-gray-700 mt-0.5">x <?= (int)$item->quantity ?></p>
-                        </div>
+                        <img loading="lazy" src="<?= htmlspecialchars($cardImage->file_path ?? '') ?>"
+                             alt="<?= htmlspecialchars($cardImage->alt_text ?? '') ?>"
+                             class="w-16 sm:w-20 md:w-30 lg:w-40 h-auto object-cover flex-shrink-0">
 
-                        <div class="flex-shrink-0 font-bold text-[var(--text-home-primary)] text-sm">
-                            &euro; <?= number_format((float)($item->subtotal ?? 0), 2) ?>
-                        </div>
+                        <div class="flex flex-col flex-grow min-w-0">
+                            <div class="flex flex-col py-1">
+                                <div class="flex flex-col lg:flex-row justify-between gap-3 mt-2">
+                                    <div class="flex pl-2 gap-2 items-center">
+                                        <div class="h-min px-2 md:px-4 py-2 md:py-4 <?= $cardStyles['muted'] ?> rounded-md flex-shrink-0">
+                                            <h1 class="font-bold text-lg md:text-2xl text-black text-center">
+                                                <?= htmlspecialchars($p->getDateBoxLabel()) ?>
+                                            </h1>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <h2 class="text-black text-sm md:text-lg font-semibold">
+                                                <?= htmlspecialchars($p->getDisplayName()) ?>
+                                            </h2>
+                                            <div class="flex flex-col gap-2">
+                                                <div class="flex flex-row gap-2 items-center">
+                                                    <img src="/Assets/Home/LocationTicketHome.svg" alt="Location Icon" class="w-4 h-4 flex-shrink-0">
+                                                    <span class="text-sm text-black"><?= htmlspecialchars($p->getVenueDisplay()) ?></span>
+                                                </div>
+                                                <div class="flex flex-row gap-2 items-center">
+                                                    <img src="/Assets/Home/DurationIconHome.svg" alt="Duration Icon" class="w-4 h-4 flex-shrink-0">
+                                                    <span class="text-sm font-bold text-black whitespace-nowrap"><?= htmlspecialchars($p->getDurationDisplay()) ?></span>
+                                                </div>
+                                                <div class="flex flex-row gap-2 items-center">
+                                                    <img src="/Assets/Home/PersonIcon.svg" alt="Quantity Icon" class="w-4 h-4 flex-shrink-0">
+                                                    <span class="text-sm font-bold text-black whitespace-nowrap">x <?= (int)$item->quantity ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <?php if ($cardImage->file_path ?? null): ?>
-                            <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
-                                <img src="<?= htmlspecialchars($cardImage->file_path) ?>"
-                                     alt="<?= htmlspecialchars($cardImage->alt_text ?? '') ?>"
-                                     class="w-full h-full object-cover">
+                                    <article class="flex-shrink-0 flex items-center mr-3 justify-center">
+                                        <h3 class="font-semibold text-xs md:text-base mb-2 text-black">
+                                            €<?= number_format((float)($item->subtotal ?? 0), 2) ?>
+                                        </h3>
+                                    </article>
+                                </div>
                             </div>
-                        <?php endif; ?>
 
-                    </div>
-
-                    <div class="flex items-center justify-between px-4 py-2 border-t border-gray-100 bg-gray-50">
-                        <a href="/my-tickets" class="text-xs font-bold text-[var(--text-home-primary)] hover:underline uppercase tracking-wide">
-                            View Ticket
-                        </a>
-                        <span class="text-xs font-bold text-teal-700 bg-teal-100 px-3 py-0.5 rounded-full uppercase">
-                            Owned
-                        </span>
-                    </div>
+                            <div class="flex items-center justify-between px-4 py-2 border-t border-gray-100 bg-[var(--text-home-primary)]">
+                                <a href="/my-tickets" class="text-xs font-bold text-white hover:underline uppercase tracking-wide">
+                                    View Ticket
+                                </a>
+                                
+                        </div>
+                    </article>
 
                 </div>
             <?php endforeach; ?>
@@ -122,3 +128,22 @@ $selectedDay = $selectedDay ?? '';
     <?php endif; ?>
 
 </section>
+
+<script>
+function switchDay(btn) {
+    const date = btn.dataset.date;
+
+    document.querySelectorAll('.day-tab').forEach(t => {
+        t.className = t.className
+            .replace('bg-[var(--text-home-primary)] text-white', '')
+            + ' bg-white text-gray-500 border border-gray-200';
+    });
+    btn.className = btn.className
+        .replace('bg-white text-gray-500 border border-gray-200', '')
+        + ' bg-[var(--text-home-primary)] text-white';
+
+    document.querySelectorAll('.program-item').forEach(el => {
+        el.style.display = el.dataset.date === date ? '' : 'none';
+    });
+}
+</script>

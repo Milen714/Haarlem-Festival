@@ -37,6 +37,33 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         return $landmarks;
     }
 
+    public function getFeatured(): array
+{
+    $sql = "SELECT l.*,
+                ec.event_id   as event_category_id,
+                ec.title      as event_category_title,
+                ec.type       as event_category_type,
+                ec.slug       as event_category_slug,
+                m.media_id    as main_image_media_id,
+                m.file_path   as main_image_file_path,
+                m.alt_text    as main_image_alt_text
+            FROM LANDMARK l
+            LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
+            LEFT JOIN MEDIA m ON l.main_image_id = m.media_id
+            WHERE l.is_featured = 1
+            ORDER BY l.display_order ASC";
+
+    $stmt = $this->pdo->query($sql);
+    $landmarks = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $landmark = new Landmark();
+        $landmark->fromPDOData($row);
+        $landmarks[] = $landmark;
+    }
+    return $landmarks;
+}
+
+
 
 /*public function addMediaToGallery(int $galleryId, int $mediaId): bool
 {
@@ -149,14 +176,16 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
     public function insert(Landmark $landmark): Landmark
     {
         $sql = "INSERT INTO LANDMARK (
-                    event_id, name, short_description, landmark_slug, 
-                    intro_title, intro_content, why_visit_title, why_visit_content, 
-                    detail_history_title, detail_history_content, display_order, latitude, longitude
-                ) VALUES (
-                    :event_id, :name, :short_description, :landmark_slug, 
-                    :intro_title, :intro_content, :why_visit_title, :why_visit_content, 
-                    :detail_history_title, :detail_history_content, :display_order, :latitude, :longitude
-                )";
+            event_id, name, short_description, landmark_slug,
+            intro_title, intro_content, why_visit_title, why_visit_content,
+            detail_history_title, detail_history_content, display_order,
+            latitude, longitude, is_featured, home_cta
+        ) VALUES (
+            :event_id, :name, :short_description, :landmark_slug,
+            :intro_title, :intro_content, :why_visit_title, :why_visit_content,
+            :detail_history_title, :detail_history_content, :display_order,
+            :latitude, :longitude, :is_featured, :home_cta
+        )";
 
         $stmt = $this->pdo->prepare($sql);
         
@@ -173,6 +202,11 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
         $stmt->bindParam(':latitude', $landmark->latitude);
         $stmt->bindParam(':longitude', $landmark->longitude);
+        $stmt->bindParam(':home_cta', $landmark->home_cta, PDO::PARAM_STR);
+
+        $isFeatured = $landmark->is_featured ? 1 : 0;
+        $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
+       
 
         $stmt->execute();
 
@@ -183,7 +217,7 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
 
     public function update(Landmark $landmark): Landmark
     {
-        $sql = "UPDATE LANDMARK SET 
+        $sql = "UPDATE LANDMARK SET
                     event_id = :event_id,
                     name = :name,
                     short_description = :short_description,
@@ -196,7 +230,9 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                     detail_history_content = :detail_history_content,
                     display_order = :display_order,
                     latitude = :latitude,
-                    longitude = :longitude
+                    longitude = :longitude,
+                    is_featured = :is_featured,
+                    home_cta = :home_cta
                 WHERE landmark_id = :landmark_id";
 
         $stmt = $this->pdo->prepare($sql);
@@ -215,6 +251,9 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
         $stmt->bindParam(':latitude', $landmark->latitude);
         $stmt->bindParam(':longitude', $landmark->longitude);
+        $isFeatured = $landmark->is_featured ? 1 : 0;
+        $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
+        $stmt->bindParam(':home_cta', $landmark->home_cta, PDO::PARAM_STR);
 
         $stmt->execute();
 
@@ -230,4 +269,11 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         
         return $stmt->execute();
     }
+
+    public function updateMainImage(int $landmarkId, int $mediaId): void
+{
+    $stmt = $this->pdo->prepare("UPDATE LANDMARK SET main_image_id = :media_id WHERE landmark_id = :id");
+    $stmt->execute([':media_id' => $mediaId, ':id' => $landmarkId]);
+}
+
 }
