@@ -24,7 +24,7 @@ $landmark = $landmark ?? null;
 
     <div class="max-w-content pb-12 px-4 md:px-0">
         <div class="flex flex-col items-center text-center">
-            <h1 class="text-4xl md:text-6xl text-ink-900 font-history-serif mb-2">
+            <h1 class="text-3xl md:text-5xl text-[var(--history-dark-brown)] font-history-serif font-bold mb-2">
                 <?= htmlspecialchars($landmark->name ?? '') ?>
             </h1>
         </div>
