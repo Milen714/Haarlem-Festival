@@ -33,13 +33,20 @@ class Mailer {
         $this->mail->isHTML(true);
         $this->mail->CharSet = 'UTF-8';
     }
-    public function send(string $recipient, string $body, string $subject = 'Notification'): bool
+    public function send(string $recipient, string $body, string $subject = 'Notification', array $attachments = []): bool
     {
         try {
             $this->mail->clearAddresses();
             $this->mail->addAddress($recipient);
             $this->mail->Subject = $subject;
             $this->mail->Body    = $body;
+
+            // Add attachments
+            foreach ($attachments as $filePath) {
+                if (file_exists($filePath)) {
+                    $this->mail->addAttachment($filePath, basename($filePath), 'base64', mime_content_type($filePath));
+                }
+            }
 
             return $this->mail->send();
         } catch (Exception $e) {

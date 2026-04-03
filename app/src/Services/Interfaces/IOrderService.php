@@ -10,13 +10,14 @@ interface IOrderService
     public function getOrderById(int $orderId): ?Order;
     public function getOrdersByUserId(int $userId): array;
     public function getOpenOrderByUserId(int $userId, ?array $statuses = null): ?Order;
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool;
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool;
     public function addOrderItem(OrderItem $orderItem): bool;
     public function getOrderItemsByOrderId(int $orderId): array;
+    public function getPaidTicketsByUser(int $userId, ?string $date = null): array;
     public function createSessionCart(): Order;
     public function getSessionCart(): ?Order;
     public function clearSessionCart(): void;
-    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): int;
+    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): Order;
     public function getOrderByStripeCheckoutSessionId(string $sessionId): ?Order;
     public function setStripeCheckoutSessionId(int $orderId, string $sessionId): bool;
     public function addOrderItemToSessionCart(OrderItem $item): void;
@@ -30,4 +31,11 @@ interface IOrderService
     public function getOrderItemByHash(string $hash): ?OrderItem;
     public function markAsScanned(int $orderItemId): bool;
     public function getPaidOrderItemsByUserId(int $userId): array;
+    public function getOrdersWhereStatusIn(array $statuses): array;
+    public function canUserDownloadOrderTickets(User $user, Order $order): bool;
+    public function authorizeOrderOwnership(User $user, Order $order, callable $onUnauthorized): bool;
+    public function getAllowedExportColumns(): array;
+    public function getAllOrdersForExport(array $requestedColumns, ?string $paidAfter = null): array;
+    function generateCSV($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/');
+    public function generateExcelViaHtml($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/');
 }

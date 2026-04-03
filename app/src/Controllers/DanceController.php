@@ -1,7 +1,7 @@
 <?php 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Services\PageService;
 use App\Services\ArtistService;
 use App\Services\MediaService;
@@ -16,6 +16,8 @@ use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\ITicketService;
 use App\Services\Interfaces\IDanceService;
+use App\Services\Interfaces\ILogService;
+use App\Services\LogService;
 use App\ViewModels\Dance\LineupViewModel;
 use App\ViewModels\Dance\VenueViewModel;
 use App\ViewModels\Dance\DanceIndexViewModel;
@@ -36,6 +38,7 @@ class DanceController extends BaseController
     private IScheduleService $scheduleService;
     private ITicketService $ticketService;
     private IDanceService $danceService;
+    private ILogService $logService;
 
     public function __construct()
     {
@@ -52,6 +55,7 @@ class DanceController extends BaseController
             $this->artistService,
             $this->pageService
         );
+        $this->logService = new LogService();
     }
     public function index(): void
     {

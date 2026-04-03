@@ -3,12 +3,14 @@
 namespace App\Services;
 
 use App\Models\Enums\OrderStatus;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Models\Payment\Order;
 use App\Models\User;
 use App\Models\Payment\OrderItem;
 use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\OrderRepository;
 use App\Services\Interfaces\IOrderService;
+use App\Exceptions\ValidationException;
 
 class OrderService implements IOrderService
 {
@@ -47,9 +49,9 @@ class OrderService implements IOrderService
         return $order;
     }
 
-    public function updateOrderStatus(int $orderId, OrderStatus $status): bool
+    public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
-        return $this->orderRepository->updateOrderStatus($orderId, $status);
+        return $this->orderRepository->updateOrderStatus($orderId, $status, $pdf);
     }
 
     public function addOrderItem(OrderItem $orderItem): bool
@@ -65,9 +67,16 @@ class OrderService implements IOrderService
     {
         return $this->orderRepository->getOrderItemsByOrderId($orderId);
     }
+
+    public function getPaidTicketsByUser(int $userId, ?string $date = null): array
+    {
+        return $this->orderRepository->getPaidTicketsByUser($userId, $date);
+    }
+
     public function createSessionCart(): Order
     {
         $order = new Order();
+        $order->generateReferenceNumber();
         $order->order_date = new \DateTime();
         $order->status = OrderStatus::In_Cart;
         if(!isset($_SESSION['session_cart'])){
@@ -116,7 +125,7 @@ class OrderService implements IOrderService
 
             if (($item->quantity + $alreadyInCart) > $available) {
                 $remaining = max(0, $available - $alreadyInCart);
-                throw new \OverflowException(
+                throw new ValidationException(
                     "Only {$remaining} seat(s) remaining for this ticket type."
                 );
             }
@@ -128,6 +137,18 @@ class OrderService implements IOrderService
         if ($cart === null) {
             $cart = $this->createSessionCart();
         }
+        
+        // // If this is the first item AND user is logged in AND not yet persisted, create order in DB
+        $isFirstItem = empty($cart->orderItems);
+        $userIsLoggedIn = isset($_SESSION['loggedInUser']);
+        if ($isFirstItem && $userIsLoggedIn && $cart->order_id === null) {
+            $cart->user = $_SESSION['loggedInUser'];
+            $cart->order_date = new \DateTime();
+            $cart->status = OrderStatus::In_Cart;
+            $cart->calculateTotals();
+            $this->orderRepository->createOrder($cart);  // sets $cart->order_id
+        }
+        
         $cart->orderItems[] = $item;
         $this->assignSessionOrderItemIds($cart);
         $cart->calculateTotals();
@@ -138,7 +159,7 @@ class OrderService implements IOrderService
             if ($ticketTypeId !== null) {
                 $reserved = $this->ticketService->reserveSeats($ticketTypeId, (int)$item->quantity);
                 if (!$reserved) {
-                    throw new \OverflowException(
+                    throw new ValidationException(
                         "Ticket type {$ticketTypeId} is sold out or has insufficient capacity."
                     );
                 }
@@ -150,7 +171,7 @@ class OrderService implements IOrderService
         $this->hydrateSessionCart($cart);
     }
     // Saves the session cart to the DB and returns the new order ID.
-    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): int
+    public function persistSessionCart(Order $order, User $user, bool $ticketsAlreadyLocked = false): Order
     {
         $order->user = $user;
         $order->order_id = null;
@@ -159,18 +180,32 @@ class OrderService implements IOrderService
         $order->calculateTotals();
 
         if (!$ticketsAlreadyLocked) {
-            // Build items array and reserve all seats in a single transaction
+            // Build items array and reserve all seats in a single transaction.
+            // For pass-type tickets, expand to all sibling ticket types sharing the same scheme
+            // so that 1 pass purchase deducts 1 slot from every schedule for that pass.
             $items = [];
             foreach ($order->orderItems as $item) {
                 $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+                $schemeEnum   = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+                $schemeId     = $item->ticket_type?->ticket_scheme?->ticket_scheme_id ?? null;
+                $quantity     = (int)$item->quantity;
+
                 if ($ticketTypeId === null) {
                     continue;
                 }
-                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => (int)$item->quantity];
+
+                if ($schemeEnum !== null && TicketSchemeEnum::isPassType($schemeEnum) && $schemeId !== null) {
+                    $siblingIds = $this->ticketService->getTicketTypeIdsBySchemeId($schemeId);
+                    foreach ($siblingIds as $siblingId) {
+                        $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
+                    }
+                } else {
+                    $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+                }
             }
 
             if (!empty($items) && !$this->ticketService->reserveMultiple($items)) {
-                throw new \OverflowException(
+                throw new ValidationException(
                     'One or more ticket types are sold out or have insufficient capacity. Please review your cart.'
                 );
             }
@@ -188,7 +223,7 @@ class OrderService implements IOrderService
             throw new \RuntimeException('Failed to persist session cart: missing order ID after insert.');
         }
 
-        return $order->order_id;
+        return $order;
     }
     public function hydrateSessionCart(Order $order): void
     {
@@ -220,8 +255,7 @@ class OrderService implements IOrderService
                 $dbCart = $this->getOpenOrderByUserId($user->id, $openStatuses);
             }
 
-            $newOrderId = $this->persistSessionCart($sessionCart, $user);
-            $persistedOrder = $this->getOrderById($newOrderId);
+            $persistedOrder = $this->persistSessionCart($sessionCart, $user);;
             if ($persistedOrder !== null) {
                 $this->hydrateSessionCart($persistedOrder);
             } else {
@@ -257,6 +291,7 @@ class OrderService implements IOrderService
         $cart->calculateTotals();
         $this->hydrateSessionCart($cart);
         if ($cart->order_id !== null && $itemToRemove->orderitem_id !== null) {
+            $this->ticketService->releaseOrderItems([$itemToRemove]);
             $this->orderRepository->removeOrderItem($itemToRemove->orderitem_id);
             $this->orderRepository->updateOrderTotals($cart);
         }
@@ -268,6 +303,9 @@ class OrderService implements IOrderService
         if ($cart === null) {
             throw new \RuntimeException('No session cart found when trying to update order item.');
         }
+        /**
+         * @var OrderItem $itemToUpdate
+         */
         $itemToUpdate = $this->getOrderItemFromCartBySessionItemId($cart, $sessionOrderItemId);
         if ($itemToUpdate === null) {
             throw new \RuntimeException("No order item found in cart with sessionOrderitem_id {$sessionOrderItemId}.");
@@ -318,4 +356,252 @@ class OrderService implements IOrderService
 
         return $paidItems;
     }
+        public function getOrdersWhereStatusIn(array $statuses): array
+        {
+            return $this->orderRepository->getOrdersWhereStatusIn($statuses);
+        }
+
+        public function canUserDownloadOrderTickets(User $user, Order $order): bool
+        {
+            return $user->id === $order->user->id || $user->role === \App\Models\Enums\UserRole::ADMIN;
+        }
+
+        public function authorizeOrderOwnership(User $user, Order $order, callable $onUnauthorized): bool
+        {
+            if ($user->id !== $order->user->id && $user->role !== \App\Models\Enums\UserRole::ADMIN) {
+                $onUnauthorized();
+                return false;
+            }
+            return true;
+        }
+
+        public function getAllowedExportColumns(): array
+        {
+            return $this->orderRepository->getAllowedExportColumns();
+        }
+        public function getAllOrdersForExport(array $requestedColumns, ?string $paidAfter = null): array
+        {
+            return $this->orderRepository->getAllOrdersForExport($requestedColumns, $paidAfter);
+        }
+
+        /**
+         * Generate and download/save a CSV file from order data
+         * 
+         * Converts array of associative arrays into a properly formatted CSV with UTF-8 BOM
+         * for Excel compatibility. Supports dynamic column selection and optional file saving.
+         * 
+         * @param array $data Array of associative arrays containing order data
+         * @param string $filename Filename without extension (will add .csv)
+         * @param array $requestedColumns Array of column names to include in export (if empty, includes all)
+         * @param bool $download Whether to send file as download (default: true)
+         * @param bool $save Whether to save file to server (default: false)
+         * @param string $savePath Path to save file when $save is true (default: 'Assets/documents/')
+         * 
+         * @return bool True if successful
+         * 
+         * @throws ValidationException If $data is not an array, is empty, or $requestedColumns is not an array
+         * @throws \Exception If memory stream creation or file operations fail
+         */
+        function generateCSV($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/')
+        {
+            try {
+                // Ensure $data is an array
+                if (!is_array($data)) {
+                    throw new ValidationException('Data must be an array. Received: ' . gettype($data));
+                }
+
+                // Validate data is not empty
+                if (empty($data)) {
+                    throw new ValidationException('No data provided for CSV export');
+                }
+
+                // Validate requestedColumns is an array
+                if (!is_array($requestedColumns)) {
+                    throw new ValidationException('Requested columns must be an array. Received: ' . gettype($requestedColumns));
+                }
+
+                // Ensure data format - already arrays from repository
+                // No conversion needed; data from getAllOrdersForExport is already arrays
+                $csvData = $data;
+
+                // Filter to only requested columns if provided
+                if (!empty($requestedColumns)) {
+                    $csvData = array_map(function($row) use ($requestedColumns) {
+                        $filtered = [];
+                        foreach ($requestedColumns as $col) {
+                            $filtered[$col] = $row[$col] ?? '';
+                        }
+                        return $filtered;
+                    }, $csvData);
+                }
+
+                // Create CSV in memory
+                $output = fopen('php://memory', 'r+');
+                if (!$output) {
+                    throw new \Exception('Failed to create memory stream');
+                }
+
+                // Write header row
+                $headers = array_keys($csvData[0]);
+                fputcsv($output, $headers, ',', '"', '\\');
+
+                // Write data rows
+                foreach($csvData as $row){
+                    fputcsv($output, array_values($row), ',', '"', '\\');
+                }
+
+                // Get CSV content
+                rewind($output);
+                $csvContent = stream_get_contents($output);
+                fclose($output);
+
+                // Add UTF-8 BOM for Excel compatibility (tells Excel to use comma delimiter)
+                $csvContent = "\xEF\xBB\xBF" . $csvContent;
+
+                // Save to server if requested
+                if($save){
+                    if (!is_dir($savePath)) {
+                        mkdir($savePath, 0755, true);
+                    }
+                    file_put_contents($savePath . $filename . '.csv', $csvContent);
+                }
+
+                // Download as CSV file
+                if($download){
+                    // Clear any previous output/buffering before sending headers
+                    while (ob_get_level() > 0) {
+                        ob_end_clean();
+                    }
+                    
+                    // Set headers for file download
+                    header('Content-Type: text/csv; charset=utf-8');
+                    header('Content-Disposition: attachment; filename="' . $filename . '.csv"');
+                    header('Content-Length: ' . strlen($csvContent));
+                    header('Pragma: no-cache');
+                    header('Expires: 0');
+                    header('Cache-Control: no-cache, no-store, must-revalidate');
+                    header('Connection: close');
+                    
+                    echo $csvContent;
+                    exit;
+                }
+
+                return true;
+            } catch (\Exception $e) {
+                throw new \Exception("CSV generation failed: " . $e->getMessage());
+            }
+        }
+
+        /**
+         * Generate and download/save an Excel file from order data using HTML table format
+         * 
+         * Converts array of associative arrays into a formatted HTML table with inline styles
+         * that Excel recognizes. Includes colored headers, alternating row colors, and borders.
+         * Supports dynamic column selection and optional file saving.
+         * 
+         * @param array $data Array of associative arrays containing order data
+         * @param string $filename Filename without extension (will add .xls)
+         * @param array $requestedColumns Array of column names to include in export (if empty, includes all)
+         * @param bool $download Whether to send file as download (default: true)
+         * @param bool $save Whether to save file to server (default: false)
+         * @param string $savePath Path to save file when $save is true (default: 'Assets/documents/')
+         * 
+         * @return bool True if successful
+         * 
+         * @throws ValidationException If $data is not an array or is empty
+         * @throws \Exception If file operations fail
+         */
+        public function generateExcelViaHtml($data, $filename, $requestedColumns = [], $download = true, $save = false, $savePath = 'Assets/documents/')
+        {
+            try {
+                // Ensure data is an array
+                if (!is_array($data)) {
+                    throw new ValidationException('Data must be an array. Received: ' . gettype($data));
+                }
+
+                // Validate data is not empty
+                if (empty($data)) {
+                    throw new ValidationException('No data provided for Excel export');
+                }
+
+                // Ensure data is array of associative arrays
+                $htmlData = $data;
+
+                // Filter to only requested columns if provided
+                if (!empty($requestedColumns)) {
+                    $htmlData = array_map(function($row) use ($requestedColumns) {
+                        $filtered = [];
+                        foreach ($requestedColumns as $col) {
+                            $filtered[$col] = $row[$col] ?? '';
+                        }
+                        return $filtered;
+                    }, $htmlData);
+                }
+
+                // Get headers from first row
+                $headers = array_keys($htmlData[0]);
+
+                // Build HTML table with inline styles for Excel compatibility
+                $html = '<!DOCTYPE html>
+                    <html>
+                        <head>
+                            <meta charset="UTF-8">
+                        </head>
+                        <body>
+                            <table style="border-collapse: collapse; width: 100%;">';
+
+                // Write header row with inline styles
+                $html .= '<tr>';
+                foreach ($headers as $header) {
+                    $html .= '<th style="background-color: #4472C4; color: white; padding: 12px; border: 1px solid #ddd; font-weight: bold; text-align: left;">' 
+                        . htmlspecialchars($header) . '</th>';
+                }
+                $html .= '</tr>';
+
+                // Add data rows with alternating colors
+                $rowCount = 0;
+                foreach ($htmlData as $row) {
+                    $bgColor = ($rowCount % 2 === 0) ? '#ffffff' : '#f9f9f9';
+                    $html .= '<tr style="background-color: ' . $bgColor . ';">';
+                    foreach ($row as $value) {
+                        $html .= '<td style="padding: 8px; border: 1px solid #ddd;">' 
+                            . htmlspecialchars($value ?? '') . '</td>';
+                    }
+                    $html .= '</tr>';
+                    $rowCount++;
+                }
+                $html .= '</table></body></html>';
+
+                // Save to server if requested
+                if ($save) {
+                    if (!is_dir($savePath)) {
+                        mkdir($savePath, 0755, true);
+                    }
+                    file_put_contents($savePath . $filename . '.html', $html);
+                }
+
+                // Download as Excel file
+                if ($download) {
+                    // Clear any previous output/buffering before sending headers
+                    while (ob_get_level() > 0) {
+                        ob_end_clean();
+                    }
+
+                    // Set headers for Excel download
+                    header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+                    header('Content-Disposition: attachment; filename="' . $filename . '.xls"');
+                    header('Pragma: no-cache');
+                    header('Expires: 0');
+                    header('Cache-Control: no-cache, no-store, must-revalidate');
+
+                    echo $html;
+                    exit;
+                }
+
+                return true;
+
+            } catch (\Exception $e) {
+                throw new \Exception("Excel generation failed: " . $e->getMessage());
+            }
+        }
 }

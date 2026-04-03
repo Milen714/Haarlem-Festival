@@ -51,15 +51,15 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             <div class="space-y-2">
                 <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All
                     Restaurants</a>
-                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Sessions
-                    (Pending)</a>
-                <a href="/cms/restaurants" class="block text-blue-600 hover:underline font-semibold">→ View All Cuisine
-                    (Pending)</a>
-                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Restaurant</a>
-                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Session
-                    (Pending)</a>
-                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">+ Add New Cuisine
-                    (Pending)</a>
+                <a href="/cms/restaurants/cuisines" class="block text-blue-600 hover:underline font-semibold">
+                    → View All Cuisine
+                </a>
+                <a href="/cms/restaurants/create" class="block text-green-600 hover:underline">
+                    + Add New Restaurant
+                </a>
+                <a href="/cms/restaurants/cuisines/create" class="block text-green-600 hover:underline">
+                    + Add New Cuisine
+                </a>
             </div>
         </article>
 
@@ -73,6 +73,18 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             <div class="space-y-2">
                 <a href="/cms/venues" class="block text-blue-600 hover:underline font-semibold">→ View All Venues</a>
                 <a href="/cms/venues/create" class="block text-green-600 hover:underline">+ Add New Venue</a>
+            </div>
+        </article>
+
+        <!--Exports -->
+        <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center mb-4">
+                <span class="text-4xl mr-4">📊</span>
+                <h2 class="text-2xl font-bold">Orders Export</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Export orders as CSV or Excel with custom columns</p>
+            <div class="space-y-2">
+                <a href="/cms/export-orders" class="block text-blue-600 hover:underline font-semibold">→ Export Orders (CSV & Excel)</a>
             </div>
         </article>
 

@@ -11,7 +11,7 @@
       </div>
     </div>
     <figure class="relative">
-      <img src="<?= htmlspecialchars($restaurant->chef_img->file_path) ?>" alt="<?= htmlspecialchars($restaurant->chef_img->alt_text) ?>" class="w-full rounded shadow-2xl grayscale hover:grayscale-0 transition duration-500">
+      <img src="<?= htmlspecialchars($restaurant->chef_img->file_path) ?>" alt="<?= htmlspecialchars($restaurant->chef_img->alt_text) ?>" class="w-13 rounded shadow-2xl grayscale hover:grayscale-0 transition duration-500">
     </figure>
   </div>
 </section>

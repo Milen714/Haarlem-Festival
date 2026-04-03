@@ -8,6 +8,7 @@
  */
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../config/config.php';
 
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
@@ -38,6 +39,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
     $r->addRoute('GET', '/getScheduleDates', ['App\Controllers\HomeController', 'getScheduleDates']);
+    $r->addRoute('GET', '/getVenues', ['App\Controllers\HomeController', 'getVenues']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
@@ -64,6 +66,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
     $r->addRoute('GET', '/events-yummy/restaurants/{id}', ['App\Controllers\YummyController', 'restaurantDetail']);
+    
 
     $r->addRoute('GET', '/dance', ['App\Controllers\DanceController', 'index']);
 
@@ -88,6 +91,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/cms/artists/edit/{id:\d+}', ['App\Controllers\ArtistController', 'edit']);
     $r->addRoute('POST', '/cms/artists/update/{id:\d+}', ['App\Controllers\ArtistController', 'update']);
     $r->addRoute('POST', '/cms/artists/delete/{id:\d+}', ['App\Controllers\ArtistController', 'delete']);
+    $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
+    $r->addRoute('POST', '/cms/artists/{artistId:\d+}/albums/store', ['App\Controllers\ArtistController', 'addAlbum']);
+    $r->addRoute('POST', '/cms/artists/{artistId:\d+}/albums/remove/{albumId:\d+}', ['App\Controllers\ArtistController', 'removeAlbum']);
 
     /*CMS Restaurant Management */
     $r->addRoute('GET', '/cms/restaurants', ['App\Controllers\RestaurantController', 'index']);
@@ -96,8 +102,12 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/restaurants/update/{id:\d+}', ['App\Controllers\RestaurantController', 'update']);
     $r->addRoute('POST', '/cms/restaurants/store', ['App\Controllers\RestaurantController', 'store']);
     $r->addRoute('POST', '/cms/restaurants/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'delete']);
-    $r->addRoute('POST', '/cms/artists/gallery-remove/{artistId:\d+}/{mediaId:\d+}', ['App\Controllers\ArtistController', 'removeGalleryImage']);
-
+    $r->addRoute('POST', '/cms/restaurants/gallery-remove/{restaurantId:\d+}/{mediaId:\d+}', ['App\Controllers\RestaurantController', 'removeGallery']);
+    //cuisine part 
+    $r->addRoute('GET', '/cms/restaurants/cuisines', ['App\Controllers\RestaurantController', 'showCuisines']);
+    $r->addRoute('GET', '/cms/restaurants/cuisines/create', ['App\Controllers\RestaurantController', 'createCuisine']);
+    $r->addRoute('GET', '/cms/restaurants/cuisines/edit/{id:\d+}', ['App\Controllers\RestaurantController', 'editCuisine']);
+    $r->addRoute('POST', '/cms/restaurants/cuisine/update/{id:\d+}', ['App\Controllers\RestaurantController', 'updateCuisine']);
     /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
     $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
@@ -151,6 +161,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
     $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
+    /* CMS Export */
+    $r->addRoute('GET', '/cms/export-orders', ['App\Controllers\CmsController', 'exportOrders']);
+
     /* Stripe Webhook */
     $r->addRoute('POST', '/stripe/webhook', ['App\Controllers\StripeWebhookController', 'handle']);
 
@@ -160,19 +173,27 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/create-checkout-session', ['App\Controllers\PaymentController', 'createCheckoutSession']);
     $r->addRoute('GET', '/return', ['App\Controllers\PaymentController', 'return']);
     $r->addRoute('POST', '/payment-status', ['App\Controllers\PaymentController', 'status']);
+    $r->addRoute('POST', '/payment/ticket-ready', ['App\Controllers\PaymentController', 'ticketReady']);
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
+    $r->addRoute('GET', '/personal-program', ['App\Controllers\PersonalProgramController', 'personalProgram']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
     $r->addRoute('GET', '/getOrderItemData', ['App\Controllers\OrderController', 'getOrderItemDataForUpdate']);
     $r->addRoute('POST', '/updateOrderItem', ['App\Controllers\OrderController', 'updateOrderItemInCart']);
+    $r->addRoute('GET', '/test-mail-view', ['App\Controllers\PaymentController', 'sendTicketEmail']);
+    $r->addRoute('GET', '/payment/downloadTickets', ['App\Controllers\OrderController', 'downloadTickets']);
 
     /* Qr code */
-    $r->addRoute('GET', '/my-tickets', ['App\Controllers\OrderController', 'showUserTickets']);
     $r->addRoute('GET', '/qr-code/scan', ['App\Controllers\EmployeeController', 'scanPage']);
     $r->addRoute('POST', '/qr-code/validate', ['App\Controllers\EmployeeController', 'validateScan']);
+
+    /* Export */
+    $r->addRoute('GET', '/getOrderColumns', ['App\Controllers\OrderController', 'getOrderColumns']);
+    $r->addRoute('POST', '/exportOrders', ['App\Controllers\OrderController', 'exportOrders']);
+    $r->addRoute('POST', '/exportOrdersExcel', ['App\Controllers\OrderController', 'exportOrdersExcel']);
 });
 
 

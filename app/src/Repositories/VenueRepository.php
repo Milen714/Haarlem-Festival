@@ -47,7 +47,6 @@ class VenueRepository extends Repository implements IVenueRepository
 
             return $venues;
         } catch (PDOException $e) {
-            error_log("Error fetching venues by event: " . $e->getMessage());
             throw new PDOException("Failed to fetch venues for event {$eventId}", 0, $e);
         }
     }
@@ -58,7 +57,7 @@ class VenueRepository extends Repository implements IVenueRepository
             $pdo = $this->connect();
 
             $query = "
-                SELECT 
+                SELECT
                     v.*,
                     m.file_path as image_path,
                     m.alt_text as image_alt,
@@ -87,11 +86,21 @@ class VenueRepository extends Repository implements IVenueRepository
             $venue->fromPDOData($result);
             return $venue;
         } catch (PDOException $e) {
-            error_log("Error fetching venue by ID: " . $e->getMessage());
             throw new PDOException("Failed to fetch venue by ID: {$venueId}", 0, $e);
         }
     }
 
+    /**
+     * Hard-deletes a venue row from the database.
+     * Note: the VENUE table has no deleted_at column, so this is a permanent removal.
+     * Ensure no active schedules reference this venue before calling.
+     *
+     * @param int $venueId  The primary key of the venue to permanently delete.
+     *
+     * @return bool  True if the DELETE executed successfully.
+     *
+     * @throws PDOException  If the database query fails.
+     */
     public function delete(int $venueId): bool
     {
         try {
@@ -104,7 +113,6 @@ class VenueRepository extends Repository implements IVenueRepository
 
             return $stmt->execute();
         } catch (PDOException $e) {
-            error_log("Error deleting venue: " . $e->getMessage());
             throw new PDOException("Failed to delete venue", 0, $e);
         }
     }
@@ -115,9 +123,8 @@ class VenueRepository extends Repository implements IVenueRepository
             $pdo = $this->connect();
 
             $query = "
-            SELECT 
+            SELECT
                 v.*,
-                v.venue_image_id,
                 m.media_id,
                 m.file_path as image_path,
                 m.alt_text as image_alt,
@@ -144,16 +151,22 @@ class VenueRepository extends Repository implements IVenueRepository
                 $venues[] = $venue;
             }
 
-             
+
         return $venues;
     } catch (PDOException $e) {
-        error_log("Error fetching all venues: " . $e->getMessage());
         throw new PDOException("Failed to fetch venues: " . $e->getMessage(), 0, $e);
     }
     }
 
     /**
-     * Create new venue
+     * Inserts a new venue record and writes the generated primary key back onto the Venue object.
+     * Call Venue::createFromPostData() before this to build the object from form input.
+     *
+     * @param Venue $venue  The venue to persist; venue_id will be set to the new auto-increment value on success.
+     *
+     * @return bool  True if the INSERT succeeded.
+     *
+     * @throws PDOException  If the database query fails.
      */
     public function create(Venue $venue): bool
     {
@@ -171,6 +184,8 @@ class VenueRepository extends Repository implements IVenueRepository
                     capacity,
                     phone,
                     email,
+                    latitude,
+                    longitude,
                     venue_image_id
                 ) VALUES (
                     :name,
@@ -182,6 +197,8 @@ class VenueRepository extends Repository implements IVenueRepository
                     :capacity,
                     :phone,
                     :email,
+                    :latitude,
+                    :longitude,
                     :venue_image_id
                 )
             ";
@@ -196,6 +213,8 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt->bindValue(':capacity', $venue->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':phone', $venue->phone);
             $stmt->bindValue(':email', $venue->email);
+            $stmt->bindValue(':latitude', $venue->latitude);
+            $stmt->bindValue(':longitude', $venue->longitude);
 
             $venueImageId = $venue->venue_image?->media_id ?? null;
             $stmt->bindValue(':venue_image_id', $venueImageId, PDO::PARAM_INT);
@@ -213,9 +232,6 @@ class VenueRepository extends Repository implements IVenueRepository
         }
     }
 
-    /**
-     * Update existing venue
-     */
     public function update(Venue $venue): bool
     {
         try {
@@ -232,6 +248,8 @@ class VenueRepository extends Repository implements IVenueRepository
                     capacity = :capacity,
                     phone = :phone,
                     email = :email,
+                    latitude = :latitude,
+                    longitude = :longitude,
                     venue_image_id = :venue_image_id
                 WHERE venue_id = :venue_id
             ";
@@ -247,6 +265,8 @@ class VenueRepository extends Repository implements IVenueRepository
             $stmt->bindValue(':capacity', $venue->capacity, PDO::PARAM_INT);
             $stmt->bindValue(':phone', $venue->phone);
             $stmt->bindValue(':email', $venue->email);
+            $stmt->bindValue(':latitude', $venue->latitude);
+            $stmt->bindValue(':longitude', $venue->longitude);
 
             $venueImageId = $venue->venue_image?->media_id ?? null;
             $stmt->bindValue(':venue_image_id', $venueImageId, PDO::PARAM_INT);

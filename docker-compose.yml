@@ -76,3 +76,11 @@ services:
         volumes:
             - ./ca.pem:/etc/ssl/certs/aiven-ca.pem:ro
         restart: unless-stopped
+
+    cron:
+      build:
+        context: .
+        dockerfile: Cron.Dockerfile
+      volumes:
+        - ./app:/app
+        - /var/run/docker.sock:/var/run/docker.sock

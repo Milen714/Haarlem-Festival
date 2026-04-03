@@ -10,6 +10,9 @@ use App\Models\Enums\TicketSchemeEnum;
 use App\Services\Interfaces\ITicketService;
 use App\Repositories\Interfaces\ITicketRepository;
 use App\Repositories\TicketRepository;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ApplicationException;
 
 class TicketService implements ITicketService
 {
@@ -90,22 +93,26 @@ class TicketService implements ITicketService
         return $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
     }
 
+    public function getTicketTypeIdsBySchemeId(int $schemeId): array
+    {
+        return $this->ticketRepository->getTicketTypeIdsBySchemeId($schemeId);
+    }
+
     public function getAvailableCapacity(int $ticketTypeId): int
     {
         return $this->ticketRepository->getAvailableCapacity($ticketTypeId);
     }
 
-    // Hard-locks seats. Call at checkout, not at add-to-cart.
     public function reserveSeats(int $ticketTypeId, int $quantity): bool
     {
         return $this->ticketRepository->atomicIncrementTicketsSold($ticketTypeId, $quantity);
     }
 
-    // Reserves seats for multiple ticket types in one transaction. All or nothing.
     public function reserveMultiple(array $items): bool
     {
         return $this->ticketRepository->reserveMultiple($items);
     }
+
 
     public function releaseSeats(int $ticketTypeId, int $quantity): bool
     {
@@ -113,13 +120,26 @@ class TicketService implements ITicketService
     }
 
     // Releases all tickets from an order's items in one transaction. Used by the webhook on session expiry.
+    // For pass-type tickets, releases from all sibling ticket types sharing the same scheme.
     public function releaseOrderItems(array $orderItems): void
     {
         $items = [];
         foreach ($orderItems as $item) {
             $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
+            $schemeEnum   = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+            $schemeId     = $item->ticket_type?->ticket_scheme?->ticket_scheme_id ?? null;
             $quantity     = (int)($item->quantity ?? 0);
-            if ($ticketTypeId !== null && $quantity > 0) {
+
+            if ($ticketTypeId === null || $quantity <= 0) {
+                continue;
+            }
+
+            if ($schemeEnum !== null && TicketSchemeEnum::isPassType($schemeEnum) && $schemeId !== null) {
+                $siblingIds = $this->ticketRepository->getTicketTypeIdsBySchemeId($schemeId);
+                foreach ($siblingIds as $siblingId) {
+                    $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
+                }
+            } else {
                 $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
             }
         }
@@ -128,22 +148,21 @@ class TicketService implements ITicketService
         }
     }
 
-    // Throws if adding this capacity would exceed the venue's limit. Pass excludeTicketTypeId when editing an existing type.
     public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void
     {
         $existing     = $this->ticketRepository->getTotalAllocatedCapacityForSchedule($scheduleId, $excludeTicketTypeId);
         $venueCapacity = $this->ticketRepository->getVenueCapacityForSchedule($scheduleId);
 
         if ($venueCapacity === null) {
-            // No venue or venue has no capacity set — skip validation
+
             return;
         }
 
         $total = $existing + $newCapacity;
         if ($total > $venueCapacity) {
-            throw new \OverflowException(
+            throw new ValidationException(
                 "Total ticket capacity ({$total}) would exceed the venue capacity ({$venueCapacity}). " .
-                "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
+                    "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
             );
         }
     }
@@ -153,13 +172,13 @@ class TicketService implements ITicketService
         $usageCount = $this->ticketRepository->countTicketTypesBySchemeId($ticketSchemeId);
 
         if ($usageCount > 0) {
-            throw new \Exception("This ticket scheme is currently used by {$usageCount} ticket type(s) and cannot be deleted.");
+            throw new ValidationException("This ticket scheme is currently used by {$usageCount} ticket type(s) and cannot be deleted.");
         }
 
         $success = $this->ticketRepository->deleteTicketScheme($ticketSchemeId);
 
         if (!$success) {
-            throw new \Exception('Failed to delete ticket scheme in database');
+            throw new ApplicationException('Failed to delete ticket scheme in database');
         }
     }
 
@@ -171,7 +190,7 @@ class TicketService implements ITicketService
         $success = $this->ticketRepository->createTicketScheme($ticketScheme);
 
         if (!$success) {
-            throw new \Exception('Failed to create ticket scheme in database');
+            throw new ApplicationException('Failed to create ticket scheme in database');
         }
 
         return $ticketScheme;
@@ -182,7 +201,7 @@ class TicketService implements ITicketService
         $ticketScheme = $this->ticketRepository->getTicketSchemeById($ticketSchemeId);
 
         if (!$ticketScheme) {
-            throw new \Exception('Ticket scheme not found');
+            throw new ResourceNotFoundException('Ticket scheme not found.');
         }
 
         $this->validateTicketSchemeData($postData);
@@ -191,7 +210,7 @@ class TicketService implements ITicketService
         $success = $this->ticketRepository->updateTicketScheme($ticketScheme);
 
         if (!$success) {
-            throw new \Exception('Failed to update ticket scheme in database');
+            throw new ApplicationException('Failed to update ticket scheme in database');
         }
 
         return $ticketScheme;
@@ -206,7 +225,7 @@ class TicketService implements ITicketService
         $success = $this->ticketRepository->create($ticketType);
 
         if (!$success) {
-            throw new \Exception('Failed to create ticket type in database');
+            throw new ApplicationException('Failed to create ticket type in database');
         }
 
         return $ticketType;
@@ -217,11 +236,11 @@ class TicketService implements ITicketService
         $ticketType = $this->ticketRepository->getTicketTypeById($ticketTypeId);
 
         if (!$ticketType) {
-            throw new \Exception('Ticket type not found');
+            throw new ResourceNotFoundException('Ticket type not found.');
         }
 
         if (($ticketType->schedule?->schedule_id ?? null) !== $scheduleId) {
-            throw new \Exception('Ticket type does not belong to this schedule');
+            throw new ValidationException('Ticket type does not belong to this schedule.');
         }
 
         $this->validateTicketTypeData($postData);
@@ -231,7 +250,7 @@ class TicketService implements ITicketService
         $success = $this->ticketRepository->update($ticketType);
 
         if (!$success) {
-            throw new \Exception('Failed to update ticket type in database');
+            throw new ApplicationException('Failed to update ticket type in database');
         }
 
         return $ticketType;
@@ -245,34 +264,34 @@ class TicketService implements ITicketService
         $maxQuantity = (int)($postData['max_quantity'] ?? 0);
 
         if ($schemeId <= 0) {
-            throw new \Exception('Please select a ticket scheme');
+            throw new ValidationException('Please select a ticket scheme.');
         }
 
         if (!$this->ticketRepository->getTicketSchemeById($schemeId)) {
-            throw new \Exception('Selected ticket scheme was not found');
+            throw new ValidationException('Selected ticket scheme was not found.');
         }
 
         if ($capacity <= 0) {
-            throw new \Exception('Capacity must be greater than 0');
+            throw new ValidationException('Capacity must be greater than 0.');
         }
 
         if ($minQuantity <= 0) {
-            throw new \Exception('Minimum quantity must be at least 1');
+            throw new ValidationException('Minimum quantity must be at least 1.');
         }
 
         if ($maxQuantity <= 0) {
-            throw new \Exception('Maximum quantity must be at least 1');
+            throw new ValidationException('Maximum quantity must be at least 1.');
         }
 
         if ($minQuantity > $maxQuantity) {
-            throw new \Exception('Minimum quantity cannot be greater than maximum quantity');
+            throw new ValidationException('Minimum quantity cannot be greater than maximum quantity.');
         }
 
         $minAge = trim((string)($postData['min_age'] ?? ''));
         $maxAge = trim((string)($postData['max_age'] ?? ''));
 
         if ($minAge !== '' && $maxAge !== '' && (int)$minAge > (int)$maxAge) {
-            throw new \Exception('Minimum age cannot be greater than maximum age');
+            throw new ValidationException('Minimum age cannot be greater than maximum age.');
         }
     }
 
@@ -302,28 +321,28 @@ class TicketService implements ITicketService
         $ticketLanguage = $postData['ticket_language'] ?? null;
 
         if ($name === null) {
-            throw new \Exception('Ticket scheme name is required');
+            throw new ValidationException('Ticket scheme name is required.');
         }
 
         if (!is_string($schemeEnum) || trim($schemeEnum) === '') {
-            throw new \Exception('Ticket scheme type is required');
+            throw new ValidationException('Ticket scheme type is required.');
         }
 
         try {
             TicketSchemeEnum::from(trim($schemeEnum));
         } catch (\ValueError $e) {
-            throw new \Exception('Selected ticket scheme type is invalid');
+            throw new ValidationException('Selected ticket scheme type is invalid.');
         }
 
         if (!is_numeric($priceRaw) || (float)$priceRaw < 0) {
-            throw new \Exception('Price must be a valid non-negative number');
+            throw new ValidationException('Price must be a valid non-negative number.');
         }
 
         if (is_string($ticketLanguage) && trim($ticketLanguage) !== '') {
             try {
                 TicketLanguageEnum::from(trim($ticketLanguage));
             } catch (\ValueError $e) {
-                throw new \Exception('Selected ticket language is invalid');
+                throw new ValidationException('Selected ticket language is invalid.');
             }
         }
     }

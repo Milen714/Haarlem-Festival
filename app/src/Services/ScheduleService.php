@@ -4,12 +4,17 @@ namespace App\Services;
 
 use App\Models\Schedule;
 use App\Services\Interfaces\IScheduleService;
+use App\Services\Interfaces\ILogService;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\TicketRepository;
 use App\Services\VenueService;
 use App\Services\ArtistService;
 use App\Services\RestaurantService;
 use App\Services\LandmarkService;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ApplicationException;
+
 class ScheduleService implements IScheduleService
 {
     private ScheduleRepository $scheduleRepository;
@@ -18,14 +23,23 @@ class ScheduleService implements IScheduleService
     private ArtistService $artistService;
     private RestaurantService $restaurantService;
     private LandmarkService $landmarkService;
+    private ILogService $logService;
 
-    public function __construct() {
+    /**
+     * Wires up all collaborating repositories and services needed for schedule operations.
+     * TicketRepository is used directly (not via a service) to check sold-out status per slot.
+     * VenueService, ArtistService, RestaurantService, and LandmarkService are used to populate
+     * CMS form dropdowns without requiring extra repository calls in the controller.
+     */
+    public function __construct()
+    {
         $this->scheduleRepository = new ScheduleRepository();
         $this->ticketRepository   = new TicketRepository();
         $this->venueService       = new VenueService();
         $this->artistService      = new ArtistService();
         $this->restaurantService  = new RestaurantService();
         $this->landmarkService    = new LandmarkService();
+        $this->logService         = new LogService();
     }
 
     public function getScheduleById(int $scheduleId): ?Schedule
@@ -40,7 +54,12 @@ class ScheduleService implements IScheduleService
 
     public function getSchedulesByEventId(int $eventId): array
     {
-        return $this->scheduleRepository->getScheduleByEventId($eventId);
+        return $this->scheduleRepository->getSchedulesByEventId($eventId);
+    }
+
+    public function getSchedulesByRestaurant(int $restaurantId): array
+    {
+        return $this->scheduleRepository->getSchedulesByRestaurant($restaurantId);
     }
 
     public function getBackToBackSpecialsByEventId(int $eventId): array
@@ -54,7 +73,7 @@ class ScheduleService implements IScheduleService
         $schedule = $this->buildScheduleFromPostData(new Schedule(), $postData);
         $success = $this->scheduleRepository->create($schedule);
         if (!$success) {
-            throw new \Exception('Failed to create schedule in database');
+            throw new ApplicationException('Failed to create schedule in database');
         }
         return $schedule;
     }
@@ -63,13 +82,13 @@ class ScheduleService implements IScheduleService
     {
         $schedule = $this->scheduleRepository->getScheduleById($scheduleId);
         if (!$schedule) {
-            throw new \Exception('Schedule not found');
+            throw new ResourceNotFoundException('Schedule not found.');
         }
         $this->validateScheduleData($postData);
         $schedule = $this->buildScheduleFromPostData($schedule, $postData);
         $success = $this->scheduleRepository->update($schedule);
         if (!$success) {
-            throw new \Exception('Failed to update schedule in database');
+            throw new ApplicationException('Failed to update schedule in database');
         }
         return $schedule;
     }
@@ -78,7 +97,7 @@ class ScheduleService implements IScheduleService
     {
         $schedule = $this->scheduleRepository->getScheduleById($scheduleId);
         if (!$schedule) {
-            throw new \Exception('Schedule not found');
+            throw new ResourceNotFoundException('Schedule not found.');
         }
         return $this->scheduleRepository->delete($scheduleId);
     }
@@ -98,12 +117,16 @@ class ScheduleService implements IScheduleService
         return $this->artistService->getAllArtists();
     }
 
+    /**
+     * Swallows exceptions from RestaurantService rather than propagating them, so a broken
+     * restaurant query doesn't block the entire schedule form from loading.
+     */
     public function getAllRestaurants(): array
     {
         try {
             return $this->restaurantService->showAllRestaurants();
         } catch (\Exception $e) {
-            error_log("ScheduleService: could not load restaurants - " . $e->getMessage());
+            $this->logService->exception('Schedule', $e);
             return [];
         }
     }
@@ -113,6 +136,10 @@ class ScheduleService implements IScheduleService
         return $this->landmarkService->getAllLandmarks();
     }
 
+    /**
+     * Returns false (not throws) when scheduleId is null or when no ticket types exist at all —
+     * an unconfigured slot should never be treated as sold out.
+     */
     private function isScheduleSoldOut(?int $scheduleId): bool
     {
         if ($scheduleId === null) return false;
@@ -124,25 +151,32 @@ class ScheduleService implements IScheduleService
         );
     }
 
+    /**
+     * Validates that event_id, date, start_time, end_time, and total_capacity (≥ 1) are all present.
+     */
     private function validateScheduleData(array $data): void
     {
         if (empty($data['event_id'])) {
-            throw new \Exception('Event category is required');
+            throw new ValidationException('Event category is required.');
         }
         if (empty($data['date'])) {
-            throw new \Exception('Date is required');
+            throw new ValidationException('Date is required.');
         }
         if (empty($data['start_time'])) {
-            throw new \Exception('Start time is required');
+            throw new ValidationException('Start time is required.');
         }
         if (empty($data['end_time'])) {
-            throw new \Exception('End time is required');
+            throw new ValidationException('End time is required.');
         }
         if (empty($data['total_capacity']) || (int)$data['total_capacity'] < 1) {
-            throw new \Exception('Total capacity must be at least 1');
+            throw new ValidationException('Total capacity must be at least 1.');
         }
     }
 
+    /**
+     * Maps post data onto an existing Schedule object without touching schedule_id.
+     * Date/time strings are parsed into DateTime objects; throws if the format is invalid.
+     */
     private function buildScheduleFromPostData(Schedule $schedule, array $data): Schedule
     {
         $schedule->event_id       = (int)($data['event_id'] ?? 0);
@@ -151,22 +185,26 @@ class ScheduleService implements IScheduleService
         $schedule->restaurant_id  = !empty($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
         $schedule->landmark_id    = !empty($data['landmark_id'])   ? (int)$data['landmark_id']   : null;
 
-        // Safely create DateTime objects with error handling
         try {
             $schedule->date       = !empty($data['date'])       ? new \DateTime($data['date'])       : null;
             $schedule->start_time = !empty($data['start_time']) ? new \DateTime($data['start_time']) : null;
             $schedule->end_time   = !empty($data['end_time'])   ? new \DateTime($data['end_time'])   : null;
         } catch (\Exception $e) {
-            throw new \Exception('Invalid date or time format: ' . $e->getMessage());
+            throw new ValidationException('Invalid date or time format.');
         }
 
         $schedule->total_capacity = (int)($data['total_capacity'] ?? 0);
         return $schedule;
     }
 
+    /**
+     * Pulls all event schedules then filters in PHP (not SQL) so we avoid an extra query.
+     * For each matching slot the lowest ticket price is resolved and sold-out state is checked
+     * via isScheduleSoldOut(). Slots within each date are sorted by start_time timestamp.
+     */
     public function getSchedulesForArtistInEvent(int $artistId, int $eventId): array
     {
-        $all = $this->scheduleRepository->getScheduleByEventId($eventId);
+        $all = $this->scheduleRepository->getSchedulesByEventId($eventId);
 
         $artistSchedules = array_values(array_filter(
             $all,
@@ -180,6 +218,15 @@ class ScheduleService implements IScheduleService
 
             $dateKey = $s->date->format('Y-m-d');
 
+            $ticketTypes  = $this->ticketRepository->getTicketTypesByScheduleId($s->schedule_id);
+            $ticketPrice  = null;
+            foreach ($ticketTypes as $tt) {
+                $price = $tt->ticket_scheme?->price ?? null;
+                if ($price !== null && ($ticketPrice === null || $price < $ticketPrice)) {
+                    $ticketPrice = $price;
+                }
+            }
+
             $grouped[$dateKey][] = [
                 'schedule_id'    => $s->schedule_id,
                 'date'           => $s->date,
@@ -192,6 +239,7 @@ class ScheduleService implements IScheduleService
                 'venue_capacity' => $s->venue?->capacity,
                 'total_capacity' => $s->total_capacity,
                 'is_sold_out'    => $this->isScheduleSoldOut($s->schedule_id),
+                'ticket_price'   => $ticketPrice,
             ];
         }
 
@@ -208,6 +256,14 @@ class ScheduleService implements IScheduleService
 
         return $grouped;
     }
+
+    // public function getRestaurantSchedulesWithTickets(int $restaurantId): array{
+    //     $schedules = $this->scheduleRepository->getSchedulesByRestaurant($restaurantId);
+
+    //     foreach($schedules as $schedule){
+    //         $schedule->tickets
+    //     }
+    // }
 
     public function getAvailableDates(): array
     {

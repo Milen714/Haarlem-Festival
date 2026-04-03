@@ -16,7 +16,7 @@ class CuisineRepository extends Repository implements ICuisineRepository{
         $pdo = $this->connect();
         $sql =
         "
-            SELECT cuisine_id, name, description, icon_url
+            SELECT *
             FROM CUISINE_TYPE
             ORDER BY name ASC
         ";
@@ -36,7 +36,7 @@ class CuisineRepository extends Repository implements ICuisineRepository{
             return $cuisines;
         } catch (PDOException $e) {
             error_log("Error fetching cuisines: " . $e->getMessage());
-            throw new \Exception("Failed to fetch cuisines");
+            throw new PDOException("Failed to fetch cuisines");
         }
     }
     public function getCuisineById(int $id): ?Cuisine

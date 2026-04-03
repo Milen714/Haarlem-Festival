@@ -8,6 +8,7 @@ use App\Exceptions\ValidationException;
 use App\Repositories\ArtistRepository;
 use App\Services\Interfaces\IArtistService;
 use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\ILogService;
 use App\Repositories\Interfaces\IArtistRepository;
 use App\Models\MusicEvent\Artist;
 
@@ -15,10 +16,16 @@ class ArtistService implements IArtistService
 {
     private IArtistRepository $artistRepository;
     private IMediaService $mediaService;
+    private ILogService $logService;
 
+    /**
+     * Wires up the ArtistRepository for data access and MediaService for handling
+     * profile image and gallery uploads.
+     */
     public function __construct() {
         $this->artistRepository = new ArtistRepository();
         $this->mediaService = new MediaService();
+        $this->logService = new LogService();
     }
 
     public function getArtistsByEventId(int $eventId): array
@@ -75,12 +82,8 @@ class ArtistService implements IArtistService
     }
 
     /**
-     * Update artist profile and handle all gallery operations in one transaction.
-     * This consolidates all update-related business logic in the service layer.
-     *
-     * @throws ResourceNotFoundException if artist not found
-     * @throws ValidationException if data validation fails
-     * @throws ApplicationException if any operation fails
+     * Update order: core fields → fresh gallery load → replace existing images → upload new images.
+     * Returns the core Artist (without re-fetched gallery); the gallery is updated as a side effect.
      */
     public function updateArtistWithGalleryFromRequest(int $artistId, array $postData, array $files): Artist
     {
@@ -106,8 +109,8 @@ class ArtistService implements IArtistService
     }
 
     /**
-     * Check if a file input contains any uploaded files.
-     * Handles both single-file and multi-file upload arrays.
+     * Handles both single-file and multi-file upload array shapes.
+     * Returns false when the input is null or has no populated name entries.
      */
     private function hasUploads(?array $fileInput): bool
     {
@@ -138,6 +141,9 @@ class ArtistService implements IArtistService
         return $this->artistRepository->delete($artistId);
     }
 
+    /**
+     * Validates name presence, length bounds (2–100 chars), and URL format for website/Spotify.
+     */
     private function validateArtistData(array $data): void
     {
         if (empty($data['name'])) {
@@ -161,7 +167,11 @@ class ArtistService implements IArtistService
         }
     }
 
-
+    /**
+     * Skips silently when no file is present or the upload errored.
+     * Calls replaceMedia() when the artist already has a media_id (update path),
+     * otherwise uploadAndCreate() (create path). Throws ApplicationException on failure.
+     */
     private function handleImageUpload(Artist $artist, array $files): Artist
     {
         if (!isset($files['profile_image']) || $files['profile_image']['error'] !== UPLOAD_ERR_OK) {
@@ -193,6 +203,7 @@ class ArtistService implements IArtistService
 
         return $artist;
     }
+
     public function isArtistInEvent(int $artistId, int $eventId): bool
     {
         return $this->artistRepository->isArtistInEvent($artistId, $eventId);
@@ -204,12 +215,9 @@ class ArtistService implements IArtistService
     }
 
     /**
-     * Upload one or more gallery images for an artist.
-     * Creates a gallery for the artist if they don't have one yet.
-     *
-     * @param int         $artistId
-     * @param Artist|null $artist   The current artist (must have gallery_id if it already has a gallery)
-     * @param array       $files    The $_FILES['gallery_images'] array (multi-file)
+     * Creates a gallery row first if the artist has none yet, then uploads each file to
+     * 'Jazz/Artists' and links it via addMediaToGallery(). Skips files with upload errors
+     * rather than aborting the whole batch.
      */
     public function uploadGalleryImages(int $artistId, ?Artist $artist, array $files): void
     {
@@ -241,13 +249,14 @@ class ArtistService implements IArtistService
                 $order = $this->artistRepository->getNextGalleryOrder($galleryId);
                 $this->artistRepository->addMediaToGallery($galleryId, $result['media']->media_id, $order);
             } else {
-                error_log("Gallery image upload failed: " . ($result['error'] ?? 'unknown'));
+                $this->logService->warning('Artist', 'Gallery image upload failed', ['error' => $result['error'] ?? 'unknown']);
             }
         }
     }
 
     /**
-     * Replace existing gallery images from request file inputs named gallery_replace_{mediaId}.
+     * Scans $_FILES for keys matching 'gallery_replace_{mediaId}'. Validates each mediaId
+     * against the artist's actual gallery to prevent replacing images that don't belong to them.
      */
     public function replaceGalleryImagesFromRequest(?Artist $artist, array $files): void
     {
@@ -286,9 +295,6 @@ class ArtistService implements IArtistService
         }
     }
 
-    /**
-     * Remove a gallery image from an artist's gallery (unlinks from gallery, keeps MEDIA record).
-     */
     public function removeGalleryImage(int $artistId, int $mediaId): bool
     {
         $artist = $this->artistRepository->getArtistByIdWithGallery($artistId);
@@ -301,7 +307,9 @@ class ArtistService implements IArtistService
     }
 
     /**
-     * Convert PHP's multi-file upload array structure into a simple list of single-file arrays.
+     * PHP's multi-file upload arrays use parallel sub-arrays (name[], type[], etc.).
+     * This flattens them into a list of per-file arrays so they can be iterated uniformly.
+     * Also handles the single-file case (name is a string) by wrapping it as-is.
      */
     private function normaliseMultiFileArray(array $files): array
     {
@@ -318,12 +326,12 @@ class ArtistService implements IArtistService
             if (empty($name)) {
                 continue;
             }
-            
+
             // Ensure all required keys exist before accessing them
             if (!isset($files['type'][$i], $files['tmp_name'][$i], $files['error'][$i], $files['size'][$i])) {
                 continue;
             }
-            
+
             $result[] = [
                 'name'     => $name,
                 'type'     => $files['type'][$i],

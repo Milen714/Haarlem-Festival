@@ -20,6 +20,8 @@ class Landmark
     public ?string $why_visit_content = null;
     public ?string $detail_history_title = null;
     public ?string $detail_history_content = null;
+    public ?float $latitude = null;
+    public ?float $longitude = null;
     public ?Gallery $gallery = null;
     public ?int $display_order = null;
 
@@ -38,6 +40,8 @@ class Landmark
         $this->why_visit_content = $data['why_visit_content'] ?? null;
         $this->detail_history_title = $data['detail_history_title'] ?? null;
         $this->detail_history_content = $data['detail_history_content'] ?? null;
+        $this->latitude = isset($data['latitude']) ? (float)$data['latitude'] : null;
+        $this->longitude = isset($data['longitude']) ? (float)$data['longitude'] : null;
         $this->display_order = isset($data['display_order']) ? (int)$data['display_order'] : null;
 
         if (isset($data['event_category_type'])) {

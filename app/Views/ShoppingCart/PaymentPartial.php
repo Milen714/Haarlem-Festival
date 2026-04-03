@@ -18,7 +18,15 @@ $stripePublishableKey = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? '';
     ?>
 <section class="flex flex-col md:flex-row gap-8 w-[95%] mx-auto mt-5">
 
-    <section class="w-full md:w-[60%]" id="checkout"></section>
+    <section class="w-full md:w-[60%]">
+        <!-- Spinner Container (hidden when checkout loads) -->
+        <div id="spinner-wrapper">
+            <?php include __DIR__ . '/Components/PaymentSpinner.php'; ?>
+        </div>
+
+        <!-- Checkout Container (must be empty for Stripe) -->
+        <div id="checkout" style="display: none;"></div>
+    </section>
 
     <section class="w-full md:w-[40%]">
         <?php
@@ -31,6 +39,8 @@ $stripePublishableKey = $_ENV['STRIPE_PUBLISHABLE_KEY'] ?? '';
 
 <script>
 const publishableKey = '<?= htmlspecialchars($stripePublishableKey, ENT_QUOTES, 'UTF-8') ?>';
+const spinnerWrapper = document.getElementById('spinner-wrapper');
+const checkoutElement = document.getElementById('checkout');
 
 if (!publishableKey.startsWith('pk_')) {
     throw new Error('Invalid STRIPE_PUBLISHABLE_KEY: frontend must use a pk_ key, not secret text.');
@@ -54,10 +64,23 @@ fetch('/create-checkout-session')
         stripe.initEmbeddedCheckout({
             clientSecret: data.clientSecret
         }).then(checkout => {
+            // Hide spinner and show checkout
+            if (spinnerWrapper) {
+                spinnerWrapper.style.display = 'none';
+            }
+            if (checkoutElement) {
+                checkoutElement.style.display = 'block';
+            }
             checkout.mount('#checkout');
         });
     })
     .catch((err) => {
         console.error(err.message);
+        // Show error message in spinner
+        const spinnerElement = document.getElementById('payment-spinner');
+        if (spinnerElement) {
+            spinnerElement.innerHTML =
+                '<p class="text-red-600 text-center">Error loading checkout. Please refresh the page.</p>';
+        }
     });
 </script>

@@ -2,22 +2,26 @@
 namespace App\Controllers;
 
 use App\Services\Interfaces\IPageService;
-use App\Services\PageService;          
-use App\Controllers\BaseController;
+use App\Services\PageService;
+use App\Framework\BaseController;
 use App\Services\Interfaces\ILandmarkService;
 use App\Services\LandmarkService;
+use App\Services\LogService;
+use App\Services\Interfaces\ILogService;
 
 class HistoryController extends BaseController
 {
     private IPageService $pageService;
     private ILandmarkService $landmarkService;
+    private ILogService $logService;
 
-    const HISTORY_SLUG = 'events-history'; 
+    const HISTORY_SLUG = 'events-history';
 
     public function __construct()
     {
         $this->pageService = new PageService();
         $this->landmarkService = new LandmarkService();
+        $this->logService = new LogService();
     }
 
     public function index($vars = [])
@@ -62,7 +66,7 @@ class HistoryController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            error_log("History error: " . $e->getMessage());
+            $this->logService->exception('History', $e);
         }
     }
 
@@ -115,7 +119,7 @@ class HistoryController extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            error_log("History Tour error: " . $e->getMessage());
+            $this->logService->exception('History', $e);
             $this->internalServerError();
         }
     }

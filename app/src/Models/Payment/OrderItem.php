@@ -1,5 +1,6 @@
 <?php
 namespace App\Models\Payment;
+use chillerlan\QRCode\QRCode;
 use App\Models\TicketType;
 
 class OrderItem
@@ -16,6 +17,7 @@ class OrderItem
     public ?bool $is_scanned = null;
     public ?string $scanned_at = null;
     public ?string $qr_code_hash = null;
+    public ?string $qrPic = null;
 
     public function __construct() {
         if ($this->ticket_type !== null && $this->ticket_type->ticket_scheme !== null) {
@@ -33,7 +35,7 @@ class OrderItem
         $item->order_id = $data['order_id'] ?? null;
         $item->quantity = isset($data['quantity']) ? (int)$data['quantity'] : 0;
         
-        $item->qr_code_hash = $data['qr_code_hash'] ?? null;
+        $item->qr_code_hash = $data['qr_code_hash'] ?? $data['oi_qr_code_hash'] ?? null;
         $item->is_scanned = isset($data['is_scanned']) ? (bool)$data['is_scanned'] : false;
         $item->scanned_at = $data['scanned_at'] ?? null;
 
@@ -84,5 +86,10 @@ class OrderItem
         $orderItem->subtotal = $orderItem->calculateSubtotal();
         $orderItem->total_price = $orderItem->calculateTotalPrice();
         return $orderItem;
+    }
+    public function generateQrCode(): void
+    {
+        $img = '<img style="width: 150px; height: 150px;" src="'.(new QRCode)->render($this->qr_code_hash).'" alt="QR Code" />';
+        echo $img;
     }
 }
