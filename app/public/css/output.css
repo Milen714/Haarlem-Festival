@@ -1107,6 +1107,11 @@ select:focus,
   margin-right: 0.75rem;
 }
 
+.mx-4{
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
 .mx-6{
   margin-left: 1.5rem;
   margin-right: 1.5rem;
@@ -2287,11 +2292,6 @@ select:focus,
   border-bottom-right-radius: 0.75rem;
 }
 
-.rounded-t{
-  border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;
-}
-
 .rounded-t-lg{
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
@@ -2533,11 +2533,6 @@ select:focus,
 .border-amber-100{
   --tw-border-opacity: 1;
   border-color: rgb(254 243 199 / var(--tw-border-opacity, 1));
-}
-
-.border-amber-200{
-  --tw-border-opacity: 1;
-  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));
 }
 
 .border-amber-400{
@@ -2968,6 +2963,10 @@ select:focus,
 .bg-black{
   --tw-bg-opacity: 1;
   background-color: rgb(0 0 0 / var(--tw-bg-opacity, 1));
+}
+
+.bg-black\/50{
+  background-color: rgb(0 0 0 / 0.5);
 }
 
 .bg-black\/70{
@@ -5604,10 +5603,6 @@ select:focus,
 .hover\:border-\[\#faa505\]:hover{
   --tw-border-opacity: 1;
   border-color: rgb(250 165 5 / var(--tw-border-opacity, 1));
-}
-
-.hover\:border-\[var\(--home-gold-accent\)\]:hover{
-  border-color: var(--home-gold-accent);
 }
 
 .hover\:border-\[var\(--pastel-lavender\)\]:hover{

@@ -289,4 +289,7 @@ class RestaurantService implements IRestaurantService
             $this->restaurantRepository->createSession($session);
         }
     }
+        public function getEvents(): array{
+            return $this->restaurantRepository->getEvents();
+        }
 }

@@ -675,5 +675,33 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             throw new PDOException("Failed to get next gallery order", 0, $e);
         }
     }
+    public function getEvents(): array{
+        $pdo = $this->connect();
+        $sql = "
+            SELECT 
+                ec.event_id AS event_category_id,
+                ec.type AS event_category_type,
+                ec.title AS event_category_title,
+                ec.category_description AS event_category_description,
+                ec.slug AS event_category_slug,
+                m.media_id AS event_media_id,
+                m.file_path AS event_media_url,
+                m.alt_text AS event_media_alt_text
+            FROM EVENT_CATEGORIES ec
+            LEFT JOIN MEDIA m ON ec.event_media_id = m.media_id
+            WHERE ec.type != 'Yummy'
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        
+        $eventCategories = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $eventCategory = new \App\Models\EventCategory();
+            $eventCategory->fromPDOData($row);
+            $eventCategories[] = $eventCategory;
+        }
+        
+        return $eventCategories;
+    }
     
 }

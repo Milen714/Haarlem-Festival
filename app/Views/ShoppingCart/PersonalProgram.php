@@ -22,7 +22,7 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
         ?>
         <li>
             <a href="/personal-program?date=<?= htmlspecialchars($date) ?>&showMyTicketSection=false"
-               class="schedule-filter-link <?= $isActive ? 'home_calendar_button_active' : 'home_calendar_button_inactive' ?>">
+                class="schedule-filter-link <?= $isActive ? 'home_calendar_button_active' : 'home_calendar_button_inactive' ?>">
                 <span><?= $d->format('l') ?></span><span><?= $d->format('j') ?></span>
             </a>
         </li>

@@ -21,6 +21,8 @@ use App\Services\MediaService;
 use App\Services\CuisineService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
+use App\ViewModels\Yummy\DetailsViewModel;
+use App\ViewModels\Yummy\YummyHomeViewModel;
 
 class YummyController extends BaseController
 {
@@ -42,36 +44,10 @@ class YummyController extends BaseController
         $this->cuisineService = new CuisineService();
         $this->logService = new LogService();
     }
+    
     public function index()
     {
-        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
-        try {
-            $pageData = $this->pageService->getPageBySlug('events-yummy');
-            
-            if (!$pageData) {
-                $this->logService->warning('Yummy', "Page data not found for slug: {$slug}");
-                $this->notFound();
-                return;
-            }
-            
-            $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
-            $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
-            
-            $this->view('Yummy/index', [
-                'title' => $pageData->title ?? 'Yummy Event',
-                'pageData' => $pageData,
-                'sections' => $pageData->content_sections,
-                'venues' => $venues,
-                'restaurants' => $restaurants,
-            ]);
-        } catch (\Exception $e) {
-            $this->logService->exception('Yummy', $e);
-            $this->notFound();
-        }
-    }
-    public function yummy()
-    {
-        //$slug = ltrim($_SERVER['REQUEST_URI'], '/');
+        
         try {
             $pageData = $this->pageService->getPageBySlug('events-yummy');
             
@@ -81,31 +57,24 @@ class YummyController extends BaseController
                 $this->notFound();
                 return;
             }
-            //var_dump($pageData->event_category->event_id);
-            //die();
             
+            $events = $this->restaurantService->getEvents();
             $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
-            $gallery = null;
-
-            foreach ($pageData->content_sections as $section) {
-                if (!empty($section->gallery->gallery_id)) {
-                    $gallery = $this->mediaService->getGalleryById($section->gallery->gallery_id);
-                    break;
-                }
-            }
-
-            $galleryItems = $gallery->media_items ?? [];
-            // var_dump($galleryItems);
-            // die();
+            
+            $viewModel = new YummyHomeViewModel(
+                $pageData,
+                $pageData->content_sections,
+                $venues,
+                $restaurants,
+                [],
+                events: $events
+            );
+            
+            $viewModel->galleryItems = $viewModel->extractGalleryFromSections();
             
             $this->view('Yummy/index', [
-                'title' => $pageData->title ?? 'Yummy Event',
-                'pageData' => $pageData,
-                'sections' => $pageData->content_sections,
-                'venues' => $venues,
-                'restaurants' => $restaurants,
-                'galleryItems' => $galleryItems
+                'viewModel' => $viewModel
             ]);
         } catch (ResourceNotFoundException $e) {
             error_log('Failed to fetch Yummy homepage:' . $e->getMessage());
@@ -160,23 +129,18 @@ class YummyController extends BaseController
                 return;
             }
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
-            $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
-            //because it should display 3 sessions from the schedule, so grouped by date
-            $groupedSchedules = [];
-            foreach($schedules as $schedule){
-                $date = $schedule->date->format('Y-m-d');
-                $groupedSchedules[$date][] = $schedule;
-            }
+            
             if (!$restaurant) {
                 $this->notFound();
                 return;
             }
 
+            $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
+            $viewModel = new DetailsViewModel($restaurant, $schedules);
+
             $this->view('Yummy/DetailPage', [
-                'restaurant' => $restaurant,
                 'pageData' => $pageData,
-                'groupedSchedules' => $groupedSchedules,
-                'schedules' => $schedules
+                'viewModel' => $viewModel
             ]);
         }
         catch (ResourceNotFoundException $e) {
