@@ -197,6 +197,7 @@ document.querySelector('.confirm-btn').addEventListener('click', async () => {
        }
         document.getElementById('confirmation-modal').classList.remove('hidden');
         document.getElementById('reservation-modal').classList.add('hidden');
+        updateCartCount();
 
     } catch (error) {
         alert(error.message || 'Something went wrong.');
