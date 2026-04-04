@@ -172,7 +172,6 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             return array_values($restaurants);
         } catch (PDOException $e) {
             // Log error or handle as needed
-            die($e);
             error_log("Error fetching all restaurants: " . $e->getMessage());
             Throw new PDOException("Failed to fetch restaurants");
         } 

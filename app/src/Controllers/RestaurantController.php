@@ -170,6 +170,7 @@ class RestaurantController extends BaseController{
     public function update($vars = []){
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
+            //gets the restaurant, the data from the form and the uploaded images
             $restaurant = $this->restaurantService->updateFromRequest($restaurantId, $_POST, $_FILES);
             $_SESSION['success'] = "Restaurant {$restaurant->name} updated successfully";
 

@@ -20,7 +20,12 @@ use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
 use App\ViewModels\Dance\LineupViewModel;
 use App\ViewModels\Dance\VenueViewModel;
-
+use App\ViewModels\Dance\DanceIndexViewModel;
+use App\Exceptions\DanceEventNotFoundException;
+use App\Exceptions\ArtistNotFoundException;
+use App\Exceptions\VenueNotFoundException;
+use App\Exceptions\ScheduleNotFoundException;
+use App\Exceptions\ApplicationException;
 
 class DanceController extends BaseController
 {
@@ -52,34 +57,65 @@ class DanceController extends BaseController
         );
         $this->logService = new LogService();
     }
-
-    public function index()
+    public function index(): void
     {
         $slug = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
         
         try {
             $data = $this->danceService->getDanceOverviewData($slug, self::DANCE_EVENT_ID);
+            
+            if (!$data || !isset($data['pageData'])) {
+                throw new DanceEventNotFoundException('Dance event page not found');
+            }
 
             $organized = $this->organizeHomeSections($data['pageData']->content_sections ?? []);
 
-            $viewData = array_merge($data, $organized, [
-                'title' => $data['pageData']->title ?? 'Dance Event'
-            ]);
+            $viewModel = new DanceIndexViewModel(
+                $data['pageData'],
+                $organized['heroSection'],
+                $organized['artistSection'],
+                $organized['specialSection'],
+                $organized['venueSection'],
+                $organized['ticketSection'],
+                $organized['gallerySection'],
+                $data['pageData']->title ?? 'Dance Event'
+            );
 
-            $this->view('Dance/index', $viewData);
+            $this->view('Dance/index', [
+                'title' => $viewModel->title,
+                'vm' => $viewModel,
+                'venueSection' => $organized['venueSection'],
+                'heroSection' => $organized['heroSection'],
+                'artistSection' => $organized['artistSection'],
+                'specialSection' => $organized['specialSection'],
+                'ticketSection' => $organized['ticketSection'],
+                'gallerySection' => $organized['gallerySection']
+            ] + $data);
 
-        } catch (\Exception $e) {
-            $this->logService->exception('Dance', $e);
+        } catch (DanceEventNotFoundException $e) {
+            error_log("Dance Index Error: " . $e->getMessage());
             $this->notFound();
+        } catch (\Exception $e) {
+            error_log("Dance Index Error: " . $e->getMessage());
+            throw new ApplicationException('Failed to load dance event page', 0, $e);
         }
     }
-
-    public function lineUp()
+    public function lineUp(): void
     {
         $slug = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
         try {
             $pageData = $this->pageService->getPageBySlug($slug);
+            
+            if (!$pageData) {
+                throw new DanceEventNotFoundException('Dance lineup page not found');
+            }
+            
             $artists = $this->artistService->getArtistsByEventId(self::DANCE_EVENT_ID);
+            
+            if (empty($artists)) {
+                throw new ArtistNotFoundException('No artists found for dance event');
+            }
+            
             $schedulesSection = $this->scheduleService->getSchedulesByEventId(self::DANCE_EVENT_ID);
 
             $headLinerSection = array_filter($pageData->content_sections ?? [], function($section) {
@@ -95,27 +131,42 @@ class DanceController extends BaseController
                 'vm' => $viewModel,
                 'ticketLookup' => $ticketLookup
             ]);
-        } catch (\Exception $e) {
-            $this->logService->exception('Dance', $e);
+        } catch (DanceEventNotFoundException | ArtistNotFoundException $e) {
+            error_log("Dance Lineup Error: " . $e->getMessage());
             $this->notFound();
+        } catch (\Exception $e) {
+            error_log("Dance Lineup Error: " . $e->getMessage());
+            throw new ApplicationException('Failed to load dance lineup page', 0, $e);
         }
     }
-
-    public function venues()
+    public function venues(): void
     {
         $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $slug = ltrim($uri, '/');
         try {
             $pageData = $this->pageService->getPageBySlug($slug);
+            
+            if (!$pageData) {
+                throw new DanceEventNotFoundException('Dance venues page not found');
+            }
+            
             $venues = $this->venueService->getVenuesByEventId(self::DANCE_EVENT_ID);
+            
+            if (empty($venues)) {
+                throw new VenueNotFoundException('No venues found for dance event');
+            }
+            
             $viewModel = new VenueViewModel($pageData, $venues);
             $this->view('Dance/venues', [
                 'title' => 'Dance Venues',
                 'vm' => $viewModel
             ]);
-        } catch (\Exception $e) {
-            $this->logService->exception('Dance', $e);
+        } catch (DanceEventNotFoundException | VenueNotFoundException $e) {
+            error_log("Dance Venues Error: " . $e->getMessage());
             $this->notFound();
+        } catch (\Exception $e) {
+            error_log("Error in DanceController venues method: " . $e->getMessage());
+            throw new ApplicationException('Failed to load dance venues page', 0, $e);
         }
     }
 
