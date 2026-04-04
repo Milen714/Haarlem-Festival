@@ -178,6 +178,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
     $r->addRoute('GET', '/personal-program', ['App\Controllers\PersonalProgramController', 'personalProgram']);
     $r->addRoute('GET', '/personal-program/content', ['App\Controllers\PersonalProgramController', 'programContent']);
+    $r->addRoute('POST', '/personal-program/share', ['App\Controllers\PersonalProgramController', 'generateShareToken']);
+    $r->addRoute('GET', '/shared-program/{token:[a-f0-9]+}', ['App\Controllers\PersonalProgramController', 'sharedProgram']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);

@@ -46,3 +46,53 @@ myTicketsButton.addEventListener('click', () => {
     myProgramButton.classList.add('home-ticket-tab-inactive');
     myProgramButton.classList.remove('home-ticket-tab-active');
 });
+
+//Share Program
+const shareBtn = document.getElementById('share-program-btn');
+const shareModal = document.getElementById('share-modal');
+const shareUrlInput = document.getElementById('share-url-input');
+const copyUrlBtn = document.getElementById('copy-url-btn');
+const closeShareModal = document.getElementById('close-share-modal');
+const copyFeedback = document.getElementById('copy-feedback');
+
+if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+        const originalHtml = shareBtn.innerHTML;
+        shareBtn.disabled = true;
+        shareBtn.textContent = 'Loading...';
+
+        try {
+            const res = await fetch('/personal-program/share', { method: 'POST' });
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.error || 'Could not generate share link.');
+                return;
+            }
+
+            shareUrlInput.value = data.url;
+            shareModal.classList.remove('hidden');
+        } catch {
+            alert('Something went wrong. Please try again.');
+        } finally {
+            shareBtn.disabled = false;
+            shareBtn.innerHTML = originalHtml;
+        }
+    });
+
+    copyUrlBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(shareUrlInput.value).then(() => {
+            copyFeedback.classList.remove('hidden');
+            setTimeout(() => copyFeedback.classList.add('hidden'), 2000);
+        });
+    });
+
+    closeShareModal.addEventListener('click', () => {
+        shareModal.classList.add('hidden');
+    });
+
+    shareModal.addEventListener('click', (e) => {
+        if (e.target === shareModal) shareModal.classList.add('hidden');
+    });
+}
+
