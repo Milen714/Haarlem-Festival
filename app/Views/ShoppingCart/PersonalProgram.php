@@ -15,7 +15,19 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
 </header>
 <section
     class="flex flex-col gap-2 mx-auto w-full md:w-[85%] bg-white p-6 rounded-lg rounded-tl-none shadow-sm border border-gray-100">
-    <ul id="dates-ul" class="magicDayUl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></ul>
+    <ul class="magicDayUl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <?php foreach($availableDates ?? [] as $date):
+            $d = new \DateTime($date);
+            $isActive = $viewModel && $viewModel->selectedDate === $date;
+        ?>
+        <li>
+            <a href="/personal-program?date=<?= htmlspecialchars($date) ?>&showMyTicketSection=false"
+               class="schedule-filter-link <?= $isActive ? 'home_calendar_button_active' : 'home_calendar_button_inactive' ?>">
+                <span><?= $d->format('l') ?></span><span><?= $d->format('j') ?></span>
+            </a>
+        </li>
+        <?php endforeach; ?>
+    </ul>
     <?php if ($viewModel): ?>
     <?php include __DIR__ . '/../Home/Components/Spinner.php'; ?>
 
@@ -34,9 +46,32 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
     <?php endif; ?>
 </section>
 
-<script src="/Js/ScheduleDateButtons.js"></script>
 <script>
-displayDateButtons();
+document.querySelectorAll('.schedule-filter-link').forEach(link => {
+    link.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const date = new URL(link.href).searchParams.get('date') || '';
+
+        document.querySelectorAll('.schedule-filter-link').forEach(l => {
+            l.classList.toggle('home_calendar_button_active', l === link);
+            l.classList.toggle('home_calendar_button_inactive', l !== link);
+        });
+
+        history.pushState({}, '', link.href);
+
+        const myProgramSection = document.getElementById('my-program-section');
+        const spinner = document.getElementById('spinner');
+        myProgramSection.classList.remove('hidden');
+        document.getElementById('my-tickets-section').classList.add('hidden');
+
+        myProgramSection.innerHTML = '';
+        spinner.classList.remove('hidden');
+
+        const res = await fetch(`/personal-program/content?date=${encodeURIComponent(date)}`);
+        spinner.classList.add('hidden');
+        myProgramSection.innerHTML = await res.text();
+    });
+});
 
 const myProgramButton = document.getElementById('my-program-button');
 const myTicketsButton = document.getElementById('my-tickets-button');
