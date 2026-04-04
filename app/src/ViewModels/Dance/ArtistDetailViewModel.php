@@ -24,7 +24,7 @@ class ArtistDetailViewModel extends BaseViewModel
      */
     public function __construct($artist, $scheduleByDate, $album, $gallery)
     {
-        // 1. Initialize Base (adds 'Home' breadcrumb)
+        // Initialize Base (adds 'Home' breadcrumb)
         parent::__construct();
 
         $this->artist = $artist;
@@ -32,7 +32,7 @@ class ArtistDetailViewModel extends BaseViewModel
         $this->albums = $album;
         $this->gallery = $gallery;
 
-        // 2. Build the navigation trail
+        // Build the navigation trail
         $this->addBreadcrumb('Home', '/events-dance');
         $this->addBreadcrumb($artist->name);
     }

@@ -44,6 +44,42 @@ $images = $images ?? [];
                 </div>
             </div>
 
+            <div class="col-span-2 mt-2 flex items-center gap-3">
+    <input type="checkbox" name="is_featured" value="1" id="is_featured"
+           <?= ($landmark->is_featured ?? false) ? 'checked' : '' ?>
+           class="w-4 h-4"
+           onchange="document.getElementById('featured-fields').classList.toggle('hidden', !this.checked)">
+    <label for="is_featured" class="text-gray-700 font-semibold">
+        Show on History Homepage
+    </label>
+</div>
+
+<div id="featured-fields" <?= ($landmark->is_featured ?? false) ? '' : 'class="hidden"' ?>>
+    <div class="border-t mt-4 pt-4">
+        <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wide mb-3">Homepage Display Fields</h3>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">Homepage CTA Text</label>
+            <input type="text" name="home_cta"
+                   value="<?= htmlspecialchars($landmark->home_cta ?? '') ?>"
+                   placeholder="e.g. Discover St. Bavo Church"
+                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            <p class="text-xs text-gray-500 mt-1">Text shown on the button. The link always goes to <code>/history/detail/<?= htmlspecialchars($landmark->landmark_slug ?? '...') ?></code></p>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-semibold mb-2">Homepage Image</label>
+            <?php if (!empty($landmark->main_image_id?->file_path)): ?>
+                <img src="/<?= ltrim(htmlspecialchars($landmark->main_image_id->file_path), '/') ?>"
+                     class="w-40 h-28 object-cover rounded mb-2">
+            <?php endif; ?>
+            <input type="file" name="main_image" accept="image/*" class="w-full text-sm">
+        </div>
+    </div>
+</div>
+
+
+
             <div class="mb-4">
                 <label class="block text-gray-700 font-semibold mb-2">Short Description (For Homepage Cards)</label>
                 <textarea name="short_description" rows="2" required

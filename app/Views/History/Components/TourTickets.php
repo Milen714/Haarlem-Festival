@@ -1,8 +1,8 @@
-<?php 
-//hardcoded for now
-$normalPrice = 17.50;
-$familyPrice = 60.00;
-?>
+<?php /** @var App\ViewModels\History\TicketHistoryViewModel $ticketOptions */ ?>
+
+<script>
+    const tourOptionsTree = <?= json_encode($ticketOptions->options) ?>;
+</script>
 
 <section id="book-tour" class="container mx-auto max-w-[1100px] px-4 my-24">
     
@@ -18,63 +18,51 @@ $familyPrice = 60.00;
         <div class="ticket-options w-full lg:w-2/3 p-6 md:p-8 ">
             
             <div class="mb-8">
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">1. Select Tickets</h3>
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Tickets</h3>
                 
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
                             <div class="font-semibold text-ink-900">Normal Ticket</div>
-                            <div class="text-sm text-ink-700">€<?= number_format($normalPrice, 2) ?> per person</div>
+                            <div class="text-sm text-ink-700">€<?= number_format($ticketOptions->normalPrice, 2) ?> per person</div>
                         </div>
-                        <input type="number" name="qtyNormal" min="0" value="0" 
+                        <input type="number" id="qty-normal" name="qtyNormal" min="0" value="0" data-precio="<?= $ticketOptions->normalPrice ?>"
                                class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
                     </div>
 
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
                             <div class="font-semibold text-ink-900">Family Ticket</div>
-                            <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($familyPrice, 2) ?> total</div>
+                            <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($ticketOptions->familyPrice, 2) ?> total</div>
                         </div>
-                        <input type="number" name="qtyFamily" min="0" value="0" 
+                        <input type="number" id="qty-family" name="qtyFamily" min="0" value="0" data-precio="<?= $ticketOptions->familyPrice ?>"
                                class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
                     </div>
                 </div>
             </div>
 
-            <div class="mb-8">
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">2. Select Date</h3>
+            <div class="mb-8" id="step-language">
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Language</h3>
                 <div class="flex flex-wrap gap-3">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="date" value="2026-07-24" class="peer sr-only" required>
-                        <div class="tour-radio-btn">Thu, 24 July</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="date" value="2026-07-25" class="peer sr-only">
-                        <div class="tour-radio-btn">Fri, 25 July</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="date" value="2026-07-26" class="peer sr-only">
-                        <div class="tour-radio-btn">Sat, 26 July</div>
-                    </label>
+                    <?php foreach (array_keys($ticketOptions->options) as $language): ?>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="language" value="<?= htmlspecialchars($language) ?>" class="peer sr-only" required>
+                            <div class="tour-radio-btn"><?= htmlspecialchars($language) ?></div>
+                        </label>    
+                    <?php endforeach; ?>
                 </div>
             </div>
 
-            <div>
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">3. Select Language</h3>
-                <div class="flex flex-wrap gap-3">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="language" value="English" class="peer sr-only" required>
-                        <div class="tour-radio-btn">English</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="language" value="Dutch" class="peer sr-only">
-                        <div class="tour-radio-btn">Dutch</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="language" value="Chinese" class="peer sr-only">
-                        <div class="tour-radio-btn">Chinese</div>
-                    </label>
-                </div>
+            <div class="mb-8 hidden opacity-0 transition-opacity duration-500" id="step-date">
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Date</h3>
+                <div class="flex flex-wrap gap-3" id="dates-container">
+                    </div>
+            </div>
+
+            <div class="mb-8 hidden opacity-0 transition-opacity duration-500" id="step-time">
+                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Time</h3>
+                <div class="flex flex-wrap gap-3" id="times-container">
+                    </div>
             </div>
 
         </div>
@@ -84,6 +72,27 @@ $familyPrice = 60.00;
                 Order Overview
             </h2>
             
+            <div id="summary-details" class="space-y-3 mb-6 text-ink-900 hidden">
+                <div class="flex justify-between">
+                    <span class="font-semibold">Tickets:</span>
+                    <span id="summary-qty-text" class="text-right">0</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="font-semibold">Date:</span>
+                    <span id="summary-date-text" class="text-right">-</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="font-semibold">Time:</span>
+                    <span id="summary-time-text" class="text-right">-</span>
+                </div>
+                
+                <div class="flex justify-between">
+                    <span class="font-semibold">Language:</span>
+                    <span id="summary-lang-text" class="text-right">-</span>
+                </div>
+            </div>
             <div class="border-t border-[#CAA359] pt-4 mb-6">
                 <div class="flex justify-between items-center">
                     <h3 class="text-lg font-bold text-ink-900">Total:</h3>
@@ -98,3 +107,5 @@ $familyPrice = 60.00;
 
     </form>
 </section>
+
+<script src="/Js/TicketHistory.js"></script>

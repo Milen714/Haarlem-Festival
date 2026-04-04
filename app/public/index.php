@@ -126,14 +126,13 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /*Landmark cms*/
     $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
-
     $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
     $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
-
     $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
     $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
     $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
 
+    /* Account Settings */
     $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
 
@@ -178,6 +177,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
     $r->addRoute('GET', '/personal-program', ['App\Controllers\PersonalProgramController', 'personalProgram']);
+    $r->addRoute('GET', '/personal-program/content', ['App\Controllers\PersonalProgramController', 'programContent']);
+    $r->addRoute('POST', '/personal-program/share', ['App\Controllers\PersonalProgramController', 'generateShareToken']);
+    $r->addRoute('GET', '/shared-program/{token:[a-f0-9]+}', ['App\Controllers\PersonalProgramController', 'sharedProgram']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);

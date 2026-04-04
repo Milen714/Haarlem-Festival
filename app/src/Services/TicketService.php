@@ -385,4 +385,9 @@ class TicketService implements ITicketService
 
         return (int)$value;
     }
+
+    /*public function getTicketTypeFromSelection(TicketSelectionDTO $ticketDTO): ?TicketType
+    {        
+        return $this->ticketRepository->getTicketTypeFromSelection($ticketDTO);
+    }*/
 }

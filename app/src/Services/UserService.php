@@ -41,4 +41,10 @@ class UserService implements IUserService{
     public function deleteUser(int $id): bool {
         return $this->userRepository->deleteUser($id);
     }
+    public function findByShareToken(string $token): ?User {
+        return $this->userRepository->findByShareToken($token);
+    }
+    public function saveShareToken(int $userId, string $token): bool {
+        return $this->userRepository->saveShareToken($userId, $token);
+    }
 }

@@ -6,7 +6,7 @@
 
     <section class="mx-auto max-w-3xl text-center my-8">
         <?php if ($cta): ?>
-            <div class="text-ink-700 prose prose-sm max-w-none mx-auto leading-relaxed">
+            <div class="history-emphasis prose prose-sm max-w-none mx-auto leading-relaxed">
                 <?= $cta->content_html ?>
             </div>
             <a href="<?= htmlspecialchars($cta->cta_url ?? '/history') ?>" class="mt-6 inline-flex items-center rounded-md border border-brand-600 bg-brand-600 px-6 py-3 text-white font-semibold shadow-sm hover:bg-brand-700 transition-colors">

@@ -766,4 +766,31 @@ class TicketRepository extends Repository implements ITicketRepository
             throw new \RuntimeException("Failed to delete ticket scheme: " . $e->getMessage());
         }
     }
+
+    /*public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType
+    {
+        $sql = "SELECT tt.ticket_type_id 
+                FROM TICKET_TYPE tt
+                INNER JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
+                INNER JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
+                WHERE s.date = :date 
+                  AND s.start_time = :time 
+                  AND ts.ticket_language = :language 
+                  AND ts.scheme_enum = :schemeEnum
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        // bindValue vincula el dato real de la variable en este preciso instante
+        $stmt->bindValue(':date', $selectionDto->date, \PDO::PARAM_STR);
+        $stmt->bindValue(':time', $selectionDto->time, \PDO::PARAM_STR);
+        $stmt->bindValue(':language', $selectionDto->language, \PDO::PARAM_STR);
+        $stmt->bindValue(':schemeEnum', $selectionDto->ticketSchemeEnum?->value, \PDO::PARAM_STR);
+
+        $stmt->execute();
+
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $result ? (int)$result['ticket_type_id'] : null;
+    }*/
 }

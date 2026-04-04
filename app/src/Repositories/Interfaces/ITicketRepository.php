@@ -11,6 +11,7 @@ interface ITicketRepository
     public function getTicketTypesByScheduleId(int $scheduleId): array;
     public function getTicketTypesByScheduleIds(array $scheduleIds): array;
     public function getTicketTypesBySchemeEnums(array $schemeEnums): array;
+    //public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType;
     public function create(TicketType $ticketType): bool;
     public function update(TicketType $ticketType): bool;
     public function delete(int $ticketTypeId): bool;

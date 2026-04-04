@@ -629,7 +629,14 @@ video {
   --bg-color-home-light:#F2F4F3;
   --bg-color-home-dark:#0F0F0F;
   --shadow-yellow: -7px -7px 0px #FFD93E;
-  /*  */
+  /**/
+  --history-emphasis-color: #344212;
+  --history-accent-color: #5D791C;
+  --history-pale-green: #d0ec91;
+  --history-border-green: #5f7135;
+  --history-dark-brown: #4F3505;
+  --history-light-brown: #84642F;
+  --history-cream: #FAEBBD;
   --color-brand-600: #3ea12f;
   --color-brand-700: #2f7e26;
   --color-gold-400: #f0b65a;
@@ -639,7 +646,6 @@ video {
   --color-ink-600: #4a4a4a;
   --color-ink-500: #6b6b6b;
   --color-bg-history: #fefbf0;
-  --color-underline-history: #84642F;
 }
 
 .container{
@@ -1071,6 +1077,10 @@ select:focus,
   order: 2;
 }
 
+.col-span-2{
+  grid-column: span 2 / span 2;
+}
+
 .col-span-3{
   grid-column: span 3 / span 3;
 }
@@ -1434,6 +1444,10 @@ select:focus,
   height: 6rem;
 }
 
+.h-28{
+  height: 7rem;
+}
+
 .h-3{
   height: 0.75rem;
 }
@@ -1488,6 +1502,10 @@ select:focus,
 
 .h-\[1rem\]{
   height: 1rem;
+}
+
+.h-\[220px\]{
+  height: 220px;
 }
 
 .h-\[25rem\]{
@@ -1638,6 +1656,10 @@ select:focus,
 
 .w-4{
   width: 1rem;
+}
+
+.w-40{
+  width: 10rem;
 }
 
 .w-44{
@@ -2511,6 +2533,11 @@ select:focus,
 .border-amber-100{
   --tw-border-opacity: 1;
   border-color: rgb(254 243 199 / var(--tw-border-opacity, 1));
+}
+
+.border-amber-200{
+  --tw-border-opacity: 1;
+  border-color: rgb(253 230 138 / var(--tw-border-opacity, 1));
 }
 
 .border-amber-400{
@@ -3625,8 +3652,8 @@ select:focus,
   font-size: 0.875rem;
 }
 
-.text-\[1\.25rem\]{
-  font-size: 1.25rem;
+.text-\[1\.125rem\]{
+  font-size: 1.125rem;
 }
 
 .text-\[1\.5rem\]{
@@ -3879,6 +3906,14 @@ select:focus,
 
 .text-\[var\(--dance-tag-color-1\)\]{
   color: var(--dance-tag-color-1);
+}
+
+.text-\[var\(--history-accent-color\)\]{
+  color: var(--history-accent-color);
+}
+
+.text-\[var\(--history-dark-brown\)\]{
+  color: var(--history-dark-brown);
 }
 
 .text-\[var\(--home-gold-accent\)\]{
@@ -4148,6 +4183,10 @@ select:focus,
 
 .accent-\[\#d4a356\]{
   accent-color: #d4a356;
+}
+
+.opacity-0{
+  opacity: 0;
 }
 
 .opacity-20{
@@ -5320,19 +5359,21 @@ select:focus,
   -webkit-text-stroke: 0.06rem #fbf8e5;
 }
 
-.btn-history-book {
-  background-color: #d0ec91;
-  border: 0.12rem solid #5f7135;
+.btn-history {
+  background-color: var(--history-pale-green);
+  border: 0.16rem solid var(--history-border-green);
   border-radius: 0.9rem;
   padding: 0.75rem 2rem;
+  color: #2b3613;
   font-family: 'Nobile', sans-serif;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1.25rem;
   transition: all 0.3s ease;
 }
 
-.btn-history-book:hover {
-  background-color: #b8d67a;
+.btn-history:hover {
+  background-color: #A8C369;
+  color: #20290d;
   transform: translateY(-0.12rem);
 }
 
@@ -5369,6 +5410,11 @@ select:focus,
   background-color: rgb(167 201 87 / var(--tw-bg-opacity, 1));
 }
 
+.history-emphasis {
+  color: var(--history-emphasis-color);
+  font-weight: 600;
+}
+
 /* KEYFRAME ANIMATIONS */
 
 @keyframes spin {
@@ -5387,13 +5433,9 @@ select:focus,
   padding-right: 1rem;
 }
 
-/* Tipografía */
-
 .font-history-serif {
   font-family: Georgia, Cambria, "Times New Roman", Times, serif;
 }
-
-/* Utilidades manuales para evitar configurar tailwind.config.js */
 
 .text-ink-900 {
   color: var(--color-ink-900);
@@ -5426,9 +5468,57 @@ select:focus,
 .underline-history {
   margin-top: 0.75rem;
   margin-bottom: 1.5rem;
-  height: 1px;
-  width: 4rem;
-  background-color: var(--color-underline-history);
+  height: 3px;
+  width: 12rem;
+  background-color: var(--history-light-brown);
+}
+
+.why-visit-content ul {
+  list-style: none !important;
+  padding-left: 0;
+}
+
+.why-visit-content ul li {
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+.why-visit-content ul li::marker {
+  content: none;
+}
+
+.why-visit-content ul li::before {
+  content: '•';
+  color: var(--history-accent-color);
+  font-size: 4.5rem;
+  line-height: 0;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.landmark-title-hover {
+  font-family: 'Nobile', sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--history-accent-color);
+  text-decoration: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  transition: color 0.2s;
+  display: block;
+}
+
+.landmark-title-hover:hover {
+  color: var(--history-light-brown);
+  font-size: 0;
+  text-decoration: none;
+}
+
+.landmark-title-hover:hover::after {
+  content: 'Get to know us';
+  font-size: 1.875rem;
+  color: var(--history-light-brown);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
 }
 
 .backdrop\:bg-black\/40::backdrop{
@@ -5514,6 +5604,10 @@ select:focus,
 .hover\:border-\[\#faa505\]:hover{
   --tw-border-opacity: 1;
   border-color: rgb(250 165 5 / var(--tw-border-opacity, 1));
+}
+
+.hover\:border-\[var\(--home-gold-accent\)\]:hover{
+  border-color: var(--home-gold-accent);
 }
 
 .hover\:border-\[var\(--pastel-lavender\)\]:hover{
@@ -6893,6 +6987,7 @@ select:focus,
 .\[\&\>ul\]\:pl-5>ul{
   padding-left: 1.25rem;
 }
+  
 
 
 
