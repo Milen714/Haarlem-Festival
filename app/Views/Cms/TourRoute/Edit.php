@@ -62,6 +62,12 @@
                     class="button_secondary text-sm">+ Add Stop</button>
         </div>
 
+        <div> 
+            <h2 class="text-xl font-semibold mb-4 border-b pb-2">Tour Route Map</h2>
+            <p class="text-sm text-gray-500 mb-4">The map is not auto-generated based, please use the map editor for updates:</p>
+            <a href="https://mapforge.org/m/112be19b393a?join=true" target="_blank" class="text-blue-500 hover:text-blue-700">https://mapforge.org/m/112be19b393a?join=true</a>   
+        </div>
+
         <div class="flex gap-4">
             <button type="submit" class="button_primary">💾 Save Changes</button>
             <a href="/cms" class="button_secondary">Cancel</a>

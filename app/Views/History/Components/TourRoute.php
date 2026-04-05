@@ -19,9 +19,7 @@ $totalStops = count($routeStops);
         </div>
 
         <div class="w-full flex-grow min-h-[300px] md:min-h-[500px]">
-            <img src="/Assets/History/map.jpg" 
-                 alt="Tour Route Map" 
-                 class="w-full h-full object-cover rounded-[0.5rem] shadow-sm border border-[#e5e5e5]">
+            <iframe width='550' height='450' style='border:0' loading='lazy' src='https://mapforge.org/m/11cd638c?nomenu=true'></iframe>
         </div>
     </div>
 

@@ -1,5 +1,7 @@
 <?php
 namespace App\Views\History;
+
+/** @var string $text */
 ?>
 
 <div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
@@ -22,8 +24,7 @@ namespace App\Views\History;
     <div class="container mx-auto max-w-[1100px] px-4">
     <?php include __DIR__ . '/Components/TourTickets.php'; ?>
 
-        <p>At the end of the tour you will receive a digital download as a souvenir from Haarlem
-           You tour guide will take of it after you’ve enjoyed the city!</p>
+    <p class="mt-3 w-[50vw] mx-auto text-center history-emphasis font-extrabold prose-xl text-xl"><?= htmlspecialchars($text->content_html ?? '') ?></p>
     </div>
 
 </div>

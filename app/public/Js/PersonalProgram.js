@@ -66,14 +66,14 @@ if (shareBtn) {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.error || 'Could not generate share link.');
+                showError(data.error || 'Could not generate share link.');
                 return;
             }
 
             shareUrlInput.value = data.url;
             shareModal.classList.remove('hidden');
         } catch {
-            alert('Something went wrong. Please try again.');
+            showError('Something went wrong. Please try again.');
         } finally {
             shareBtn.disabled = false;
             shareBtn.innerHTML = originalHtml;
