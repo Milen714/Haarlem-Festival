@@ -113,6 +113,11 @@ class TicketService implements ITicketService
         return $this->ticketRepository->reserveMultiple($items);
     }
 
+    public function syncHistoryScheduleSoldOut(int $ticketTypeId): void
+    {
+        $this->ticketRepository->syncHistoryScheduleSoldOut($ticketTypeId);
+    }
+
 
     public function releaseSeats(int $ticketTypeId, int $quantity): bool
     {

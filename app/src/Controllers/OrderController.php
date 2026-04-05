@@ -54,7 +54,12 @@ class OrderController extends BaseController
             if (!$ticketType) {
                 throw new ResourceNotFoundException('Ticket type not found');
             }
-            $orderItem = (new OrderItem())->createOrderItemFromTicketType($jsonData['quantity'], $ticketType);
+            $quantity = $jsonData['quantity'];
+            $schemeEnum = $ticketType->ticket_scheme?->scheme_enum?->value ?? '';
+            if (str_starts_with($schemeEnum, 'HISTORY_')) {
+                $quantity = $this->resolvePersonCount($quantity, $schemeEnum);
+            }
+            $orderItem = (new OrderItem())->createOrderItemFromTicketType($quantity, $ticketType);
             $this->orderService->addOrderItemToSessionCart($orderItem);
             $cart = $this->orderService->getSessionCart();
             $this->sendSuccessResponse([
@@ -327,5 +332,13 @@ class OrderController extends BaseController
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function resolvePersonCount(int $quantity, string $schemeEnum): int
+    {
+        if ($schemeEnum === 'HISTORY_FAMILY_TICKET') {
+            return $quantity * 4;
+        }
+        return $quantity;
     }
 }
