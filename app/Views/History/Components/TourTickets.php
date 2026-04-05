@@ -8,7 +8,7 @@
     
     <div class="mb-12">
         <h3 class="font-history-serif text-[1.5rem] md:text-[2rem] text-ink-900 font-bold">
-            Book your Tour
+            Tickets
         </h3>
         <div class="underline-history"></div>
     </div>

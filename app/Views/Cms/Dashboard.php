@@ -94,11 +94,12 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
                 <span class="text-4xl mr-4">🏰</span>
                 <h2 class="text-2xl font-bold">Landmarks</h2>
             </div>
-            <p class="text-gray-600 mb-4">Manage landmarks</p>
+            <p class="text-gray-600 mb-4">Manage landmarks & Tour route</p>
             <div class="space-y-2">
                 <a href="/cms/landmarks" class="block text-blue-600 hover:underline font-semibold">→ View All
                     Landmarks</a>
                 <a href="/cms/landmarks/create" class="block text-green-600 hover:underline">+ Add New Landmark</a>
+                <a href="/cms/history/tour-route" class="block text-blue-600 hover:underline font-semibold">→ Edit Tour Stops</a>
             </div>
         </article>
 

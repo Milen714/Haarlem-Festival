@@ -18,6 +18,9 @@ use App\Services\TicketService;
 use App\Services\Interfaces\IOrderService;
 use App\Services\OrderService;
 use App\Models\Payment\OrderItem;
+use App\Repositories\PageRepository;
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
 
 class HistoryController extends BaseController
 {
@@ -102,22 +105,25 @@ class HistoryController extends BaseController
             $hero = null;
             $tourInfo = null;
             $bookTour = null;
-            $tourFeatures = [];     
-            $goodToKnow = null; 
+            $tourFeatures = [];
+            $goodToKnow = null;
+            $tourRoute = null;
 
             foreach ($sections as $s) {
                 $type = $s->section_type->value;
-                
-                if ($type === 'tour_info') { 
+
+                if ($type === 'tour_info') {
                     $tourInfo = $s;
                 } elseif ($type === 'tour_features') {
-                    $tourFeatures[] = $s; 
+                    $tourFeatures[] = $s;
                 } elseif ($type === 'good_to_know') {
-                    $goodToKnow = $s; 
-                } elseif ($type === 'hero_picture') { 
+                    $goodToKnow = $s;
+                } elseif ($type === 'hero_picture') {
                     $hero = $s;
-                } elseif ($type === 'book_tour') { 
+                } elseif ($type === 'book_tour') {
                     $bookTour = $s;
+                } elseif ($type === 'tour_route') {
+                    $tourRoute = $s;
                 }
             }
 
@@ -127,8 +133,9 @@ class HistoryController extends BaseController
                 'tourInfo'        => $tourInfo,
                 'bookTour'        => $bookTour,
                 'ticketOptions'   => $ticketOptions,
-                'tourFeatures'    => $tourFeatures,    
-                'goodToKnow'      => $goodToKnow  
+                'tourFeatures'    => $tourFeatures,
+                'goodToKnow'      => $goodToKnow,
+                'tourRoute'       => $tourRoute
             ]);
 
         } catch (\Exception $e) {
@@ -191,6 +198,72 @@ class HistoryController extends BaseController
         'otherLandmarks' => $otherLandmarks
     ]);
 }
+
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function editTourRoute($vars = []): void
+    {
+        $pageData  = $this->pageService->getPageBySlug(self::HISTORY_TOUR_SLUG);
+        $tourRoute = null;
+
+        foreach ($pageData->content_sections as $section) {
+            if ($section->section_type->value === 'tour_route') {
+                $tourRoute = $section;
+                break;
+            }
+        }
+
+        $stops = [];
+        if ($tourRoute && !empty($tourRoute->content_html)) {
+            $decoded = json_decode($tourRoute->content_html, true);
+            if (is_array($decoded)) {
+                $stops = array_column($decoded, 'name');
+            }
+        }
+
+        $this->cmsLayout('Cms/TourRoute/Edit', [
+            'title'     => 'Edit Tour Route',
+            'tourRoute' => $tourRoute,
+            'stops'     => $stops,
+        ]);
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function updateTourRoute($vars = []): void
+    {
+        $pageData  = $this->pageService->getPageBySlug(self::HISTORY_TOUR_SLUG);
+        $tourRoute = null;
+
+        foreach ($pageData->content_sections as $section) {
+            if ($section->section_type->value === 'tour_route') {
+                $tourRoute = $section;
+                break;
+            }
+        }
+
+        if (!$tourRoute) {
+            $_SESSION['error'] = 'Tour route section not found.';
+            $this->redirect('/cms/history/tour-route');
+            return;
+        }
+
+        $rawStops = $_POST['stops'] ?? [];
+        $stops    = [];
+        foreach ($rawStops as $name) {
+            $name = trim($name);
+            if ($name !== '') {
+                $stops[] = ['name' => $name];
+            }
+        }
+
+        $tourRoute->content_html = json_encode($stops, JSON_UNESCAPED_UNICODE);
+
+        $pageRepository = new PageRepository();
+        $pageRepository->updatePageSectionById($tourRoute);
+
+        $_SESSION['success'] = 'Tour route updated successfully.';
+        $this->redirect('/cms/history/tour-route');
+    }
 
 }
 

@@ -516,22 +516,22 @@
   background-color: var(--history-light-brown);
 }
 
-.why-visit-content ul {
+.green-bullet-content ul {
   list-style: none !important;
   padding-left: 0;
 }
 
-.why-visit-content ul li {
+.green-bullet-content ul li {
   padding-left: 0;
   display: flex;
   align-items: center;
 }
 
-.why-visit-content ul li::marker {
+.green-bullet-content ul li::marker {
   content: none;
 }
 
-.why-visit-content ul li::before {
+.green-bullet-content ul li::before {
   content: '•';
   color: var(--history-accent-color);
   font-size: 4.5rem;

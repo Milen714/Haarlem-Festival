@@ -58,7 +58,7 @@ $landmark = $landmark ?? null;
                 </h2>
                 <div class="underline-history mx-auto"></div>
 
-                <div class="why-visit-content mt-[1rem] text-[0.875rem] md:text-base leading-relaxed text-ink-700 italic prose prose-sm max-w-none [&>ul>li]:mb-2">
+                <div class="green-bullet-content mt-[1rem] text-[0.875rem] md:text-base leading-relaxed text-ink-700 italic prose prose-sm max-w-none [&>ul>li]:mb-2">
                     <?= $landmark->why_visit_content ?? '' ?>
                 </div>
             </div>
