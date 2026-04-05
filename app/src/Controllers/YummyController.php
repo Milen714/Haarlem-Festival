@@ -4,8 +4,6 @@ namespace App\Controllers;
 
 use App\Framework\BaseController;
 use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\ValidationException;
-use App\Exceptions\ApplicationException;
 use App\Services\ScheduleService;
 use App\Services\RestaurantService;
 use App\Services\PageService;
@@ -47,17 +45,15 @@ class YummyController extends BaseController
     
     public function index()
     {
-        
         try {
             $pageData = $this->pageService->getPageBySlug('events-yummy');
-            
             
             if (!$pageData) {
                 $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy');
                 $this->notFound();
                 return;
             }
-            
+            // Fetch events, venues, and restaurants related to the Yummy event category
             $events = $this->restaurantService->getEvents();
             $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
@@ -86,7 +82,6 @@ class YummyController extends BaseController
         try{
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants');
             
-            
             if (!$pageData) {
                 $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy-restaurants');
                 $this->notFound();
@@ -110,7 +105,6 @@ class YummyController extends BaseController
                 'viewModel' => $viewModel
             ]);
 
-             
         }catch (ResourceNotFoundException $e) {
             error_log('Restaurants listing error:' . $e->getMessage());
             $_SESSION['error'] = 'Failed to fetch all restaurants';
@@ -119,22 +113,22 @@ class YummyController extends BaseController
 
     public function restaurantDetail($vars = []){
         try{
+            // Validate and extract restaurant ID from URL parameters
             $restaurantId = (int)($vars['id'] ?? 0);
+            // Fetch page data for the restaurant detail page
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants-restaurant');
-            
-            
             if (!$pageData) {
                 $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy-restaurants');
                 $this->notFound();
                 return;
             }
+
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
-            
             if (!$restaurant) {
                 $this->notFound();
                 return;
             }
-
+            // Fetch schedules for the restaurant and prepare the view model
             $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
             $viewModel = new DetailsViewModel($restaurant, $schedules);
 

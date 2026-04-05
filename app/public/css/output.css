@@ -1346,6 +1346,10 @@ select:focus,
   margin-top: auto;
 }
 
+.ms-1{
+  margin-inline-start: 0.25rem;
+}
+
 .box-border{
   box-sizing: border-box;
 }
@@ -2292,6 +2296,11 @@ select:focus,
   border-bottom-right-radius: 0.75rem;
 }
 
+.rounded-t{
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
 .rounded-t-lg{
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
@@ -3111,6 +3120,10 @@ select:focus,
 .bg-yellow-100{
   --tw-bg-opacity: 1;
   background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1));
+}
+
+.bg-white\/10{
+  background-color: rgb(255 255 255 / 0.1);
 }
 
 .bg-opacity-50{
