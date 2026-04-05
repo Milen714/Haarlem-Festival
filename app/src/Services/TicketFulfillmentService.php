@@ -76,7 +76,16 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     {
         return 'Tickets_' . $order->reference_number . '_' . date('YmdHis');
     }
-
+    /**
+     * Summary of generatePDFAndReturnPath
+     * Generates a PDF from the provided HTML, saves it to disk, and returns the file path.
+     * @param mixed $html
+     * @param Order $order
+     * @param bool $download
+     * @param bool $save
+     * @param string $savePath
+     * @return string
+     */
     public function generatePDFAndReturnPath($html, Order $order, bool $download, bool $save, string $savePath = ''): string
     {
         $fileName = $this->generatePDFName($order);
@@ -84,12 +93,12 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $this->generatePDF($html, $fileName, 'A4', 'landscape', $download, $save, $dir);
         return $dir . $fileName . '.pdf';
     }
-
+    // Helper methods for ticket PDF management 
     public function getTicketPdfPath(string $filename): string
     {
         return $this->storageDir() . $filename;
     }
-
+    // Check if the ticket PDF is ready (exists on disk)
     public function isTicketPdfReady(string $filename): bool
     {
         return !empty($filename) && file_exists($this->getTicketPdfPath($filename));
@@ -98,6 +107,8 @@ class TicketFulfillmentService implements ITicketFulfillmentService
     /**
      * Returns the absolute path to the private ticket storage directory,
      * creating it if it does not already exist.
+     * This directory is intended for storing generated ticket PDFs 
+     * and should not be web-accessible for security reasons.
      */
     private function storageDir(): string
     {
@@ -113,7 +124,8 @@ class TicketFulfillmentService implements ITicketFulfillmentService
 
     /**
      * Generate ticket PDF, send email with attachment, and return PDF filename.
-     *
+     * This method orchestrates the entire ticket fulfillment process for an order, including:
+     * - Generating unique ticket hashes for QR codes
      * @param Order $order The order to generate tickets for
      * @param string $pdfHtml The rendered HTML for the PDF
      * @param string $emailHtml The rendered HTML for the email body
@@ -165,7 +177,14 @@ class TicketFulfillmentService implements ITicketFulfillmentService
 
         return $fileName . '.pdf';
     }
-
+    /**
+     * Summary of validateAndGetTicketPdf
+     * Validates that the ticket PDF is ready and returns the file path. 
+     * Throws a ValidationException if the PDF is not ready.
+     * @param string $pdfPath
+     * @throws ValidationException
+     * @return string
+     */
     public function validateAndGetTicketPdf(string $pdfPath): string
     {
         if (!$pdfPath) {

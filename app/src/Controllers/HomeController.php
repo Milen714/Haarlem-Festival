@@ -16,6 +16,7 @@ use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\ViewModels\Home\ScheduleList;
 use App\ViewModels\Home\StartingPoints;
+use App\ViewModels\Home\LandingPageViewModel;
 use App\ViewModels\MapMarker;
 use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
@@ -52,15 +53,14 @@ class HomeController extends BaseController
             $pageData = $this->pageService->getPageBySlug('home');
             
             $schedule = $this->scheduleService->getAllSchedules(eventType: $eventFilter, date: $dateFilter);
-
             $scheduleList = new ScheduleList($schedule);
 
             $venues = $this->venueService->getAllVenues(); 
             $landmarks = $this->landmarkService->getAllLandmarks();
-            $startingPoints = new StartingPoints($landmarks, $venues);
 
-            //$this->view('Home/Landing', ['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
-            $this->view('Home/Landing',['title' => $pageData->title, 'pageData' => $pageData, 'scheduleList' => $scheduleList, 'startingPoints' => $startingPoints]);
+            $landingPageViewModel = new LandingPageViewModel($pageData, $scheduleList, $landmarks, $venues);
+
+            $this->view('Home/Landing', ['title' => $pageData->title, 'pageViewModel' => $landingPageViewModel]);
         } catch (UserFacingException $e) {
             $this->logService->info('Home', 'User-facing error: ' . $e->getMessage());
             $this->internalServerError('An error occurred while loading the homepage.');

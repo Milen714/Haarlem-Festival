@@ -15,6 +15,7 @@ use PDOException;
 
 class RestaurantRepository extends Repository implements IRestaurantRepository
 {
+    // The getBaseQuery method centralizes the common SQL query for fetching restaurant data, including joins for related media, venue, and cuisine information. This promotes code reuse and maintainability across different methods that need to retrieve restaurant data.
     private function getBaseQuery(){
         return '
             SELECT 
@@ -22,6 +23,10 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.event_id,
             r.venue_id,
             r.name AS restaurant_name,
+            r.chef_name,
+            r.chef_bio_text,
+            r.chef_img,
+            r.banner_img,
             r.short_description AS restaurant_short_description,
             r.welcome_text AS restaurant_welcome_text,
             r.price_category AS restaurant_price_category,
@@ -29,10 +34,18 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             r.review_count AS restaurant_review_count,
             r.website_url AS restaurant_website_url,
             r.deleted_at,
+            r.gallery_id,
             -- media
             m.media_id AS main_image_id,
             m.file_path AS restaurant_image_path,
             m.alt_text AS restaurant_image_alt,
+            
+            cm.alt_text AS chef_img_alt,
+            cm.media_id AS chef_img_id,
+            cm.file_path AS chef_img_path,
+            bm.media_id AS banner_img_id,
+            bm.file_path AS banner_img_path,
+            bm.alt_text AS banner_img_alt,
             -- venue
             v.venue_id AS venue_id,
             v.name AS venue_name,
@@ -48,6 +61,10 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
 
             LEFT JOIN MEDIA m 
                 ON r.main_image_id = m.media_id
+            LEFT JOIN MEDIA cm
+                ON r.chef_img = cm.media_id
+            LEFT JOIN MEDIA bm 
+                ON r.banner_img = bm.media_id
 
             LEFT JOIN VENUE v 
                 ON r.venue_id = v.venue_id
@@ -83,6 +100,12 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                 $stmt->execute($params);
                 
                 $restaurants = [];
+            /**
+             * This loop processes the result set from the database query. I
+             * t constructs Restaurant objects and populates their properties based on the retrieved data. 
+             * The code also handles the relationships between restaurants, venues, and cuisines, 
+             * ensuring that each restaurant is only created once and that its associated cuisines are added without duplication.
+             */
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
                 $id = $row['restaurant_id'];
@@ -179,37 +202,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
 
     public function getRestaurantById(int $id): ?Restaurant{
         $pdo = $this->connect();
-        $sql = '
-            SELECT 
-            r.*,
-            r.chef_img,
-            r.gallery_id,
-            m.media_id AS main_image_id,
-            m.file_path AS restaurant_image_path,
-            m.alt_text AS restaurant_image_alt,
-            cm.alt_text AS chef_img_alt,
-            cm.media_id AS chef_img_id,
-            cm.file_path AS chef_img_path,
-            bm.media_id AS banner_img_id,
-            bm.file_path AS banner_img_path,
-            bm.alt_text AS banner_img_alt,
-            v.venue_id,
-            v.name AS venue_name,
-            v.street_address AS venue_street_address,
-            v.city AS venue_city,
-            v.postal_code AS venue_postal_code
-
-            FROM RESTAURANT r
-            LEFT JOIN MEDIA m 
-                ON r.main_image_id = m.media_id
-            LEFT JOIN MEDIA cm
-                ON r.chef_img = cm.media_id
-            LEFT JOIN MEDIA bm 
-                ON r.banner_img = bm.media_id
-               
-            LEFT JOIN VENUE v 
-                ON r.venue_id = v.venue_id
-            
+        $sql = $this->getBaseQuery() . '
             WHERE r.restaurant_id = :restaurant_id
             AND r.deleted_at IS NULL
             LIMIT 1
@@ -229,6 +222,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             //load the new relations
             $restaurant->cuisines = $this->getRestaurantCuisines($id);
             $restaurant->sessions = $this->getSessionsByRestaurant($id);
+            //gallery is optional so it checks if there is one before trying to load it
             $restaurant->gallery = $this->getRestaurantGallery($row['gallery_id'] ?? null);
             
             return $restaurant;
@@ -338,30 +332,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
 
     public function getRestaurantsByEventId(int $eventId): array{
         $pdo = $this->connect();
-        $sql = "
-        SELECT 
-        r.restaurant_id,
-        r.event_id,
-        r.venue_id,
-        r.chef_name,
-        r.chef_bio_text,
-        r.chef_img,
-        r.name AS restaurant_name,
-        r.short_description AS restaurant_short_description,
-        r.welcome_text AS restaurant_welcome_text,
-        r.price_category AS restaurant_price_category,
-        r.stars AS restaurant_stars,
-        r.review_count AS restaurant_review_count,
-        r.website_url AS restaurant_website_url,
-        r.deleted_at,   
-        m.media_id AS main_image_id,
-        m.file_path AS restaurant_image_path,
-        m.alt_text AS restaurant_image_alt
-        FROM RESTAURANT r
-        LEFT JOIN MEDIA m ON r.main_image_id = m.media_id
-        LEFT JOIN VENUE v ON r.venue_id = v.venue_id
-        LEFT JOIN RESTAURANT_CUISINE rc ON r.restaurant_id = rc.restaurant_id
-        LEFT JOIN CUISINE_TYPE c ON rc.cuisine_id = c.cuisine_id
+        $sql = $this->getBaseQuery() . "
         WHERE r.event_id = :event_id
         AND r.deleted_at IS NULL
         AND (:cuisine_id IS NULL OR rc.cuisine_id = :cuisine_id)
@@ -416,8 +387,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                 :chef_bio_text,
             )
         ";
-
         try {
+            // Bind parameters and execute the statement
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':name', $restaurant->name, PDO::PARAM_STR);
             $stmt->bindValue(':short_description', $restaurant->short_description, PDO::PARAM_STR);
@@ -461,6 +432,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             ";
 
         try {
+            // Bind parameters and execute the statement
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':name', $restaurant->name, PDO::PARAM_STR);
             $stmt->bindValue(':short_description', $restaurant->short_description, PDO::PARAM_STR);
@@ -567,7 +539,16 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ]);
     }
 
-    //to update the cuisines in restaurant cms
+    /**
+     * Summary of syncRestaurantCuisines
+     * This method synchronizes the cuisines associated with a restaurant.
+     *  It first deletes all existing cuisine associations for the given restaurant ID to prevent duplicates,
+     *  and then inserts new associations based on the provided list of cuisine IDs. 
+     * This ensures that the restaurant's cuisine relationships are accurately updated to reflect the current selection.
+     * @param int $restaurantId
+     * @param mixed $cuisineIds
+     * @return void
+     */
     public function syncRestaurantCuisines(int $restaurantId, $cuisineIds): void{
         $pdo = $this->connect();
 
@@ -591,7 +572,13 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             ]);
         }
     }
-
+     /**
+      * Summary of createGalleryForRestaurant
+      * @param int $restaurantId
+      * @param string $title
+      * @throws PDOException
+      * @return int
+      */
      public function createGalleryForRestaurant(int $restaurantId, string $title = 'Restaurant Gallery'): int
     {
         try {
@@ -674,6 +661,34 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             error_log("Error getting next gallery order: " . $e->getMessage());
             throw new PDOException("Failed to get next gallery order", 0, $e);
         }
+    }
+    public function getEvents(): array{
+        $pdo = $this->connect();
+        $sql = "
+            SELECT 
+                ec.event_id AS event_category_id,
+                ec.type AS event_category_type,
+                ec.title AS event_category_title,
+                ec.category_description AS event_category_description,
+                ec.slug AS event_category_slug,
+                m.media_id AS event_media_id,
+                m.file_path AS event_media_url,
+                m.alt_text AS event_media_alt_text
+            FROM EVENT_CATEGORIES ec
+            LEFT JOIN MEDIA m ON ec.event_media_id = m.media_id
+            WHERE ec.type != 'Yummy'
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        
+        $eventCategories = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $eventCategory = new \App\Models\EventCategory();
+            $eventCategory->fromPDOData($row);
+            $eventCategories[] = $eventCategory;
+        }
+        
+        return $eventCategories;
     }
     
 }

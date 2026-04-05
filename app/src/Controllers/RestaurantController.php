@@ -4,8 +4,6 @@ namespace App\Controllers;
 
 use App\Framework\BaseController;
 use App\Exceptions\ResourceNotFoundException;
-use App\Exceptions\ValidationException;
-use App\Exceptions\ApplicationException;
 use App\Services\RestaurantService;
 use App\Services\VenueService;
 use App\Services\Interfaces\IRestaurantService;

@@ -1112,6 +1112,11 @@ select:focus,
   margin-right: 1rem;
 }
 
+.mx-4{
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
 .mx-6{
   margin-left: 1.5rem;
   margin-right: 1.5rem;
@@ -1339,6 +1344,10 @@ select:focus,
 
 .mt-auto{
   margin-top: auto;
+}
+
+.ms-1{
+  margin-inline-start: 0.25rem;
 }
 
 .box-border{
@@ -2976,6 +2985,10 @@ select:focus,
   background-color: rgb(0 0 0 / 0.5);
 }
 
+.bg-black\/50{
+  background-color: rgb(0 0 0 / 0.5);
+}
+
 .bg-black\/70{
   background-color: rgb(0 0 0 / 0.7);
 }
@@ -3118,6 +3131,10 @@ select:focus,
 .bg-yellow-100{
   --tw-bg-opacity: 1;
   background-color: rgb(254 249 195 / var(--tw-bg-opacity, 1));
+}
+
+.bg-white\/10{
+  background-color: rgb(255 255 255 / 0.1);
 }
 
 .bg-\[\#eef3e2\]{

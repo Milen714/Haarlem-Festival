@@ -110,7 +110,7 @@ class Restaurant
         if (isset($data['chef_img']) && $data['chef_img'] !== null) {
             $this->chef_img = new Media();
             $this->chef_img->fromPDOData([
-                'media_id' => $data['chef_img'],
+                'media_id' => $data['chef_img_id'],
                 'file_path' => $data['chef_img_path'] ?? null,
                 'alt_text' => $data['chef_img_alt'] ?? null,
             ]);
