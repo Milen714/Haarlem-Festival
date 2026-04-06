@@ -8,7 +8,7 @@
     
     <div class="mb-12">
         <h3 class="font-history-serif text-[1.5rem] md:text-[2rem] text-ink-900 font-bold">
-            Book your Tour
+            Tickets
         </h3>
         <div class="underline-history"></div>
     </div>
@@ -26,8 +26,12 @@
                             <div class="font-semibold text-ink-900">Normal Ticket</div>
                             <div class="text-sm text-ink-700">€<?= number_format($ticketOptions->normalPrice, 2) ?> per person</div>
                         </div>
-                        <input type="number" id="qty-normal" name="qtyNormal" min="0" value="0" data-precio="<?= $ticketOptions->normalPrice ?>"
-                               class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="changeQty('qty-normal',-1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">−</button>
+                            <span id="qty-normal-display" class="w-6 text-center font-semibold">0</span>
+                            <button type="button" onclick="changeQty('qty-normal',1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">+</button>
+                        </div>
+                        <input type="hidden" id="qty-normal" name="qtyNormal" value="0" data-precio="<?= $ticketOptions->normalPrice ?>">
                     </div>
 
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
@@ -35,8 +39,12 @@
                             <div class="font-semibold text-ink-900">Family Ticket</div>
                             <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($ticketOptions->familyPrice, 2) ?> total</div>
                         </div>
-                        <input type="number" id="qty-family" name="qtyFamily" min="0" value="0" data-precio="<?= $ticketOptions->familyPrice ?>"
-                               class="w-20 px-3 py-2 border border-[#CAA359] rounded-md text-center focus:ring-2 focus:ring-[#546A21] focus:border-[#546A21] outline-none">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="changeQty('qty-family',-1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">−</button>
+                            <span id="qty-family-display" class="w-6 text-center font-semibold">0</span>
+                            <button type="button" onclick="changeQty('qty-family',1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">+</button>
+                        </div>
+                        <input type="hidden" id="qty-family" name="qtyFamily" value="0" data-precio="<?= $ticketOptions->familyPrice ?>">
                     </div>
                 </div>
             </div>
@@ -103,9 +111,25 @@
             <button type="submit" id="btn-submit" class="w-full bg-[#546A21] hover:bg-[#465e10] text-white font-semibold py-3 px-4 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#546A21]">
                 Add to Cart
             </button>
+
+            <div id="error-container" class="mt-4"></div>
+
+            <div id="tour-cart-success" class="hidden mt-4 p-4 bg-[#eef3e2] border border-[#546A21] rounded-md font-history-serif text-ink-900 text-center text-sm font-semibold">
+                ✓ Tickets added to your cart!
+            </div>
         </div>
 
     </form>
 </section>
 
+<script>
+function changeQty(id, delta) {
+    const input = document.getElementById(id);
+    const display = document.getElementById(id + '-display');
+    const newVal = Math.max(0, parseInt(input.value || 0) + delta);
+    input.value = newVal;
+    display.textContent = newVal;
+    input.dispatchEvent(new Event('input'));
+}
+</script>
 <script src="/Js/TicketHistory.js"></script>

@@ -77,12 +77,16 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
 
     public function getBySlug(string $slug): ?Landmark
     {
-        $sql = "SELECT landmark.*, 
-                       media.media_id, media.file_path, media.alt_text, 
-                       gm.display_order
+        $sql = "SELECT landmark.*,
+                       media.media_id, media.file_path, media.alt_text,
+                       gm.display_order,
+                       main_img.media_id  AS main_image_media_id,
+                       main_img.file_path AS main_image_file_path,
+                       main_img.alt_text  AS main_image_alt_text
                 FROM LANDMARK landmark
                 LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
                 LEFT JOIN MEDIA media ON gm.media_id = media.media_id
+                LEFT JOIN MEDIA main_img ON landmark.main_image_id = main_img.media_id
                 WHERE landmark.landmark_slug = :slug
                 ORDER BY gm.display_order ASC";
         
@@ -125,12 +129,16 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
 
     public function getById(int $id): ?Landmark
     {
-        $sql = "SELECT landmark.*, 
-                       media.media_id, media.file_path, media.alt_text, 
-                       gm.display_order
+        $sql = "SELECT landmark.*,
+                       media.media_id, media.file_path, media.alt_text,
+                       gm.display_order,
+                       main_img.media_id  AS main_image_media_id,
+                       main_img.file_path AS main_image_file_path,
+                       main_img.alt_text  AS main_image_alt_text
                 FROM LANDMARK landmark
                 LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
                 LEFT JOIN MEDIA media ON gm.media_id = media.media_id
+                LEFT JOIN MEDIA main_img ON landmark.main_image_id = main_img.media_id
                 WHERE landmark.landmark_id = :id
                 ORDER BY gm.display_order ASC";
         
@@ -271,9 +279,31 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
     }
 
     public function updateMainImage(int $landmarkId, int $mediaId): void
-{
-    $stmt = $this->pdo->prepare("UPDATE LANDMARK SET main_image_id = :media_id WHERE landmark_id = :id");
-    $stmt->execute([':media_id' => $mediaId, ':id' => $landmarkId]);
-}
+    {
+        $stmt = $this->pdo->prepare("UPDATE LANDMARK SET main_image_id = :media_id WHERE landmark_id = :id");
+        $stmt->execute([':media_id' => $mediaId, ':id' => $landmarkId]);
+    }
+
+    public function createGalleryForLandmark(int $landmarkId, string $title = 'Landmark Gallery'): int
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare("INSERT INTO GALLERY (title) VALUES (:title)");
+            $stmt->bindValue(':title', $title);
+            $stmt->execute();
+            $galleryId = (int)$this->pdo->lastInsertId();
+
+            $stmt2 = $this->pdo->prepare("UPDATE LANDMARK SET gallery_id = :gallery_id WHERE landmark_id = :landmark_id");
+            $stmt2->bindValue(':gallery_id', $galleryId, PDO::PARAM_INT);
+            $stmt2->bindValue(':landmark_id', $landmarkId, PDO::PARAM_INT);
+            $stmt2->execute();
+
+            $this->pdo->commit();
+            return $galleryId;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
 
 }

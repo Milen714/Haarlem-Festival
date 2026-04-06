@@ -10,6 +10,8 @@ use App\Services\LogService;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Models\Landmark;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
 
 class LandmarkController extends BaseController
 {
@@ -21,7 +23,7 @@ class LandmarkController extends BaseController
         $this->landmarkService = new LandmarkService();
         $this->logService = new LogService();
     }
-    
+
     private function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -30,106 +32,110 @@ class LandmarkController extends BaseController
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function index(): void {
+    public function index(): void
+    {
         $this->startSession();
-        
-        $landmarks = $this->landmarkService->getAllLandmarks();
-    
-        $this->cmsLayout('Cms/Landmarks/Index', [
-            'title' => 'Manage Landmarks',
-            'landmarks' => $landmarks
-        ]);
+
+        try {
+            $landmarks = $this->landmarkService->getAllLandmarks();
+
+            $this->cmsLayout('Cms/Landmarks/Index', [
+                'title'     => 'Manage Landmarks',
+                'landmarks' => $landmarks
+            ]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('Landmark', $e);
+            $this->internalServerError();
+        }
     }
 
-    #[RequireRole([UserRole::ADMIN])] //show the view for the user 
+    #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
         $this->startSession();
 
         $images = $this->prepareImages();
-        
+
         $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
-            'title' => 'Create New Landmark',
-            'landmark' => null, 
-            'action' => '/cms/landmarks/store',
-            'images' => $images
+            'title'    => 'Create New Landmark',
+            'landmark' => null,
+            'action'   => '/cms/landmarks/store',
+            'images'   => $images
         ]);
     }
 
     private function prepareImages(?Landmark $landmark = null): array
     {
-    $slotsSchema = [
-        ['label' => 'Introduction', 'name' => 'img_intro'],
-        ['label' => 'History',      'name' => 'img_history'],
-        ['label' => 'Practical Info', 'name' => 'img_practical']
-    ];
-
-    $mediaItems = [];
-    if ($landmark !== null && !empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
-        $mediaItems = array_values($landmark->gallery->media_items);
-    }
-
-    $imageSlots = [];
-    foreach ($slotsSchema as $index => $slot) {
-        $imageSlots[] = [
-            'label' => $slot['label'],
-            'name'  => $slot['name'],
-            'media' => $mediaItems[$index]->media ?? null,
+        $slotsSchema = [
+            ['label' => 'Introduction',   'name' => 'img_intro'],
+            ['label' => 'History',        'name' => 'img_history'],
+            ['label' => 'Practical Info', 'name' => 'img_practical']
         ];
+
+        $mediaItems = [];
+        if ($landmark !== null && !empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
+            $mediaItems = array_values($landmark->gallery->media_items);
+        }
+
+        $imageSlots = [];
+        foreach ($slotsSchema as $index => $slot) {
+            $imageSlots[] = [
+                'label' => $slot['label'],
+                'name'  => $slot['name'],
+                'media' => $mediaItems[$index]->media ?? null,
+            ];
+        }
+
+        return $imageSlots;
     }
 
-    return $imageSlots;
-    }
-
-    #[RequireRole([UserRole::ADMIN])] //post the creation of the landmark
+    #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
         $this->startSession();
 
         try {
             $this->landmarkService->createLandmark($_POST, $_FILES);
-                        
             $this->redirect('/cms/landmarks');
-            exit();
-            
-        } 
-        catch (\Exception $e) {
+        } catch (ValidationException $e) {
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/landmarks/create');
+        } catch (\Throwable $e) {
             $this->logService->exception('Landmark', $e);
+            $this->internalServerError();
         }
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function edit($vars = []): void //show the edit view for the user
+    public function edit($vars = []): void
     {
         $this->startSession();
-      
+
         $id = $vars['id'] ?? '';
 
         try {
             $landmark = $this->landmarkService->getLandmarkById($id);
 
-            $images = $this->prepareImages($landmark);       
-
             if (!$landmark) {
-                $this->redirect('/cms/landmarks');
+                $this->notFound();
                 return;
             }
 
+            $images = $this->prepareImages($landmark);
+
             $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
-                'title' => 'Edit Landmark: ' . $landmark->name,
+                'title'    => 'Edit Landmark: ' . $landmark->name,
                 'landmark' => $landmark,
-                'action' => "/cms/landmarks/update/{$landmark->landmark_id}",
-                'images' => $images
+                'action'   => "/cms/landmarks/update/{$landmark->landmark_id}",
+                'images'   => $images
             ]);
-
-
-        } 
-        catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logService->exception('Landmark', $e);
+            $this->internalServerError();
         }
     }
 
-    #[RequireRole([UserRole::ADMIN])] //post updated landmark
+    #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
         $this->startSession();
@@ -137,31 +143,33 @@ class LandmarkController extends BaseController
         $id = $vars['id'] ?? '';
 
         try {
-            $landmark = $this->landmarkService->updateLandmark($id, $_POST, $_FILES);
-            
+            $this->landmarkService->updateLandmark((int)$id, $_POST, $_FILES);
             $this->redirect('/cms/landmarks');
-            
-        } 
-        catch (\Exception $e) {
+        } catch (ValidationException $e) {
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/landmarks/edit/{$id}");
+        } catch (ResourceNotFoundException $e) {
+            $this->notFound();
+        } catch (\Throwable $e) {
             $this->logService->exception('Landmark', $e);
-            die("An error occurred while updating the landmark: " . $e->getMessage());
+            $this->internalServerError();
         }
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function delete($vars = []): void //delete landmark 
+    public function delete($vars = []): void
     {
-       $this->startSession();
-        $id = $vars['id'] ?? ''; 
+        $this->startSession();
+
+        $id = $vars['id'] ?? '';
 
         try {
             $this->landmarkService->deleteLandmark($id);
-        } 
-        catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logService->exception('Landmark', $e);
+            $_SESSION['error'] = 'Failed to delete landmark.';
         }
 
         $this->redirect('/cms/landmarks');
     }
-
 }

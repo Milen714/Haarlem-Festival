@@ -263,27 +263,30 @@ class AccountController extends BaseController
     {
         $loggedUser = $this->getLoggedInUser();
         if (!isset($loggedUser)) {
-            header("Location: /login");
-            exit();
+            $this->redirect('/login');
+            return;
         }
 
-        $user = $this->userService->getUserById($loggedUser->id);
         try {
-
+            $user = $this->userService->getUserById($loggedUser->id);
             $user->fromPDOData($_POST);
             $this->userService->updateUser($user);
-
-            $this->setLoggedInUser($user); // Update session with new user data
+            $this->setLoggedInUser($user);
 
             if ($user->role === UserRole::ADMIN) {
-                header("Location: /cms/profile");
+                $_SESSION['success'] = 'Profile updated successfully.';
+                $this->redirect('/cms/profile');
             } else {
-                header("Location: /settings");
+                $_SESSION['success'] = 'Settings updated successfully.';
+                $this->redirect('/settings');
             }
-            exit();
         } catch (\Throwable $e) {
             $this->logService->exception('Account', $e);
-            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => 'An error occurred. Please try again.']);
+            if ($loggedUser->role === UserRole::ADMIN) {
+                $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $loggedUser, 'error' => 'An error occurred. Please try again.']);
+            } else {
+                $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $loggedUser, 'error' => 'An error occurred. Please try again.']);
+            }
         }
     }
 }

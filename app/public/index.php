@@ -75,6 +75,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
     $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
 
+    /* History CMS - Tour Route */
+    $r->addRoute('GET',  '/cms/history/tour-route',        ['App\Controllers\HistoryController', 'editTourRoute']);
+    $r->addRoute('POST', '/cms/history/tour-route/update', ['App\Controllers\HistoryController', 'updateTourRoute']);
+
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
     $r->addRoute('GET', '/cms/page/edit/{slug}', ['App\Controllers\CmsPageController', 'editBySlug']);

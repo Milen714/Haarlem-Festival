@@ -34,6 +34,8 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
 
 </nav>
 
+<div id="error-container" class="mt-2"></div>
+
 <!--Share Program-->
 <div id="share-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">

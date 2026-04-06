@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let qtyFamily = parseInt(inputFamily.value) || 0;
 
         if (qtyNormal === 0 && qtyFamily === 0) {
-            alert("Please select at least one ticket.");
+            showError("Please select at least one ticket.");
             return;
         }
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let selectedTime = document.querySelector('input[name="time"]:checked');
 
         if (!selectedDate || !selectedLanguage || !selectedTime) {
-            alert("Please select a date, language, and time.");
+            showError("Please select a date, language, and time.");
             return;
         }
 
@@ -175,14 +175,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!responseFamily.ok || !resultFamily.success) throw new Error(resultFamily.message || 'Error adding family tickets.');
             }
 
-            btnSubmit.innerText = "Add to Cart";  // Restauramos el texto
+            btnSubmit.innerText = "Add to Cart";
             btnSubmit.disabled = false;
-            // Si llegamos hasta aquí, todo fue un éxito
-            alert('Tickets added to cart!');
+            const successMsg = document.getElementById('tour-cart-success');
+            successMsg.classList.remove('hidden');
+            setTimeout(() => successMsg.classList.add('hidden'), 5000);
 
         } catch (error) {
             // Si hubo un error en el servidor, se lo mostramos al usuario
-            alert("Error: " + error.message);
+            showError(error.message || 'Something went wrong. Please try again.');
             btnSubmit.innerText = "Add to Cart";
             btnSubmit.disabled = false;
         }

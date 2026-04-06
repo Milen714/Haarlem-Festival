@@ -95,16 +95,22 @@ class LandmarkService implements ILandmarkService
 
         $landmark = $this->landmarkRepository->insert($landmark);
 
-        // save image if uploaded
-if (!empty($filesData['main_image']['tmp_name'])) {
-    $result = $this->mediaService->uploadAndCreate($filesData['main_image'], 'History/Landmarks', $postData['name']);
-    if ($result['success']) {
-        $this->landmarkRepository->updateMainImage($landmark->landmark_id, $result['media']->media_id);
-        $landmark->main_image_id = $result['media'];
-    }
-}
+        $galleryId = $this->landmarkRepository->createGalleryForLandmark($landmark->landmark_id);
+        $gallery = new \App\Models\Gallery();
+        $gallery->gallery_id = $galleryId;
+        $landmark->gallery = $gallery;
+        $this->galleryService->handleSectionUploads($galleryId, $postData, $filesData);
 
-return $landmark;
+        // save image if uploaded
+        if (!empty($filesData['main_image']['tmp_name'])) {
+            $result = $this->mediaService->uploadAndCreate($filesData['main_image'], 'History/Landmarks', $postData['name']);
+            if ($result['success']) {
+                $this->landmarkRepository->updateMainImage($landmark->landmark_id, $result['media']->media_id);
+                $landmark->main_image_id = $result['media'];
+            }
+        }
+
+        return $landmark;
     }
 
     public function updateLandmark(int $id, array $postData, array $filesData): Landmark
@@ -121,13 +127,18 @@ return $landmark;
             throw new ValidationException("The landmark name is required.");
         }
 
-        if ($existingLandmark->gallery) {
-            $this->galleryService->handleSectionUploads(
-                $existingLandmark->gallery->gallery_id, 
-                $postData, 
-                $filesData
-        );
+        if (!$existingLandmark->gallery) {
+            $galleryId = $this->landmarkRepository->createGalleryForLandmark($existingLandmark->landmark_id);
+            $gallery = new \App\Models\Gallery();
+            $gallery->gallery_id = $galleryId;
+            $existingLandmark->gallery = $gallery;
         }
+
+        $this->galleryService->handleSectionUploads(
+            $existingLandmark->gallery->gallery_id,
+            $postData,
+            $filesData
+        );
 
         $newSlug = $this->generateSlug($postData['name']); 
 
