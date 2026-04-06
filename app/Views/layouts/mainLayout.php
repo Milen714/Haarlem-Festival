@@ -112,7 +112,7 @@ $content = $content ?? '';
                             class="absolute left-0 top-full pt-2 w-48 z-50 hidden rounded-lg border border-[#2C3233] bg_colors_home shadow-lg">
                             <ul class="py-1 font-medium">
                                 <li>
-                                    <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
+                                    <a href="/myListings/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : ''; ?>"
                                         class="block px-4 py-2 hover-color rounded-md font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myListings') ? 'text-blue-600' : 'text_colors_nav' ?>">
                                         My Schedule
                                     </a>
@@ -158,6 +158,21 @@ $content = $content ?? '';
                             class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/personal-program') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                             Personal Plan</a>
                     </li>
+                    <?php if (isset($_SESSION['loggedInUser']) && $_SESSION['loggedInUser']->role->value === 'ADMIN'): ?>
+                    <li class="flex items-center gap-2">
+                        <a href="/cms"
+                            class="flex items-center gap-2 py-2 font-bold text_colors_nav px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                            CMS
+                        </a>
+                    </li>
+                    <?php elseif (isset($_SESSION['loggedInUser']) && $_SESSION['loggedInUser']->role->value === 'EMPLOYEE'): ?>
+                    <li class="flex items-center gap-2">
+                        <a href="/qr-code/scan"
+                            class="flex items-center gap-2 py-2 font-bold text_colors_nav px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0 <?php echo str_starts_with($_SERVER['REQUEST_URI'], '/qr-code/scan') ? 'text-blue-600' : ''; ?>">
+                            Scan Tickets
+                        </a>
+                    </li>
+                    <?php endif; ?>
                     <li class="flex items-center gap-2">
                         <a href="/payment"
                             class="relative text_colors_nav  box-border border border-transparent  focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm p-3 focus:outline-none">
@@ -253,7 +268,7 @@ $content = $content ?? '';
             </div>
             <div class="relative flex flex-row gap-2 items-center">
                 <?php
-                    if(isset($_SESSION['loggedInUser'])): ?>
+                if (isset($_SESSION['loggedInUser'])): ?>
                 <button data-dropdown-toggle="userMenuDropdown" type="button" aria-expanded="false" class="inline-flex items-center text-colors_nav font-semibold p-2 rounded-full
                    bg-[#CBCBCB] hover:bg-[#b5b5b5]  focus:outline-none focus:ring-2 focus:ring-brand">
                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
@@ -266,6 +281,27 @@ $content = $content ?? '';
                    rounded-lg border border-[#2C3233]
                    bg-[#F2F0EF] dark:bg-[#0F0F0F] shadow-lg">
                     <ul class="py-1 text-sm text-black dark:text-white" aria-labelledby="userMenuButton">
+                        <?php if (isset($_SESSION['loggedInUser']) && $_SESSION['loggedInUser']->role->value === 'ADMIN'): ?>
+                        <li>
+                            <a href="/cms"
+                                class="block px-4 py-2 hover-color rounded-md font-semibold text-blue-600 dark:text-blue-400">
+                                CMS
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="my-1 border-[#2C3233]">
+                        </li>
+                        <?php elseif (isset($_SESSION['loggedInUser']) && $_SESSION['loggedInUser']->role->value === 'EMPLOYEE'): ?>
+                        <li>
+                            <a href="/qr-code/scan"
+                                class="block px-4 py-2 hover-color rounded-md font-semibold text-blue-600 dark:text-blue-400">
+                                Scan Tickets
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="my-1 border-[#2C3233]">
+                        </li>
+                        <?php endif; ?>
                         <li>
                             <a href="/settings" class="block px-4 py-2 hover-color rounded-md">
                                 Settings
