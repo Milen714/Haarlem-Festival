@@ -128,6 +128,15 @@ class JazzService implements JazzServiceInterface
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
         $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
 
+        // Load ticket types for each schedule
+        $scheduleIds = array_map(fn($s) => $s->schedule_id, $allSchedules);
+        $ticketTypesBySchedule = $this->ticketService->getTicketTypesByScheduleIds($scheduleIds);
+
+        // Attach ticket types to each schedule
+        foreach ($allSchedules as $schedule) {
+            $schedule->ticketTypes = $ticketTypesBySchedule[$schedule->schedule_id] ?? [];
+        }
+
         return [
             'title' => 'Jazz Festival Schedule',
             'scheduleByDate' => $this->groupSchedulesByDate($allSchedules),
