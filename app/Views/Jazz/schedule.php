@@ -275,6 +275,11 @@ $lastDateLabel    = !empty($festivalDays) ? end($festivalDays)['date']->format('
                                                         class="flex-shrink-0 text-xs bg-red-100 text-red-500 font-semibold px-4 py-2 rounded-full">
                                                         Sold Out
                                                     </span>
+                                                <?php elseif (empty($schedule->ticketTypes)): ?>
+                                                    <span
+                                                        class="flex-shrink-0 text-xs bg-gray-200 text-gray-500 font-semibold px-4 py-2 rounded-full cursor-not-allowed">
+                                                        No Tickets
+                                                    </span>
                                                 <?php else: ?>
                                                     <button type="button" data-action="buy-ticket"
                                                         data-schedule-id="<?= (int) $schedule->schedule_id ?>"
