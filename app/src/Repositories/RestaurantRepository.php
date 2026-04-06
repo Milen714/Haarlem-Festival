@@ -16,7 +16,8 @@ use PDOException;
 class RestaurantRepository extends Repository implements IRestaurantRepository
 {
     // The getBaseQuery method centralizes the common SQL query for fetching restaurant data, including joins for related media, venue, and cuisine information. This promotes code reuse and maintainability across different methods that need to retrieve restaurant data.
-    private function getBaseQuery(){
+    private function getBaseQuery()
+    {
         return '
             SELECT 
             r.restaurant_id,
@@ -76,8 +77,9 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                 ON rc.cuisine_id = c.cuisine_id
         ';
     }
-    
-    public function getAllRestaurants(int $eventId, ?int $cuisineId = null): array{
+
+    public function getAllRestaurants(int $eventId, ?int $cuisineId = null): array
+    {
         $pdo = $this->connect();
         $sql = $this->getBaseQuery() . "
             WHERE r.event_id = :event_id
@@ -89,17 +91,17 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
 
         $sql .= " ORDER BY r.restaurant_id";
-            try {
-                $stmt = $pdo->prepare($sql);
-                $params = ['event_id' => $eventId];
+        try {
+            $stmt = $pdo->prepare($sql);
+            $params = ['event_id' => $eventId];
 
-                if($cuisineId !== null){
-                    $params['cuisine_id'] = $cuisineId;
-                }
+            if ($cuisineId !== null) {
+                $params['cuisine_id'] = $cuisineId;
+            }
 
-                $stmt->execute($params);
-                
-                $restaurants = [];
+            $stmt->execute($params);
+
+            $restaurants = [];
             /**
              * This loop processes the result set from the database query. I
              * t constructs Restaurant objects and populates their properties based on the retrieved data. 
@@ -115,7 +117,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                     $restaurant = new Restaurant();
                     $restaurant->fromPDOData($row);
 
-                    if(!empty($row['venue_id'])){
+                    if (!empty($row['venue_id'])) {
                         $venue = new Venue();
                         $venue->venue_id = $row['venue_id'];
                         $venue->name = $row['venue_name'];
@@ -143,22 +145,22 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error fetching all restaurants: " . $e->getMessage());
-            Throw new PDOException("Failed to fetch restaurants");
+            throw new PDOException("Failed to fetch restaurants");
         }
+    }
 
-    } 
-
-    public function showAllRestaurants(): array{
-       $pdo = $this->connect();
+    public function showAllRestaurants(): array
+    {
+        $pdo = $this->connect();
         $sql = $this->getBaseQuery() . "
             WHERE r.deleted_at IS NULL
             ORDER BY r.restaurant_id
         ";
-            try {
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute();
-                
-                $restaurants = [];
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute();
+
+            $restaurants = [];
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
                 $id = $row['restaurant_id'];
@@ -168,7 +170,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
                     $restaurant = new Restaurant();
                     $restaurant->fromPDOData($row);
 
-                    if(!empty($row['venue_id'])){
+                    if (!empty($row['venue_id'])) {
                         $venue = new Venue();
                         $venue->venue_id = $row['venue_id'];
                         $venue->name = $row['venue_name'];
@@ -196,11 +198,12 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error fetching all restaurants: " . $e->getMessage());
-            Throw new PDOException("Failed to fetch restaurants");
-        } 
+            throw new PDOException("Failed to fetch restaurants");
+        }
     }
 
-    public function getRestaurantById(int $id): ?Restaurant{
+    public function getRestaurantById(int $id): ?Restaurant
+    {
         $pdo = $this->connect();
         $sql = $this->getBaseQuery() . '
             WHERE r.restaurant_id = :restaurant_id
@@ -218,50 +221,50 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             }
             $restaurant = new Restaurant();
             $restaurant->fromPDOData($row);
-            
+
             //load the new relations
             $restaurant->cuisines = $this->getRestaurantCuisines($id);
             $restaurant->sessions = $this->getSessionsByRestaurant($id);
             //gallery is optional so it checks if there is one before trying to load it
             $restaurant->gallery = $this->getRestaurantGallery($row['gallery_id'] ?? null);
-            
-            return $restaurant;
 
+            return $restaurant;
         } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error fetching restaurant by ID: " . $e->getMessage());
-            Throw new PDOException("Failed to fetch restaurant with ID: $id");
+            throw new PDOException("Failed to fetch restaurant with ID: $id");
         }
-        
     }
-    public function getRestaurantGallery(?int $galleryId){
-            if(!$galleryId){
-                return null;
-            }
+    public function getRestaurantGallery(?int $galleryId)
+    {
+        if (!$galleryId) {
+            return null;
+        }
 
-            $pdo = $this->connect();
-            $sql = 'SELECT m.media_id, m.file_path, m.alt_text, gm.display_order
+        $pdo = $this->connect();
+        $sql = 'SELECT m.media_id, m.file_path, m.alt_text, gm.display_order
                 FROM GALLERY_MEDIA gm
                 LEFT JOIN MEDIA m 
                     ON gm.media_id = m.media_id
                     WHERE gm.gallery_id = :gallery_id
                     ORDER BY gm.display_order
             ';
-            $getGallery = $pdo->prepare($sql);
-            $getGallery->execute(['gallery_id' => $galleryId]);
+        $getGallery = $pdo->prepare($sql);
+        $getGallery->execute(['gallery_id' => $galleryId]);
 
-            $gallery = new Gallery();
-            $gallery->gallery_id = $galleryId;
-            $gallery->media_items = [];
-            while ($row = $getGallery->fetch(PDO::FETCH_ASSOC)) {
-                $media = new Media();
-                $media->fromPDOData($row);
-                $gallery->media_items[] = $media;
-            }
+        $gallery = new Gallery();
+        $gallery->gallery_id = $galleryId;
+        $gallery->media_items = [];
+        while ($row = $getGallery->fetch(PDO::FETCH_ASSOC)) {
+            $media = new Media();
+            $media->fromPDOData($row);
+            $gallery->media_items[] = $media;
+        }
 
-            return $gallery;
+        return $gallery;
     }
-    public function getRestaurantCuisines(int $restaurantId){
+    public function getRestaurantCuisines(int $restaurantId)
+    {
         $pdo = $this->connect();
         $sql = "
             SELECT c.* 
@@ -284,9 +287,10 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
 
         return $cuisines;
     }
-    public function getRestaurantBySlug(string $slug): ?Restaurant{
-    $pdo = $this->connect();    
-    $sql = "
+    public function getRestaurantBySlug(string $slug): ?Restaurant
+    {
+        $pdo = $this->connect();
+        $sql = "
             SELECT 
             r.restaurant_id,
             r.event_id,
@@ -310,28 +314,29 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             AND r.deleted_at IS NULL
             LIMIT 1
         ";
-        try{
+        try {
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
-            if(!$result){
+            if (!$result) {
                 return null;
             }
 
             $restaurant = new Restaurant();
             $restaurant->fromPDOData($result);
             return $restaurant;
-        }catch(PDOException $e){
+        } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error fetching restaurant by slug: " . $e->getMessage());
             throw new PDOException("Failed to fetch restaurant with slug: $slug");
         }
     }
 
-    public function getRestaurantsByEventId(int $eventId): array{
+    public function getRestaurantsByEventId(int $eventId): array
+    {
         $pdo = $this->connect();
         $sql = $this->getBaseQuery() . "
         WHERE r.event_id = :event_id
@@ -361,9 +366,10 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    public function createRestaurant(Restaurant $restaurant): int{
-    $pdo = $this->connect();   
-    $sql = "
+    public function createRestaurant(Restaurant $restaurant): int
+    {
+        $pdo = $this->connect();
+        $sql = "
             INSERT INTO RESTAURANT (
                 name, 
                 short_description, 
@@ -395,7 +401,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             $stmt->bindValue(':short_description', $restaurant->short_description, PDO::PARAM_STR);
             $stmt->bindValue(':welcome_text', $restaurant->welcome_text, PDO::PARAM_STR);
             $stmt->bindValue(':price_category', $restaurant->price_category, PDO::PARAM_INT);
-            $stmt->bindValue(':stars', $restaurant->stars, PDO::PARAM_INT); 
+            $stmt->bindValue(':stars', $restaurant->stars, PDO::PARAM_INT);
             $stmt->bindValue(':review_count', $restaurant->review_count, PDO::PARAM_INT);
             $stmt->bindValue(':website_url', $restaurant->website_url, PDO::PARAM_STR);
             $stmt->bindValue(':venue_id', $restaurant->venue_id, PDO::PARAM_INT);
@@ -411,11 +417,12 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             // Log error or handle as needed
             error_log("Error creating restaurant: " . $e->getMessage());
             throw new PDOException("Failed to create restaurant: " . $e->getMessage());
-        } 
+        }
     }
-    public function updateRestaurant( Restaurant $restaurant): bool{
+    public function updateRestaurant(Restaurant $restaurant): bool
+    {
         //should add slug to database and update it here as well  
-        $pdo = $this->connect();   
+        $pdo = $this->connect();
         $sql = "
             UPDATE RESTAURANT
             SET 
@@ -439,20 +446,21 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             $stmt->bindValue(':short_description', $restaurant->short_description, PDO::PARAM_STR);
             $stmt->bindValue(':welcome_text', $restaurant->welcome_text, PDO::PARAM_STR);
             $stmt->bindValue(':price_category', $restaurant->price_category, PDO::PARAM_INT);
-            $stmt->bindValue(':stars', $restaurant->stars, PDO::PARAM_INT); 
+            $stmt->bindValue(':stars', $restaurant->stars, PDO::PARAM_INT);
             $stmt->bindValue(':review_count', $restaurant->review_count, PDO::PARAM_INT);
             $stmt->bindValue(':website_url', $restaurant->website_url, PDO::PARAM_STR);
             $stmt->bindValue(':chef_name', $restaurant->chef_name, PDO::PARAM_STR);
             $stmt->bindValue(':chef_bio_text', $restaurant->chef_bio_text, PDO::PARAM_STR);
             $stmt->bindValue(':venue_id', $restaurant->venue_id, PDO::PARAM_INT);
-            $stmt->bindValue(':restaurant_id', $restaurant->restaurant_id, PDO::PARAM_INT);   
+            $stmt->bindValue(':restaurant_id', $restaurant->restaurant_id, PDO::PARAM_INT);
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error updating restaurant: " . $e->getMessage());
             throw new PDOException("Failed to update restaurant with ID: " . $restaurant->restaurant_id . " - " . $e->getMessage());
         }
     }
-    public function deleteRestaurant(int $id): bool{
+    public function deleteRestaurant(int $id): bool
+    {
         try {
             $pdo = $this->connect();
             $sql = "UPDATE RESTAURANT SET deleted_at = NOW() WHERE restaurant_id = :restaurant_id";
@@ -550,7 +558,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
      * @param mixed $cuisineIds
      * @return void
      */
-    public function syncRestaurantCuisines(int $restaurantId, $cuisineIds): void{
+    public function syncRestaurantCuisines(int $restaurantId, $cuisineIds): void
+    {
         $pdo = $this->connect();
 
         //delete old so no duplicates
@@ -566,21 +575,21 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             VALUES (:restaurant_id, :cuisine_id)
         ');
         //there are multiple in one setting so it goes through each
-        foreach ($cuisineIds as $cuisineId){
+        foreach ($cuisineIds as $cuisineId) {
             $stmt->execute([
                 'restaurant_id' => $restaurantId,
                 'cuisine_id' => $cuisineId
             ]);
         }
     }
-     /**
-      * Summary of createGalleryForRestaurant
-      * @param int $restaurantId
-      * @param string $title
-      * @throws PDOException
-      * @return int
-      */
-     public function createGalleryForRestaurant(int $restaurantId, string $title = 'Restaurant Gallery'): int
+    /**
+     * Summary of createGalleryForRestaurant
+     * @param int $restaurantId
+     * @param string $title
+     * @throws PDOException
+     * @return int
+     */
+    public function createGalleryForRestaurant(int $restaurantId, string $title = 'Restaurant Gallery'): int
     {
         try {
             $pdo = $this->connect();
@@ -609,7 +618,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    
+
     //Insert a media item into a gallery at the given display order.
     public function addMediaToGallery(int $galleryId, int $mediaId, int $displayOrder): bool
     {
@@ -628,7 +637,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    
+
     //Remove a specific media item from a gallery.
     public function removeMediaFromGallery(int $galleryId, int $mediaId): bool
     {
@@ -646,7 +655,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }
     }
 
-    
+
     //Get the next display_order value for a gallery (max + 1).
     public function getNextGalleryOrder(int $galleryId): int
     {
@@ -663,7 +672,8 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             throw new PDOException("Failed to get next gallery order", 0, $e);
         }
     }
-    public function getEvents(): array{
+    public function getEvents(): array
+    {
         $pdo = $this->connect();
         $sql = "
             SELECT 
@@ -681,15 +691,14 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         ";
         $stmt = $pdo->prepare($sql);
         $stmt->execute();
-        
+
         $eventCategories = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $eventCategory = new \App\Models\EventCategory();
             $eventCategory->fromPDOData($row);
             $eventCategories[] = $eventCategory;
         }
-        
+
         return $eventCategories;
     }
-    
 }

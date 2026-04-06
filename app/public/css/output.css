@@ -6199,6 +6199,11 @@ select:focus,
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
+.dark\:text-blue-400:is(.dark *){
+  --tw-text-opacity: 1;
+  color: rgb(96 165 250 / var(--tw-text-opacity, 1));
+}
+
 .dark\:hover\:bg-\[\#334155\]:hover:is(.dark *){
   --tw-bg-opacity: 1;
   background-color: rgb(51 65 85 / var(--tw-bg-opacity, 1));
