@@ -327,7 +327,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         }catch(PDOException $e){
             // Log error or handle as needed
             error_log("Error fetching restaurant by slug: " . $e->getMessage());
-            Throw new PDOException("Failed to fetch restaurant with slug: $slug");
+            throw new PDOException("Failed to fetch restaurant with slug: $slug");
         }
     }
 
@@ -357,7 +357,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error fetching restaurants by event ID: " . $e->getMessage());
-            throw new \RuntimeException("Error fetching restaurants by event ID: " . $e->getMessage());
+            throw new PDOException("Error fetching restaurants by event ID: " . $e->getMessage());
         }
     }
 
@@ -405,12 +405,12 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             if ($stmt->execute()) {
                 return (int)$pdo->lastInsertId();
             } else {
-                throw new \Exception("Failed to create restaurant");
+                throw new PDOException("Failed to create restaurant");
             }
         } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error creating restaurant: " . $e->getMessage());
-            throw new \RuntimeException("Failed to create restaurant: " . $e->getMessage());
+            throw new PDOException("Failed to create restaurant: " . $e->getMessage());
         } 
     }
     public function updateRestaurant( Restaurant $restaurant): bool{
@@ -449,7 +449,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error updating restaurant: " . $e->getMessage());
-            throw new \RuntimeException("Failed to update restaurant with ID: " . $restaurant->restaurant_id . " - " . $e->getMessage());
+            throw new PDOException("Failed to update restaurant with ID: " . $restaurant->restaurant_id . " - " . $e->getMessage());
         }
     }
     public function deleteRestaurant(int $id): bool{
@@ -462,7 +462,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
         } catch (PDOException $e) {
             // Log error or handle as needed
             error_log("Error deleting restaurant: " . $e->getMessage());
-            throw new \RuntimeException("Failed to delete restaurant with ID: $id - " . $e->getMessage());
+            throw new PDOException("Failed to delete restaurant with ID: $id - " . $e->getMessage());
         }
     }
 

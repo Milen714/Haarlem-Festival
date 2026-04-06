@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApplicationException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Restaurant;
 use App\Models\Yummy\Session;
 use App\Repositories\RestaurantRepository;
@@ -124,7 +126,7 @@ class RestaurantService implements IRestaurantService
     public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant {
         $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
         if(!$restaurant){
-            throw new \Exception('Restaurant not found');
+            throw new ResourceNotFoundException('Restaurant not found');
         }
         
         // Update restaurant data using the model's method which handles empty fields properly
@@ -134,6 +136,9 @@ class RestaurantService implements IRestaurantService
         
         //get the cuisines by id and slice it so only up to 3 are displayed
         $cuisineIds = $postData['cuisines'] ?? [];
+        if (!$cuisineIds) {
+            throw new ResourceNotFoundException('Could not find cuisines');
+        }
         $cuisineIds = array_slice($cuisineIds, 0, 3);
         
         //replace the gallery images if there are any
@@ -183,7 +188,7 @@ class RestaurantService implements IRestaurantService
             if ($result['success']) {
                 $restaurant->main_image = $result['media'];
             } else {
-                throw new \Exception('Failed to upload main image:' . $result['error']);
+                throw new ResourceNotFoundException('Failed to upload main image:' . $result['error']);
             } 
         }
 
@@ -209,7 +214,7 @@ class RestaurantService implements IRestaurantService
             if ($result['success']) {
                 $restaurant->chef_img = $result['media'];
             } else {
-                throw new \Exception('Failed to upload chef image:' . $result['error']);
+                throw new ResourceNotFoundException('Failed to upload chef image:' . $result['error']);
             } 
         }
         return $restaurant;
@@ -313,7 +318,7 @@ class RestaurantService implements IRestaurantService
                 $altText
             );
             if (!($result['success'] ?? false)) {
-                throw new \Exception(('Failed to replace image'));
+                throw new ApplicationException(('Failed to replace image'));
             }
         }
     }
@@ -331,7 +336,7 @@ class RestaurantService implements IRestaurantService
     public function removeGalleryImage(int $restaurantId, int $mediaId): bool{
         $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
         if (!$restaurant?->gallery?->gallery_id) {
-        return false;
+            return false;
         }   
 
         return $this->restaurantRepository->removeMediaFromGallery(
