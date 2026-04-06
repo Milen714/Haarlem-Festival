@@ -10,6 +10,7 @@ use App\Exceptions\DanceEventNotFoundException;
 use App\Exceptions\ArtistNotFoundException;
 use App\Exceptions\ScheduleNotFoundException;
 use App\Exceptions\ApplicationException;
+use App\Models\Enums\TicketSchemeEnum;
 
 class DanceService implements IDanceService
 {
@@ -57,8 +58,8 @@ class DanceService implements IDanceService
             }
 
             $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums([
-                'DANCE_ALL_DAY', 
-                'DANCE_WEEK_PASS'
+                TicketSchemeEnum::DANCE_ALL_DAY->value, 
+                TicketSchemeEnum::DANCE_WEEK_PASS->value
             ]);
 
             $artists = $this->artistService->getArtistsByEventId($eventId);
