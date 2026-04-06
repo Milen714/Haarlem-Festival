@@ -10,7 +10,7 @@ $pageTitle = $isEdit
     ? "Edit Cuisine: {$cuisine->name}" 
     : "Create New Cuisine";
 
-$action = $action ?? '/cms/cuisines/store';
+$action = $action ?? '/cms/restaurants/cuisines/store';
 ?>
 
 <section class="mx-auto max-w-3xl p-4 md:p-8">
