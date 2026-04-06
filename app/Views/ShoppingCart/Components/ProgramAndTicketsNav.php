@@ -21,10 +21,6 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
             class="h-min <?php echo $viewModel->showMyTicketsSection ? 'home-ticket-tab-active' : 'home-ticket-tab-inactive'; ?>"
             data-showMyTicketSection="true">My
             Tickets <span>( <?php echo $viewModel->totalTickets; ?> )</span></button>
-
-
-        <a href="/payment" class="h-min home-ticket-tab-inactive" data-date="">Shopping Cart</a>
-
     </ul>
 
     <button id="share-program-btn" class="home_calendar_button_active">
@@ -34,7 +30,7 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
 
 </nav>
 
-<div id="error-container" class="mt-2"></div>
+<div id="error-container"></div>
 
 <!--Share Program-->
 <div id="share-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
