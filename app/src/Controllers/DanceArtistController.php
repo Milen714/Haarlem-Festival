@@ -19,6 +19,7 @@ use App\Models\Gallery;
 use App\Exceptions\ArtistNotFoundException;
 use App\Exceptions\ScheduleNotFoundException;
 use App\Exceptions\ApplicationException;
+use App\ViewModels\Dance\ArtistDetailViewModel;
 
 class DanceArtistController extends BaseController
 {
@@ -31,12 +32,6 @@ class DanceArtistController extends BaseController
     private ITicketService $ticketService;
     private ILogService $logService;
 
-    /**
-     * Wires up all services needed to build a Dance artist detail page.
-     * ArtistService fetches the artist and gallery, ScheduleService provides per-event slots,
-     * AlbumService loads discography, MediaService handles any media operations,
-     * and TicketService is used to build the per-schedule ticket availability lookup.
-     */
     public function __construct()
     {
         $this->mediaService = new MediaService();
@@ -47,16 +42,6 @@ class DanceArtistController extends BaseController
         $this->logService = new LogService();
     }
 
-    /**
-     * Renders the Dance artist detail page for the given URL slug.
-     * Fetches the artist, their albums, gallery, and schedule slots for the Dance event,
-     * then builds a ticket availability lookup so the view can show pricing and sold-out state.
-     * Responds with a 404 if the slug is missing, the artist does not exist, or any error occurs.
-     *
-     * @param array $vars  Route variables — expects a 'slug' key with the artist's URL slug.
-     *
-     * @return void
-     */
     public function artistDetail(array $vars = []): void
     {
         $slug = $vars['slug'] ?? null;
@@ -84,7 +69,7 @@ class DanceArtistController extends BaseController
             }
             
             $ticketLookup = $this->getTicketLookupForSchedules($scheduleByDate);
-            $vm = new \App\ViewModels\Dance\ArtistDetailViewModel($artist, $scheduleByDate, $album, $gallery);
+            $vm = new ArtistDetailViewModel($artist, $scheduleByDate, $album, $gallery);
             $this->view('Dance/artist-detail', [
                 'vm' => $vm,
                 'ticketLookup' => $ticketLookup
@@ -98,16 +83,6 @@ class DanceArtistController extends BaseController
         }
     }
 
-    /**
-     * Builds a flat schedule_id → ticket info lookup array for all slots across all dates.
-     * For each slot, fetches the first available ticket type and extracts the price and remaining
-     * availability. The view uses this to render a "Buy tickets" button with accurate data.
-     *
-     * @param array $groupedSchedules  Slots grouped by date, as returned by ScheduleService::getSchedulesForArtistInEvent().
-     *
-     * @return array<int, array{id: int, price: float, available: int}>
-     *               Keyed by schedule_id; each value has the ticket_type_id, price, and seats left.
-     */
     private function getTicketLookupForSchedules(array $groupedSchedules): array
     {
         $lookup = [];
