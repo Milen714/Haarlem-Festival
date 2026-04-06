@@ -726,6 +726,26 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
+    // Returns the schedule's total_capacity, or null if the schedule is not found.
+    public function getScheduleCapacity(int $scheduleId): ?int
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT total_capacity FROM SCHEDULE WHERE schedule_id = :schedule_id"
+            );
+            $stmt->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row || $row['total_capacity'] === null) {
+                return null;
+            }
+            return (int)$row['total_capacity'];
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error getting schedule capacity: " . $e->getMessage());
+        }
+    }
+
     public function createTicketScheme(TicketScheme $ticketScheme): bool
     {
         try {
