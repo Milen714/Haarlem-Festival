@@ -126,21 +126,26 @@ class RestaurantService implements IRestaurantService
         if(!$restaurant){
             throw new \Exception('Restaurant not found');
         }
-        //update the restaurant with the new data from the form and handle the image upload for both main and chef images
-        $restaurant = Restaurant::createFromPostData($postData);
+        
+        // Update restaurant data using the model's method which handles empty fields properly
+        $restaurant->fillRestaurantFromPostData($postData);
         $restaurant = $this->handleImageUpload($restaurant, $files);
         $this->restaurantRepository->updateRestaurant($restaurant);
+        
         //get the cuisines by id and slice it so only up to 3 are displayed
         $cuisineIds = $postData['cuisines'] ?? [];
         $cuisineIds = array_slice($cuisineIds, 0, 3);
+        
         //replace the gallery images if there are any
         $this->replaceRestaurantGalleryImages($restaurant, $files);
         $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
         
         //sync the cuisines with the restaurant
         $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
+        
         //handle the sessions by deleting the old ones and creating new ones based on the form data
-       $this->handleSessions($restaurantId, $postData);
+        $this->handleSessions($restaurantId, $postData);
+        
         return $restaurant;
     }
 
@@ -232,9 +237,16 @@ class RestaurantService implements IRestaurantService
 
         //looping the files to upload multiple at one and add them to the gallery with the correct order
         foreach($files['name'] as $i => $name){
-            if (empty($name) || $files['error'][$i] !== UPLOAD_ERR_OK) {
+            if (empty($name)) {
                 continue;
             }
+            
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                // Log the error but don't throw - allow other images to upload even if one fails
+                error_log("Gallery image upload error for restaurant {$restaurantId}: " . $files['error'][$i]);
+                continue;
+            }
+            
             $file = [
                 'name' => $files['name'][$i],
                 'type' => $files['type'][$i],
@@ -247,6 +259,7 @@ class RestaurantService implements IRestaurantService
             $result = $this->mediaService->uploadAndCreate($file, 'Yummy/Restaurant', $altText);
 
             if (!($result['success'] ?? false)) {
+                error_log("Failed to upload gallery image for restaurant {$restaurantId}: " . ($result['error'] ?? 'Unknown error'));
                 continue;
             }
 
@@ -271,12 +284,17 @@ class RestaurantService implements IRestaurantService
      * @throws \Exception If image replacement fails.
      */
     public function replaceRestaurantGalleryImages(?Restaurant $restaurant, array $files){
-        if (!$restaurant?->gallery->gallery_id) {
+        if (!$restaurant?->gallery?->gallery_id) {
             return;
         }
 
         foreach ($files as $key => $file) {
             if (!str_starts_with($key, 'gallery_replace_')) {
+                continue;
+            }
+            
+            // Skip if not a valid single file upload (array-style uploads like gallery_images have different structure)
+            if (!is_array($file) || !isset($file['error']) || is_array($file['error'])) {
                 continue;
             }
 

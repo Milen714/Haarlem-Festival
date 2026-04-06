@@ -251,6 +251,7 @@ class RestaurantRepository extends Repository implements IRestaurantRepository
             $getGallery->execute(['gallery_id' => $galleryId]);
 
             $gallery = new Gallery();
+            $gallery->gallery_id = $galleryId;
             $gallery->media_items = [];
             while ($row = $getGallery->fetch(PDO::FETCH_ASSOC)) {
                 $media = new Media();

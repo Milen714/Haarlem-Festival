@@ -1,7 +1,9 @@
-<?php 
+<?php
+
 namespace App\Views\Cms\Restaurants;
 
 use App\Models\Cuisine;
+
 /**
  * @var Cuisine[] $cuisines
  */
@@ -18,7 +20,7 @@ $cuisines = $cuisines ?? [];
         </div>
 
         <a href="/cms/restaurants/cuisines/create"
-        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition">
             + Add New Cuisine
         </a>
     </header>
@@ -27,21 +29,21 @@ $cuisines = $cuisines ?? [];
         <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
             <p class="font-medium">✓ <?= htmlspecialchars($_SESSION['success']) ?></p>
         </div>
-    <?php 
+    <?php
         unset($_SESSION['success']);
-        endif;
+    endif;
     ?>
     <?php if (isset($_SESSION['error'])): ?>
         <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
             <p class="font-medium">✓ <?= htmlspecialchars($_SESSION['error']) ?></p>
         </div>
-    <?php 
+    <?php
         unset($_SESSION['error']);
-        endif;
+    endif;
     ?>
 
     <!-- Restaurant table -->
-     <?php if (empty($cuisines)): ?>
+    <?php if (empty($cuisines)): ?>
 
         <div class="bg-white border rounded-lg p-12 text-center">
 
@@ -54,7 +56,7 @@ $cuisines = $cuisines ?? [];
             </p>
 
             <a href="/cms/restaurants/cuisines/create"
-            class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
+                class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition">
                 + Add First Cuisine
             </a>
 
@@ -79,7 +81,7 @@ $cuisines = $cuisines ?? [];
                             <!-- Restaurant Info -->
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    
+
                                     <p class="font-semibold text-gray-900 truncate">
                                         <?= htmlspecialchars($cuisine->name) ?>
                                     </p>
@@ -91,11 +93,11 @@ $cuisines = $cuisines ?? [];
                                     <p class="text-sm text-gray-500 truncate">
                                         <?= substr(strip_tags($cuisine->description), 0, 20) ?? 'No description' ?>
                                     </p>
-                                </div> 
+                                </div>
                             </td>
                             <!-- Venue -->
                             <td class="px-6 py-4">
-                                
+
                                 <p class="font-medium text-gray-800">
                                     <?= htmlspecialchars($cuisine->icon) ?>
                                 </p>
@@ -104,7 +106,7 @@ $cuisines = $cuisines ?? [];
                             <td class="px-6 py-4 text-right">
                                 <div class="flex gap-2 justify-end">
                                     <a href="/cms/restaurants/cuisines/edit/<?= $cuisine->cuisine_Id ?>"
-                                    class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded transition">
+                                        class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded transition">
                                         Edit
                                     </a>
                                     <form method="POST"
@@ -119,7 +121,7 @@ $cuisines = $cuisines ?? [];
                                 </div>
                             </td>
                         </tr>
-                    <?php endforeach; ?>  
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -131,7 +133,7 @@ $cuisines = $cuisines ?? [];
         </div>
 
     <?php endif; ?>
-    
+
     <div class="mt-8">
         <a href="/cms" class="text-gray-600 hover:text-gray-900 transition">
             ← Back to Dashboard
