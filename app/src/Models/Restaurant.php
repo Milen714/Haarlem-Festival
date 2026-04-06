@@ -5,7 +5,6 @@ use App\Models\Media;
 use App\Models\Gallery;
 use App\Models\Venue;
 use App\Models\Cuisine;
-use App\Models\Yummy\Dish;
 use App\Models\Yummy\Session;
 use Dom\Text;
 
@@ -29,12 +28,52 @@ class Restaurant
     public ?Gallery $gallery = null;
     public ?array $cuisines = [];
     public ?array $sessions = [];
-    public ?array $dishes = [];
     public ?string $website_url = null;
     public ?\DateTime $deleted_at = null;
 
     public function __construct() {}
 
+    /**
+	 * instance is created and then the data is filled in by fillRestaurantFromPostData, which is also used when updating a restaurant.
+     * so this is the right entry point when handling a "create restaurant" form submission.
+	 *
+	 * @param array $data  The raw $_POST.
+	 *
+	 * @return self  self refers to the created instance, Restaurant.
+	 */
+	public static function createFromPostData(array $data): self
+	{
+		$restaurant = new self();
+		$restaurant->fillRestaurantFromPostData($data);
+
+		return $restaurant;
+	}
+
+	/**
+	 * This is used to fill an exisiting restaurant with new data, when updating a restaurant.
+	 * Trims all string fields, and sets optional fields to null if they are empty.
+	 *
+	 * @param array $data  The raw $_POST array
+	 */
+    public function fillRestaurantFromPostData(array $data): void{
+        $this->name = trim($data['name']);
+        $this->event_id = isset($data['event_id']) ? (int)$data['event_id'] : ($this->event_id ?? 1);
+        $this->short_description = !empty($data['short_description']) ? trim($data['short_description']) : ($this->short_description ?? null);
+        $this->welcome_text = !empty($data['welcome_text']) ?  trim($data['welcome_text']) : ($this->welcome_text ?? null);
+        $this->price_category = !empty($data['price_category']) ?  (int)$data['price_category'] : ($this->price_category ?? null);
+        $this->stars = !empty($data['stars']) ?  (int)$data['stars'] : ($this->stars ?? null);
+        $this->review_count = !empty($data['review_count']) ?  (int)$data['review_count'] : ($this->review_count ?? null);
+        $this->website_url = !empty($data['website_url']) ? trim($data['website_url']) : ($this->website_url ?? null);
+        $this->chef_name = !empty($data['chef_name']) ? trim($data['chef_name']) : ($this->chef_name ?? null);
+        $this->chef_bio_text = !empty($data['chef_bio_text']) ? trim($data['chef_bio_text']) : ($this->chef_bio_text ?? null);
+    }
+
+    /**
+     * Summary of fromPDOData
+     * This method is used to fill the restaurant with data from the database, when retrieving a restaurant.
+     * @param array $data
+     * @return void
+     */
     public function fromPDOData(array $data): void
     {
         $this->restaurant_id = isset($data['restaurant_id']) ? (int)$data['restaurant_id'] : null;
@@ -71,7 +110,7 @@ class Restaurant
         if (isset($data['chef_img']) && $data['chef_img'] !== null) {
             $this->chef_img = new Media();
             $this->chef_img->fromPDOData([
-                'media_id' => $data['chef_img'],
+                'media_id' => $data['chef_img_id'],
                 'file_path' => $data['chef_img_path'] ?? null,
                 'alt_text' => $data['chef_img_alt'] ?? null,
             ]);

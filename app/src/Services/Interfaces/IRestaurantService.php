@@ -28,4 +28,5 @@ interface IRestaurantService
      public function uploadRestauratGallery(int $restaurantId, ?Restaurant $restaurant, array $files): void;
 
     public function removeGalleryImage(int $restaurantId, int $mediaId): bool;
+    public function getEvents(): array;
 }

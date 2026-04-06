@@ -6,6 +6,7 @@ use App\Repositories\UserRepository;
 use App\Repositories\Interfaces\IUserRepository;
 use App\Services\Interfaces\IUserService;
 use App\Models\User;
+
 class UserService implements IUserService{
     private IUserRepository $userRepository;
 
@@ -39,5 +40,11 @@ class UserService implements IUserService{
     }
     public function deleteUser(int $id): bool {
         return $this->userRepository->deleteUser($id);
+    }
+    public function findByShareToken(string $token): ?User {
+        return $this->userRepository->findByShareToken($token);
+    }
+    public function saveShareToken(int $userId, string $token): bool {
+        return $this->userRepository->saveShareToken($userId, $token);
     }
 }

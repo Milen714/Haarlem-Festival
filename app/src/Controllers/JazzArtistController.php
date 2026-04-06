@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
+use App\Framework\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Services\JazzService;

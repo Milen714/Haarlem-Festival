@@ -13,6 +13,19 @@ $user = $user ?? null;
         </p>
     </header>
 
+    <?php if (!empty($error)): ?>
+    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg text-sm font-semibold">
+        <?= htmlspecialchars($error) ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['success'])): ?>
+    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg text-sm font-semibold">
+        <?= htmlspecialchars($_SESSION['success']) ?>
+    </div>
+    <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
     <div class="bg-white border rounded-lg p-6 mb-6">
         
         <div class="flex justify-between items-center mb-4 border-b pb-2">
@@ -63,7 +76,7 @@ $user = $user ?? null;
                               disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-gray-900 disabled:font-medium">
             </div>
 
-            <div id="action-buttons" class="hidden flex gap-4 pt-6 border-t mt-6">
+            <div id="action-buttons" class="hidden gap-4 pt-6 border-t mt-6">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition">
                     Save Changes
                 </button>
@@ -101,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inputs.forEach(input => input.disabled = false);
         btnEdit.classList.add('hidden');
         actionButtons.classList.remove('hidden');
+        actionButtons.classList.add('flex');
         inputs[0].focus();
     });
 
@@ -108,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         inputs.forEach(input => input.disabled = true);
         btnEdit.classList.remove('hidden');
+        actionButtons.classList.remove('flex');
         actionButtons.classList.add('hidden');
     });
 });

@@ -10,6 +10,8 @@
     --text-home-primary: #004A7F;
     --text-home-high-contrast-primary: #003366;
 
+    --home-bg-ticket-tab-inactive: #DBDADA;
+    --home-bg-ticket-tab-active: #ffffff;
     --home-gold-accent: #C69A4D;
     --home-history-accent: #A7C957;
     --home-history-accent-muted: #A7C9574D;
@@ -81,9 +83,17 @@
 
     --shadow-yellow: -7px -7px 0px #FFD93E;
 
-    /*  */
-    
---color-brand-600: #3ea12f;
+    /**/
+    --history-emphasis-color: #344212;
+    --history-accent-color: #5D791C;
+    --history-pale-green: #d0ec91;
+    --history-border-green: #5f7135;
+    --history-dark-brown: #4F3505;
+    --history-light-brown: #84642F;
+    --history-cream: #FAEBBD;
+
+
+    --color-brand-600: #3ea12f;
     --color-brand-700: #2f7e26;
     --color-gold-400: #f0b65a;
     --color-ink-900: #121212;
@@ -92,8 +102,6 @@
     --color-ink-600: #4a4a4a;
     --color-ink-500: #6b6b6b;
     --color-bg-history: #fefbf0;
-    --color-underline-history: #84642F;
-
   }
 }
 
@@ -170,6 +178,14 @@
  }
 
     /* BUTTONS */
+    .home-ticket-tab-inactive{
+        @apply text-black font-semibold p-3 rounded-t-lg shadow-[inset_0_2px_6px_0_rgba(0,0,0,0.1)] 
+                   bg-[var(--home-bg-ticket-tab-inactive)] hover:bg-[var(--home-bg-ticket-tab-active)]  hover:text-[var(--text-home-primary)]  transition-all ;
+    }
+    .home-ticket-tab-active{
+        @apply text-[var(--text-home-primary)] font-semibold p-3 rounded-t-lg shadow-[inset_0_2px_6px_0_rgba(0,0,0,0.1)] border-b-2 border-[var(--home-gold-accent)] 
+                   bg-[var(--home-bg-ticket-tab-active)] hover:bg-[var(--home-bg-ticket-tab-inactive)]  hover:text-[var(--text-home-primary)]  transition-all ;
+    }
     .checkout_login_button{
         @apply text-white font-semibold p-3 rounded-[5px] shadow-[-7px_-7px_0px_#000000] hover:shadow-[-4px_-4px_0px_#000000]
                    bg-[var(--text-home-primary)] dark:bg-[var(--text-home-high-contrast-primary)]  focus:outline-none focus:ring-2 ;
@@ -437,19 +453,21 @@
         -webkit-text-stroke: 0.06rem #fbf8e5;
     }
 
-    .btn-history-book {
-        background-color: #d0ec91;
-        border: 0.12rem solid #5f7135;
+    .btn-history {
+        background-color: var(--history-pale-green);
+        border: 0.16rem solid var(--history-border-green);
         border-radius: 0.9rem;
         padding: 0.75rem 2rem;
+        color: #2b3613;   
         font-family: 'Nobile', sans-serif;
-        font-weight: 500;
+        font-weight: 600;
         font-size: 1.25rem;
         transition: all 0.3s ease;
     }
 
-    .btn-history-book:hover {
-        background-color: #b8d67a;
+    .btn-history:hover {
+        background-color: #A8C369;
+        color: #20290d;   
         transform: translateY(-0.12rem);
     }
 
@@ -459,6 +477,11 @@
            bg-[#FAEBBD] border border-[#CAA359] 
            hover:bg-[#FFE598] hover:border-[#CAA359] 
            peer-checked:bg-[#A7C957] peer-checked:border-[#546A21] peer-checked:border-2;
+  }
+
+  .history-emphasis {
+    color: var(--history-emphasis-color);
+    font-weight: 600;
   }
 
 
@@ -473,12 +496,10 @@
     @apply mx-auto px-4;
   }
 
-  /* Tipografía */
   .font-history-serif {
     font-family: Georgia, Cambria, "Times New Roman", Times, serif;
   }
 
-  /* Utilidades manuales para evitar configurar tailwind.config.js */
   .text-ink-900 { color: var(--color-ink-900); }
   .text-ink-700 { color: var(--color-ink-700); }
   .text-ink-500 { color: var(--color-ink-500); }
@@ -487,13 +508,62 @@
   .bg-brand-600 { background-color: var(--color-brand-600); }
   .hover\:bg-brand-700:hover { background-color: var(--color-brand-700); }
 
-  .underline-history {
-    margin-top: 0.75rem;
-    margin-bottom: 1.5rem;
-    height: 1px;
-    width: 4rem;
-    background-color: var(--color-underline-history);
-  }
+.underline-history {
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  height: 3px;
+  width: 12rem;
+  background-color: var(--history-light-brown);
+}
+
+.green-bullet-content ul {
+  list-style: none !important;
+  padding-left: 0;
+}
+
+.green-bullet-content ul li {
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+}
+
+.green-bullet-content ul li::marker {
+  content: none;
+}
+
+.green-bullet-content ul li::before {
+  content: '•';
+  color: var(--history-accent-color);
+  font-size: 4.5rem;
+  line-height: 0;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.landmark-title-hover {
+  font-family: 'Nobile', sans-serif;
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--history-accent-color);
+  text-decoration: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  transition: color 0.2s;
+  display: block;
+}
+
+.landmark-title-hover:hover {
+  color: var(--history-light-brown);
+  font-size: 0;
+  text-decoration: none;
+}
+
+.landmark-title-hover:hover::after {
+  content: 'Get to know us';
+  font-size: 1.875rem;
+  color: var(--history-light-brown);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+}
+  
 
 
 

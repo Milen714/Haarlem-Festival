@@ -11,6 +11,9 @@ use App\Services\VenueService;
 use App\Services\ArtistService;
 use App\Services\RestaurantService;
 use App\Services\LandmarkService;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ApplicationException;
 
 class ScheduleService implements IScheduleService
 {
@@ -70,7 +73,7 @@ class ScheduleService implements IScheduleService
         $schedule = $this->buildScheduleFromPostData(new Schedule(), $postData);
         $success = $this->scheduleRepository->create($schedule);
         if (!$success) {
-            throw new \Exception('Failed to create schedule in database');
+            throw new ApplicationException('Failed to create schedule in database');
         }
         return $schedule;
     }
@@ -79,13 +82,13 @@ class ScheduleService implements IScheduleService
     {
         $schedule = $this->scheduleRepository->getScheduleById($scheduleId);
         if (!$schedule) {
-            throw new \Exception('Schedule not found');
+            throw new ResourceNotFoundException('Schedule not found.');
         }
         $this->validateScheduleData($postData);
         $schedule = $this->buildScheduleFromPostData($schedule, $postData);
         $success = $this->scheduleRepository->update($schedule);
         if (!$success) {
-            throw new \Exception('Failed to update schedule in database');
+            throw new ApplicationException('Failed to update schedule in database');
         }
         return $schedule;
     }
@@ -94,7 +97,7 @@ class ScheduleService implements IScheduleService
     {
         $schedule = $this->scheduleRepository->getScheduleById($scheduleId);
         if (!$schedule) {
-            throw new \Exception('Schedule not found');
+            throw new ResourceNotFoundException('Schedule not found.');
         }
         return $this->scheduleRepository->delete($scheduleId);
     }
@@ -154,19 +157,19 @@ class ScheduleService implements IScheduleService
     private function validateScheduleData(array $data): void
     {
         if (empty($data['event_id'])) {
-            throw new \Exception('Event category is required');
+            throw new ValidationException('Event category is required.');
         }
         if (empty($data['date'])) {
-            throw new \Exception('Date is required');
+            throw new ValidationException('Date is required.');
         }
         if (empty($data['start_time'])) {
-            throw new \Exception('Start time is required');
+            throw new ValidationException('Start time is required.');
         }
         if (empty($data['end_time'])) {
-            throw new \Exception('End time is required');
+            throw new ValidationException('End time is required.');
         }
         if (empty($data['total_capacity']) || (int)$data['total_capacity'] < 1) {
-            throw new \Exception('Total capacity must be at least 1');
+            throw new ValidationException('Total capacity must be at least 1.');
         }
     }
 
@@ -187,7 +190,7 @@ class ScheduleService implements IScheduleService
             $schedule->start_time = !empty($data['start_time']) ? new \DateTime($data['start_time']) : null;
             $schedule->end_time   = !empty($data['end_time'])   ? new \DateTime($data['end_time'])   : null;
         } catch (\Exception $e) {
-            throw new \Exception('Invalid date or time format: ' . $e->getMessage());
+            throw new ValidationException('Invalid date or time format.');
         }
 
         $schedule->total_capacity = (int)($data['total_capacity'] ?? 0);

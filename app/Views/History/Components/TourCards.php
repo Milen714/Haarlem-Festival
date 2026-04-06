@@ -3,7 +3,7 @@
     <?php foreach ($tourFeatures as $feature): ?>
         <div class="rounded-lg border border-[#FFF0C2] bg-[#FFF0C2] p-4">
             <div class="flex items-center gap-3">
-                <div class="inline-flex size-9 items-center justify-center rounded-md  text-brand-600 shadow-sm">
+                <div class="inline-flex size-9 items-center justify-center rounded-md bg-[#FFF0C2]">
                     <img src="<?= htmlspecialchars($feature->media->file_path ?? 'Icon') ?>" 
                         alt="<?= htmlspecialchars($feature->title) ?>" class="size-full object-cover">
                 </div>

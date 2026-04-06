@@ -76,17 +76,30 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
             </div>
         </article>
 
+        <!--Exports -->
+        <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
+            <div class="flex items-center mb-4">
+                <span class="text-4xl mr-4">📊</span>
+                <h2 class="text-2xl font-bold">Orders Export</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Export orders as CSV or Excel with custom columns</p>
+            <div class="space-y-2">
+                <a href="/cms/export-orders" class="block text-blue-600 hover:underline font-semibold">→ Export Orders (CSV & Excel)</a>
+            </div>
+        </article>
+
         <!--Landmark Management -->
         <article class="bg-white border rounded-lg p-6 hover:shadow-lg transition">
             <div class="flex items-center mb-4">
                 <span class="text-4xl mr-4">🏰</span>
                 <h2 class="text-2xl font-bold">Landmarks</h2>
             </div>
-            <p class="text-gray-600 mb-4">Manage landmarks</p>
+            <p class="text-gray-600 mb-4">Manage landmarks & Tour route</p>
             <div class="space-y-2">
                 <a href="/cms/landmarks" class="block text-blue-600 hover:underline font-semibold">→ View All
                     Landmarks</a>
                 <a href="/cms/landmarks/create" class="block text-green-600 hover:underline">+ Add New Landmark</a>
+                <a href="/cms/history/tour-route" class="block text-blue-600 hover:underline font-semibold">→ Edit Tour Stops</a>
             </div>
         </article>
 

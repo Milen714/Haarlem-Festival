@@ -14,6 +14,8 @@ class Venue
     public ?int $capacity = null;
     public ?string $phone = null;
     public ?string $email = null;
+    public ?float $latitude = null;
+    public ?float $longitude = null;
     public ?Media $venue_image = null;
     public ?EventCategory $event_category = null;
 
@@ -58,6 +60,8 @@ class Venue
         $this->phone = self::optionalTrimmedValue($data, 'phone');
         $this->email = self::optionalTrimmedValue($data, 'email');
         $this->description_html = self::optionalTrimmedValue($data, 'description_html');
+        $this->latitude = isset($data['latitude']) && $data['latitude'] !== '' ? (float)$data['latitude'] : null;
+        $this->longitude = isset($data['longitude']) && $data['longitude'] !== '' ? (float)$data['longitude'] : null;
     }
 
     /**
@@ -164,6 +168,8 @@ class Venue
     $this->capacity = isset($data['venue_capacity']) ? (int)$data['venue_capacity'] : (isset($data['capacity']) ? (int)$data['capacity'] : null);
     $this->phone = $data['venue_phone'] ?? ($data['phone'] ?? null);
     $this->email = $data['venue_email'] ?? ($data['email'] ?? null);
+    $this->latitude = isset($data['latitude']) ? (float)$data['latitude'] : null;
+    $this->longitude = isset($data['longitude']) ? (float)$data['longitude'] : null;
 
     $mediaId = $data['venue_image_id'] ?? $data['media_id'] ?? $data['venue_media_id'] ?? null;
     $filePath = $data['image_path'] ?? $data['file_path'] ?? $data['venue_media_file_path'] ?? null;

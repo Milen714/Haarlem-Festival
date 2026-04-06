@@ -15,6 +15,8 @@ $content = $content ?? '';
 
     <script src="https://js.stripe.com/v3/"></script>
 
+
+
 </head>
 
 
@@ -152,14 +154,14 @@ $content = $content ?? '';
                         </div>
                     </li>
                     <li class="flex items-center gap-2">
-                        <a href="/myRequests/<?php echo isset($_SESSION['loggedInUser']) ? $_SESSION['loggedInUser']->id : '' ; ?>"
-                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/myRequests') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
+                        <a href="/personal-program"
+                            class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/personal-program') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                             Personal Plan</a>
                     </li>
                     <li class="flex items-center gap-2">
                         <a href="/payment"
                             class="relative text_colors_nav  box-border border border-transparent  focus:ring-4 focus:ring-brand-medium shadow-xs font-medium leading-5 rounded-base text-sm p-3 focus:outline-none">
-                            <img src="Assets/Home/Shoppinsad.svg" alt="">
+                            <img src="/Assets/Home/Shoppinsad.svg" alt="">
                             <span class="sr-only">Shopping Cart</span>
                             <div id="items-in-shoppingCart"
                                 class="absolute hidden inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-red-700 rounded-full -top-2 -end-2">

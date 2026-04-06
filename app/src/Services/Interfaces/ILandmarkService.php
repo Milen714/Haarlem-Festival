@@ -13,4 +13,7 @@ interface ILandmarkService
     public function createLandmark(array $postData, array $filesData): Landmark;
     public function updateLandmark(int $id, array $postData, array $filesData): Landmark;
     public function deleteLandmark(int $id): void;
+
+    public function getFeaturedLandmarks(): array;
+
 }

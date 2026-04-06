@@ -8,6 +8,9 @@ use App\Services\Interfaces\ILogService;
 use App\Repositories\VenueRepository;
 use App\Repositories\Interfaces\IVenueRepository;
 use App\Models\Venue;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ApplicationException;
 
 class VenueService implements IVenueService
 {
@@ -51,7 +54,7 @@ class VenueService implements IVenueService
         $success = $this->venueRepository->create($venue);
 
         if (!$success) {
-            throw new \Exception('Failed to create venue in database');
+            throw new ApplicationException('Failed to create venue in database');
         }
 
         return $venue;
@@ -74,7 +77,7 @@ class VenueService implements IVenueService
         $success = $this->venueRepository->update($venue);
 
         if (!$success) {
-            throw new \Exception('Failed to update venue in database');
+            throw new ApplicationException('Failed to update venue in database');
         }
 
         return $venue;
@@ -85,7 +88,7 @@ class VenueService implements IVenueService
         $venue = $this->venueRepository->getVenueById($venueId);
 
         if (!$venue) {
-            throw new \Exception('Venue not found');
+            throw new ResourceNotFoundException('Venue not found.');
         }
 
         return $this->venueRepository->delete($venueId);
@@ -97,31 +100,31 @@ class VenueService implements IVenueService
     private function validateVenueData(array $data): void
     {
         if (empty($data['name'])) {
-            throw new \Exception('Venue name is required');
+            throw new ValidationException('Venue name is required.');
         }
 
         if (strlen($data['name']) < 2) {
-            throw new \Exception('Venue name must be at least 2 characters');
+            throw new ValidationException('Venue name must be at least 2 characters.');
         }
 
         if (empty($data['street_address'])) {
-            throw new \Exception('Street address is required');
+            throw new ValidationException('Street address is required.');
         }
 
         if (empty($data['city'])) {
-            throw new \Exception('City is required');
+            throw new ValidationException('City is required.');
         }
 
         if (isset($data['capacity']) && $data['capacity'] !== '' && !is_numeric($data['capacity'])) {
-            throw new \Exception('Capacity must be a number');
+            throw new ValidationException('Capacity must be a number.');
         }
 
         if (isset($data['capacity']) && $data['capacity'] !== '' && (int)$data['capacity'] < 0) {
-            throw new \Exception('Capacity cannot be negative');
+            throw new ValidationException('Capacity cannot be negative.');
         }
 
         if (!empty($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new \Exception('Invalid email address');
+            throw new ValidationException('Invalid email address.');
         }
     }
 
