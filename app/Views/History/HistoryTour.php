@@ -2,12 +2,20 @@
 namespace App\Views\History;
 
 /** @var string $text */
+
+$breadcrumbs = [
+    ['label' => 'Home',            'url' => '/'],
+    ['label' => 'Haarlem History', 'url' => '/events-history'],
+    ['label' => 'History Tour'],
+];
 ?>
 
 <div class="antialiased text-ink-800 bg-[var(--color-bg-history)]">
     
     <?php include __DIR__ . '/Components/HistoryHero.php'; ?>
-    
+
+    <?php include __DIR__ . '/Components/breadcrumb.php'; ?>
+
     <div class="container mx-auto max-w-[1100px] px-4">
         <?php include __DIR__ . '/Components/TourInfo.php'; ?>
     </div>

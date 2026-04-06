@@ -6,15 +6,6 @@
 /** @var array $otherLandmarks */
 ?>
 
-<div class="max-w-content py-4 px-4 md:px-0">
-    <nav aria-label="Breadcrumb" class="text-sm text-ink-500 mt-6 mb-8 flex flex-wrap gap-2 items-center">
-        <a href="/" class="hover:text-ink-700 transition-colors">Home</a>
-        <span class="mx-2 text-neutral-400">›</span>
-        <a href="/history" class="hover:text-ink-700 transition-colors">Haarlem History</a>
-        <span class="mx-2 text-neutral-400">›</span>
-        <span class="text-ink-700 font-medium"><?= htmlspecialchars($landmark->name ?? '') ?></span>
-    </nav>
-</div>
 
 <div class="relative pb-12">
     <a href="/events-history" class="absolute left-8 top-1/2 -translate-y-1/2 text-[var(--history-dark-brown)] hover:opacity-70 transition-opacity" aria-label="Back to Haarlem History">
