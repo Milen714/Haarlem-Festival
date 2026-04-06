@@ -112,15 +112,37 @@
                 Add to Cart
             </button>
 
+            <a href="/personal-program" class="mt-3 w-full block text-center bg-[#546A21] hover:bg-[#465e10] text-white font-semibold py-3 px-4 rounded-md transition-colors shadow-sm">
+                See my program
+            </a>
+
             <div id="error-container" class="mt-4"></div>
 
-            <div id="tour-cart-success" class="hidden mt-4 p-4 bg-[#eef3e2] border border-[#546A21] rounded-md font-history-serif text-ink-900 text-center text-sm font-semibold">
-                ✓ Tickets added to your cart!
-            </div>
         </div>
 
     </form>
 </section>
+
+<!-- Success Modal -->
+<div id="tour-cart-success" class="hidden fixed inset-0 z-50 items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div class="relative bg-[#FFF0C2] border border-[#CAA359] rounded-xl shadow-2xl p-8 max-w-xs w-full mx-4 flex flex-col items-center gap-5">
+        <div class="flex items-center justify-center w-16 h-16 rounded-full bg-[#546A21]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <p class="font-history-serif text-lg font-bold text-ink-900 text-center">Tickets added to your cart!</p>
+        <div class="flex gap-3 w-full">
+            <button id="modal-keep-looking" type="button" class="flex-1 px-5 py-2 rounded-md font-medium text-ink-900 transition-colors bg-[#FAEBBD] border border-[#CAA359] hover:bg-[#FFE598]">
+                Keep Looking
+            </button>
+            <a href="/payment" class="flex-1 px-5 py-2 rounded-md font-semibold text-white text-center bg-[#546A21] hover:bg-[#465e10] transition-colors">
+                Go to Cart
+            </a>
+        </div>
+    </div>
+</div>
 
 <script>
 function changeQty(id, delta) {

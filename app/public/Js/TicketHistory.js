@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.disabled = false;
             const successMsg = document.getElementById('tour-cart-success');
             successMsg.classList.remove('hidden');
-            setTimeout(() => successMsg.classList.add('hidden'), 5000);
+            successMsg.classList.add('flex');
 
         } catch (error) {
             // Si hubo un error en el servidor, se lo mostramos al usuario
@@ -188,4 +188,13 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.disabled = false;
         }
     });
+
+    const keepLooking = document.getElementById('modal-keep-looking');
+    if (keepLooking) {
+        keepLooking.addEventListener('click', () => {
+            const successMsg = document.getElementById('tour-cart-success');
+            successMsg.classList.add('hidden');
+            successMsg.classList.remove('flex');
+        });
+    }
 });

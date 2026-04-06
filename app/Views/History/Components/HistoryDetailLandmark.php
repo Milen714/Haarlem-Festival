@@ -16,8 +16,13 @@
     </nav>
 </div>
 
-<div class="max-w-content pb-12 px-4 md:px-0">
-    <div class="flex flex-col items-center text-center">
+<div class="relative pb-12">
+    <a href="/events-history" class="absolute left-8 top-1/2 -translate-y-1/2 text-[var(--history-dark-brown)] hover:opacity-70 transition-opacity" aria-label="Back to Haarlem History">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+    </a>
+    <div class="max-w-content px-4 md:px-0 flex flex-col items-center text-center">
         <h1 class="text-3xl md:text-5xl text-[var(--history-dark-brown)] font-history-serif font-bold mb-2">
             <?= htmlspecialchars($landmark->name ?? '') ?>
         </h1>

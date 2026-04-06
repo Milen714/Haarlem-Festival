@@ -24,56 +24,52 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
             FROM LANDMARK l
             LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
             ORDER BY l.display_order ASC";
-        
-        $stmt = $this->pdo->query($sql); 
-        
-        $landmarks = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $landmark = new Landmark();
-            $landmark->fromPDOData($row);
-            $landmarks[] = $landmark;
-        }
 
-        return $landmarks;
+        try {
+            $stmt = $this->pdo->query($sql);
+
+            $landmarks = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $landmark = new Landmark();
+                $landmark->fromPDOData($row);
+                $landmarks[] = $landmark;
+            }
+
+            return $landmarks;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to fetch all landmarks: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function getFeatured(): array
-{
-    $sql = "SELECT l.*,
-                ec.event_id   as event_category_id,
-                ec.title      as event_category_title,
-                ec.type       as event_category_type,
-                ec.slug       as event_category_slug,
-                m.media_id    as main_image_media_id,
-                m.file_path   as main_image_file_path,
-                m.alt_text    as main_image_alt_text
-            FROM LANDMARK l
-            LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
-            LEFT JOIN MEDIA m ON l.main_image_id = m.media_id
-            WHERE l.is_featured = 1
-            ORDER BY l.display_order ASC";
+    {
+        $sql = "SELECT l.*,
+                    ec.event_id   as event_category_id,
+                    ec.title      as event_category_title,
+                    ec.type       as event_category_type,
+                    ec.slug       as event_category_slug,
+                    m.media_id    as main_image_media_id,
+                    m.file_path   as main_image_file_path,
+                    m.alt_text    as main_image_alt_text
+                FROM LANDMARK l
+                LEFT JOIN EVENT_CATEGORIES ec ON l.event_id = ec.event_id
+                LEFT JOIN MEDIA m ON l.main_image_id = m.media_id
+                WHERE l.is_featured = 1
+                ORDER BY l.display_order ASC";
 
-    $stmt = $this->pdo->query($sql);
-    $landmarks = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $landmark = new Landmark();
-        $landmark->fromPDOData($row);
-        $landmarks[] = $landmark;
+        try {
+            $stmt = $this->pdo->query($sql);
+            $landmarks = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $landmark = new Landmark();
+                $landmark->fromPDOData($row);
+                $landmarks[] = $landmark;
+            }
+            return $landmarks;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to fetch featured landmarks: ' . $e->getMessage(), 0, $e);
+        }
     }
-    return $landmarks;
-}
-
-
-
-/*public function addMediaToGallery(int $galleryId, int $mediaId): bool
-{
-    $sql = "INSERT INTO GALLERY_MEDIA (gallery_id, media_id) VALUES (:gallery_id, :media_id)";
-    $stmt = $this->pdo->prepare($sql);
-    return $stmt->execute([
-        'gallery_id' => $galleryId,
-        'media_id' => $mediaId
-    ]);
-}*/
 
     public function getBySlug(string $slug): ?Landmark
     {
@@ -89,42 +85,46 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                 LEFT JOIN MEDIA main_img ON landmark.main_image_id = main_img.media_id
                 WHERE landmark.landmark_slug = :slug
                 ORDER BY gm.display_order ASC";
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
-        $stmt->execute();
-        
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        if (!$rows) return null;
 
-        $landmark = new Landmark();
-        $landmark->fromPDOData($rows[0]);
-        
-        if (!empty($rows[0]['gallery_id'])) {
-            $gallery = new \App\Models\Gallery();
-            $gallery->gallery_id = $rows[0]['gallery_id'];
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':slug', $slug, PDO::PARAM_STR);
+            $stmt->execute();
 
-            foreach ($rows as $row) {
-                if (!empty($row['media_id'])) {
-                    $media = new \App\Models\Media();
-                    $media->fromPDOData([
-                        'media_id'  => $row['media_id'],
-                        'file_path' => $row['file_path'],
-                        'alt_text'  => $row['alt_text'] ?? ''
-                    ]);
-                    
-                    $galleryMedia = new \App\Models\GalleryMedia();
-                    $galleryMedia->media = $media;
-                    $galleryMedia->order = $row['display_order'] ?? 0;
-                    
-                    $gallery->addGalleryMedia($galleryMedia);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$rows) return null;
+
+            $landmark = new Landmark();
+            $landmark->fromPDOData($rows[0]);
+
+            if (!empty($rows[0]['gallery_id'])) {
+                $gallery = new \App\Models\Gallery();
+                $gallery->gallery_id = $rows[0]['gallery_id'];
+
+                foreach ($rows as $row) {
+                    if (!empty($row['media_id'])) {
+                        $media = new \App\Models\Media();
+                        $media->fromPDOData([
+                            'media_id'  => $row['media_id'],
+                            'file_path' => $row['file_path'],
+                            'alt_text'  => $row['alt_text'] ?? ''
+                        ]);
+
+                        $galleryMedia = new \App\Models\GalleryMedia();
+                        $galleryMedia->media = $media;
+                        $galleryMedia->order = $row['display_order'] ?? 0;
+
+                        $gallery->addGalleryMedia($galleryMedia);
+                    }
                 }
+                $landmark->gallery = $gallery;
             }
-            $landmark->gallery = $gallery;
+
+            return $landmark;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to fetch landmark by slug: ' . $e->getMessage(), 0, $e);
         }
-        
-        return $landmark;
     }
 
     public function getById(int $id): ?Landmark
@@ -141,44 +141,48 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                 LEFT JOIN MEDIA main_img ON landmark.main_image_id = main_img.media_id
                 WHERE landmark.landmark_id = :id
                 ORDER BY gm.display_order ASC";
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-        
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-        if (!$rows) {
-            return null;
-        }
-        
-        $landmark = new Landmark();
-        $landmark->fromPDOData($rows[0]);
 
-        if (!empty($rows[0]['gallery_id'])) {
-            $gallery = new \App\Models\Gallery();
-            $gallery->gallery_id = $rows[0]['gallery_id'];
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
 
-            foreach ($rows as $row) {
-                if (!empty($row['media_id'])) {
-                    $media = new \App\Models\Media();
-                    $media->fromPDOData([
-                        'media_id'  => $row['media_id'],
-                        'file_path' => $row['file_path'],
-                        'alt_text'  => $row['alt_text'] ?? ''
-                    ]);
-                    
-                    $galleryMedia = new \App\Models\GalleryMedia();
-                    $galleryMedia->media = $media;
-                    $galleryMedia->order = $row['display_order'] ?? 0;
-                    
-                    $gallery->addGalleryMedia($galleryMedia);
-                }
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!$rows) {
+                return null;
             }
-            $landmark->gallery = $gallery;
+
+            $landmark = new Landmark();
+            $landmark->fromPDOData($rows[0]);
+
+            if (!empty($rows[0]['gallery_id'])) {
+                $gallery = new \App\Models\Gallery();
+                $gallery->gallery_id = $rows[0]['gallery_id'];
+
+                foreach ($rows as $row) {
+                    if (!empty($row['media_id'])) {
+                        $media = new \App\Models\Media();
+                        $media->fromPDOData([
+                            'media_id'  => $row['media_id'],
+                            'file_path' => $row['file_path'],
+                            'alt_text'  => $row['alt_text'] ?? ''
+                        ]);
+
+                        $galleryMedia = new \App\Models\GalleryMedia();
+                        $galleryMedia->media = $media;
+                        $galleryMedia->order = $row['display_order'] ?? 0;
+
+                        $gallery->addGalleryMedia($galleryMedia);
+                    }
+                }
+                $landmark->gallery = $gallery;
+            }
+
+            return $landmark;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to fetch landmark by id: ' . $e->getMessage(), 0, $e);
         }
-        
-        return $landmark;
     }
 
     public function insert(Landmark $landmark): Landmark
@@ -195,32 +199,35 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
             :latitude, :longitude, :is_featured, :home_cta
         )";
 
-        $stmt = $this->pdo->prepare($sql);
-        
-        $stmt->bindParam(':event_id', $landmark->event_id, PDO::PARAM_INT);
-        $stmt->bindParam(':name', $landmark->name, PDO::PARAM_STR);
-        $stmt->bindParam(':short_description', $landmark->short_description, PDO::PARAM_STR);
-        $stmt->bindParam(':landmark_slug', $landmark->landmark_slug, PDO::PARAM_STR);
-        $stmt->bindParam(':intro_title', $landmark->intro_title, PDO::PARAM_STR);
-        $stmt->bindParam(':intro_content', $landmark->intro_content, PDO::PARAM_STR);
-        $stmt->bindParam(':why_visit_title', $landmark->why_visit_title, PDO::PARAM_STR);
-        $stmt->bindParam(':why_visit_content', $landmark->why_visit_content, PDO::PARAM_STR);
-        $stmt->bindParam(':detail_history_title', $landmark->detail_history_title, PDO::PARAM_STR);
-        $stmt->bindParam(':detail_history_content', $landmark->detail_history_content, PDO::PARAM_STR);
-        $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
-        $stmt->bindParam(':latitude', $landmark->latitude);
-        $stmt->bindParam(':longitude', $landmark->longitude);
-        $stmt->bindParam(':home_cta', $landmark->home_cta, PDO::PARAM_STR);
+        try {
+            $stmt = $this->pdo->prepare($sql);
 
-        $isFeatured = $landmark->is_featured ? 1 : 0;
-        $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
-       
+            $stmt->bindParam(':event_id', $landmark->event_id, PDO::PARAM_INT);
+            $stmt->bindParam(':name', $landmark->name, PDO::PARAM_STR);
+            $stmt->bindParam(':short_description', $landmark->short_description, PDO::PARAM_STR);
+            $stmt->bindParam(':landmark_slug', $landmark->landmark_slug, PDO::PARAM_STR);
+            $stmt->bindParam(':intro_title', $landmark->intro_title, PDO::PARAM_STR);
+            $stmt->bindParam(':intro_content', $landmark->intro_content, PDO::PARAM_STR);
+            $stmt->bindParam(':why_visit_title', $landmark->why_visit_title, PDO::PARAM_STR);
+            $stmt->bindParam(':why_visit_content', $landmark->why_visit_content, PDO::PARAM_STR);
+            $stmt->bindParam(':detail_history_title', $landmark->detail_history_title, PDO::PARAM_STR);
+            $stmt->bindParam(':detail_history_content', $landmark->detail_history_content, PDO::PARAM_STR);
+            $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
+            $stmt->bindParam(':latitude', $landmark->latitude);
+            $stmt->bindParam(':longitude', $landmark->longitude);
+            $stmt->bindParam(':home_cta', $landmark->home_cta, PDO::PARAM_STR);
 
-        $stmt->execute();
+            $isFeatured = $landmark->is_featured ? 1 : 0;
+            $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
 
-        $landmark->landmark_id = (int)$this->pdo->lastInsertId(); //to get the new id
-        
-        return $landmark;
+            $stmt->execute();
+
+            $landmark->landmark_id = (int)$this->pdo->lastInsertId();
+
+            return $landmark;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to insert landmark: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function update(Landmark $landmark): Landmark
@@ -243,45 +250,56 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
                     home_cta = :home_cta
                 WHERE landmark_id = :landmark_id";
 
-        $stmt = $this->pdo->prepare($sql);
-        
-        $stmt->bindParam(':landmark_id', $landmark->landmark_id, PDO::PARAM_INT);
-        $stmt->bindParam(':event_id', $landmark->event_id, PDO::PARAM_INT);
-        $stmt->bindParam(':name', $landmark->name, PDO::PARAM_STR);
-        $stmt->bindParam(':short_description', $landmark->short_description, PDO::PARAM_STR);
-        $stmt->bindParam(':landmark_slug', $landmark->landmark_slug, PDO::PARAM_STR);
-        $stmt->bindParam(':intro_title', $landmark->intro_title, PDO::PARAM_STR);
-        $stmt->bindParam(':intro_content', $landmark->intro_content, PDO::PARAM_STR);
-        $stmt->bindParam(':why_visit_title', $landmark->why_visit_title, PDO::PARAM_STR);
-        $stmt->bindParam(':why_visit_content', $landmark->why_visit_content, PDO::PARAM_STR);
-        $stmt->bindParam(':detail_history_title', $landmark->detail_history_title, PDO::PARAM_STR);
-        $stmt->bindParam(':detail_history_content', $landmark->detail_history_content, PDO::PARAM_STR);
-        $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
-        $stmt->bindParam(':latitude', $landmark->latitude);
-        $stmt->bindParam(':longitude', $landmark->longitude);
-        $isFeatured = $landmark->is_featured ? 1 : 0;
-        $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
-        $stmt->bindParam(':home_cta', $landmark->home_cta, PDO::PARAM_STR);
+        try {
+            $stmt = $this->pdo->prepare($sql);
 
-        $stmt->execute();
+            $stmt->bindParam(':landmark_id', $landmark->landmark_id, PDO::PARAM_INT);
+            $stmt->bindParam(':event_id', $landmark->event_id, PDO::PARAM_INT);
+            $stmt->bindParam(':name', $landmark->name, PDO::PARAM_STR);
+            $stmt->bindParam(':short_description', $landmark->short_description, PDO::PARAM_STR);
+            $stmt->bindParam(':landmark_slug', $landmark->landmark_slug, PDO::PARAM_STR);
+            $stmt->bindParam(':intro_title', $landmark->intro_title, PDO::PARAM_STR);
+            $stmt->bindParam(':intro_content', $landmark->intro_content, PDO::PARAM_STR);
+            $stmt->bindParam(':why_visit_title', $landmark->why_visit_title, PDO::PARAM_STR);
+            $stmt->bindParam(':why_visit_content', $landmark->why_visit_content, PDO::PARAM_STR);
+            $stmt->bindParam(':detail_history_title', $landmark->detail_history_title, PDO::PARAM_STR);
+            $stmt->bindParam(':detail_history_content', $landmark->detail_history_content, PDO::PARAM_STR);
+            $stmt->bindParam(':display_order', $landmark->display_order, PDO::PARAM_INT);
+            $stmt->bindParam(':latitude', $landmark->latitude);
+            $stmt->bindParam(':longitude', $landmark->longitude);
+            $isFeatured = $landmark->is_featured ? 1 : 0;
+            $stmt->bindParam(':is_featured', $isFeatured, PDO::PARAM_INT);
+            $stmt->bindParam(':home_cta', $landmark->home_cta, PDO::PARAM_STR);
 
-        return $landmark;
+            $stmt->execute();
+
+            return $landmark;
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to update landmark: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function delete(int $id): bool
     {
         $sql = "DELETE FROM LANDMARK WHERE landmark_id = :id";
-        $stmt = $this->pdo->prepare($sql);
-        
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        
-        return $stmt->execute();
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to delete landmark: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function updateMainImage(int $landmarkId, int $mediaId): void
     {
-        $stmt = $this->pdo->prepare("UPDATE LANDMARK SET main_image_id = :media_id WHERE landmark_id = :id");
-        $stmt->execute([':media_id' => $mediaId, ':id' => $landmarkId]);
+        try {
+            $stmt = $this->pdo->prepare("UPDATE LANDMARK SET main_image_id = :media_id WHERE landmark_id = :id");
+            $stmt->execute([':media_id' => $mediaId, ':id' => $landmarkId]);
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to update landmark main image: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     public function createGalleryForLandmark(int $landmarkId, string $title = 'Landmark Gallery'): int
