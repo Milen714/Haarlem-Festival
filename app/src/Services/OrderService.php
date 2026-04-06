@@ -163,7 +163,7 @@ class OrderService implements IOrderService
                         "Ticket type {$ticketTypeId} is sold out or has insufficient capacity."
                     );
                 }
-                $this->ticketService->syncHistoryScheduleSoldOut($ticketTypeId);
+                //$this->ticketService->syncHistoryScheduleSoldOut($ticketTypeId);
             }
             array_last($cart->orderItems)->order_id = $cart->order_id;
             $this->orderRepository->addOrderItem($item);

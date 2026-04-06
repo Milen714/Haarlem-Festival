@@ -594,9 +594,9 @@ class TicketRepository extends Repository implements ITicketRepository
                     return false;
                 }
             }
-            foreach ($items as $item) {
+            /*foreach ($items as $item) {
                 $this->syncHistoryScheduleSoldOut((int)($item['ticket_type_id'] ?? 0), $pdo);
-            }
+            }*/
             $pdo->commit();
             return true;
         } catch (\Exception $e) {
@@ -635,9 +635,9 @@ class TicketRepository extends Repository implements ITicketRepository
                 $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
                 $stmt->execute();
             }
-            foreach ($items as $item) {
+            /*foreach ($items as $item) {
                 $this->syncHistoryScheduleSoldOut((int)($item['ticket_type_id'] ?? 0), $pdo);
-            }
+            }*/
             $pdo->commit();
         } catch (\Exception $e) {
             $pdo->rollBack();
@@ -645,7 +645,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Recalculates is_sold_out for all HISTORY_* ticket types sharing the same schedule AND language,
+    /*// Recalculates is_sold_out for all HISTORY_* ticket types sharing the same schedule AND language,
     // based on combined tickets_sold vs combined capacity for that language group. No-op for non-History tickets.
     public function syncHistoryScheduleSoldOut(int $ticketTypeId, ?PDO $pdo = null): void
     {
@@ -679,7 +679,7 @@ class TicketRepository extends Repository implements ITicketRepository
         );
         $stmt->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
         $stmt->execute();
-    }
+    }*/
 
     // Total capacity already allocated for a schedule. Pass excludeTicketTypeId when updating an existing type.
     public function getTotalAllocatedCapacityForSchedule(int $scheduleId, ?int $excludeTicketTypeId = null): int
