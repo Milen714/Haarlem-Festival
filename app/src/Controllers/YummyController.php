@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Framework\BaseController;
 use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\RestaurantNotFoundException;
 use App\Services\ScheduleService;
 use App\Services\RestaurantService;
 use App\Services\PageService;
@@ -72,7 +73,7 @@ class YummyController extends BaseController
             $this->view('Yummy/index', [
                 'viewModel' => $viewModel
             ]);
-        } catch (ResourceNotFoundException $e) {
+        } catch (RestaurantNotFoundException $e) {
             error_log('Failed to fetch Yummy homepage:' . $e->getMessage());
             $_SESSION['error'] = 'Failed to fetch Yummy event homepage';
          }
@@ -105,7 +106,7 @@ class YummyController extends BaseController
                 'viewModel' => $viewModel
             ]);
 
-        }catch (ResourceNotFoundException $e) {
+        }catch (RestaurantNotFoundException $e) {
             error_log('Restaurants listing error:' . $e->getMessage());
             $_SESSION['error'] = 'Failed to fetch all restaurants';
          }
@@ -137,7 +138,7 @@ class YummyController extends BaseController
                 'viewModel' => $viewModel
             ]);
         }
-        catch (ResourceNotFoundException $e) {
+        catch (RestaurantNotFoundException $e) {
             error_log('Restaurant loading error:' . $e->getMessage());
             $_SESSION['error'] = 'Failed to fetch restaurant' . $restaurant->name;
          }

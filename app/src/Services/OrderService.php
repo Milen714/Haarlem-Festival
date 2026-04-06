@@ -149,12 +149,8 @@ class OrderService implements IOrderService
             $this->orderRepository->createOrder($cart);  // sets $cart->order_id
         }
         
-        $cart->orderItems[] = $item;
-        $this->assignSessionOrderItemIds($cart);
-        $cart->calculateTotals();
-        
-        if($cart->order_id !== null){
-            // Cart is already in the DB — lock the seat now
+        if ($cart->order_id !== null) {
+            // Cart is already in the DB — lock the seat BEFORE modifying session
             $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
             if ($ticketTypeId !== null) {
                 $reserveQty    = (int)$item->quantity;
@@ -170,6 +166,13 @@ class OrderService implements IOrderService
                 }
                 $this->ticketService->syncHistoryScheduleSoldOut($ticketTypeId);
             }
+        }
+
+        $cart->orderItems[] = $item;
+        $this->assignSessionOrderItemIds($cart);
+        $cart->calculateTotals();
+
+        if ($cart->order_id !== null) {
             array_last($cart->orderItems)->order_id = $cart->order_id;
             $this->orderRepository->addOrderItem($item);
             $this->orderRepository->updateOrderTotals($cart);

@@ -28,6 +28,7 @@ interface ITicketRepository
     public function releaseMultiple(array $items): void;
     public function getTotalAllocatedCapacityForSchedule(int $scheduleId, ?int $excludeTicketTypeId = null): int;
     public function getVenueCapacityForSchedule(int $scheduleId): ?int;
+    public function getScheduleCapacity(int $scheduleId): ?int;
     public function createTicketScheme(TicketScheme $ticketScheme): bool;
     public function updateTicketScheme(TicketScheme $ticketScheme): bool;
     public function deleteTicketScheme(int $ticketSchemeId): bool;

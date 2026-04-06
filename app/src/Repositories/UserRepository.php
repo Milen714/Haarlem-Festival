@@ -5,6 +5,7 @@ use App\Framework\Repository;
 use App\Repositories\Interfaces\IUserRepository;
 use App\Models\User;
 use App\Models\Enums\UserRole;
+use App\Exceptions\ApplicationException;
 use DateTime;
 
 use PDO;
@@ -46,7 +47,7 @@ class UserRepository extends Repository implements IUserRepository{
 			
 			return $user ? $this->mapUser($user) : null;
 		}catch(PDOException $e){
-			die("Error fetching user: " . $e->getMessage());
+			throw new ApplicationException("Error fetching user: " . $e->getMessage(), 0, $e);
 		}
 
 	}
@@ -60,7 +61,7 @@ class UserRepository extends Repository implements IUserRepository{
             
             return array_map([$this, 'mapUser'], $usersData);
         }catch(PDOException $e){
-            die("Error fetching users: " . $e->getMessage());
+            throw new ApplicationException("Error fetching users: " . $e->getMessage(), 0, $e);
         }
 	}
 	
@@ -77,7 +78,7 @@ class UserRepository extends Repository implements IUserRepository{
 
 
         }catch(PDOException $e){
-            die("Error fetching user: " . $e->getMessage());
+            throw new ApplicationException("Error fetching user: " . $e->getMessage(), 0, $e);
         }
 	}
 	
@@ -102,7 +103,7 @@ class UserRepository extends Repository implements IUserRepository{
 			$stmt->bindParam(':is_verified', $user->is_verified, PDO::PARAM_BOOL);
 			return $stmt->execute();
 		}catch(PDOException $e){
-			die("Error creating user: " . $e->getMessage());
+			throw new ApplicationException("Error creating user: " . $e->getMessage(), 0, $e);
 		}
 	}
 	public function updateUser(User $user): bool {

@@ -59,7 +59,7 @@ class StripeWebhookController extends BaseController
                         break;
                     }
                     $order = $this->orderService->getOrderByStripeCheckoutSessionId($session->id);
-                    if ($order === null || $order->status === OrderStatus::Paid) {
+                    if ($order === null || $order->status === OrderStatus::Fulfilled) {
                         break;
                     }
                     $this->logService->info('StripeWebhook', 'Order fetched from checkout session', [
@@ -68,7 +68,11 @@ class StripeWebhookController extends BaseController
                     ]);
                     $this->orderService->updateOrderStatus($order->order_id, OrderStatus::Paid);
 
-                    // Render views for the email and pdf and have service generate PDF and send the email, 
+                    // Generate QR hashes first so they are present when views are rendered
+                    $this->orderService->generateTicketHashes($order->order_id);
+                    $order = $this->orderService->getOrderById($order->order_id);
+
+                    // Render views for the email and pdf and have service generate PDF and send the email,
                     //then update order with PDF path and mark as fulfilled
                     $viewModel = new ShoppingCartViewModel($order);
                     $pdfHtml = $this->renderViewToString('Email/TicketsPDF', ['viewModel' => $viewModel]);

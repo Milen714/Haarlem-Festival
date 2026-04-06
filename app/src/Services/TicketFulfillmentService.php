@@ -138,13 +138,6 @@ class TicketFulfillmentService implements ITicketFulfillmentService
         $mailTo        = $order->user->email ?? '';
 
         try {
-            // Generate ticket hashes for QR codes
-            $this->orderService->generateTicketHashes($order->order_id);
-
-            // Re-fetch order with updated hashes
-            $order = $this->orderService->getOrderById($order->order_id);
-            $mailTo = $order->user->email ?? $mailTo;
-
             // Generate the PDF and save to disk
             $this->generatePDF(
                 $pdfHtml,

@@ -70,6 +70,10 @@ class ScheduleService implements IScheduleService
     public function createFromRequest(array $postData): Schedule
     {
         $this->validateScheduleData($postData);
+        $venue_id = !empty($postData['venue_id']) ? (int)$postData['venue_id'] : null;
+        $totalCapacity = (int)($postData['total_capacity'] ?? 0);
+        $this->validateScheduleCapacityAgainstVenue($venue_id, $totalCapacity);
+
         $schedule = $this->buildScheduleFromPostData(new Schedule(), $postData);
         $success = $this->scheduleRepository->create($schedule);
         if (!$success) {
@@ -85,6 +89,10 @@ class ScheduleService implements IScheduleService
             throw new ResourceNotFoundException('Schedule not found.');
         }
         $this->validateScheduleData($postData);
+        $venue_id = !empty($postData['venue_id']) ? (int)$postData['venue_id'] : null;
+        $totalCapacity = (int)($postData['total_capacity'] ?? 0);
+        $this->validateScheduleCapacityAgainstVenue($venue_id, $totalCapacity);
+
         $schedule = $this->buildScheduleFromPostData($schedule, $postData);
         $success = $this->scheduleRepository->update($schedule);
         if (!$success) {
@@ -170,6 +178,35 @@ class ScheduleService implements IScheduleService
         }
         if (empty($data['total_capacity']) || (int)$data['total_capacity'] < 1) {
             throw new ValidationException('Total capacity must be at least 1.');
+        }
+    }
+
+    /**
+     * Validates that the schedule's total_capacity does not exceed the venue's capacity.
+     * If no venue is assigned, or if the venue has no capacity limit, validation is skipped.
+     *
+     * @param ?int $venueId  The ID of the venue (or null if no venue is assigned)
+     * @param int $totalCapacity  The requested total capacity for the schedule
+     *
+     * @throws ValidationException  If the total capacity exceeds the venue capacity
+     */
+    private function validateScheduleCapacityAgainstVenue(?int $venueId, int $totalCapacity): void
+    {
+        // Skip validation if no venue is assigned
+        if ($venueId === null) {
+            return;
+        }
+
+        $venue = $this->venueService->getVenueById($venueId);
+        if (!$venue || $venue->capacity === null) {
+            return;
+        }
+
+        if ($totalCapacity > $venue->capacity) {
+            throw new ValidationException(
+                "Schedule total capacity ({$totalCapacity}) exceeds the venue's capacity ({$venue->capacity}). " .
+                    "Please reduce the schedule capacity or select a different venue."
+            );
         }
     }
 

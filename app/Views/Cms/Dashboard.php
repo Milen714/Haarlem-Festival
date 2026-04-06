@@ -4,9 +4,15 @@ $pageLinks = isset($pageSlugs) ? $pageSlugs : [];
 ?>
 
 <section class="p-8 max-w-7xl mx-auto">
-    <header class="mb-8">
-        <h1 class="text-4xl font-bold mb-2">CMS Dashboard</h1>
-        <p class="text-gray-600">Manage your festival content, artists, and venues</p>
+    <header class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-bold mb-2">CMS Dashboard</h1>
+            <p class="text-gray-600">Manage your festival content, artists, and venues</p>
+        </div>
+        <a href="/"
+            class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition text-center">
+            View Festival
+        </a>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
