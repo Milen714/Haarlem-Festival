@@ -314,6 +314,8 @@ class TicketService implements ITicketService
         $ticketType->max_quantity = (int)$postData['max_quantity'];
         $ticketType->capacity = (int)$postData['capacity'];
         $ticketType->special_requirements = $this->normalizeNullableString($postData['special_requirements'] ?? null);
+        $ticketType->tickets_sold = $ticketType->tickets_sold ?? 0;
+        $ticketType->is_sold_out  = $ticketType->is_sold_out  ?? false;
 
         return $ticketType;
     }
