@@ -8,17 +8,25 @@ document.querySelectorAll('.schedule-filter-link').forEach(link => {
             l.classList.toggle('home_calendar_button_inactive', l !== link);
         });
 
-        history.pushState({}, '', link.href);
+        const myTicketsSectionEl = document.getElementById('my-tickets-section');
+        const isOnTicketsTab = !myTicketsSectionEl.classList.contains('hidden');
+
+        const newUrl = new URL(link.href);
+        newUrl.searchParams.set('showMyTicketSection', isOnTicketsTab ? 'true' : 'false');
+        history.pushState({}, '', newUrl.toString());
+
+        if (isOnTicketsTab) {
+            return;
+        }
 
         const myProgramSection = document.getElementById('my-program-section');
         const spinner = document.getElementById('spinner');
         myProgramSection.classList.remove('hidden');
-        document.getElementById('my-tickets-section').classList.add('hidden');
-
         myProgramSection.innerHTML = '';
         spinner.classList.remove('hidden');
 
-        const res = await fetch(`/personal-program/content?date=${encodeURIComponent(date)}`);
+        const fetchUrl = date ? `/personal-program/content?date=${encodeURIComponent(date)}` : '/personal-program/content';
+        const res = await fetch(fetchUrl);
         spinner.classList.add('hidden');
         myProgramSection.innerHTML = await res.text();
     });

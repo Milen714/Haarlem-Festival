@@ -31,14 +31,15 @@ class PaidTicketsViewModel
     /**
      * @param OrderItem[] $orderItems Array of OrderItem objects
      */
-    public function __construct(array $orderItems, ?string $selectedDate = null, bool $showMyTicketsSection = false)
+    public function __construct(array $orderItems, ?string $selectedDate = null, bool $showMyTicketsSection = false, ?array $allOrderItems = null)
     {
         // Sort items by event start time
         $this->sortOrderItemsByStartTime($orderItems);
         $this->orderItems = $orderItems;
         $this->selectedDate = $selectedDate;
         $this->showMyTicketsSection = $showMyTicketsSection;
-        $this->totalTickets = count($this->orderItems)  > 0 ? array_sum(array_map(fn($item) => $item->quantity, $this->orderItems)) : 0;
+        $countItems = $allOrderItems ?? $this->orderItems;
+        $this->totalTickets = count($countItems) > 0 ? array_sum(array_map(fn($item) => $item->quantity, $countItems)) : 0;
     }
 
     /**

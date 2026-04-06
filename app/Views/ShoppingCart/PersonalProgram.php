@@ -15,6 +15,12 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
 <section
     class="flex flex-col gap-2 bg-white p-6 rounded-lg rounded-tl-none shadow-sm border border-gray-100">
     <ul class="magicDayUl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <li>
+            <a href="/personal-program?showMyTicketSection=false"
+                class="schedule-filter-link <?= ($viewModel && $viewModel->selectedDate === null) ? 'home_calendar_button_active' : 'home_calendar_button_inactive' ?>">
+                <span>All</span><span>Days</span>
+            </a>
+        </li>
         <?php foreach($availableDates ?? [] as $date):
             $d = new \DateTime($date);
             $isActive = $viewModel && $viewModel->selectedDate === $date;

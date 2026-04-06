@@ -46,7 +46,7 @@ class PersonalProgramController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function personalProgram()
     {
-        $date = $_GET['date'] ?? null; // Optional date filter in 'Y-m-d' format
+        $date = ($_GET['date'] ?? null) ?: null; // Optional date filter in 'Y-m-d' format, empty string treated as null
         $showMyTicketsSection = ($_GET['showMyTicketSection'] ?? 'false') === 'true'; // Read section preference
         
         try {
@@ -65,7 +65,8 @@ class PersonalProgramController extends BaseController
             }
 
             $paidOrders = $this->orderService->getPaidTicketsByUser($userId, $date);
-            $viewModel = new PaidTicketsViewModel($paidOrders, $date, $showMyTicketsSection);
+            $allPaidOrders = ($date !== null) ? $this->orderService->getPaidTicketsByUser($userId, null) : null;
+            $viewModel = new PaidTicketsViewModel($paidOrders, $date, $showMyTicketsSection, $allPaidOrders);
             $availableDates = $this->scheduleService->getAvailableDates();
 
             $this->view('ShoppingCart/PersonalProgram', ['viewModel' => $viewModel, 'availableDates' => $availableDates]);
@@ -87,7 +88,7 @@ class PersonalProgramController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function programContent()
     {
-        $date = $_GET['date'] ?? null;
+        $date = ($_GET['date'] ?? null) ?: null;
         $userId = $this->getLoggedInUser()?->id;
         if (!$userId) { http_response_code(401); return; }
 
