@@ -594,9 +594,6 @@ class TicketRepository extends Repository implements ITicketRepository
                     return false;
                 }
             }
-            foreach ($items as $item) {
-                $this->syncHistoryScheduleSoldOut((int)($item['ticket_type_id'] ?? 0), $pdo);
-            }
             $pdo->commit();
             return true;
         } catch (\Exception $e) {
@@ -605,7 +602,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Releases seats for multiple ticket types in one transaction.
+    // Releases seats for multiple ticket types in one transaction. 
     public function releaseMultiple(array $items): void
     {
         $pdo = $this->connect();
@@ -635,50 +632,11 @@ class TicketRepository extends Repository implements ITicketRepository
                 $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
                 $stmt->execute();
             }
-            foreach ($items as $item) {
-                $this->syncHistoryScheduleSoldOut((int)($item['ticket_type_id'] ?? 0), $pdo);
-            }
             $pdo->commit();
         } catch (\Exception $e) {
             $pdo->rollBack();
             throw new \RuntimeException("Error releasing multiple tickets: " . $e->getMessage());
         }
-    }
-
-    // Recalculates is_sold_out for all HISTORY_* ticket types sharing the same schedule AND language,
-    // based on combined tickets_sold vs combined capacity for that language group. No-op for non-History tickets.
-    public function syncHistoryScheduleSoldOut(int $ticketTypeId, ?PDO $pdo = null): void
-    {
-        if ($ticketTypeId <= 0) {
-            return;
-        }
-        $pdo = $pdo ?? $this->connect();
-        $stmt = $pdo->prepare(
-            "UPDATE TICKET_TYPE tt
-             JOIN TICKET_SCHEME tschem ON tt.scheme_id = tschem.ticket_scheme_id
-             SET tt.is_sold_out = CASE
-                                      WHEN (
-                                          SELECT SUM(tt2.tickets_sold)
-                                          FROM TICKET_TYPE tt2
-                                          JOIN TICKET_SCHEME ts2 ON tt2.scheme_id = ts2.ticket_scheme_id
-                                          WHERE tt2.schedule_id = tt.schedule_id
-                                            AND ts2.ticket_language = tschem.ticket_language
-                                      ) >= (
-                                          SELECT SUM(tt3.capacity)
-                                          FROM TICKET_TYPE tt3
-                                          JOIN TICKET_SCHEME ts3 ON tt3.scheme_id = ts3.ticket_scheme_id
-                                          WHERE tt3.schedule_id = tt.schedule_id
-                                            AND ts3.ticket_language = tschem.ticket_language
-                                      ) THEN 1
-                                      ELSE 0
-                                  END
-             WHERE tt.schedule_id = (
-                 SELECT schedule_id FROM TICKET_TYPE WHERE ticket_type_id = :id
-             )
-               AND tschem.scheme_enum LIKE 'HISTORY_%'"
-        );
-        $stmt->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
-        $stmt->execute();
     }
 
     // Total capacity already allocated for a schedule. Pass excludeTicketTypeId when updating an existing type.
@@ -808,31 +766,4 @@ class TicketRepository extends Repository implements ITicketRepository
             throw new \RuntimeException("Failed to delete ticket scheme: " . $e->getMessage());
         }
     }
-
-    /*public function getTicketTypeFromSelection(TicketSelectionDTO $selectionDto): ?TicketType
-    {
-        $sql = "SELECT tt.ticket_type_id 
-                FROM TICKET_TYPE tt
-                INNER JOIN SCHEDULE s ON tt.schedule_id = s.schedule_id
-                INNER JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
-                WHERE s.date = :date 
-                  AND s.start_time = :time 
-                  AND ts.ticket_language = :language 
-                  AND ts.scheme_enum = :schemeEnum
-                LIMIT 1";
-
-        $stmt = $this->pdo->prepare($sql);
-
-        // bindValue vincula el dato real de la variable en este preciso instante
-        $stmt->bindValue(':date', $selectionDto->date, \PDO::PARAM_STR);
-        $stmt->bindValue(':time', $selectionDto->time, \PDO::PARAM_STR);
-        $stmt->bindValue(':language', $selectionDto->language, \PDO::PARAM_STR);
-        $stmt->bindValue(':schemeEnum', $selectionDto->ticketSchemeEnum?->value, \PDO::PARAM_STR);
-
-        $stmt->execute();
-
-        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-        return $result ? (int)$result['ticket_type_id'] : null;
-    }*/
 }

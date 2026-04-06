@@ -9,17 +9,9 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Framework\Repository;
 use PDO;
 use PDOException;
-use App\Services\Interfaces\ILogService;
-use App\Services\LogService;
 
 class OrderRepository extends Repository implements IOrderRepository
 {
-    private ILogService $logService;
-    public function __construct()
-    {
-        
-        $this->logService = new LogService();
-    }
     /**
      * Base query for fetching orders with full hydration of user and order items with ticket types.
      */
@@ -448,28 +440,18 @@ class OrderRepository extends Repository implements IOrderRepository
         }
     }
 
-    public function getPaidTicketsByUser(int $userId, ?string $date = null): array
+    public function getPaidTicketsByUser(int $userId): array
     {   
         try {
             $pdo = $this->connect();
-            
-            $dateClause = '';
-            if ($date !== null) {
-                $dateClause = "AND s.date = :date";
-            }
-            
             $query = $this->getBaseQuery() . '
                 WHERE o.user_id = :user_id
-                AND o.status = \'Fulfilled\'
-                ' . $dateClause . '
+                AND (o.status = \'Paid\' OR o.status = \'Fulfilled\')
                 
                 ORDER BY s.date, s.start_time
             ';
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
-            if ($date !== null) {
-                $stmt->bindValue(':date', $date, PDO::PARAM_STR);
-            }
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $orderItems = [];
@@ -553,15 +535,14 @@ class OrderRepository extends Repository implements IOrderRepository
     public function updateOrderStatus(int $orderId, OrderStatus $status, ?string $pdf = null): bool
     {
         try {
-            $paidAtClause = $status === OrderStatus::Paid ? ", paid_at = NOW()" : "";
             $pdo = $this->connect();
+
             $query = "
                 UPDATE `ORDER` SET
                     status = :status,
-                    ticket_pdf_path = :pdf $paidAtClause
+                    ticket_pdf_path = :pdf
                 WHERE order_id = :order_id
             ";
-            
 
             $stmt = $pdo->prepare($query);
             $stmt->bindValue(':order_id', $orderId, PDO::PARAM_INT);
@@ -876,79 +857,6 @@ class OrderRepository extends Repository implements IOrderRepository
             return $orders;
         } catch (PDOException $e) {
             throw new \RuntimeException("Error fetching orders by status: " . $e->getMessage());
-        }
-    }
-    /**
-     * Get all available columns from the ORDER table schema
-     */
-    public function getAllowedExportColumns(): array
-    {
-        try {
-            $pdo = $this->connect();
-            
-            $query = "
-                SELECT COLUMN_NAME 
-                FROM INFORMATION_SCHEMA.COLUMNS 
-                WHERE TABLE_NAME = 'ORDER' 
-                AND TABLE_SCHEMA = DATABASE()
-                ORDER BY ORDINAL_POSITION
-            ";
-            
-            $stmt = $pdo->prepare($query);
-            $stmt->execute();
-            
-            $result = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            return $result ?: [];
-            
-        } catch (PDOException $e) {
-            $this->logService->error("Failed to fetch ORDER table columns:", $e->getMessage());
-            return [];
-        }
-    }
-
-    public function getAllOrdersForExport(array $requestedColumns, ?string $paidAfter = null): array
-    {
-        try {
-            $pdo = $this->connect();
-        
-            // Get allowed columns dynamically from database schema
-            $allowedColumns = $this->getAllowedExportColumns();
-            
-            // Validate and filter requested columns
-            $safeColumns = array_intersect($requestedColumns, $allowedColumns);
-            
-            if (empty($safeColumns)) {
-                throw new \InvalidArgumentException('No valid columns requested');
-            }
-            
-            // Build SELECT clause
-            $selectClause = implode(', ', $safeColumns);
-            
-            $query = "SELECT $selectClause FROM `ORDER`";
-            
-            // Add WHERE condition for paid_at if provided
-            if ($paidAfter !== null) {
-                $query .= " WHERE paid_at >= :paidAfter";
-            }
-            
-            $stmt = $pdo->prepare($query);
-            
-            // Bind paid_at parameter if provided
-            if ($paidAfter !== null) {
-                $stmt->bindValue(':paidAfter', $paidAfter, PDO::PARAM_STR);
-            }
-            
-            $stmt->execute();
-            
-            // Return rows as-is (associative arrays with only requested columns)
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-        } catch (PDOException $e) {
-            $this->logService->error("Database error in getAllOrdersForExport: " . $e->getMessage(), $e->getMessage());
-            throw new \RuntimeException("Error fetching orders for export: " . $e->getMessage());
-        } catch (\InvalidArgumentException $e) {
-            $this->logService->error("Invalid argument in getAllOrdersForExport: " . $e->getMessage(), $e->getMessage());
-            throw new \RuntimeException("Invalid argument: " . $e->getMessage());
         }
     }
 }

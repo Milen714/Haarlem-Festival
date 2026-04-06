@@ -1,14 +1,27 @@
 <?php
 namespace App\Views\Home;
-use App\ViewModels\Home\LandingPageViewModel;
+use App\CmsModels\PageSection;
+use App\CmsModels\Enums\SectionType;
+/** @var PageSection[] $sections */
+$heroSection = PageSection::findHeroSection($pageData->content_sections);
+$eventSections = [];
+$eventTitleSection = null;
+$scheduleSection = null;
 
-/** @var LandingPageViewModel $pageViewModel */
-$heroSection = $pageViewModel->heroSection;
-$eventSections = $pageViewModel->eventSections;
-$eventTitleSection = $pageViewModel->eventTitleSection;
-$scheduleSection = $pageViewModel->scheduleSection;
-$startingPoints = $pageViewModel->startingPoints;
-$scheduleList = $pageViewModel->scheduleList;
+
+
+foreach ($pageData->content_sections as $section) {
+    if ($section->section_type === SectionType::event_left || $section->section_type === SectionType::event_right) {
+        $eventSections[] = $section;
+    }
+    if (str_contains($section->title, 'EventsSection')) {
+        $eventTitleSection = $section;
+    }
+    if (str_contains($section->title, 'ScheduleSection')) {
+        $scheduleSection = $section; 
+    }
+}
+
 ?>
 
 <section class="flex flex-col gap-6 bg_colors_home text_colors_home pt-4 overflow-x-hidden">

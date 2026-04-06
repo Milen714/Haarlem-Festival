@@ -2,12 +2,13 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
-use App\Exceptions\ResourceNotFoundException;
+use App\Controllers\BaseController;
+use App\Services\UserService;
 use App\Services\ScheduleService;
 use App\Services\RestaurantService;
 use App\Services\PageService;
 use App\Services\VenueService;
+use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\IScheduleService;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\IPageService;
@@ -15,15 +16,17 @@ use App\Services\Interfaces\IVenueService;
 use App\Services\Interfaces\IMediaService;
 use App\Services\Interfaces\ICuisineService;
 use App\Models\Yummy\RestaurantListViewModel;
+use App\Models\User;
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
 use App\Services\MediaService;
 use App\Services\CuisineService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
-use App\ViewModels\Yummy\DetailsViewModel;
-use App\ViewModels\Yummy\YummyHomeViewModel;
 
 class YummyController extends BaseController
 {
+    private IUserService $userService;
     private IPageService $pageService;
     private IMediaService $mediaService;
     private IScheduleService $scheduleService;
@@ -34,6 +37,7 @@ class YummyController extends BaseController
 
     public function __construct()
     {
+        $this->userService = new UserService();
         $this->pageService = new PageService();
         $this->mediaService = new MediaService();
         $this->restaurantService = new RestaurantService();
@@ -42,45 +46,79 @@ class YummyController extends BaseController
         $this->cuisineService = new CuisineService();
         $this->logService = new LogService();
     }
-    
     public function index()
     {
+        $slug = ltrim($_SERVER['REQUEST_URI'], '/');
         try {
             $pageData = $this->pageService->getPageBySlug('events-yummy');
+            
+            if (!$pageData) {
+                $this->logService->warning('Yummy', "Page data not found for slug: {$slug}");
+                $this->notFound();
+                return;
+            }
+            
+            $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
+            $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
+            
+            $this->view('Yummy/index', [
+                'title' => $pageData->title ?? 'Yummy Event',
+                'pageData' => $pageData,
+                'sections' => $pageData->content_sections,
+                'venues' => $venues,
+                'restaurants' => $restaurants,
+            ]);
+        } catch (\Exception $e) {
+            $this->logService->exception('Yummy', $e);
+            $this->notFound();
+        }
+    }
+    public function yummy()
+    {
+        //$slug = ltrim($_SERVER['REQUEST_URI'], '/');
+        try {
+            $pageData = $this->pageService->getPageBySlug('events-yummy');
+            
             
             if (!$pageData) {
                 $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy');
                 $this->notFound();
                 return;
             }
-            // Fetch events, venues, and restaurants related to the Yummy event category
-            $events = $this->restaurantService->getEvents();
+            //var_dump($pageData->event_category->event_id);
+            //die();
+            
             $venues = $this->venueService->getVenuesByEventId($pageData->event_category->event_id);
             $restaurants = $this->restaurantService->getRestaurantsByEventId($pageData->event_category->event_id);
-            
-            $viewModel = new YummyHomeViewModel(
-                $pageData,
-                $pageData->content_sections,
-                $venues,
-                $restaurants,
-                [],
-                events: $events
-            );
-            
-            $viewModel->galleryItems = $viewModel->extractGalleryFromSections();
+            $gallery = null;
+
+            foreach ($pageData->content_sections as $section) {
+                if (!empty($section->gallery_id)) {
+                    $gallery = $this->mediaService->getGalleryById($section->gallery->gallery_id);
+                    break;
+                }
+            }
+
+            $galleryItems = $gallery->media_items ?? [];
             
             $this->view('Yummy/index', [
-                'viewModel' => $viewModel
+                'title' => $pageData->title ?? 'Yummy Event',
+                'pageData' => $pageData,
+                'sections' => $pageData->content_sections,
+                'venues' => $venues,
+                'restaurants' => $restaurants,
+                'galleryItems' => $galleryItems
             ]);
-        } catch (ResourceNotFoundException $e) {
-            error_log('Failed to fetch Yummy homepage:' . $e->getMessage());
-            $_SESSION['error'] = 'Failed to fetch Yummy event homepage';
-         }
+        } catch (\Exception $e) {
+            $this->logService->exception('Yummy', $e);
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
     }
 
     public function displayRestaurants(){
         try{
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants');
+            
             
             if (!$pageData) {
                 $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy-restaurants');
@@ -105,41 +143,48 @@ class YummyController extends BaseController
                 'viewModel' => $viewModel
             ]);
 
-        }catch (ResourceNotFoundException $e) {
-            error_log('Restaurants listing error:' . $e->getMessage());
-            $_SESSION['error'] = 'Failed to fetch all restaurants';
-         }
+             
+        }
+        catch(\Exception $e){
+            $this->logService->exception('Yummy', $e);
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
     }
 
     public function restaurantDetail($vars = []){
         try{
-            // Validate and extract restaurant ID from URL parameters
             $restaurantId = (int)($vars['id'] ?? 0);
-            // Fetch page data for the restaurant detail page
             $pageData = $this->pageService->getPageBySlug('events-yummy-restaurants-restaurant');
+            
+            
             if (!$pageData) {
                 $this->logService->warning('Yummy', 'Page data not found for slug: events-yummy-restaurants');
                 $this->notFound();
                 return;
             }
-
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
+            $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
+            //because it should display 3 sessions from the schedule, so grouped by date
+            $groupedSchedules = [];
+            foreach($schedules as $schedule){
+                $date = $schedule->date->format('Y-m-d');
+                $groupedSchedules[$date][] = $schedule;
+            }
             if (!$restaurant) {
                 $this->notFound();
                 return;
             }
-            // Fetch schedules for the restaurant and prepare the view model
-            $schedules = $this->scheduleService->getSchedulesByRestaurant($restaurantId);
-            $viewModel = new DetailsViewModel($restaurant, $schedules);
 
             $this->view('Yummy/DetailPage', [
+                'restaurant' => $restaurant,
                 'pageData' => $pageData,
-                'viewModel' => $viewModel
+                'groupedSchedules' => $groupedSchedules,
+                'schedules' => $schedules
             ]);
         }
-        catch (ResourceNotFoundException $e) {
-            error_log('Restaurant loading error:' . $e->getMessage());
-            $_SESSION['error'] = 'Failed to fetch restaurant' . $restaurant->name;
-         }
+        catch(\Exception $e){
+            $this->logService->exception('Yummy', $e);
+            $this->internalServerError("Error loading homepage: " . $e->getMessage());
+        }
     }
 }

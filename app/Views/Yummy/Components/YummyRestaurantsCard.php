@@ -15,7 +15,7 @@ namespace App\Views\Yummy\Components;
       <a href="/events-yummy/restaurants?cuisine=<?= $cuisine->cuisine_Id ?>"
        class="<?= $viewModel->selectedCuisineId === $cuisine->cuisine_Id ?
        'bg-[#4a0e0e] text-white' : 'bg-white/90 text-black' ?>
-       px-6 py-2 me-2 ms-1 rounded border border-black/10 text-xs font-bold uppercase hover:bg-white">
+       px-6 py-2 me-2 rounded border border-black/10 text-xs font-bold uppercase hover:bg-white">
       <?= $cuisine->name ?>
       </a>
     <?php endforeach; ?>
@@ -28,9 +28,9 @@ namespace App\Views\Yummy\Components;
         <figure class="relative">
           <img src="<?= $restaurant->main_image->file_path ?? '' ?>" alt="<?= $restaurant->main_image->alt_text ?? $restaurant->name ?>" class="w-full h-48 object-cover">
           <div class="absolute bottom-2 left-2 flex gap-1">
-            <span class="bg-[#d4a356] text-black text-[9px] font-black px-2 py-0.5 rounded">AvrPrc: <?= htmlspecialchars($restaurant->price_category) ?></span>
+            <span class="bg-[#d4a356] text-black text-[9px] font-black px-2 py-0.5 rounded">AvrPrc: €<?= htmlspecialchars($restaurant->price_category) ?></span>
              <span class="bg-[#d4a356] text-black text-[9px] font-black px-2 py-0.5 rounded">Available Seats: <?= htmlspecialchars($restaurant->venue->capacity) ?></span>
-             <span class="bg-[#d4a356] text-black text-[9px] font-black px-2 py-0.5 rounded">SESSION 3</span>
+             <span class="bg-[#d4a356] text-black text-[9px] font-black px-2 py-0.5 rounded">SESSION 1</span>
           </div>
         </figure>
         <div class="p-5 flex-grow">
@@ -58,7 +58,7 @@ namespace App\Views\Yummy\Components;
             </span>
           </div>
         </div>
-        <a href="/events-yummy/restaurants/<?= $restaurant->restaurant_id ?>" class="btn text-center bg-[#b38b4d] text-white py-3 text-sm font-black uppercase tracking-widest hover:bg-[#9a763f] transition-colors">
+        <a href="/events-yummy/restaurants/<?= $restaurant->restaurant_id ?>" class="bg-[#b38b4d] text-white py-3 text-sm font-black uppercase tracking-widest hover:bg-[#9a763f] transition-colors">
           View Details
         </a>
       </article>

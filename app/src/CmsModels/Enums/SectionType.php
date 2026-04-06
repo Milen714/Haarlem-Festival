@@ -21,7 +21,6 @@ enum SectionType: string
     case tour_info = 'tour_info';
     case good_to_know = 'good_to_know';
     case tour_features = 'tour_features';
-    case tour_route = 'tour_route';
     case tour_tickets = 'tour_tickets';
     case image_left_magic = 'image_left_magic';
     case image_right_magic = 'image_right_magic';

@@ -9,6 +9,4 @@ interface IUserRepository {
     public function createUser(User $user): bool;
     public function updateUser(User $user): bool;
     public function deleteUser(int $id): bool;
-    public function findByShareToken(string $token): ?User;
-    public function saveShareToken(int $userId, string $token): bool;
 }

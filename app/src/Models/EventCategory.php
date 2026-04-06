@@ -9,7 +9,6 @@ class EventCategory
     public string $title;
     public ?string $category_description = null;
     public ?string $slug = null;
-    public ?Media $event_media = null;
     public function __construct(){}
     public function fromPDOData(array $data): void {
         $this->event_id = isset($data['event_category_id']) ? (int)$data['event_category_id'] : null;
@@ -17,16 +16,6 @@ class EventCategory
         $this->title = $data['event_category_title'] ?? '';
         $this->category_description = $data['event_category_description'] ?? null;
         $this->slug = $data['event_category_slug'] ?? null;
-        if (isset($data['event_media_id'])) {
-            $media = new Media();
-            $media->fromPDOData([
-                'media_id' => $data['event_media_id'],
-                'file_path' => $data['event_media_url'] ?? '',
-                'type' => $data['event_media_type'] ?? '',
-                'alt_text' => $data['event_media_alt_text'] ?? ''
-            ]);
-            $this->event_media = $media;
-        }
     }
 
     public function fromPostData(array $data): void {

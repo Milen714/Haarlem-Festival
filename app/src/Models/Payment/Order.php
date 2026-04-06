@@ -34,7 +34,7 @@ class Order
     public function fromPDOData(array $data): void
     {
         $this->order_id = isset($data['order_id']) ? (int)$data['order_id'] : 0;
-        $this->reference_number = $data['order_reference_number'] ?? $data['reference_number'] ?? null;
+        $this->reference_number = $data['order_reference_number'] ?? null;
         $this->subtotal = isset($data['subtotal']) ? (float)$data['subtotal'] : null;
         $this->total = isset($data['total']) ? (float)$data['total'] : null;
         $this->serviceFee = isset($data['serviceFee']) ? (float)$data['serviceFee'] : null;

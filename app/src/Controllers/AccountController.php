@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Models\User;
 use App\Models\Enums\UserRole;
 use App\Services\UserService;
@@ -13,11 +13,8 @@ use App\config\Secrets;
 use App\Services\Interfaces\IOrderService;
 use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\IMailService;
-use App\Services\Interfaces\ILogService;
 use App\Services\OrderService;
-use App\Services\LogService;
-use App\Exceptions\UserFacingException;
-use App\Exceptions\ValidationException;
+
 
 class AccountController extends BaseController
 {
@@ -25,14 +22,12 @@ class AccountController extends BaseController
     private IMailService $mailService;
     private IAuthService $authService;
     private IOrderService $orderService;
-    private ILogService $logService;
     public function __construct()
     {
-        $this->authService = new AuthService();
         $this->userService = new UserService();
         $this->mailService = new MailService();
+        $this->authService = new AuthService();
         $this->orderService = new OrderService();
-        $this->logService = new LogService();
     }
     public function login($vars = [])
     {
@@ -44,22 +39,22 @@ class AccountController extends BaseController
     }
     public function loginPost($vars = [])
     {
+        header('Content-Type: application/json; charset=utf-8');
         try {
-            $data = $this->getPostData();
-            
+            $data = json_decode(file_get_contents('php://input'), true);
+            // var_dump($data);
+            // die();
              if (!$data) {
-                $this->sendErrorResponse('Invalid JSON payload.', 400);
-                return;
+                throw new \Exception('Invalid JSON input');
             }
              if (empty($data['email']) || empty($data['password'])) {
-                $this->sendErrorResponse('Email and password are required.', 400);
-                return;
+                throw new \Exception('Email and password are required.');
             }
-               
+             // Validate reCAPTCHA token    
             $user = $this->userService->authenticateUser($data['email'], $data['password']);
 
             if ($user) {
-                $this->setLoggedInUser($user); // Store user in session upon successful login
+                $_SESSION['loggedInUser'] = $user;
                 // Consolidate cart merge logic in one place.
                 $this->orderService->hydrateSessionCartFormDbOnLogin($user);
                 $redirect = $data['redirect'] ?? '/';
@@ -71,33 +66,26 @@ class AccountController extends BaseController
                     if($redirect === '/payment-details') {
                         $redirectAdmin = '/payment-details';
                     }
-                    $this->sendSuccessResponse(['success' => true, 'redirect' => $redirectAdmin ], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => $redirectAdmin ], 200);
                 }
                  else if($user->role === UserRole::EMPLOYEE) {
-                    $this->sendSuccessResponse(['success' => true, 'redirect' => '/qr-code/scan' ], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => '/qr-code/scan' ], 200);
                 } else {
                     // Regular user login
-                    $this->sendSuccessResponse(['success' => true, 'redirect' => $redirect], 200);
+                    $this->jsonResponse(['success' => true, 'redirect' => $redirect], 200);
                 }
             } else {
                 // Failed login
-                $this->sendSuccessResponse([
+                $this->jsonResponse([
                     'success' => false,
                     'message' => 'Login failed. Please check your credentials and try again.',
                     'user' => ['email' => $data['email']]
                 ], 401);
             }
-        } catch (UserFacingException $e) {
-            $this->logService->info('Account', 'User-facing error: ' . $e->getMessage());
-            $this->sendSuccessResponse([
+        } catch (\Throwable $e) {
+            $this->jsonResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
-            ], 400);
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
-            $this->sendSuccessResponse([
-                'success' => false,
-                'message' => 'An error occurred during login.',
             ], 500);
         }
     }
@@ -114,39 +102,66 @@ class AccountController extends BaseController
     {
         $this->view('Account/Signup', ['title' => 'Signup Page']);
     }
+    private function validateCaptchaToken($token)
+    {
+        if (empty($token)) {
+            throw new \Exception("reCAPTCHA token is missing.");
+        }
+
+        $secretKey = Secrets::$reCapchaSecretKey;
+        $ip = $_SERVER['REMOTE_ADDR'];
+        $url = "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$token&remoteip=$ip";
+
+        $request = file_get_contents($url);
+        $response = json_decode($request);
+
+        // Check if it failed OR if the score is too low
+        if (!$response->success || $response->score < 0.5) {
+            throw new \Exception("reCAPTCHA verification failed. Are you a bot?");
+        }
+
+        return true;
+    }
     public function signupPost($vars = [])
     {
+        header('Content-Type: application/json; charset=utf-8');
 
-        $data = $this->getPostData();
+        $data = json_decode(file_get_contents('php://input'), true);
         $user = new User();
         $user = $user->fromArray($data);
 
         try {
-            $recaptchaToken = $data['recaptcha'] ?? '';
-            $this->authService->registerUserWithVerification($user, $recaptchaToken);
+            // validate password strength
+            $passwordValidation = $this->authService->validatePassword($user->password_hash);
+            if (!$passwordValidation['valid']) {
+                $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
+                throw new \Exception($errorMsg);
+            }
 
-            $this->sendSuccessResponse([
-                'success' => true,
-                'message' => 'Signup successful. Please check your email to verify your account.',
-            ], 201);
-        } catch (ValidationException $e) {
-            $this->logService->info('Account', 'Validation error: ' . $e->getMessage());
-            $this->sendSuccessResponse([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        } catch (UserFacingException $e) {
-            $this->logService->info('Account', 'User-facing error: ' . $e->getMessage());
-            $this->sendSuccessResponse([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 400);
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
-            $this->sendSuccessResponse([
-                'success' => false,
-                'message' => 'An error occurred during signup.'
-            ], 500);
+            // Validate reCAPTCHA token
+            $token = $data['recaptcha'] ?? '';
+            $this->validateCaptchaToken($token);
+            // Check if email already exists
+            $existingUser = $this->userService->getUserByEmail($user->email);
+            if ($existingUser) {
+                throw new \Exception("This email is already in use.");
+            }
+            // Generate verification token and send verification email
+            $token = $this->authService->generateVerificationToken($user);
+            $verificationLink = Secrets::$domain . "/reset-password?token=" . urlencode($token) . "&email=" . urlencode($user->email);
+            // Save the user to the database
+            $this->userService->createUser($user);
+            $this->mailService->accountVerificationMail($user->email, $verificationLink);
+            // Return success response
+            echo json_encode(['success' => true, 'message' => 'Signup successful. Please check your email to verify your account.']);
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), 'email')) {
+                $errorMsg = "This email is already in use.";
+                echo json_encode(['success' => false, 'message' => $errorMsg]);
+            } else {
+                $errorMsg = "An error occurred during signup: " . $e->getMessage();
+                echo json_encode(['success' => false, 'message' => $errorMsg]);
+            }
         }
     }
     public function forgotPassword()
@@ -166,9 +181,8 @@ class AccountController extends BaseController
             // Send reset email
             $this->mailService->resetPasswordMail($user->email, $resetLink);
             $this->view('Account/Login', ['success' => "Password reset email sent. Please check your inbox.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
-            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => 'An error occurred. Please try again.']);
+        } catch (\Exception $e) {
+            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => $e->getMessage()]);
         }
     }
     public function resetPassword()
@@ -186,9 +200,8 @@ class AccountController extends BaseController
             }
             // Show reset password form
             $this->view('Account/ResetPassword', ['title' => 'Reset Password']);
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
-            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => 'An error occurred. Please try again.']);
+        } catch (\Exception $e) {
+            $this->view('Account/ForgotPassword', ['title' => 'Forgot Password', 'error' => $e->getMessage()]);
         }
         // Reset password logic here
     }
@@ -226,11 +239,10 @@ class AccountController extends BaseController
             $this->userService->updateUser($user);
             // Redirect to login with success message
             $this->view('Account/Login', ['success' => "Password has been reset successfully.", 'message' => "Please log in. now :)", 'title' => 'Login Page', 'param' => $param ?? 'noParam']);
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
+        } catch (\Exception $e) {
             $this->view('Account/ResetPassword', [
                 'title' => 'Reset Password',
-                'error' => 'An error occurred. Please try again.',
+                'error' => $e->getMessage(),
                 "email" => $email,
                 "token" => $token
             ]);
@@ -239,54 +251,44 @@ class AccountController extends BaseController
 
     public function settings($vars = [])
     {
-        $loggedUser = $this->getLoggedInUser();
-        if (!isset($loggedUser)) {
+        if (!isset($_SESSION['loggedInUser'])) {
             header("Location: /login");
             exit();
         }
-        try {
-            $user = $this->userService->getUserById($loggedUser->id);
+        $loggedUser = $_SESSION['loggedInUser'];
+        $user = $this->userService->getUserById($loggedUser->id);
 
-            if ($user->role === UserRole::ADMIN) {
-                $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
-            } else {
-                $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
-            }
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
-            header("Location: /login");
-            exit();
+        if ($user->role === UserRole::ADMIN) {
+            $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $user]);
+        } else {
+            $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $user]);
         }
     }
 
     public function update($vars = [])
     {
-        $loggedUser = $this->getLoggedInUser();
-        if (!isset($loggedUser)) {
-            $this->redirect('/login');
-            return;
+        if (!isset($_SESSION['loggedInUser'])) {
+            header("Location: /login");
+            exit();
         }
 
         try {
+            $loggedUser = $_SESSION['loggedInUser'];
             $user = $this->userService->getUserById($loggedUser->id);
+
             $user->fromPDOData($_POST);
             $this->userService->updateUser($user);
-            $this->setLoggedInUser($user);
+
+            $_SESSION['loggedInUser'] = $user;
 
             if ($user->role === UserRole::ADMIN) {
-                $_SESSION['success'] = 'Profile updated successfully.';
-                $this->redirect('/cms/profile');
+                header("Location: /cms/profile");
             } else {
-                $_SESSION['success'] = 'Settings updated successfully.';
-                $this->redirect('/settings');
+                header("Location: /settings");
             }
-        } catch (\Throwable $e) {
-            $this->logService->exception('Account', $e);
-            if ($loggedUser->role === UserRole::ADMIN) {
-                $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $loggedUser, 'error' => 'An error occurred. Please try again.']);
-            } else {
-                $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $loggedUser, 'error' => 'An error occurred. Please try again.']);
-            }
+            exit();
+        } catch (\Exception $e) {
+            $this->view('Account/Settings', ['title' => 'Edit Account Settings', 'user' => $user, 'error' => $e->getMessage()]);
         }
     }
 }

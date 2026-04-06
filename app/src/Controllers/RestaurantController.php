@@ -1,9 +1,11 @@
-<?php
+<?php 
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ValidationException;
+use App\Exceptions\ApplicationException;
 use App\Services\RestaurantService;
 use App\Services\VenueService;
 use App\Services\Interfaces\IRestaurantService;
@@ -15,8 +17,7 @@ use App\Services\Interfaces\ICuisineService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
 
-class RestaurantController extends BaseController
-{
+class RestaurantController extends BaseController{
     private IRestaurantService $restaurantService;
     private ICuisineService $cuisineService;
     private IVenueService $venueService;
@@ -30,57 +31,50 @@ class RestaurantController extends BaseController
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function index($vars = [])
-    {
-        try {
+    public function index($vars = []){
+         try {
             $restaurants = $this->restaurantService->showAllRestaurants();
 
             $this->cmsLayout('Cms/Restaurants/index', [
-                'title' => 'Manage Restaurants',
-                'restaurants' => $restaurants
+                'title' => 'Manage Restaurants', 'restaurants' => $restaurants
             ]);
-        } catch (ResourceNotFoundException $e) {
+         } catch (ResourceNotFoundException $e) {
             $this->logService->exception('Restaurant', $e);
             $_SESSION['error'] = 'Failed to fetch all restaurants';
-        }
+         }
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function showCuisines($vars = [])
-    {
-        try {
+    public function showCuisines($vars = []){
+         try {
             $cuisines = $this->cuisineService->getCuisines();
 
             $this->cmsLayout('Cms/Restaurants/Cuisines', [
-                'title' => 'Manage cuisines',
-                'cuisines' => $cuisines
+                'title' => 'Manage cuisines', 'cuisines' => $cuisines
             ]);
-        } catch (ResourceNotFoundException $e) {
+         } catch (ResourceNotFoundException $e) {
             $this->logService->exception('Restaurant', $e);
             $_SESSION['error'] = 'Failed to fetch all cuisines';
-        }
+         }
     }
 
 
     #[RequireRole([UserRole::ADMIN])]
-    public function createCuisine($vars = [])
-    {
-        try {
+    public function createCuisine($vars = []){
+         try {
 
-            $this->cmsLayout('Cms/Restaurants/CuisineForm', [
-                'title' => 'Manage cuisines',
-                'cuisine' => null,
-                'action' => '/cms/restaurants/cuisines/store'
+            $this->cmsLayout('Cms/Restaurants/cuisines', [
+                'title' => 'Manage cuisines', 'cuisine' => null,
+                'action' => '/cms/cuisines/store'
             ]);
-        } catch (\Exception $e) {
+         } catch (\Exception $e) {
             $this->logService->exception('Restaurant', $e);
             $this->internalServerError("Error loading homepage: " . $e->getMessage());
-        }
+         }
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function create($vars = [])
-    {
+    public function create($vars = []){
         $venues = $this->venueService->getAllVenues();
         $cuisines = $this->cuisineService->getCuisines();
         $sessionTypes = $this->restaurantService->getAllSessionsTypes();
@@ -95,14 +89,14 @@ class RestaurantController extends BaseController
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function store($vars = [])
-    {
-
+    public function store($vars = []){
+        
         try {
             $restaurant = $this->restaurantService->createFromRequest($_POST, $_FILES);
             $_SESSION['success'] = "Restaurant [$restaurant->name] created succesfully! ";
             $this->redirect('cms/restaurants');
-        } catch (\Throwable $e) {
+
+        } catch (\Throwable | ValidationException $e) {
             $this->logService->exception('Restaurant', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/restaurants/create');
@@ -110,33 +104,30 @@ class RestaurantController extends BaseController
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function storeCuisine()
-    {
+    public function storeCuisine(){
         try {
             $this->cuisineService->createCuisineFromRequest($_POST);
             $_SESSION['success'] = "Cuisine created!";
             $this->redirect('/cms/restaurants/cuisines');
-        } catch (\Throwable $e) {
-            $this->logService->exception('Cuisine', $e);
+        } catch (\Throwable | ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
-            $this->redirect('/cms/restaurants/cuisines/create');
+            $this->redirect('/cms/restaurants/cuisine/create');
         }
     }
 
 
     #[RequireRole([UserRole::ADMIN])]
-    public function edit($vars = [])
-    {
-
+    public function edit($vars = []){
+       
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
 
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
             $cuisines = $this->cuisineService->getCuisines();
             $sessionTypes = $this->restaurantService->getAllSessionsTypes();
-
+            
             $venues = $this->venueService->getAllVenues();
-            if (!$restaurant) {
+            if(!$restaurant){
                 throw new ResourceNotFoundException('Restaurant not Found!');
                 return;
             }
@@ -149,78 +140,74 @@ class RestaurantController extends BaseController
                 'sessionTypes' => $sessionTypes,
                 'action' => "/cms/restaurants/update/{$restaurantId}"
             ]);
-        } catch (\Throwable $e) {
+
+        } catch (ResourceNotFoundException | ValidationException  $e) {
             $this->logService->exception('Restaurant', $e);
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/restaurants');
         }
     }
-
+    
     #[RequireRole([UserRole::ADMIN])]
-    public function editCuisine($vars = [])
-    {
+    public function editCuisine($vars = []){
         $id = (int)($vars['id'] ?? 0);
 
         $cuisine = $this->cuisineService->getCuisineById($id);
 
         if (!$cuisine) {
-            throw new ResourceNotFoundException('Cuisine not Found!');
+           throw new ResourceNotFoundException('Cuisine not Found!');
             return;
         }
         $this->cmsLayout('Cms/Restaurants/CuisineForm', [
             'title' => 'Edit Cuisine',
             'cuisine' => $cuisine,
-            'action' => "/cms/restaurants/cuisines/update/{$id}"
+            'action' => '/cms/restaurants/cuisines/upadte/{$id}'
         ]);
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function update($vars = [])
-    {
+    public function update($vars = []){
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
-            //gets the restaurant, the data from the form and the uploaded images
             $restaurant = $this->restaurantService->updateFromRequest($restaurantId, $_POST, $_FILES);
             $_SESSION['success'] = "Restaurant {$restaurant->name} updated successfully";
 
             $this->redirect('/cms/restaurants');
-        } catch (\Throwable $e) {
+        } catch (ApplicationException $e) {
             $this->logService->exception('Restaurant', $e);
             $_SESSION['error'] = $e->getMessage();
-            $this->redirect("/cms/restaurants/edit/{$restaurantId}");
+            $this->redirect("/cms/restaurants/edit/{$restaurantId}"); 
         }
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function updateCuisine($vars = [])
-    {
+    public function updateCuisine($vars = []){
         $id = (int)($vars['id'] ?? 0);
         try {
             $this->cuisineService->updateCuisineFromRequest($id, $_POST);
 
             $_SESSION['success'] = "Cuisine Updated!";
             $this->redirect('/cms/restaurants/cuisines');
-        } catch (\Throwable $e) {
-            $this->logService->exception('Restaurant', $e);
+        } catch (ApplicationException $e) {
             $_SESSION['error'] = $e->getMessage();
-            $this->redirect("/cms/restaurants/cuisines/edit/{$id}");
+            $this->redirect('/cms/restaurants/cuisines/edit/{$id}');
         }
     }
 
-    #[RequireRole([UserRole::ADMIN])]
-    public function delete($vars = [])
-    {
-
+     #[RequireRole([UserRole::ADMIN])]
+    public function delete($vars = []){
+       
         $restaurantId = (int)($vars['id'] ?? 0);
         try {
             $restaurant = $this->restaurantService->getRestaurantById($restaurantId);
-            if (!$restaurant) {
+            if(!$restaurant){
                 throw new \Exception('Restaurant not Found!');
             }
 
             $this->restaurantService->deleteRestaurant($restaurantId);
             $_SESSION['success'] = "Restaurant {$restaurant->name} was deleted successfully";
-        } catch (\Throwable $e) {
+
+        } catch (ApplicationException $e) {
             $this->logService->exception('Restaurant', $e);
             $_SESSION['error'] = $e->getMessage();
         }
@@ -228,14 +215,12 @@ class RestaurantController extends BaseController
     }
 
     #[RequireRole([UserRole::ADMIN])]
-    public function deleteCuisine($vars = [])
-    {
+    public function deleteCuisine($vars= []){
         $id = (int)($vars['id'] ?? 0);
         try {
             $this->cuisineService->deleteCuisine($id);
             $_SESSION['success'] = "Cuisine deleted!";
-        } catch (\Throwable $e) {
-            $this->logService->exception('Restaurant', $e);
+        } catch (ApplicationException $e) {
             $_SESSION['error'] = $e->getMessage();
         }
         $this->redirect('/cms/restaurants/cuisines');

@@ -14,11 +14,8 @@ use App\Services\Interfaces\IAlbumService;
 use App\Services\Interfaces\ITicketService;
 use App\Services\Interfaces\ILogService;
 use App\Services\LogService;
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Models\Gallery;
-use App\Exceptions\ArtistNotFoundException;
-use App\Exceptions\ScheduleNotFoundException;
-use App\Exceptions\ApplicationException;
 
 class DanceArtistController extends BaseController
 {
@@ -62,39 +59,30 @@ class DanceArtistController extends BaseController
         $slug = $vars['slug'] ?? null;
 
         if (!$slug) {
-            throw new ArtistNotFoundException('Artist slug is required');
+            $this->notFound();
+            return;
         }
-        
         try {
             $artist = $this->artistService->getArtistBySlug($slug);
-            
             if (!$artist) {
-                throw new ArtistNotFoundException("Artist with slug '{$slug}' not found");
+                $this->notFound();
+                return;
             }
-            
             $album = $this->albumService->getAlbumsByArtistId($artist->artist_id);
             $gallery = $artist->gallery;
             $scheduleByDate = $this->scheduleService->getSchedulesForArtistInEvent(
                 (int) $artist->artist_id,
                 self::DANCE_EVENT_ID
             );
-            
-            if (empty($scheduleByDate)) {
-                throw new ScheduleNotFoundException("No schedule found for artist '{$artist->name}'");
-            }
-            
             $ticketLookup = $this->getTicketLookupForSchedules($scheduleByDate);
             $vm = new \App\ViewModels\Dance\ArtistDetailViewModel($artist, $scheduleByDate, $album, $gallery);
             $this->view('Dance/artist-detail', [
                 'vm' => $vm,
                 'ticketLookup' => $ticketLookup
             ]);
-        } catch (ArtistNotFoundException | ScheduleNotFoundException $e) {
-            error_log("Dance artist detail error: " . $e->getMessage());
-            $this->notFound();
         } catch (\Exception $e) {
-            error_log("Dance artist detail error: " . $e->getMessage());
-            throw new ApplicationException('Failed to load artist detail page', 0, $e);
+            $this->logService->exception('Dance', $e);
+            $this->notFound();
         }
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Services\PageService;
 use App\Services\MediaService;
 use App\Services\Interfaces\IPageService;

@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Services\VenueService;
 use App\Services\Interfaces\IVenueService;
 use App\Services\LogService;

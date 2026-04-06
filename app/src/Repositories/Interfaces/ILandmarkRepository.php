@@ -12,7 +12,4 @@ interface ILandmarkRepository
     public function delete(int $id): bool;
     public function update(Landmark $landmark): Landmark;
     public function insert(Landmark $landmark): Landmark;
-
-    public function getFeatured(): array;
-    public function updateMainImage(int $landmarkId, int $mediaId): void;
 }

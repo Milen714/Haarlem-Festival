@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Exceptions\ValidationException;
@@ -155,7 +155,6 @@ class ScheduleController extends BaseController
             $_SESSION['success'] = "Schedule for " . ($schedule->date?->format('d M Y') ?? 'N/A') . " created successfully!";
             $this->redirect('/cms/schedules');
         } catch (ValidationException $e) {
-            $this->logService->info('Schedule', 'Validation error: ' . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules/create');
         } catch (\Throwable $e) {
@@ -198,7 +197,6 @@ class ScheduleController extends BaseController
                 'ticketTypes'    => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
         } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Schedule', 'Not found: ' . $e->getMessage());
             $this->startSession();
             $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
@@ -231,7 +229,6 @@ class ScheduleController extends BaseController
             $_SESSION['success'] = "Schedule for " . ($schedule->date?->format('d M Y') ?? 'N/A') . " updated successfully!";
             $this->redirect('/cms/schedules');
         } catch (ValidationException | ResourceNotFoundException $e) {
-            $this->logService->info('Schedule', 'Error: ' . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/edit/{$scheduleId}");
         } catch (\Throwable $e) {
@@ -261,7 +258,6 @@ class ScheduleController extends BaseController
             $this->scheduleService->deleteSchedule($scheduleId);
             $_SESSION['success'] = "Schedule deleted successfully!";
         } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Schedule', 'Not found: ' . $e->getMessage());
             $_SESSION['error'] = $e->getMessage();
         } catch (\Throwable $e) {
             $this->logService->exception('Schedule', $e);
