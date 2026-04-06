@@ -46,7 +46,7 @@ class OrderItemViewModel
             case EventType::Magic:
                 return $this->item->ticket_type->schedule->venue->venue_image ?? new Media();
             case EventType::History:
-                return $this->item->ticket_type->schedule->landmark->landmark_image ?? new Media();
+                return $this->item->ticket_type->schedule->landmark->main_image_id ?? new Media();
             case EventType::Yummy:
                 return $this->item->ticket_type->schedule->restaurant->main_image ?? new Media();
             case EventType::Jazz:
