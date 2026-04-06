@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Services\Interfaces\JazzServiceInterface;
 use App\Services\Interfaces\ILogService;
@@ -109,7 +110,7 @@ class JazzService implements JazzServiceInterface
             ));
         }
 
-        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums([TicketSchemeEnum::JAZZ_DAY_PASS->value]);
 
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
@@ -165,7 +166,7 @@ class JazzService implements JazzServiceInterface
             )
         );
 
-        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums([TicketSchemeEnum::JAZZ_DAY_PASS->value]);
 
         return [
             'title'          => $artistViewModel->title,
