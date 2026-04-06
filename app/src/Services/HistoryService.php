@@ -11,6 +11,7 @@ use App\Services\LandmarkService;
 use App\ViewModels\History\TicketHistoryViewModel;
 use App\Models\Enums\TicketSchemeEnum;
 use App\Exceptions\LandmarkNotFoundException;
+use App\CmsModels\PageSection;
 
 class HistoryService implements IHistoryService
 {
@@ -76,16 +77,11 @@ class HistoryService implements IHistoryService
     {
         $pageData  = $this->pageService->getPageBySlug('events-history');
         $landmarks = $this->landmarkService->getFeaturedLandmarks();
-        $hero = $welcome = $bookTour = null;
 
-        foreach ($pageData->content_sections ?? [] as $s) {
-            match($s->section_type->value) {
-                'hero_picture' => $hero     = $s,
-                'welcome'      => $welcome  = $s,
-                'book_tour'    => $bookTour = $s,
-                default        => null
-            };
-        }
+        $s        = $this->extractSections($pageData->content_sections ?? [], ['hero_picture', 'welcome', 'book_tour']);
+        $hero     = $s['hero_picture'];
+        $welcome  = $s['welcome'];
+        $bookTour = $s['book_tour'];
 
         return compact('pageData', 'landmarks', 'hero', 'welcome', 'bookTour');
     }
@@ -94,21 +90,16 @@ class HistoryService implements IHistoryService
     {
         $pageData      = $this->pageService->getPageBySlug('history-tour');
         $ticketOptions = $this->getAvailableTourOptions();
-        $hero = $tourInfo = $bookTour = $goodToKnow = $tourRoute = $text = null;
-        $tourFeatures = [];
+        $sections      = $pageData->content_sections ?? [];
 
-        foreach ($pageData->content_sections ?? [] as $s) {
-            match($s->section_type->value) {
-                'hero_picture'  => $hero          = $s,
-                'tour_info'     => $tourInfo      = $s,
-                'book_tour'     => $bookTour      = $s,
-                'good_to_know'  => $goodToKnow    = $s,
-                'tour_route'    => $tourRoute     = $s,
-                'text'          => $text          = $s,
-                'tour_features' => $tourFeatures[] = $s,
-                default         => null
-            };
-        }
+        $s            = $this->extractSections($sections, ['hero_picture', 'tour_info', 'book_tour', 'good_to_know', 'tour_route', 'text']);
+        $hero         = $s['hero_picture'];
+        $tourInfo     = $s['tour_info'];
+        $bookTour     = $s['book_tour'];
+        $goodToKnow   = $s['good_to_know'];
+        $tourRoute    = $s['tour_route'];
+        $text         = $s['text'];
+        $tourFeatures = array_values(array_filter($sections, fn($sec) => $sec->section_type->value === 'tour_features'));
 
         return compact('pageData', 'ticketOptions', 'hero', 'tourInfo', 'bookTour', 'goodToKnow', 'tourRoute', 'text', 'tourFeatures');
     }
@@ -121,14 +112,9 @@ class HistoryService implements IHistoryService
         }
 
         $pageData = $this->pageService->getPageBySlug('detail');
-        $bookTour = $welcome = null;
-        foreach ($pageData->content_sections ?? [] as $s) {
-            match($s->section_type->value) {
-                'book_tour' => $bookTour = $s,
-                'welcome'   => $welcome  = $s,
-                default     => null
-            };
-        }
+        $s        = $this->extractSections($pageData->content_sections ?? [], ['book_tour', 'welcome']);
+        $bookTour = $s['book_tour'];
+        $welcome  = $s['welcome'];
 
         $placeholder = '/Assets/Home/ImagePlaceholder.png';
         $introImage = $historyImage = $whyVisitImage = $placeholder;
@@ -139,15 +125,30 @@ class HistoryService implements IHistoryService
             if (isset($items[2]->media)) $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
         }
 
-        $otherLandmarks = [];
-        foreach ($this->landmarkService->getAllLandmarks() as $l) {
-            if ($l->landmark_slug !== $slug) {
-                $full = $this->landmarkService->getLandmarkById($l->landmark_id);
-                if ($full) $otherLandmarks[] = $full;
-            }
-        }
+        $otherLandmarks = array_values(array_filter(
+            $this->landmarkService->getAllLandmarksWithDetails(),
+            fn($l) => $l->landmark_slug !== $slug
+        ));
 
         return compact('landmark', 'introImage', 'historyImage', 'whyVisitImage', 'otherLandmarks', 'bookTour', 'welcome');
     }
 
+    public function getTourRouteSection(): ?PageSection
+    {
+        $pageData = $this->pageService->getPageBySlug('history-tour');
+        $s = $this->extractSections($pageData->content_sections ?? [], ['tour_route']);
+        return $s['tour_route'];
+    }
+
+    private function extractSections(array $sections, array $keys): array
+    {
+        $result = array_fill_keys($keys, null);
+        foreach ($sections as $s) {
+            $type = $s->section_type->value;
+            if (array_key_exists($type, $result)) {
+                $result[$type] = $s;
+            }
+        }
+        return $result;
+    }
 }

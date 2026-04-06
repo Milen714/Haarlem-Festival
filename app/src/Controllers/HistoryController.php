@@ -4,17 +4,10 @@ namespace App\Controllers;
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;
 use App\Framework\BaseController;
-use App\Services\Interfaces\ILandmarkService;
-use App\Services\LandmarkService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
 use App\Services\Interfaces\IHistoryService;
 use App\Services\HistoryService;
-use App\Services\Interfaces\ITicketService;
-use App\Services\TicketService;
-use App\Services\Interfaces\IOrderService;
-use App\Services\OrderService;
-use App\Repositories\PageRepository;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Exceptions\ResourceNotFoundException;
@@ -22,22 +15,16 @@ use App\Exceptions\ResourceNotFoundException;
 class HistoryController extends BaseController
 {
     private IPageService $pageService;
-    private ILandmarkService $landmarkService;
     private ILogService $logService;
     private IHistoryService $historyService;
-    private ITicketService $ticketService;
-    private IOrderService $orderService;
 
     const HISTORY_TOUR_SLUG = 'history-tour';
 
     public function __construct()
     {
         $this->pageService     = new PageService();
-        $this->landmarkService = new LandmarkService();
         $this->logService      = new LogService();
         $this->historyService  = new HistoryService();
-        $this->ticketService   = new TicketService();
-        $this->orderService    = new OrderService();
     }
 
     public function index($vars = [])
@@ -82,15 +69,7 @@ class HistoryController extends BaseController
     public function editTourRoute($vars = []): void
     {
         try {
-            $pageData  = $this->pageService->getPageBySlug(self::HISTORY_TOUR_SLUG);
-            $tourRoute = null;
-
-            foreach ($pageData->content_sections as $section) {
-                if ($section->section_type->value === 'tour_route') {
-                    $tourRoute = $section;
-                    break;
-                }
-            }
+            $tourRoute = $this->historyService->getTourRouteSection();
 
             $stops = [];
             if ($tourRoute && !empty($tourRoute->content_html)) {
@@ -115,15 +94,7 @@ class HistoryController extends BaseController
     public function updateTourRoute($vars = []): void
     {
         try {
-            $pageData  = $this->pageService->getPageBySlug(self::HISTORY_TOUR_SLUG);
-            $tourRoute = null;
-
-            foreach ($pageData->content_sections as $section) {
-                if ($section->section_type->value === 'tour_route') {
-                    $tourRoute = $section;
-                    break;
-                }
-            }
+            $tourRoute = $this->historyService->getTourRouteSection();
 
             if (!$tourRoute) {
                 $_SESSION['error'] = 'Tour route section not found.';
@@ -141,9 +112,7 @@ class HistoryController extends BaseController
             }
 
             $tourRoute->content_html = json_encode($stops, JSON_UNESCAPED_UNICODE);
-
-            $pageRepository = new PageRepository();
-            $pageRepository->updatePageSectionById($tourRoute);
+            $this->pageService->updatePageSectionById($tourRoute);
 
             $_SESSION['success'] = 'Tour route updated successfully.';
             $this->redirect('/cms/history/tour-route');

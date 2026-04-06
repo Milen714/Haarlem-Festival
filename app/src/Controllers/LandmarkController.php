@@ -24,18 +24,9 @@ class LandmarkController extends BaseController
         $this->logService = new LogService();
     }
 
-    private function startSession(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
-
     #[RequireRole([UserRole::ADMIN])]
     public function index(): void
     {
-        $this->startSession();
-
         try {
             $landmarks = $this->landmarkService->getAllLandmarks();
 
@@ -52,8 +43,6 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
-        $this->startSession();
-
         $images = $this->prepareImages();
 
         $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
@@ -92,8 +81,6 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
-        $this->startSession();
-
         try {
             $this->landmarkService->createLandmark($_POST, $_FILES);
             $this->redirect('/cms/landmarks');
@@ -109,8 +96,6 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
-        $this->startSession();
-
         $id = $vars['id'] ?? '';
 
         try {
@@ -138,8 +123,6 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
-        $this->startSession();
-
         $id = $vars['id'] ?? '';
 
         try {
@@ -159,8 +142,6 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
-        $this->startSession();
-
         $id = $vars['id'] ?? '';
 
         try {

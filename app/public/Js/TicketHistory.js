@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Enviar por AJAX (Fetch) al OrderController
     // NOTA: Agregamos "async" aquí para poder usar "await" en los fetch
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
 
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;

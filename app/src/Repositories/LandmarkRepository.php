@@ -127,6 +127,64 @@ class LandmarkRepository extends Repository implements ILandmarkRepository
         }
     }
 
+    /** @return Landmark[] */
+    public function getAllWithDetails(): array
+    {
+        $sql = "SELECT landmark.*,
+                       media.media_id, media.file_path, media.alt_text,
+                       gm.display_order,
+                       main_img.media_id  AS main_image_media_id,
+                       main_img.file_path AS main_image_file_path,
+                       main_img.alt_text  AS main_image_alt_text
+                FROM LANDMARK landmark
+                LEFT JOIN GALLERY_MEDIA gm ON landmark.gallery_id = gm.gallery_id
+                LEFT JOIN MEDIA media ON gm.media_id = media.media_id
+                LEFT JOIN MEDIA main_img ON landmark.main_image_id = main_img.media_id
+                ORDER BY landmark.display_order ASC, gm.display_order ASC";
+
+        try {
+            $stmt  = $this->pdo->query($sql);
+            $rows  = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $landmarks = [];
+            foreach ($rows as $row) {
+                $id = (int)$row['landmark_id'];
+
+                if (!isset($landmarks[$id])) {
+                    $lm = new Landmark();
+                    $lm->fromPDOData($row);
+
+                    if (!empty($row['gallery_id'])) {
+                        $gallery = new \App\Models\Gallery();
+                        $gallery->gallery_id = $row['gallery_id'];
+                        $lm->gallery = $gallery;
+                    }
+
+                    $landmarks[$id] = $lm;
+                }
+
+                if (!empty($row['media_id']) && isset($landmarks[$id]->gallery)) {
+                    $media = new \App\Models\Media();
+                    $media->fromPDOData([
+                        'media_id'  => $row['media_id'],
+                        'file_path' => $row['file_path'],
+                        'alt_text'  => $row['alt_text'] ?? ''
+                    ]);
+
+                    $galleryMedia = new \App\Models\GalleryMedia();
+                    $galleryMedia->media = $media;
+                    $galleryMedia->order = $row['display_order'] ?? 0;
+
+                    $landmarks[$id]->gallery->addGalleryMedia($galleryMedia);
+                }
+            }
+
+            return array_values($landmarks);
+        } catch (\PDOException $e) {
+            throw new \RuntimeException('Failed to fetch all landmarks with details: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
     public function getById(int $id): ?Landmark
     {
         $sql = "SELECT landmark.*,

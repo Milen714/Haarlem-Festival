@@ -157,13 +157,18 @@ class OrderService implements IOrderService
             // Cart is already in the DB — lock the seat now
             $ticketTypeId = $item->ticket_type?->ticket_type_id ?? null;
             if ($ticketTypeId !== null) {
-                $reserved = $this->ticketService->reserveSeats($ticketTypeId, (int)$item->quantity);
+                $reserveQty    = (int)$item->quantity;
+                $schemeEnumObj = $item->ticket_type?->ticket_scheme?->scheme_enum ?? null;
+                if ($schemeEnumObj === TicketSchemeEnum::HISTORY_FAMILY_TICKET) {
+                    $reserveQty *= 4;
+                }
+                $reserved = $this->ticketService->reserveSeats($ticketTypeId, $reserveQty);
                 if (!$reserved) {
                     throw new ValidationException(
                         "Ticket type {$ticketTypeId} is sold out or has insufficient capacity."
                     );
                 }
-                //$this->ticketService->syncHistoryScheduleSoldOut($ticketTypeId);
+                $this->ticketService->syncHistoryScheduleSoldOut($ticketTypeId);
             }
             array_last($cart->orderItems)->order_id = $cart->order_id;
             $this->orderRepository->addOrderItem($item);
@@ -201,7 +206,11 @@ class OrderService implements IOrderService
                         $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
                     }
                 } else {
-                    $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+                    $capacityQty = $quantity;
+                    if ($schemeEnum === TicketSchemeEnum::HISTORY_FAMILY_TICKET) {
+                        $capacityQty *= 4;
+                    }
+                    $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $capacityQty];
                 }
             }
 

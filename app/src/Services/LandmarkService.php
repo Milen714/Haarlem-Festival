@@ -35,6 +35,11 @@ class LandmarkService implements ILandmarkService
         return $this->landmarkRepository->getAll();
     }
 
+    public function getAllLandmarksWithDetails(): array
+    {
+        return $this->landmarkRepository->getAllWithDetails();
+    }
+
     public function getFeaturedLandmarks(): array
 {
     return $this->landmarkRepository->getFeatured();

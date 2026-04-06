@@ -148,10 +148,12 @@
 function changeQty(id, delta) {
     const input = document.getElementById(id);
     const display = document.getElementById(id + '-display');
-    const newVal = Math.max(0, parseInt(input.value || 0) + delta);
+    const max = id === 'qty-family' ? 3 : 12;
+    const newVal = Math.min(max, Math.max(0, parseInt(input.value || 0) + delta));
     input.value = newVal;
     display.textContent = newVal;
     input.dispatchEvent(new Event('input'));
 }
 </script>
+<script src="/Js/ShowError.js"></script>
 <script src="/Js/TicketHistory.js"></script>
