@@ -160,22 +160,4 @@ class OrderItemViewModel
 
         return $this->schedule->date?->format('d M') ?? '';
     }
-
-    public static function extractDays(array $orderItems): array
-{
-    $days = [];
-    foreach ($orderItems as $item) {
-        $date    = $item->ticket_type->schedule->date;
-        $dateKey = $date?->format('Y-m-d') ?? 'unknown';
-        if (!isset($days[$dateKey])) {
-            $days[$dateKey] = [
-                'tabLabel' => $date?->format('l') ?? 'Unknown',
-                'tabDay'   => $date?->format('j') ?? '',
-            ];
-        }
-    }
-    ksort($days);
-    return $days;
-}
-
 }

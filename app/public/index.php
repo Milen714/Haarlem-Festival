@@ -39,7 +39,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/reset-password', ['App\Controllers\AccountController', 'resetPasswordPost']);
     $r->addRoute('GET', '/starting-points', ['App\Controllers\HomeController', 'getStartingPoints']);
     $r->addRoute('GET', '/getScheduleDates', ['App\Controllers\HomeController', 'getScheduleDates']);
-    $r->addRoute('GET', '/getVenues', ['App\Controllers\HomeController', 'getVenues']);
 
     /* Magic Page Route */
     $r->addRoute('GET', '/events-magic', ['App\Controllers\MagicController', 'index']);
@@ -63,7 +62,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
-    $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
+    $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
     $r->addRoute('GET', '/events-yummy/restaurants/{id}', ['App\Controllers\YummyController', 'restaurantDetail']);
     
@@ -74,10 +73,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
     $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
-
-    /* History CMS - Tour Route */
-    $r->addRoute('GET',  '/cms/history/tour-route',        ['App\Controllers\HistoryController', 'editTourRoute']);
-    $r->addRoute('POST', '/cms/history/tour-route/update', ['App\Controllers\HistoryController', 'updateTourRoute']);
 
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
@@ -110,10 +105,8 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     //cuisine part 
     $r->addRoute('GET', '/cms/restaurants/cuisines', ['App\Controllers\RestaurantController', 'showCuisines']);
     $r->addRoute('GET', '/cms/restaurants/cuisines/create', ['App\Controllers\RestaurantController', 'createCuisine']);
-    $r->addRoute('POST', '/cms/restaurants/cuisines/store', ['App\Controllers\RestaurantController', 'storeCuisine']);
     $r->addRoute('GET', '/cms/restaurants/cuisines/edit/{id:\d+}', ['App\Controllers\RestaurantController', 'editCuisine']);
-    $r->addRoute('POST', '/cms/restaurants/cuisines/update/{id:\d+}', ['App\Controllers\RestaurantController', 'updateCuisine']);
-    $r->addRoute('POST', '/cms/restaurants/cuisines/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'deleteCuisine']);
+    $r->addRoute('POST', '/cms/restaurants/cuisine/update/{id:\d+}', ['App\Controllers\RestaurantController', 'updateCuisine']);
     /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
     $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
@@ -132,13 +125,14 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /*Landmark cms*/
     $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
+
     $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
     $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
+
     $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
     $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
     $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
 
-    /* Account Settings */
     $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
 
@@ -166,9 +160,6 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/cms/ticket-schemes/update/{id:\d+}', ['App\Controllers\TicketController', 'schemeUpdate']);
     $r->addRoute('POST', '/cms/ticket-schemes/delete/{id:\d+}', ['App\Controllers\TicketController', 'schemeDelete']);
 
-    /* CMS Export */
-    $r->addRoute('GET', '/cms/export-orders', ['App\Controllers\CmsController', 'exportOrders']);
-
     /* Stripe Webhook */
     $r->addRoute('POST', '/stripe/webhook', ['App\Controllers\StripeWebhookController', 'handle']);
 
@@ -182,10 +173,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/tests', ['App\Controllers\PaymentController', 'test']);
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
-    $r->addRoute('GET', '/personal-program', ['App\Controllers\PersonalProgramController', 'personalProgram']);
-    $r->addRoute('GET', '/personal-program/content', ['App\Controllers\PersonalProgramController', 'programContent']);
-    $r->addRoute('POST', '/personal-program/share', ['App\Controllers\PersonalProgramController', 'generateShareToken']);
-    $r->addRoute('GET', '/shared-program/{token:[a-f0-9]+}', ['App\Controllers\PersonalProgramController', 'sharedProgram']);
+    $r->addRoute('GET', '/personal-program', ['App\Controllers\PaymentController', 'personalProgram']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);
@@ -195,13 +183,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/payment/downloadTickets', ['App\Controllers\OrderController', 'downloadTickets']);
 
     /* Qr code */
+    $r->addRoute('GET', '/my-tickets', ['App\Controllers\OrderController', 'showUserTickets']);
     $r->addRoute('GET', '/qr-code/scan', ['App\Controllers\EmployeeController', 'scanPage']);
     $r->addRoute('POST', '/qr-code/validate', ['App\Controllers\EmployeeController', 'validateScan']);
-
-    /* Export */
-    $r->addRoute('GET', '/getOrderColumns', ['App\Controllers\OrderController', 'getOrderColumns']);
-    $r->addRoute('POST', '/exportOrders', ['App\Controllers\OrderController', 'exportOrders']);
-    $r->addRoute('POST', '/exportOrdersExcel', ['App\Controllers\OrderController', 'exportOrdersExcel']);
 });
 
 

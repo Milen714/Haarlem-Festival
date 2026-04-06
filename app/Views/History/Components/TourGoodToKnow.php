@@ -7,7 +7,8 @@
     </h3>
     <div class="underline-history"></div>
     
-    <div class="green-bullet-content mt-[1rem] text-[0.875rem] md:text-base leading-relaxed text-ink-700 italic prose prose-sm max-w-none [&>ul>li]:mb-2">
+    <div class="mt-[1rem] text-[0.875rem] md:text-base leading-relaxed text-ink-700 italic prose prose-sm max-w-none [&>ul]:list-disc [&>ul]:pl-5 [&>ul>li]:mb-2">
+                
         <?= $goodToKnow->content_html ?>
         
     </div>

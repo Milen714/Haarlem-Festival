@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
 use App\Services\JazzService;
@@ -66,18 +66,18 @@ class JazzController extends BaseController
     {
         $scheduleId = $_GET['schedule_id'] ?? null;
         if (!$scheduleId) {
-            $this->sendSuccessResponse(['success' => false, 'message' => 'Missing schedule_id parameter'], 400);
+            $this->jsonResponse(['success' => false, 'message' => 'Missing schedule_id parameter'], 400);
             return;
         }
         try {
             $ticketTypes = $this->ticketService->getTicketTypesByScheduleId((int)$scheduleId);
             if (empty($ticketTypes)) {
-                $this->sendSuccessResponse(['success' => false, 'message' => 'No ticket types found for this schedule'], 404);
+                $this->jsonResponse(['success' => false, 'message' => 'No ticket types found for this schedule'], 404);
                 return;
             }
-            $this->sendSuccessResponse(['success' => true, 'data' => $ticketTypes]);
+            $this->jsonResponse(['success' => true, 'data' => $ticketTypes]);
         } catch (\Exception $e) {
-            $this->sendSuccessResponse(['success' => false, 'message' => $e->getMessage()], 500);
+            $this->jsonResponse(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 

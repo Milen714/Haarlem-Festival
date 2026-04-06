@@ -1,9 +1,14 @@
 <?php
-/** @var App\CmsModels\PageSection|null $tourRoute */
-$stopsData = ($tourRoute && $tourRoute->content_html)
-    ? json_decode($tourRoute->content_html, true)
-    : [];
-$routeStops = array_column($stopsData, 'name');
+//provisionally hardcoded, later will me moved to db
+//same as section titles
+$routeStops = [
+    "Church of St.Bavo",
+    "Grote Markt",
+    "De Hallen",
+    "Proveniershof",
+    "Jopenkerk (+15 minutes break)",
+    "Waalse Kerk Haarlem"
+];
 $totalStops = count($routeStops);
 ?>
 
@@ -19,7 +24,9 @@ $totalStops = count($routeStops);
         </div>
 
         <div class="w-full flex-grow min-h-[300px] md:min-h-[500px]">
-            <iframe width='550' height='450' style='border:0' loading='lazy' src='https://mapforge.org/m/11cd638c?nomenu=true'></iframe>
+            <img src="/Assets/History/map.jpg" 
+                 alt="Tour Route Map" 
+                 class="w-full h-full object-cover rounded-[0.5rem] shadow-sm border border-[#e5e5e5]">
         </div>
     </div>
 
@@ -27,12 +34,12 @@ $totalStops = count($routeStops);
 
         <div class="mb-6">
             <h2 class="font-history-serif text-[1.75rem] md:text-[2.25rem] text-ink-900">
-                Route
+                Tour Itinerary
             </h2>
             <div class="underline-history"></div>
         </div>
 
-        <div class="p-[2rem] flex-grow flex flex-col justify-center">
+        <div class="bg-[#fafafa] border border-[#e5e5e5] rounded-[0.5rem] p-[2rem] shadow-sm flex-grow flex flex-col justify-center">
 
             <div class="relative w-full py-4">
 
@@ -51,7 +58,7 @@ $totalStops = count($routeStops);
                                 : 'md:w-[45%] md:ml-[55%] md:pl-6 md:justify-start text-left';
                         ?>
 
-                        <li class="relative flex items-start w-full group min-h-[44px] <?= $index >= 6 ? 'extra-stop hidden' : '' ?>">
+                        <li class="relative flex items-start w-full group min-h-[44px]">
 
                             <?php if (!$isLast): ?>
                                 <svg class="absolute md:hidden z-0 overflow-visible" style="top: 22px; left: 54px; width: 2px; height: calc(100% + 2.5rem);">
@@ -85,23 +92,14 @@ $totalStops = count($routeStops);
                     <?php endforeach; ?>
                 </ol>
 
-                <?php if ($totalStops > 6): ?>
-                <div class="mt-14 flex justify-center relative z-20" id="itinerary-btn-wrap">
-                    <button type="button" onclick="showFullItinerary()"
-                            class="inline-flex items-center justify-center w-[209px] h-[42px] bg-[#fdefc4] hover:bg-[#fce8a8] text-black font-medium text-[16px] rounded-full transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#465e10]">
+                <div class="mt-14 flex justify-center relative z-20">
+                    <a href="#full-itinerary" class="inline-flex items-center justify-center w-[209px] h-[42px] bg-[#fdefc4] hover:bg-[#fce8a8] text-black font-medium text-[16px] rounded-full transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#465e10]">
                         View full itinerary
                         <svg class="w-4 h-4 ml-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
                         </svg>
-                    </button>
+                    </a>
                 </div>
-                <script>
-                function showFullItinerary() {
-                    document.querySelectorAll('.extra-stop').forEach(el => el.classList.remove('hidden'));
-                    document.getElementById('itinerary-btn-wrap').classList.add('hidden');
-                }
-                </script>
-                <?php endif; ?>
 
             </div>
         </div>

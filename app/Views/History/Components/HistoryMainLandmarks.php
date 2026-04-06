@@ -1,29 +1,57 @@
-<?php /** @var App\Models\Landmark[] $landmarks */ ?>
+<?php
+/** @var App\CmsModels\PageSection[] $landmarks */
+$card1 = $landmarks[0] ?? null;
+$card2 = $landmarks[1] ?? null;
+$card3 = $landmarks[2] ?? null;
+?>
 <section class="space-y-[3rem] mb-[5rem]">
-    <?php foreach ($landmarks as $i => $landmark):
-        $image = '/Assets/Home/ImagePlaceholder.png';
-        if (!empty($landmark->main_image_id?->file_path)) {
-            $image = '/' . ltrim($landmark->main_image_id->file_path, '/');
-        }
-        $imageLeft = $i % 2 === 0;
-    ?>
+    <?php if ($card1): ?>
     <article class="grid md:grid-cols-2 gap-8 md:gap-x-16 items-stretch mb-5">
-        <div class="md:col-span-1 <?= $imageLeft ? 'order-1' : 'order-2' ?>">
-            <img src="<?= htmlspecialchars($image) ?>"
-                 class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md" />
+    <div class="md:col-span-1 order-2">
+        <img src="<?= htmlspecialchars($card1->media->file_path ?? '/Assets/Home/ImagePlaceholder.png') ?>" 
+             class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md" />
+    </div>
+    
+    <div class="md:col-span-1 order-1 bg-[#fafafa] rounded-[0.5rem] p-[2rem] flex flex-col justify-center">
+        <h4 class="font-serif text-[1.25rem] text-ink-900"><?= htmlspecialchars($card1->title) ?></h4>
+        <div class="underline-history"></div>
+        <div class="mt-[1rem] text-[0.875rem] leading-relaxed text-ink-700 italic prose prose-sm max-w-none">
+            <?= $card1->content_html ?>
         </div>
-        <div class="md:col-span-1 <?= $imageLeft ? 'order-2' : 'order-1' ?> p-[2rem] flex flex-col justify-center <?= !$imageLeft ? 'text-right md:text-left' : '' ?>">
-            <h4 class="text-[1.5rem] font-bold text-[var(--history-dark-brown)]">
-                <?= htmlspecialchars($landmark->name) ?>
-            </h4>
-            <div class="mt-[1rem] leading-relaxed text-ink-700">
-                <?= htmlspecialchars($landmark->short_description ?? '') ?>
+        <a href="<?= $card1->cta_url ?>" class="mt-[1.25rem] inline-block font-semibold text-brand-600 hover:text-brand-700 transition-colors"><?= htmlspecialchars($card1->cta_text ?? 'Learn more') ?></a>
+    </div>
+</article>
+    <?php endif; ?>
+
+    <?php if ($card2): ?>
+    <article class="grid md:grid-cols-2 gap-8 md:gap-x-16 items-stretch mb-5">
+        <div class="md:col-span-1 order-2 md:order-1 bg-[#fafafa] rounded-[0.5rem] p-[2rem] flex flex-col justify-center text-right md:text-left">
+            <h4 class="font-serif text-[1.25rem] text-ink-900"><?= htmlspecialchars($card2->title) ?></h4>
+            <div class="underline-history"></div>
+            <div class="mt-[1rem] text-[0.875rem] leading-relaxed text-ink-700 italic prose prose-sm max-w-none">
+                <?= $card2->content_html ?>
             </div>
-            <a href="/history/detail/<?= htmlspecialchars($landmark->landmark_slug) ?>"
-               class="mt-[1.25rem] inline-block font-bold italic text-[1.125rem] text-[var(--history-accent-color)] hover:text-brand-700 transition-colors">
-                <?= htmlspecialchars($landmark->home_cta ?? 'Learn more') ?>
-            </a>
+            <a href="<?= $card2->cta_url ?>" class="mt-[1.25rem] inline-block font-semibold text-brand-600 hover:text-brand-700 transition-colors"><?= htmlspecialchars($card2->cta_text ?? 'Learn more') ?></a>
+        </div>
+        <div class="md:col-span-1 order-1 md:order-2">
+            <img src="<?= htmlspecialchars($card2->media->file_path ?? '/Assets/Home/ImagePlaceholder.png') ?>" class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md" />
         </div>
     </article>
-    <?php endforeach; ?>
+    <?php endif; ?>
+
+    <?php if ($card3): ?>
+    <article class="grid md:grid-cols-2 gap-8 md:gap-x-16 items-stretch mb-5">
+        <div class="md:col-span-1 order-2">
+            <img src="<?= htmlspecialchars($card3->media->file_path ?? '/Assets/Home/ImagePlaceholder.png') ?>" class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md" />
+        </div>
+        <div class="md:col-span-1 order-1 bg-[#fafafa] rounded-[0.5rem] p-[2rem] flex flex-col justify-center">
+            <h4 class="font-serif text-[1.25rem] text-ink-900"><?= htmlspecialchars($card3->title) ?></h4>
+            <div class="underline-history"></div>
+            <div class="mt-[1rem] text-[0.875rem] leading-relaxed text-ink-700 italic prose prose-sm max-w-none">
+                <?= $card3->content_html ?>
+            </div>
+            <a href="<?= $card3->cta_url ?>" class="mt-[1.25rem] inline-block font-semibold text-brand-600 hover:text-brand-700 transition-colors"><?= htmlspecialchars($card3->cta_text ?? 'Learn more') ?></a>
+        </div>
+    </article>
+    <?php endif; ?>
 </section>

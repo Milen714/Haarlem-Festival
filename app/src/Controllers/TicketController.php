@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
 use App\Repositories\ArtistRepository;
@@ -20,9 +19,6 @@ use App\Services\TicketService;
 use App\Services\VenueService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
-use App\Exceptions\UserFacingException;
-use App\Exceptions\ValidationException;
-use App\Exceptions\ResourceNotFoundException;
 
 class TicketController extends BaseController
 {
@@ -32,14 +28,20 @@ class TicketController extends BaseController
 
     public function __construct()
     {
-        $mediaService = new MediaService();
-        $venueService = new VenueService();
-        $artistService = new ArtistService();
-        $restaurantService = new RestaurantService();
+        $mediaService = new MediaService(new MediaRepository());
+        $venueService = new VenueService(new VenueRepository(), $mediaService);
+        $artistService = new ArtistService(new ArtistRepository(), $mediaService);
+        $restaurantService = new RestaurantService(new RestaurantRepository(), $mediaService);
         $landmarkService = new LandmarkService();
 
         $this->ticketService = new TicketService(new TicketRepository());
-        $this->scheduleService = new ScheduleService();
+        $this->scheduleService = new ScheduleService(
+            new ScheduleRepository(),
+            $venueService,
+            $artistService,
+            $restaurantService,
+            $landmarkService
+        );
         $this->logService = new LogService();
     }
 
@@ -56,15 +58,10 @@ class TicketController extends BaseController
                 'schedule' => $schedule,
                 'ticketTypes' => $this->ticketService->getTicketTypesByScheduleId($scheduleId),
             ]);
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Not found: ' . $e->getMessage());
-            $this->startSession();
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect('/cms/schedules');
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
             $this->startSession();
-            $_SESSION['error'] = 'Failed to load tickets.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
         }
     }
@@ -84,15 +81,10 @@ class TicketController extends BaseController
                 'ticketSchemes' => $this->ticketService->getAllTicketSchemes(),
                 'action' => "/cms/schedules/{$scheduleId}/tickets/store",
             ]);
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Not found: ' . $e->getMessage());
-            $this->startSession();
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect('/cms/schedules');
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
             $this->startSession();
-            $_SESSION['error'] = 'Failed to load form.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/schedules');
         }
     }
@@ -109,13 +101,9 @@ class TicketController extends BaseController
 
             $_SESSION['success'] = 'Ticket type #' . ($ticketType->ticket_type_id ?? '') . ' created successfully!';
             $this->redirect("/cms/schedules/{$scheduleId}/tickets");
-        } catch (ValidationException $e) {
-            $this->logService->info('Ticket', 'Validation error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect("/cms/schedules/{$scheduleId}/tickets/create");
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
-            $_SESSION['error'] = 'Failed to create ticket type.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/{$scheduleId}/tickets/create");
         }
     }
@@ -137,15 +125,10 @@ class TicketController extends BaseController
                 'ticketSchemes' => $this->ticketService->getAllTicketSchemes(),
                 'action' => "/cms/schedules/{$scheduleId}/tickets/update/{$ticketTypeId}",
             ]);
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Not found: ' . $e->getMessage());
-            $this->startSession();
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect("/cms/schedules/{$scheduleId}/tickets");
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
             $this->startSession();
-            $_SESSION['error'] = 'Failed to load form.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/{$scheduleId}/tickets");
         }
     }
@@ -162,13 +145,9 @@ class TicketController extends BaseController
 
             $_SESSION['success'] = 'Ticket type #' . ($ticketType->ticket_type_id ?? $ticketTypeId) . ' updated successfully!';
             $this->redirect("/cms/schedules/{$scheduleId}/tickets");
-        } catch (ValidationException | ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect("/cms/schedules/{$scheduleId}/tickets/edit/{$ticketTypeId}");
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
-            $_SESSION['error'] = 'Failed to update ticket type.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/schedules/{$scheduleId}/tickets/edit/{$ticketTypeId}");
         }
     }
@@ -184,12 +163,9 @@ class TicketController extends BaseController
             $this->getTicketTypeForScheduleOrThrow($scheduleId, $ticketTypeId);
             $this->ticketService->delete($ticketTypeId);
             $_SESSION['success'] = 'Ticket type deleted successfully!';
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Not found: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
-            $_SESSION['error'] = 'Failed to delete ticket type.';
+            $_SESSION['error'] = $e->getMessage();
         }
 
         $this->redirect("/cms/schedules/{$scheduleId}/tickets");
@@ -204,13 +180,13 @@ class TicketController extends BaseController
                 'ticketSchemes' => $this->ticketService->getAllTicketSchemes(),
                 'usageCounts' => $this->ticketService->getTicketSchemeUsageCounts(),
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
             $this->cmsLayout('Cms/TicketSchemes/Index', [
                 'title' => 'Manage Ticket Schemes',
                 'ticketSchemes' => [],
                 'usageCounts' => [],
-                'error' => 'Failed to load ticket schemes.',
+                'error' => 'Failed to load ticket schemes: ' . $e->getMessage(),
             ]);
         }
     }
@@ -234,13 +210,9 @@ class TicketController extends BaseController
             $ticketScheme = $this->ticketService->createTicketSchemeFromRequest($_POST);
             $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' created successfully!";
             $this->redirect('/cms/ticket-schemes');
-        } catch (ValidationException $e) {
-            $this->logService->info('Ticket', 'Validation error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect('/cms/ticket-schemes/create');
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
-            $_SESSION['error'] = 'Failed to create ticket scheme.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/ticket-schemes/create');
         }
     }
@@ -254,7 +226,7 @@ class TicketController extends BaseController
             $ticketScheme = $this->ticketService->getTicketSchemeById($ticketSchemeId);
 
             if (!$ticketScheme) {
-                throw new ResourceNotFoundException('Ticket scheme not found.');
+                throw new \Exception('Ticket scheme not found');
             }
 
             $this->cmsLayout('Cms/TicketSchemes/Form', [
@@ -262,15 +234,10 @@ class TicketController extends BaseController
                 'ticketScheme' => $ticketScheme,
                 'action' => "/cms/ticket-schemes/update/{$ticketSchemeId}",
             ]);
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Not found: ' . $e->getMessage());
-            $this->startSession();
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect('/cms/ticket-schemes');
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
             $this->startSession();
-            $_SESSION['error'] = 'Failed to load form.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect('/cms/ticket-schemes');
         }
     }
@@ -285,13 +252,9 @@ class TicketController extends BaseController
             $ticketScheme = $this->ticketService->updateTicketSchemeFromRequest($ticketSchemeId, $_POST);
             $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' updated successfully!";
             $this->redirect('/cms/ticket-schemes');
-        } catch (ValidationException | ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect("/cms/ticket-schemes/edit/{$ticketSchemeId}");
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
-            $_SESSION['error'] = 'Failed to update ticket scheme.';
+            $_SESSION['error'] = $e->getMessage();
             $this->redirect("/cms/ticket-schemes/edit/{$ticketSchemeId}");
         }
     }
@@ -306,17 +269,14 @@ class TicketController extends BaseController
             $ticketScheme = $this->ticketService->getTicketSchemeById($ticketSchemeId);
 
             if (!$ticketScheme) {
-                throw new ResourceNotFoundException('Ticket scheme not found.');
+                throw new \Exception('Ticket scheme not found');
             }
 
             $this->ticketService->deleteTicketSchemeSafely($ticketSchemeId);
             $_SESSION['success'] = "Ticket scheme '{$ticketScheme->name}' deleted successfully!";
-        } catch (ValidationException | ResourceNotFoundException $e) {
-            $this->logService->info('Ticket', 'Error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('Ticket', $e);
-            $_SESSION['error'] = 'Failed to delete ticket scheme.';
+            $_SESSION['error'] = $e->getMessage();
         }
 
         $this->redirect('/cms/ticket-schemes');

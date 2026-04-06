@@ -22,7 +22,6 @@ class Secrets
     public static string $stripeWebhookSecret;
     public static string $reCapchaSiteKey;
     public static string $reCapchaSecretKey;
-    public static string $mapsApiKey;
 
     public static function init(): void
     {
@@ -34,7 +33,6 @@ class Secrets
         self::$stripeWebhookSecret = getenv('STRIPE_WEBHOOK_SECRET') ?: $_ENV['STRIPE_WEBHOOK_SECRET'] ?? '';
         self::$reCapchaSiteKey = getenv('RECAPTCHA_SITE_KEY') ?: $_ENV['RECAPTCHA_SITE_KEY'] ?? '';
         self::$reCapchaSecretKey = getenv('RECAPTCHA_SECRET_KEY') ?: $_ENV['RECAPTCHA_SECRET_KEY'] ?? '';
-        self::$mapsApiKey = getenv('MAPS_API_KEY') ?: $_ENV['MAPS_API_KEY'] ?? '';
     }
 }
 

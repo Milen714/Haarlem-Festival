@@ -2,7 +2,7 @@
 
 namespace App\Controllers\CMS;
 
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Services\MediaService;
 use App\Services\Interfaces\IMediaService;
 
@@ -20,10 +20,12 @@ class CmsMediaController extends BaseController
      */
     public function uploadTinyMCE($vars = []): void
     {
+        header('Content-Type: application/json');
+
         try {
             // firstly it Validate;s the files upload
             if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
-                $this->sendErrorResponse('No file uploaded or upload error', 400);
+                $this->jsonError('No file uploaded or upload error');
                 return;
             }
 
@@ -32,7 +34,7 @@ class CmsMediaController extends BaseController
 
             // Validates its category 
             if (!$this->isValidCategory($category)) {
-                $this->sendErrorResponse('Invalid upload category', 400);
+                $this->jsonError('Invalid upload category');
                 return;
             }
 
@@ -44,15 +46,15 @@ class CmsMediaController extends BaseController
             );
 
             if ($result['success']) {
-                $this->sendSuccessResponse(array_merge(['success' => true], [
+                $this->jsonSuccess([
                     'file_path' => $result['media']->file_path,
                     'media_id' => $result['media']->media_id
-                ]), 200);
+                ]);
             } else {
-                $this->sendErrorResponse($result['error'], 400);
+                $this->jsonError($result['error']);
             }
         } catch (\Exception $e) {
-            $this->sendErrorResponse('Upload failed: ' . $e->getMessage(), 500);
+            $this->jsonError('Upload failed: ' . $e->getMessage());
         }
     }
 
@@ -74,5 +76,26 @@ class CmsMediaController extends BaseController
         ];
 
         return in_array($category, $allowedCategories);
+    }
+
+    /**
+     * Send JSON success response
+     */
+    private function jsonSuccess(array $data): void
+    {
+        echo json_encode(array_merge(['success' => true], $data));
+        exit;
+    }
+
+    /**
+     * Send JSON error response
+     */
+    private function jsonError(string $message): void
+    {
+        echo json_encode([
+            'success' => false,
+            'error' => $message
+        ]);
+        exit;
     }
 }

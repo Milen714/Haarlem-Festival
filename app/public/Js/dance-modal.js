@@ -65,7 +65,6 @@ async function confirmTicketAdd() {
         const result = await response.json();
         if (result.success) {
             showConfirmation(result.cart);
-            updateCartCount();
         } else {
             alert(result.message || "Failed to add ticket.");
         }

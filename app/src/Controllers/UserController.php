@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Controllers;
-use App\Framework\BaseController;
+use App\Controllers\BaseController;
 use App\Models\Enums\UserRole;
 use App\Services\UserService;
 use App\Models\User;
@@ -11,9 +11,6 @@ use App\Services\Interfaces\IUserService;
 use App\Services\Interfaces\ILogService;
 use App\Services\AuthService;
 use App\Services\LogService;
-use App\Exceptions\UserFacingException;
-use App\Exceptions\ValidationException;
-use App\Exceptions\ResourceNotFoundException;
 
 
 class UserController extends BaseController
@@ -38,13 +35,13 @@ class UserController extends BaseController
                 'title' => 'Manage Users',
                 'users' => $users
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('User', $e);
             // Don't redirect - show error on the same page
             $this->cmsLayout('Cms/Users/Index', [
                 'title' => 'Manage Users',
                 'users' => [],
-                'error' => 'Failed to load users.'
+                'error' => 'Failed to load users: ' . $e->getMessage()
             ]); 
         }
     }
@@ -58,13 +55,13 @@ class UserController extends BaseController
                 'user' => null,
                 'action' => '/cms/users/store'
             ]);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('User', $e);
             $this->cmsLayout('Cms/Users/Form', [
                 'title' => 'Create New User',
                 'user' => null,
                 'action' => '/cms/users/store',
-                'error' => 'Failed to load form.'
+                'error' => 'Failed to load form: ' . $e->getMessage()
             ]);
         }
     }
@@ -81,25 +78,20 @@ class UserController extends BaseController
             $user = $user->fromArray($data);
             
             if (empty($user->email) || empty($data['password'])) {
-                throw new ValidationException("Email and Password are required.");
+                throw new \Exception("Email and Password are required.");
             }
             $existingUser = $this->userService->getUserByEmail($user->email);
             if ($existingUser) {
-                throw new ValidationException("This email is already in use.");
+                throw new \Exception("This email is already in use.");
             }
                 
             $this->userService->createUser($user);
             $_SESSION['success'] = "User '{$user->email}' created successfully.";
             header('Location: /cms/users');
             exit();
-        } catch (ValidationException $e) {
-            $this->logService->info('User', 'Validation error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /cms/users/create');
-            exit();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('User', $e);
-            $_SESSION['error'] = 'Failed to create user.';
+            $_SESSION['error'] = 'Failed to create user: ' . $e->getMessage();
             header('Location: /cms/users/create');
             exit();
         }
@@ -112,21 +104,16 @@ class UserController extends BaseController
         try {
             $user = $this->userService->getUserById($userId);
             if (!$user) {
-                throw new ResourceNotFoundException("User not found.");
+                throw new \Exception("User not found.");
             }
             $this->cmsLayout('Cms/Users/Form', [
                 'title' => 'Edit User: ' . $user->email,
                 'user' => $user,
                 'action' => "/cms/users/update/{$userId}"
             ]);
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('User', 'Resource not found: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /cms/users');
-            exit();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('User', $e);
-            $_SESSION['error'] = 'Failed to load user.';
+            $_SESSION['error'] = 'Failed to load user: ' . $e->getMessage();
             header('Location: /cms/users');
             exit(); 
         }
@@ -139,7 +126,7 @@ class UserController extends BaseController
         try {
             $user = $this->userService->getUserById($userId);
             if (!$user) {
-                throw new ResourceNotFoundException("User not found.");
+                throw new \Exception("User not found.");
             }
 
             $data = $_POST;
@@ -150,7 +137,7 @@ class UserController extends BaseController
                 $passwordValidation = $this->authService->validatePassword($user->password_hash);
                 if (!$passwordValidation['valid']) {
                     $errorMsg = "Password does not meet the following criteria: " . implode(", ", $passwordValidation['errors']);
-                    throw new ValidationException($errorMsg);
+                    throw new \Exception($errorMsg);
                 }
                 $user->password_hash = password_hash($data['password'], PASSWORD_BCRYPT);
             }
@@ -163,13 +150,9 @@ class UserController extends BaseController
 
             $_SESSION['success'] = "User '{$user->email}' updated successfully.";
             $this->redirect('/cms/users');
-        } catch (ValidationException | ResourceNotFoundException $e) {
-            $this->logService->info('User', 'Error: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            $this->redirect('/cms/users/edit/' . $userId);
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('User', $e);
-            $_SESSION['error'] = 'Failed to update user.';
+            $_SESSION['error'] = 'Failed to update user: ' . $e->getMessage();
             $this->redirect('/cms/users/edit/' . $userId);
         }
     }
@@ -181,20 +164,15 @@ class UserController extends BaseController
         try {
             $user = $this->userService->getUserById($userId);
             if (!$user) {
-                throw new ResourceNotFoundException("User not found.");
+                throw new \Exception("User not found.");
             }
             $this->userService->deleteUser($userId);
             $_SESSION['success'] = "User deleted successfully.";
             header('Location: /cms/users');
             exit();
-        } catch (ResourceNotFoundException $e) {
-            $this->logService->info('User', 'Resource not found: ' . $e->getMessage());
-            $_SESSION['error'] = $e->getMessage();
-            header('Location: /cms/users');
-            exit();
-        } catch (\Throwable $e) {
+        } catch (\Exception $e) {
             $this->logService->exception('User', $e);
-            $_SESSION['error'] = 'Failed to delete user.';
+            $_SESSION['error'] = 'Failed to delete user: ' . $e->getMessage();
             header('Location: /cms/users');
             exit();
         }

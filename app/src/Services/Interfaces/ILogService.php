@@ -3,7 +3,6 @@
 namespace App\Services\Interfaces;
 
 use Exception;
-use Throwable;
 
 interface ILogService
 {
@@ -48,10 +47,10 @@ interface ILogService
      * Logs an exception as an ERROR entry, extracting its message and stack trace automatically.
      *
      * @param string     $category  Logical grouping.
-     * @param Throwable  $exception The caught exception/error to log.
+     * @param Exception  $exception The caught exception to log.
      * @param array|null $context   Optional key-value pairs providing additional detail.
      */
-    public function exception(string $category, Throwable $exception, ?array $context = null): void;
+    public function exception(string $category, Exception $exception, ?array $context = null): void;
 
     /**
      * Returns log entries matching the given category, newest first.

@@ -9,10 +9,9 @@ namespace App\Views\History;
         <?php include __DIR__ . '/Components/HistoryWelcome.php'; ?>
 
         <section class="mt-12">
-            <h2 class="text-center font-serif text-2xl md:text-3xl text-ink-900">
+            <h3 class="text-center font-history-serif text-xl md:text-2xl text-ink-900">
                 Read about our most beloved landmarks
             </h3>
-            <div class="underline-history mx-auto"></div>
         </section>
 
         <?php include __DIR__ . '/Components/HistoryMainLandmarks.php'; ?>

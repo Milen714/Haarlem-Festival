@@ -1,9 +1,5 @@
 <?php
 namespace App\Views\Yummy;
-/** @var DetailsViewModel $viewModel */
-$restaurant = $viewModel->restaurant;
-$groupedSchedules = $viewModel->groupedSchedulesByDate();
-$schedules = $viewModel->schedules;
 ?>
 
 <section class="flex flex-col gap-6 font-roboto dance-bg">
@@ -11,6 +7,6 @@ $schedules = $viewModel->schedules;
     <?php include  'Components/YummyDetailChefPage.php'; ?>
     <?php include  'Components/YummyDetailFeaturedDish.php'; ?>
     <?php include  'Components/YummyDetailCourse.php'; ?>
-
+    
     <!-- <?php include  'Components/YummyDetailContact.php'; ?> -->
 </section>
