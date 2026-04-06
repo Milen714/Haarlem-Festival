@@ -491,7 +491,8 @@ class TicketRepository extends Repository implements ITicketRepository
             $stmt = $pdo->prepare(
                 "SELECT GREATEST(0, COALESCE(capacity, 0) - COALESCE(tickets_sold, 0)) AS available
                     FROM TICKET_TYPE
-                    WHERE ticket_type_id = :id"
+                    WHERE ticket_type_id = :id
+                      AND is_sold_out = 0"
             );
             $stmt->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
             $stmt->execute();
@@ -594,6 +595,9 @@ class TicketRepository extends Repository implements ITicketRepository
                     return false;
                 }
             }
+            foreach ($items as $item) {
+                $this->syncHistoryScheduleSoldOut((int)($item['ticket_type_id'] ?? 0), $pdo);
+            }
             $pdo->commit();
             return true;
         } catch (\Exception $e) {
@@ -602,7 +606,7 @@ class TicketRepository extends Repository implements ITicketRepository
         }
     }
 
-    // Releases seats for multiple ticket types in one transaction. 
+    // Releases seats for multiple ticket types in one transaction.
     public function releaseMultiple(array $items): void
     {
         $pdo = $this->connect();
@@ -632,10 +636,81 @@ class TicketRepository extends Repository implements ITicketRepository
                 $stmt->bindValue(':id',   $ticketTypeId, PDO::PARAM_INT);
                 $stmt->execute();
             }
+            foreach ($items as $item) {
+                $this->syncHistoryScheduleSoldOut((int)($item['ticket_type_id'] ?? 0), $pdo);
+            }
             $pdo->commit();
         } catch (\Exception $e) {
             $pdo->rollBack();
             throw new \RuntimeException("Error releasing multiple tickets: " . $e->getMessage());
+        }
+    }
+
+    // Recalculates is_sold_out for all HISTORY_* ticket types sharing the same schedule AND language,
+    // based on combined tickets_sold vs combined capacity for that language group. No-op for non-History tickets.
+    // Uses separate queries to avoid MySQL self-referential UPDATE restrictions (Error 1093).
+    public function syncHistoryScheduleSoldOut(int $ticketTypeId, ?PDO $pdo = null): void
+    {
+        if ($ticketTypeId <= 0) {
+            return;
+        }
+        $pdo = $pdo ?? $this->connect();
+
+        // Guard: skip non-History ticket types and resolve schedule_id in one query
+        $check = $pdo->prepare(
+            "SELECT ts.scheme_enum, tt.schedule_id
+             FROM TICKET_TYPE tt
+             JOIN TICKET_SCHEME ts ON tt.scheme_id = ts.ticket_scheme_id
+             WHERE tt.ticket_type_id = :id"
+        );
+        $check->bindValue(':id', $ticketTypeId, PDO::PARAM_INT);
+        $check->execute();
+        $row = $check->fetch(PDO::FETCH_ASSOC);
+        if (!$row || !str_starts_with($row['scheme_enum'] ?? '', 'HISTORY') || $row['schedule_id'] === null) {
+            return;
+        }
+        $scheduleId = (int)$row['schedule_id'];
+
+        // Aggregate tickets_sold and capacity per language for HISTORY_ types in this schedule.
+        // Both Normal and Family ticket types share the same physical pool (same capacity value),
+        // so we use MAX(capacity) as the real tour capacity, not SUM (which would double-count).
+        $totals = $pdo->prepare(
+            "SELECT ts2.ticket_language,
+                    SUM(tt2.tickets_sold) AS total_sold,
+                    MAX(tt2.capacity)     AS total_capacity
+             FROM TICKET_TYPE tt2
+             JOIN TICKET_SCHEME ts2 ON tt2.scheme_id = ts2.ticket_scheme_id
+             WHERE tt2.schedule_id = :schedule_id
+               AND ts2.scheme_enum LIKE 'HISTORY_%'
+             GROUP BY ts2.ticket_language"
+        );
+        $totals->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+        $totals->execute();
+        $langRows = $totals->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($langRows as $langRow) {
+            $totalCapacity = $langRow['total_capacity'];
+            if ($totalCapacity === null || (int)$totalCapacity <= 0) {
+                continue; // Skip language groups with no capacity set
+            }
+            $isSoldOut = (int)($langRow['total_sold'] ?? 0) >= (int)$totalCapacity ? 1 : 0;
+
+            $update = $pdo->prepare(
+                "UPDATE TICKET_TYPE tt
+                 JOIN TICKET_SCHEME tschem ON tt.scheme_id = tschem.ticket_scheme_id
+                 SET tt.is_sold_out = CASE
+                                          WHEN :is_sold_out = 1 THEN 1
+                                          WHEN tt.tickets_sold >= tt.capacity THEN 1
+                                          ELSE 0
+                                      END
+                 WHERE tt.schedule_id = :schedule_id
+                   AND tschem.ticket_language = :language
+                   AND tschem.scheme_enum LIKE 'HISTORY_%'"
+            );
+            $update->bindValue(':is_sold_out', $isSoldOut, PDO::PARAM_INT);
+            $update->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            $update->bindValue(':language',    $langRow['ticket_language']);
+            $update->execute();
         }
     }
 
@@ -681,6 +756,26 @@ class TicketRepository extends Repository implements ITicketRepository
             return (int)$row['venue_capacity'];
         } catch (PDOException $e) {
             throw new \RuntimeException("Error getting venue capacity for schedule: " . $e->getMessage());
+        }
+    }
+
+    // Returns the schedule's total_capacity, or null if the schedule is not found.
+    public function getScheduleCapacity(int $scheduleId): ?int
+    {
+        try {
+            $pdo  = $this->connect();
+            $stmt = $pdo->prepare(
+                "SELECT total_capacity FROM SCHEDULE WHERE schedule_id = :schedule_id"
+            );
+            $stmt->bindValue(':schedule_id', $scheduleId, PDO::PARAM_INT);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row || $row['total_capacity'] === null) {
+                return null;
+            }
+            return (int)$row['total_capacity'];
+        } catch (PDOException $e) {
+            throw new \RuntimeException("Error getting schedule capacity: " . $e->getMessage());
         }
     }
 
@@ -766,4 +861,5 @@ class TicketRepository extends Repository implements ITicketRepository
             throw new \RuntimeException("Failed to delete ticket scheme: " . $e->getMessage());
         }
     }
+
 }

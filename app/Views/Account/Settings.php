@@ -11,6 +11,19 @@ $user = $user ?? null;
         <div class="h-1 w-24 bg-[var(--home-gold-accent)] mx-auto rounded-full"></div> 
     </div>
 
+    <?php if (!empty($error)): ?>
+    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg text-sm font-semibold">
+        <?= htmlspecialchars($error) ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['success'])): ?>
+    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg text-sm font-semibold">
+        <?= htmlspecialchars($_SESSION['success']) ?>
+    </div>
+    <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
     <div class="flex flex-col lg:flex-row gap-8 items-start">
 
         <div class="w-full lg:w-3/5 bg-white border-t-4 border-[var(--home-gold-accent)] rounded-xl p-6 md:p-10 shadow-lg h-fit">
@@ -63,7 +76,7 @@ $user = $user ?? null;
                                   disabled:bg-transparent disabled:border-transparent disabled:shadow-none disabled:px-0 disabled:text-[var(--text-home-primary)] disabled:font-semibold">
                 </div>
 
-                <div id="action-buttons" class="hidden flex gap-4 pt-6 border-t border-gray-200 mt-8">
+                <div id="action-buttons" class="hidden gap-4 pt-6 border-t border-gray-200 mt-8">
                     <button type="submit" class="bg-[var(--text-home-primary)] hover:bg-[var(--text-home-high-contrast-primary)] text-white font-semibold py-2 px-8 rounded-md transition-colors shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--text-home-primary)]">
                         Save Changes
                     </button>
@@ -119,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         inputs.forEach(input => input.disabled = false);
         btnEdit.classList.add('hidden');
         actionButtons.classList.remove('hidden');
+        actionButtons.classList.add('flex');
         inputs[0].focus();
     });
 
@@ -126,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         inputs.forEach(input => input.disabled = true);
         btnEdit.classList.remove('hidden');
+        actionButtons.classList.remove('flex');
         actionButtons.classList.add('hidden');
     });
 });

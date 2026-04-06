@@ -4,171 +4,122 @@ namespace App\Controllers;
 use App\Services\Interfaces\IPageService;
 use App\Services\PageService;
 use App\Framework\BaseController;
-use App\Services\Interfaces\ILandmarkService;
-use App\Services\LandmarkService;
 use App\Services\LogService;
 use App\Services\Interfaces\ILogService;
+use App\Services\Interfaces\IHistoryService;
+use App\Services\HistoryService;
+use App\Models\Enums\UserRole;
+use App\Middleware\RequireRole;
+use App\Exceptions\ResourceNotFoundException;
 
 class HistoryController extends BaseController
 {
     private IPageService $pageService;
-    private ILandmarkService $landmarkService;
     private ILogService $logService;
+    private IHistoryService $historyService;
 
-    const HISTORY_SLUG = 'events-history';
+    const HISTORY_TOUR_SLUG = 'history-tour';
 
     public function __construct()
     {
-        $this->pageService = new PageService();
-        $this->landmarkService = new LandmarkService();
-        $this->logService = new LogService();
+        $this->pageService     = new PageService();
+        $this->logService      = new LogService();
+        $this->historyService  = new HistoryService();
     }
 
     public function index($vars = [])
     {
         try {
-            $pageData = $this->pageService->getPageBySlug(self::HISTORY_SLUG);
-            
-            if (!$pageData) {
-                $this->notFound();
-                return;
-            }
-
-            $title = $pageData->title; 
-
-            $sections = $pageData->content_sections ?? [];
-            $hero = null;
-            $welcome = null;
-            $bookTour = null;
-            $landmarks = [];
-
-            foreach ($sections as $s) {
-                $type = $s->section_type->value;
-                if ($type === 'welcome') {
-                    $welcome = $s;
-                } elseif ($type === 'landmark') {
-                    $landmarks[] = $s;
-                } elseif ($type === 'book_tour') {
-                    $bookTour = $s;
-                }
-                elseif ($type === 'hero_picture') { 
-                    $hero = $s;
-                }
-            }
-
-            
-            $this->view('History/HistoryHomepage', [
-                'pageData'  => $pageData,
-                'hero'      => $hero,
-                'welcome'   => $welcome,
-                'landmarks' => $landmarks,
-                'bookTour'  => $bookTour
-            ]);
-
-        } catch (\Exception $e) {
-            $this->logService->exception('History', $e);
-        }
-    }
-
-    const HISTORY_TOUR_SLUG = 'history-tour'; 
-
-    public function tour($vars = [])
-    {
-        try {
-            $pageData = $this->pageService->getPageBySlug(self::HISTORY_TOUR_SLUG);
-            
-            if (!$pageData) {
-                $this->notFound();
-                return;
-            }
-
-            $sections = $pageData->content_sections ?? [];
-            $hero = null;
-            $tourInfo = null;
-            $bookTour = null;
-            $tickets = null;
-            $tourFeatures = [];     
-            $goodToKnow = null; 
-
-            foreach ($sections as $s) {
-                $type = $s->section_type->value;
-                
-                if ($type === 'tour_info') { 
-                    $tourInfo = $s;
-                } elseif ($type === 'tour_tickets') { 
-                    $tickets = $s;
-                } elseif ($type === 'tour_features') {
-                    $tourFeatures[] = $s; 
-                } elseif ($type === 'good_to_know') {
-                    $goodToKnow = $s; 
-                } elseif ($type === 'hero_picture') { 
-                    $hero = $s;
-                } elseif ($type === 'book_tour') { 
-                    $bookTour = $s;
-                }
-            }
-
-            $this->view('History/HistoryTour', [
-                'pageData'        => $pageData,
-                'hero'            => $hero,
-                'tourInfo'        => $tourInfo,
-                'bookTour'        => $bookTour,
-                'tickets'         => $tickets,
-                'tourFeatures'    => $tourFeatures,    
-                'goodToKnow'      => $goodToKnow  
-            ]);
-
-        } catch (\Exception $e) {
+            $this->view('History/HistoryHomepage', $this->historyService->getHomepageData());
+        } catch (ResourceNotFoundException $e) {
+            $this->notFound();
+        } catch (\Throwable $e) {
             $this->logService->exception('History', $e);
             $this->internalServerError();
         }
     }
 
-
-    const HISTORY_DETAIL_SLUG = 'detail'; 
-
-    /** @param array $vars */
-    public function detail(array $vars): void
+    public function tour($vars = [])
     {
-        $slug = $vars['slug'] ?? '';
-        
-        $landmark = $this->landmarkService->getLandmarkBySlug($slug);
-
-        if (!$landmark) {
-            $this->notFound(); 
-            return;
+        try {
+            $this->view('History/HistoryTour', $this->historyService->getTourData());
+        } catch (ResourceNotFoundException $e) {
+            $this->notFound();
+        } catch (\Throwable $e) {
+            $this->logService->exception('History', $e);
+            $this->internalServerError();
         }
-
-        $introImage = '/Assets/Home/ImagePlaceholder.png';
-        $historyImage = '/Assets/Home/ImagePlaceholder.png';
-        $whyVisitImage = '/Assets/Home/ImagePlaceholder.png';
-
-        //if gallery exists and has the media items, the media items are taken out and assigned to variables for the view
-        if (!empty($landmark->gallery) && !empty($landmark->gallery->media_items)) {
-            $items = array_values($landmark->gallery->media_items);
-
-            if (isset($items[0]) && !empty($items[0]->media)) {
-                $introImage = '/' . ltrim($items[0]->media->file_path, '/');
-            }
-            if (isset($items[1]) && !empty($items[1]->media)) {
-                $historyImage = '/' . ltrim($items[1]->media->file_path, '/');
-            }
-            if (isset($items[2]) && !empty($items[2]->media)) {
-                $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
-            }
-        }
-
-        //pass the images to the view as well
-        $this->view('History/HistoryDetail', [
-            'title' => $landmark->name . ' - Haarlem History',
-            'landmark' => $landmark,
-            'introImage' => $introImage,
-            'historyImage' => $historyImage,
-            'whyVisitImage' => $whyVisitImage
-        ]);
-    
     }
 
+    public function detail(array $vars): void
+    {
+        try {
+            $data = $this->historyService->getDetailData($vars['slug'] ?? '');
+            $data['title'] = $data['landmark']->name . ' - Haarlem History';
+            $this->view('History/HistoryDetail', $data);
+        } catch (ResourceNotFoundException $e) {
+            $this->notFound();
+        } catch (\Throwable $e) {
+            $this->logService->exception('History', $e);
+            $this->internalServerError();
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function editTourRoute($vars = []): void
+    {
+        try {
+            $tourRoute = $this->historyService->getTourRouteSection();
+
+            $stops = [];
+            if ($tourRoute && !empty($tourRoute->content_html)) {
+                $decoded = json_decode($tourRoute->content_html, true);
+                if (is_array($decoded)) {
+                    $stops = array_column($decoded, 'name');
+                }
+            }
+
+            $this->cmsLayout('Cms/TourRoute/Edit', [
+                'title'     => 'Edit Tour Route',
+                'tourRoute' => $tourRoute,
+                'stops'     => $stops,
+            ]);
+        } catch (\Throwable $e) {
+            $this->logService->exception('History', $e);
+            $this->internalServerError();
+        }
+    }
+
+    #[RequireRole([UserRole::ADMIN])]
+    public function updateTourRoute($vars = []): void
+    {
+        try {
+            $tourRoute = $this->historyService->getTourRouteSection();
+
+            if (!$tourRoute) {
+                $_SESSION['error'] = 'Tour route section not found.';
+                $this->redirect('/cms/history/tour-route');
+                return;
+            }
+
+            $rawStops = $_POST['stops'] ?? [];
+            $stops    = [];
+            foreach ($rawStops as $name) {
+                $name = trim($name);
+                if ($name !== '') {
+                    $stops[] = ['name' => $name];
+                }
+            }
+
+            $tourRoute->content_html = json_encode($stops, JSON_UNESCAPED_UNICODE);
+            $this->pageService->updatePageSectionById($tourRoute);
+
+            $_SESSION['success'] = 'Tour route updated successfully.';
+            $this->redirect('/cms/history/tour-route');
+        } catch (\Throwable $e) {
+            $this->logService->exception('History', $e);
+            $_SESSION['error'] = 'Failed to update tour route.';
+            $this->redirect('/cms/history/tour-route');
+        }
+    }
 }
-
-

@@ -89,6 +89,9 @@ class OrderItem
     }
     public function generateQrCode(): void
     {
+        if (!$this->qr_code_hash) {
+            return;
+        }
         $img = '<img style="width: 150px; height: 150px;" src="'.(new QRCode)->render($this->qr_code_hash).'" alt="QR Code" />';
         echo $img;
     }

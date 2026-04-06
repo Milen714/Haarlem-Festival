@@ -8,6 +8,7 @@ use App\CmsModels\Page;
 use App\Framework\Repository;
 use App\Repositories\Interfaces\IPageRepository;
 use App\Repositories\MediaRepository;
+use App\Exceptions\ApplicationException;
 use PDO;
 use PDOException;
 
@@ -116,7 +117,7 @@ class PageRepository extends Repository implements IPageRepository
             }
             return $pageModel;
         } catch (PDOException $e) {
-            die("Error fetching page data: " . $e->getMessage());
+            throw new ApplicationException("Error fetching page data: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -142,7 +143,7 @@ class PageRepository extends Repository implements IPageRepository
 
             return $stmt->rowCount() >= 0;
         } catch (PDOException $e) {
-            die("Error updating page: " . $e->getMessage());
+            throw new ApplicationException("Error updating page: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -183,7 +184,7 @@ class PageRepository extends Repository implements IPageRepository
             }
             return $stmt->rowCount() >= 0;
         } catch (PDOException $e) {
-            die("Error updating section: " . $e->getMessage());
+            throw new ApplicationException("Error updating section: " . $e->getMessage(), 0, $e);
         }
     }
     public function getPageSlugs(): array
@@ -194,7 +195,7 @@ class PageRepository extends Repository implements IPageRepository
             $stmt = $pdo->query($query);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            die("Error fetching page slugs: " . $e->getMessage());
+            throw new ApplicationException("Error fetching page slugs: " . $e->getMessage(), 0, $e);
         }
     }
 }

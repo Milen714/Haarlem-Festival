@@ -318,24 +318,13 @@ class OrderController extends BaseController
             $filename = 'orders_export_' . date('Ymd_His');
 
             $this->orderService->generateExcelViaHtml($ordersData, $filename, $requestedColumns, true, false);
-        } catch (ValidationException $e) {
-            $this->logService->error("Excel Export validation error: " . $e->getMessage(), $e->getMessage());
-            $this->sendSuccessResponse([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        } catch (UserFacingException $e) {
-            $this->logService->error("Excel Export user error: " . $e->getMessage(), $e->getMessage());
-            $this->sendSuccessResponse([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 400);
         } catch (\Throwable $e) {
-            $this->logService->error("Excel Export error: " . $e->getMessage(), $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            $this->logService->error("CSV Export error: " . $e->getMessage(), $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             $this->sendSuccessResponse([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 500);
         }
     }
+
 }

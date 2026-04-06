@@ -35,6 +35,16 @@ class LandmarkService implements ILandmarkService
         return $this->landmarkRepository->getAll();
     }
 
+    public function getAllLandmarksWithDetails(): array
+    {
+        return $this->landmarkRepository->getAllWithDetails();
+    }
+
+    public function getFeaturedLandmarks(): array
+{
+    return $this->landmarkRepository->getFeatured();
+}
+
     public function getLandmarkById(int $id): ?Landmark
     {
         return $this->landmarkRepository->getById($id);
@@ -66,6 +76,8 @@ class LandmarkService implements ILandmarkService
         $landmark->display_order = isset($postData['display_order']) ? (int)$postData['display_order'] : 0;
         $landmark->latitude = isset($postData['latitude']) && $postData['latitude'] !== '' ? (float)$postData['latitude'] : null;
         $landmark->longitude = isset($postData['longitude']) && $postData['longitude'] !== '' ? (float)$postData['longitude'] : null;
+        $landmark->is_featured = isset($postData['is_featured']) && $postData['is_featured'] === '1';
+        $landmark->home_cta    = $postData['home_cta'] ?? null;
 
         return $landmark;
 
@@ -86,7 +98,24 @@ class LandmarkService implements ILandmarkService
 
         $landmark = $this->mapLandmarkData($postData, $slug);
 
-        return $this->landmarkRepository->insert($landmark);
+        $landmark = $this->landmarkRepository->insert($landmark);
+
+        $galleryId = $this->landmarkRepository->createGalleryForLandmark($landmark->landmark_id);
+        $gallery = new \App\Models\Gallery();
+        $gallery->gallery_id = $galleryId;
+        $landmark->gallery = $gallery;
+        $this->galleryService->handleSectionUploads($galleryId, $postData, $filesData);
+
+        // save image if uploaded
+        if (!empty($filesData['main_image']['tmp_name'])) {
+            $result = $this->mediaService->uploadAndCreate($filesData['main_image'], 'History/Landmarks', $postData['name']);
+            if ($result['success']) {
+                $this->landmarkRepository->updateMainImage($landmark->landmark_id, $result['media']->media_id);
+                $landmark->main_image_id = $result['media'];
+            }
+        }
+
+        return $landmark;
     }
 
     public function updateLandmark(int $id, array $postData, array $filesData): Landmark
@@ -103,15 +132,36 @@ class LandmarkService implements ILandmarkService
             throw new ValidationException("The landmark name is required.");
         }
 
-        if ($existingLandmark->gallery) {
-            $this->galleryService->handleSectionUploads(
-                $existingLandmark->gallery->gallery_id, 
-                $postData, 
-                $filesData
-        );
+        if (!$existingLandmark->gallery) {
+            $galleryId = $this->landmarkRepository->createGalleryForLandmark($existingLandmark->landmark_id);
+            $gallery = new \App\Models\Gallery();
+            $gallery->gallery_id = $galleryId;
+            $existingLandmark->gallery = $gallery;
         }
 
+        $this->galleryService->handleSectionUploads(
+            $existingLandmark->gallery->gallery_id,
+            $postData,
+            $filesData
+        );
+
         $newSlug = $this->generateSlug($postData['name']); 
+
+        if (!empty($filesData['main_image']['tmp_name'])) {
+    if ($existingLandmark->main_image_id?->media_id) {
+        $this->mediaService->replaceMedia(
+            $existingLandmark->main_image_id->media_id,
+            $filesData['main_image'],
+            'History/Landmarks',
+            $postData['name']
+        );
+    } else {
+        $result = $this->mediaService->uploadAndCreate($filesData['main_image'], 'History/Landmarks', $postData['name']);
+        if ($result['success']) {
+            $this->landmarkRepository->updateMainImage($existingLandmark->landmark_id, $result['media']->media_id);
+        }
+    }
+}
 
         $updatedLandmark = $this->mapLandmarkData($postData, $newSlug, $existingLandmark);
 

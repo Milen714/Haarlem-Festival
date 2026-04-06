@@ -15,4 +15,5 @@ enum PageType: string
     case tour_detail = 'tour_detail';
     case venue_list = 'venue_list';
     case venue_detail = 'venue_detail';
+    case history_detail = 'history_detail';
 }

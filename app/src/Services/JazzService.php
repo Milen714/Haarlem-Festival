@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ApplicationException;
 use App\Exceptions\ResourceNotFoundException;
+use App\Models\Enums\TicketSchemeEnum;
 use App\Models\MusicEvent\JazzArtistDetailViewModel;
 use App\Services\Interfaces\JazzServiceInterface;
 use App\Services\Interfaces\ILogService;
@@ -109,7 +110,7 @@ class JazzService implements JazzServiceInterface
             ));
         }
 
-        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums([TicketSchemeEnum::JAZZ_DAY_PASS->value]);
 
         return [
             'title' => $jazzPageData->title ?? 'Jazz Event',
@@ -127,6 +128,15 @@ class JazzService implements JazzServiceInterface
         $jazzPageData = $this->loadPageBySlugOrFail(self::JAZZ_PAGE_SLUG, 'Jazz page');
         $jazzEventId = $this->extractEventIdOrFail($jazzPageData, self::JAZZ_PAGE_SLUG);
         $allSchedules = $this->scheduleService->getSchedulesByEventId($jazzEventId);
+
+        // Load ticket types for each schedule
+        $scheduleIds = array_map(fn($s) => $s->schedule_id, $allSchedules);
+        $ticketTypesBySchedule = $this->ticketService->getTicketTypesByScheduleIds($scheduleIds);
+
+        // Attach ticket types to each schedule
+        foreach ($allSchedules as $schedule) {
+            $schedule->ticketTypes = $ticketTypesBySchedule[$schedule->schedule_id] ?? [];
+        }
 
         return [
             'title' => 'Jazz Festival Schedule',
@@ -165,7 +175,7 @@ class JazzService implements JazzServiceInterface
             )
         );
 
-        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums(['JAZZ_DAY_PASS']);
+        $passTicketTypes = $this->ticketService->getTicketTypesBySchemeEnums([TicketSchemeEnum::JAZZ_DAY_PASS->value]);
 
         return [
             'title'          => $artistViewModel->title,

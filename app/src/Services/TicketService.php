@@ -113,6 +113,11 @@ class TicketService implements ITicketService
         return $this->ticketRepository->reserveMultiple($items);
     }
 
+    public function syncHistoryScheduleSoldOut(int $ticketTypeId): void
+    {
+        $this->ticketRepository->syncHistoryScheduleSoldOut($ticketTypeId);
+    }
+
 
     public function releaseSeats(int $ticketTypeId, int $quantity): bool
     {
@@ -140,7 +145,11 @@ class TicketService implements ITicketService
                     $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
                 }
             } else {
-                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+                $releaseQty = $quantity;
+                if ($schemeEnum === TicketSchemeEnum::HISTORY_FAMILY_TICKET) {
+                    $releaseQty *= 4;
+                }
+                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $releaseQty];
             }
         }
         if (!empty($items)) {
@@ -150,19 +159,38 @@ class TicketService implements ITicketService
 
     public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void
     {
-        $existing     = $this->ticketRepository->getTotalAllocatedCapacityForSchedule($scheduleId, $excludeTicketTypeId);
-        $venueCapacity = $this->ticketRepository->getVenueCapacityForSchedule($scheduleId);
+        $existing          = $this->ticketRepository->getTotalAllocatedCapacityForSchedule($scheduleId, $excludeTicketTypeId);
+        $venueCapacity     = $this->ticketRepository->getVenueCapacityForSchedule($scheduleId);
+        $scheduleCapacity  = $this->ticketRepository->getScheduleCapacity($scheduleId);
 
-        if ($venueCapacity === null) {
-
+        // If neither venue nor schedule has a capacity set, skip validation
+        if ($venueCapacity === null && $scheduleCapacity === null) {
             return;
         }
 
         $total = $existing + $newCapacity;
-        if ($total > $venueCapacity) {
+
+        // Determine the effective limit (use the smaller of the two, or whichever is set if only one is set)
+        $effectiveLimit = null;
+        $limitSource = "";
+
+        if ($venueCapacity !== null && $scheduleCapacity !== null) {
+            $effectiveLimit = min($venueCapacity, $scheduleCapacity);
+            $limitSource = $venueCapacity < $scheduleCapacity
+                ? "venue capacity ({$venueCapacity})"
+                : "schedule total capacity ({$scheduleCapacity})";
+        } elseif ($venueCapacity !== null) {
+            $effectiveLimit = $venueCapacity;
+            $limitSource = "venue capacity ({$venueCapacity})";
+        } else {
+            $effectiveLimit = $scheduleCapacity;
+            $limitSource = "schedule total capacity ({$scheduleCapacity})";
+        }
+
+        if ($total > $effectiveLimit) {
             throw new ValidationException(
-                "Total ticket capacity ({$total}) would exceed the venue capacity ({$venueCapacity}). " .
-                    "You can allocate at most " . ($venueCapacity - $existing) . " more seat(s) for this schedule."
+                "Total ticket capacity ({$total}) would exceed the {$limitSource}. " .
+                    "You can allocate at most " . ($effectiveLimit - $existing) . " more seat(s) for this schedule."
             );
         }
     }
@@ -309,6 +337,8 @@ class TicketService implements ITicketService
         $ticketType->max_quantity = (int)$postData['max_quantity'];
         $ticketType->capacity = (int)$postData['capacity'];
         $ticketType->special_requirements = $this->normalizeNullableString($postData['special_requirements'] ?? null);
+        $ticketType->tickets_sold = $ticketType->tickets_sold ?? 0;
+        $ticketType->is_sold_out  = $ticketType->is_sold_out  ?? false;
 
         return $ticketType;
     }
@@ -385,4 +415,5 @@ class TicketService implements ITicketService
 
         return (int)$value;
     }
+
 }

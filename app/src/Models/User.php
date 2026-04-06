@@ -17,6 +17,8 @@ class User {
     public bool $is_active = true;
     public bool $is_verified = false;
     public ?DateTime $created_at = null;
+    public ?string $share_token = null;
+
 
     public function __construct(){}
 
@@ -60,6 +62,7 @@ class User {
         $this->verification_token = $data['verification_token'] ?? null;
         $this->reset_token = $data['reset_token'] ?? null;
         $this->reset_token_expiry = isset($data['reset_token_expiry']) ? new DateTime($data['reset_token_expiry']) : null;
+        $this->share_token = $data['share_token'] ?? null;
         $this->is_active = isset($data['is_active']) ? (bool)$data['is_active'] : true;
         $this->is_verified = isset($data['is_verified']) ? (bool)$data['is_verified'] : false;
         $this->created_at = isset($data['user_created_at']) ? new DateTime($data['user_created_at']) : null;

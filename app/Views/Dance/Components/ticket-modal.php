@@ -64,7 +64,7 @@
 
             <footer class="grid grid-cols-2 gap-4">
                 <button onclick="closeTicketModal()" class="py-3 rounded-lg border border-white/10 text-gray-400 font-bold hover:text-white">Continue Shopping</button>
-                <a href="/my-program" class="py-3 rounded-lg bg-[#f5c35e] text-black font-black uppercase text-center hover:bg-white transition">View Program &rarr;</a>
+                <a href="/payment" class="py-3 rounded-lg bg-[#f5c35e] text-black font-black uppercase text-center hover:bg-white transition">View Program &rarr;</a>
             </footer>
         </section>
     </article>

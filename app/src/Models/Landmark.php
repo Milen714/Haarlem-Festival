@@ -24,6 +24,8 @@ class Landmark
     public ?float $longitude = null;
     public ?Gallery $gallery = null;
     public ?int $display_order = null;
+    public bool $is_featured = false;
+    public ?string $home_cta = null;
 
     public function __construct() {}
 
@@ -31,7 +33,7 @@ class Landmark
     {
         $this->landmark_id = isset($data['landmark_id']) ? (int)$data['landmark_id'] : null;
         $this->event_id = isset($data['event_id']) ? (int)$data['event_id'] : null;
-        $this->name = $data['name'] ?? $data['landmark_name'] ?? null;
+        $this->name = $data['landmark_name'] ?? $data['name'] ?? null;
         $this->short_description = $data['short_description'] ?? null;
         $this->landmark_slug = $data['landmark_slug'] ?? null;
         $this->intro_title = $data['intro_title'] ?? null;
@@ -43,6 +45,8 @@ class Landmark
         $this->latitude = isset($data['latitude']) ? (float)$data['latitude'] : null;
         $this->longitude = isset($data['longitude']) ? (float)$data['longitude'] : null;
         $this->display_order = isset($data['display_order']) ? (int)$data['display_order'] : null;
+        $this->is_featured = !empty($data['is_featured']);
+        $this->home_cta = $data['home_cta'] ?? null;
 
         if (isset($data['event_category_type'])) {
             $this->event_category = new EventCategory();
@@ -53,5 +57,14 @@ class Landmark
                 'event_category_slug' => $data['event_category_slug'] ?? null,
             ]);
         }
+
+        if (isset($data['main_image_media_id'])) {
+    $this->main_image_id = new Media();
+    $this->main_image_id->fromPDOData([
+        'media_id'  => $data['main_image_media_id'],
+        'file_path' => $data['main_image_file_path'] ?? null,
+        'alt_text'  => $data['main_image_alt_text'] ?? null,
+    ]);
+}
     }
 }

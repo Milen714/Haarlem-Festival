@@ -5,6 +5,7 @@ use App\Framework\Repository;
 use App\Repositories\Interfaces\IUserRepository;
 use App\Models\User;
 use App\Models\Enums\UserRole;
+use App\Exceptions\ApplicationException;
 use DateTime;
 
 use PDO;
@@ -27,6 +28,7 @@ class UserRepository extends Repository implements IUserRepository{
         $user->reset_token_expiry = isset($data['reset_token_expiry']) && $data['reset_token_expiry'] 
             ? new DateTime($data['reset_token_expiry']) 
             : null;
+        $user->share_token = $data['share_token'] ?? null;
         $user->is_active = isset($data['is_active']) ? (bool)$data['is_active'] : true;
         $user->is_verified = isset($data['is_verified']) ? (bool)$data['is_verified'] : false;
         $user->created_at = isset($data['created_at']) && $data['created_at'] 
@@ -45,7 +47,7 @@ class UserRepository extends Repository implements IUserRepository{
 			
 			return $user ? $this->mapUser($user) : null;
 		}catch(PDOException $e){
-			die("Error fetching user: " . $e->getMessage());
+			throw new ApplicationException("Error fetching user: " . $e->getMessage(), 0, $e);
 		}
 
 	}
@@ -59,7 +61,7 @@ class UserRepository extends Repository implements IUserRepository{
             
             return array_map([$this, 'mapUser'], $usersData);
         }catch(PDOException $e){
-            die("Error fetching users: " . $e->getMessage());
+            throw new ApplicationException("Error fetching users: " . $e->getMessage(), 0, $e);
         }
 	}
 	
@@ -76,7 +78,7 @@ class UserRepository extends Repository implements IUserRepository{
 
 
         }catch(PDOException $e){
-            die("Error fetching user: " . $e->getMessage());
+            throw new ApplicationException("Error fetching user: " . $e->getMessage(), 0, $e);
         }
 	}
 	
@@ -101,7 +103,7 @@ class UserRepository extends Repository implements IUserRepository{
 			$stmt->bindParam(':is_verified', $user->is_verified, PDO::PARAM_BOOL);
 			return $stmt->execute();
 		}catch(PDOException $e){
-			die("Error creating user: " . $e->getMessage());
+			throw new ApplicationException("Error creating user: " . $e->getMessage(), 0, $e);
 		}
 	}
 	public function updateUser(User $user): bool {
@@ -146,4 +148,36 @@ class UserRepository extends Repository implements IUserRepository{
             throw new \Exception("Error deleting user: " . $e->getMessage());
         }
     }
+
+    public function findByShareToken(string $token): ?User {
+    try {
+        $pdo = $this->connect();
+        $query = 'SELECT * FROM users WHERE share_token = :token';
+
+        $stmt = $pdo->prepare($query);
+
+        $stmt->bindParam(':token', $token);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user ? $this->mapUser($user) : null;
+    } catch (PDOException $e) {
+        throw new \Exception("Error finding user by share token: " . $e->getMessage());
+    }
+    }
+
+    public function saveShareToken(int $userId, string $token): bool {
+        try {
+            $pdo = $this->connect();
+            $query = 'UPDATE users SET share_token = :token WHERE id = :id';
+            
+            $stmt = $pdo->prepare($query);
+
+            $stmt->bindParam(':token', $token);
+            $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            throw new \Exception("Error saving share token: " . $e->getMessage());
+        }
+    }
+
 }

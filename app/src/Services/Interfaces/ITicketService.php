@@ -10,6 +10,7 @@ interface ITicketService
     public function getTicketTypeById(int $ticketTypeId): ?TicketType;
     public function getTicketTypesByScheduleId(int $scheduleId): array;
     public function getTicketTypesBySchemeEnums(array $schemeEnums): array;
+    //public function getTicketTypeFromSelection(TicketSelectionDTO $ticketDTO): ?TicketType;
     public function create(TicketType $ticketType): bool;
     public function update(TicketType $ticketType): bool;
     public function delete(int $ticketTypeId): bool;
@@ -33,4 +34,5 @@ interface ITicketService
     public function releaseSeats(int $ticketTypeId, int $quantity): bool;
     public function releaseOrderItems(array $orderItems): void;
     public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void;
+    public function syncHistoryScheduleSoldOut(int $ticketTypeId): void;
 }

@@ -21,17 +21,32 @@ use App\ViewModels\ShoppingCart\PaidTicketsViewModel;
             class="h-min <?php echo $viewModel->showMyTicketsSection ? 'home-ticket-tab-active' : 'home-ticket-tab-inactive'; ?>"
             data-showMyTicketSection="true">My
             Tickets <span>( <?php echo $viewModel->totalTickets; ?> )</span></button>
-
-
-        <a href="/payment" class="h-min home-ticket-tab-inactive" data-date="">Shopping Cart</a>
-
     </ul>
 
-    <a href="/payment" class="home_calendar_button_active  ">
+    <button id="share-program-btn" class="home_calendar_button_active">
         <img src="/Assets/Home/ShareIcon.svg" alt="Share Icon"> Share Program
-    </a>
+    </button>
+
 
 </nav>
+
+<div id="error-container"></div>
+
+<!--Share Program-->
+<div id="share-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+        <h3 class="font-bold text-lg mb-1">Share Your Program</h3>
+        <p class="text-sm text-gray-500 mb-4">Anyone with this link can view your schedule.</p>
+        <div class="flex gap-2">
+            <input id="share-url-input" type="text" readonly
+                class="flex-grow border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 bg-gray-50 min-w-0" />
+            <button id="copy-url-btn" class="home_calendar_button_active flex-shrink-0 px-4">Copy</button>
+        </div>
+        <p id="copy-feedback" class="text-green-600 text-xs mt-2 hidden">Copied to clipboard!</p>
+        <button id="close-share-modal" class="mt-4 text-sm text-gray-400 hover:text-gray-600 underline">Close</button>
+    </div>
+</div>
+
 
 <script>
 document.getElementById('my-program-button')?.addEventListener('click', function() {

@@ -34,5 +34,6 @@ interface IRestaurantRepository
     public function removeMediaFromGallery(int $galleryId, int $mediaId): bool;
 
     public function getNextGalleryOrder(int $galleryId): int;
+    public function getEvents(): array;
 
 }

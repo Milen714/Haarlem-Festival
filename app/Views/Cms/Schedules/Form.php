@@ -139,16 +139,6 @@ $ticketTypes     = $ticketTypes ?? [];
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="e.g. 200">
                 </div>
-
-                <!-- Tickets Sold -->
-                <div>
-                    <label class="block text-gray-700 font-semibold mb-2" for="tickets_sold">
-                        Tickets Sold
-                    </label>
-                    <input type="number" id="tickets_sold" name="tickets_sold" min="0"
-                        value="<?= htmlspecialchars((string)($schedule?->tickets_sold ?? '0')) ?>"
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
             </div>
 
             <!-- Sold Out -->
@@ -215,41 +205,41 @@ $ticketTypes     = $ticketTypes ?? [];
         </div>
 
         <script>
-        (function () {
-            const typeLinkMap = {
-                'Jazz':    'artist',
-                'Dance':   'artist',
-                'Yummy':   'restaurant',
-                'History': 'landmark',
-                'Magic':   null,
-            };
+            (function() {
+                const typeLinkMap = {
+                    'Jazz': 'artist',
+                    'Dance': 'artist',
+                    'Yummy': 'restaurant',
+                    'History': 'landmark',
+                    'Magic': null,
+                };
 
-            const eventSelect = document.getElementById('event_id');
-            const linkDivs    = document.querySelectorAll('[data-link-type]');
-            const noEntityMsg = document.getElementById('link-no-entity');
+                const eventSelect = document.getElementById('event_id');
+                const linkDivs = document.querySelectorAll('[data-link-type]');
+                const noEntityMsg = document.getElementById('link-no-entity');
 
-            function updateLinks() {
-                const selected = eventSelect.options[eventSelect.selectedIndex];
-                const type     = selected ? selected.dataset.type : null;
-                const linkType = typeLinkMap[type] ?? null;
+                function updateLinks() {
+                    const selected = eventSelect.options[eventSelect.selectedIndex];
+                    const type = selected ? selected.dataset.type : null;
+                    const linkType = typeLinkMap[type] ?? null;
 
-                linkDivs.forEach(function (div) {
-                    const match = div.dataset.linkType === linkType;
-                    div.style.display = match ? '' : 'none';
-                    if (!match) {
-                        const sel = div.querySelector('select');
-                        if (sel) sel.value = '';
+                    linkDivs.forEach(function(div) {
+                        const match = div.dataset.linkType === linkType;
+                        div.style.display = match ? '' : 'none';
+                        if (!match) {
+                            const sel = div.querySelector('select');
+                            if (sel) sel.value = '';
+                        }
+                    });
+
+                    if (noEntityMsg) {
+                        noEntityMsg.style.display = (type && linkType === null) ? '' : 'none';
                     }
-                });
-
-                if (noEntityMsg) {
-                    noEntityMsg.style.display = (type && linkType === null) ? '' : 'none';
                 }
-            }
 
-            eventSelect.addEventListener('change', updateLinks);
-            updateLinks();
-        })();
+                eventSelect.addEventListener('change', updateLinks);
+                updateLinks();
+            })();
         </script>
 
         <div class="bg-white border rounded-lg p-6 mb-6">
@@ -299,6 +289,7 @@ $ticketTypes     = $ticketTypes ?? [];
                                 <th class="px-4 py-3 font-semibold">Scheme</th>
                                 <th class="px-4 py-3 font-semibold">Price</th>
                                 <th class="px-4 py-3 font-semibold">Capacity</th>
+                                <th class="px-4 py-3 font-semibold">Sold</th>
                                 <th class="px-4 py-3 font-semibold">Rules</th>
                             </tr>
                         </thead>
@@ -318,6 +309,11 @@ $ticketTypes     = $ticketTypes ?? [];
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         <?= (int)($ticketType->capacity ?? 0) ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-gray-600">
+                                        <span class="<?= ((int)($ticketType->tickets_sold ?? 0) > 0) ? 'font-semibold text-blue-600' : 'text-gray-500' ?>">
+                                            <?= (int)($ticketType->tickets_sold ?? 0) ?>
+                                        </span>
                                     </td>
                                     <td class="px-4 py-3 text-gray-600">
                                         <?= (int)($ticketType->min_quantity ?? 0) ?>-<?= (int)($ticketType->max_quantity ?? 0) ?>

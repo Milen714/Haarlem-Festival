@@ -63,7 +63,7 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /* Yummy event page */
     //$r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
-    $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'yummy']);
+    $r->addRoute('GET', '/events-yummy', ['App\Controllers\YummyController', 'index']);
     $r->addRoute('GET', '/events-yummy/restaurants', ['App\Controllers\YummyController', 'displayRestaurants']);
     $r->addRoute('GET', '/events-yummy/restaurants/{id}', ['App\Controllers\YummyController', 'restaurantDetail']);
     
@@ -74,6 +74,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('GET', '/events-history', ['App\Controllers\HistoryController', 'index']);
     $r->addRoute('GET', '/history-tour', ['App\Controllers\HistoryController', 'tour']);
     $r->addRoute('GET', '/history/detail/{slug}', ['App\Controllers\HistoryController', 'detail']);
+
+    /* History CMS - Tour Route */
+    $r->addRoute('GET',  '/cms/history/tour-route',        ['App\Controllers\HistoryController', 'editTourRoute']);
+    $r->addRoute('POST', '/cms/history/tour-route/update', ['App\Controllers\HistoryController', 'updateTourRoute']);
 
     /* CMS Routes */
     $r->addRoute('GET', '/cms', ['App\Controllers\CmsController', 'dashboard']);
@@ -106,8 +110,10 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     //cuisine part 
     $r->addRoute('GET', '/cms/restaurants/cuisines', ['App\Controllers\RestaurantController', 'showCuisines']);
     $r->addRoute('GET', '/cms/restaurants/cuisines/create', ['App\Controllers\RestaurantController', 'createCuisine']);
+    $r->addRoute('POST', '/cms/restaurants/cuisines/store', ['App\Controllers\RestaurantController', 'storeCuisine']);
     $r->addRoute('GET', '/cms/restaurants/cuisines/edit/{id:\d+}', ['App\Controllers\RestaurantController', 'editCuisine']);
-    $r->addRoute('POST', '/cms/restaurants/cuisine/update/{id:\d+}', ['App\Controllers\RestaurantController', 'updateCuisine']);
+    $r->addRoute('POST', '/cms/restaurants/cuisines/update/{id:\d+}', ['App\Controllers\RestaurantController', 'updateCuisine']);
+    $r->addRoute('POST', '/cms/restaurants/cuisines/delete/{id:\d+}', ['App\Controllers\RestaurantController', 'deleteCuisine']);
     /* CMS Venue Management*/
     $r->addRoute('GET', '/cms/venues', ['App\Controllers\VenueController', 'index']);
     $r->addRoute('GET', '/cms/venues/create', ['App\Controllers\VenueController', 'create']);
@@ -126,14 +132,13 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
 
     /*Landmark cms*/
     $r->addRoute('GET', '/cms/landmarks', ['App\Controllers\LandmarkController', 'index']);
-
     $r->addRoute('GET', '/cms/landmarks/create', ['App\Controllers\LandmarkController', 'create']);
     $r->addRoute('POST', '/cms/landmarks/store', ['App\Controllers\LandmarkController', 'store']);
-
     $r->addRoute('POST', '/cms/landmarks/delete/{id:\d+}', ['App\Controllers\LandmarkController', 'delete']);
     $r->addRoute('GET', '/cms/landmarks/edit/{id:\d+}', ['App\Controllers\LandmarkController', 'edit']);
     $r->addRoute('POST', '/cms/landmarks/update/{id:\d+}', ['App\Controllers\LandmarkController', 'update']);
 
+    /* Account Settings */
     $r->addRoute('GET', '/settings', ['App\Controllers\AccountController', 'settings']);
     $r->addRoute('POST', '/settings/update', ['App\Controllers\AccountController', 'update']);
 
@@ -178,6 +183,9 @@ $dispatcher = simpleDispatcher(function (RouteCollector $r) {
     $r->addRoute('POST', '/tests/create-order', ['App\Controllers\PaymentController', 'createTestOrder']);
     $r->addRoute('GET', '/payment-details', ['App\Controllers\PaymentController', 'details']);
     $r->addRoute('GET', '/personal-program', ['App\Controllers\PersonalProgramController', 'personalProgram']);
+    $r->addRoute('GET', '/personal-program/content', ['App\Controllers\PersonalProgramController', 'programContent']);
+    $r->addRoute('POST', '/personal-program/share', ['App\Controllers\PersonalProgramController', 'generateShareToken']);
+    $r->addRoute('GET', '/shared-program/{token:[a-f0-9]+}', ['App\Controllers\PersonalProgramController', 'sharedProgram']);
     $r->addRoute('POST', '/addToCart', ['App\Controllers\OrderController', 'addToCart']);
     $r->addRoute('GET', '/getNumberOfCartItems', ['App\Controllers\OrderController', 'getNumberOfCartItems']);
     $r->addRoute('POST', '/deleteOrderItem', ['App\Controllers\OrderController', 'removeOrderItemFromCart']);

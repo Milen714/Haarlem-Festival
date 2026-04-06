@@ -1,12 +1,13 @@
-<?php 
+<?php
 
 namespace App\Services;
 
+use App\Exceptions\ApplicationException;
+use App\Exceptions\ResourceNotFoundException;
 use App\Models\Restaurant;
 use App\Models\Yummy\Session;
 use App\Repositories\RestaurantRepository;
 use App\Repositories\Interfaces\IRestaurantRepository;
-use App\Repositories\CuisineRepository;
 use App\Services\Interfaces\IRestaurantService;
 use App\Services\Interfaces\IMediaService;
 
@@ -60,92 +61,121 @@ class RestaurantService implements IRestaurantService
     {
         return $this->restaurantRepository->deleteRestaurant($id);
     }
-    public function getAllSessionsTypes(): array{
+    public function getAllSessionsTypes(): array
+    {
         return $this->restaurantRepository->getAllSessionsTypes();
     }
-    public function getSessionsByRestaurant(int $restaurantId): array{
+    public function getSessionsByRestaurant(int $restaurantId): array
+    {
         return $this->restaurantRepository->getSessionsByRestaurant($restaurantId);
     }
     public function createSession(Session $session): Session
     {
         return $this->restaurantRepository->createSession($session);
     }
-    public function deleteSessionsByRestaurant(int $restaurantId): bool{
+    public function deleteSessionsByRestaurant(int $restaurantId): bool
+    {
         return $this->restaurantRepository->deleteSessionsByRestaurant($restaurantId);
     }
 
-    public function getRestaurantDetail(int $id){
+    public function getRestaurantDetail(int $id)
+    {
         $restaurant = $this->restaurantRepository->getRestaurantById($id);
 
         if (!$restaurant) {
             return null;
         }
         $restaurant->sessions = $this->restaurantRepository->getSessionsByRestaurant($id);
-       
-        return $restaurant;
-    }
-
-    public function fillRestaurantFromPostData(Restaurant $restaurant, array $data){
-        $restaurant->name = trim($data['name']);
-        $restaurant->event_id = isset($data['event_id']) ? (int)$data['event_id'] : ($restaurant->event_id ?? 1);
-        $restaurant->short_description = !empty($data['short_description']) ? trim($data['short_description']) : ($restaurant->short_description ?? null);
-        $restaurant->welcome_text = !empty($data['welcome_text']) ?  trim($data['welcome_text']) : ($restaurant->welcome_text ?? null);
-        $restaurant->price_category = !empty($data['price_category']) ?  (int)$data['price_category'] : ($restaurant->price_category ?? null);
-        $restaurant->stars = !empty($data['stars']) ?  (int)$data['stars'] : ($restaurant->stars ?? null);
-        $restaurant->review_count = !empty($data['review_count']) ?  (int)$data['review_count'] : ($restaurant->review_count ?? null);
-        $restaurant->website_url = !empty($data['website_url']) ? trim($data['website_url']) : ($restaurant->website_url ?? null);
-        $restaurant->chef_name = !empty($data['chef_name']) ? trim($data['chef_name']) : ($restaurant->chef_name ?? null);
-        $restaurant->chef_bio_text = !empty($data['chef_bio_text']) ? trim($data['chef_bio_text']) : ($restaurant->chef_bio_text ?? null);
 
         return $restaurant;
     }
 
-    public function processRestaurantRequest(Restaurant $restaurant, array $postData, array $files): Restaurant{
+    public function processRestaurantRequest(Restaurant $restaurant, array $postData, array $files): Restaurant
+    {
 
-        $restaurant = $this->fillRestaurantFromPostData($restaurant, $postData);
+        $restaurant = Restaurant::createFromPostData($postData);
 
         $restaurant = $this->handleImageUpload($restaurant, $files);
 
         return $restaurant;
     }
 
-    public function createFromRequest(array $postData, array $files): Restaurant{
-        $restaurant = new Restaurant();
-        $restaurant = $this->processRestaurantRequest($restaurant, $postData, $files);
+    public function createFromRequest(array $postData, array $files): Restaurant
+    {
+        //get the restaurant data from the post data and create a restaurant instance
+        $restaurant = Restaurant::createFromPostData($postData);
 
+        $restaurant = $this->handleImageUpload($restaurant, $files);
+        //create the restaurant to get the id for the gallery and the cuisine relation and sessions
         $restaurantId = $this->restaurantRepository->createRestaurant($restaurant);
+        //upload the gallery images if there are any
         $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
         //get the cuisines by id and slice it so only up to 3 are displayed
         $cuisineIds = $postData['cuisines'] ?? [];
         $cuisineIds = array_slice($cuisineIds, 0, 3);
         //get the sessions
         $this->handleSessions($restaurantId, $postData);
+        //sync the cuisines with the restaurant
         $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
 
         return $restaurant;
     }
-
-    public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant {
+    /**
+     * Updates a restaurant based on the provided ID, post data, and files.
+     *
+     * @param int $restaurantId The ID of the restaurant to update.
+     * @param array $postData The data from the form submission.
+     * @param array $files The uploaded files from the form submission.
+     * @return Restaurant The updated restaurant instance.
+     * @throws \Exception If the restaurant is not found or if image upload fails.
+     */
+    public function updateFromRequest(int $restaurantId, array $postData, array $files): Restaurant
+    {
         $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
-        if(!$restaurant){
-            throw new \Exception('Restaurant not found');
+        if (!$restaurant) {
+            throw new ResourceNotFoundException('Restaurant not found');
         }
 
-        $restaurant = $this->processRestaurantRequest($restaurant, $postData, $files);
-
+        // Update restaurant data using the model's method which handles empty fields properly
+        $restaurant->fillRestaurantFromPostData($postData);
+        $restaurant = $this->handleImageUpload($restaurant, $files);
         $this->restaurantRepository->updateRestaurant($restaurant);
+
+        //get the cuisines by id and slice it so only up to 3 are displayed
         $cuisineIds = $postData['cuisines'] ?? [];
+        if (!$cuisineIds) {
+            throw new ResourceNotFoundException('Could not find cuisines');
+        }
         $cuisineIds = array_slice($cuisineIds, 0, 3);
+
+        //replace the gallery images if there are any
         $this->replaceRestaurantGalleryImages($restaurant, $files);
         $this->uploadRestauratGallery($restaurantId, $restaurant, $files['gallery_images'] ?? []);
+
+        //sync the cuisines with the restaurant
         $this->restaurantRepository->syncRestaurantCuisines($restaurantId, $cuisineIds);
-       $this->handleSessions($restaurantId, $postData);
+
+        //handle the sessions by deleting the old ones and creating new ones based on the form data
+        $this->handleSessions($restaurantId, $postData);
+
         return $restaurant;
     }
 
-    public function handleImageUpload(Restaurant $restaurant, array $files){
+    /**
+     * Handles the upload of images for a restaurant.
+     * This method processes both the main image and the chef image, 
+     * checking if they are being updated or created for the first time. 
+     * It uses the MediaService to upload or replace images and updates the restaurant 
+     * instance with the new media information.
+     * @param Restaurant $restaurant The restaurant instance.
+     * @param array $files The uploaded files.
+     * @return Restaurant The updated restaurant instance.
+     * @throws \Exception If image upload fails.
+     */
+    public function handleImageUpload(Restaurant $restaurant, array $files)
+    {
         //main image
-        if(isset($files['main_image']) && $files['main_image']['error'] === UPLOAD_ERR_OK){
+        if (isset($files['main_image']) && $files['main_image']['error'] === UPLOAD_ERR_OK) {
             $isUpdate = $restaurant->main_image && $restaurant->main_image->media_id;
 
             if ($isUpdate) {
@@ -155,7 +185,7 @@ class RestaurantService implements IRestaurantService
                     'Restaurants',
                     $restaurant->name . 'main image'
                 );
-            }else{
+            } else {
                 $result = $this->mediaService->uploadAndCreate(
                     $files['main_image'],
                     'Restaurants',
@@ -166,12 +196,12 @@ class RestaurantService implements IRestaurantService
             if ($result['success']) {
                 $restaurant->main_image = $result['media'];
             } else {
-                throw new \Exception('Failed to upload main image:' . $result['error']);
-            } 
+                throw new ResourceNotFoundException('Failed to upload main image:' . $result['error']);
+            }
         }
 
         //chef image
-        if(isset($files['chef_img']) && $files['chef_img']['error'] === UPLOAD_ERR_OK){
+        if (isset($files['chef_img']) && $files['chef_img']['error'] === UPLOAD_ERR_OK) {
             $isUpdate = $restaurant->chef_img && $restaurant->chef_img->media_id;
 
             if ($isUpdate) {
@@ -181,7 +211,7 @@ class RestaurantService implements IRestaurantService
                     'Restaurants',
                     $restaurant->name . 'chef image'
                 );
-            }else{
+            } else {
                 $result = $this->mediaService->uploadAndCreate(
                     $files['chef_img'],
                     'Restaurants',
@@ -192,28 +222,45 @@ class RestaurantService implements IRestaurantService
             if ($result['success']) {
                 $restaurant->chef_img = $result['media'];
             } else {
-                throw new \Exception('Failed to upload chef image:' . $result['error']);
-            } 
+                throw new ResourceNotFoundException('Failed to upload chef image:' . $result['error']);
+            }
         }
-
         return $restaurant;
     }
 
-    public function uploadRestauratGallery(int $restaurantId, ?Restaurant $restaurant, array $files): void{
+    /**
+     * Uploads gallery images for a restaurant.
+     * This method checks if there are any gallery images to upload and processes each one.
+     * If the restaurant does not have an existing gallery, it creates one. 
+     * It then uploads each image and adds it to the restaurant's gallery with the correct order.
+     * @param int $restaurantId The ID of the restaurant.
+     * @param ?Restaurant $restaurant The restaurant instance.
+     * @param array $files The uploaded files.
+     * @return void
+     */
+    public function uploadRestauratGallery(int $restaurantId, ?Restaurant $restaurant, array $files): void
+    {
         if (empty($files['name'])) {
             return;
         }
 
         $pdoGalleryId = $restaurant?->gallery?->gallery_id;
         if (!$pdoGalleryId) {
-            $pdoGalleryId = $this->restaurantRepository->createGalleryForRestaurant($restaurantId, ($restaurant->name ?? 'Restaurant') . ' Gallery' );
+            $pdoGalleryId = $this->restaurantRepository->createGalleryForRestaurant($restaurantId, ($restaurant->name ?? 'Restaurant') . ' Gallery');
         }
 
-        //looping the files to upload multiple at one
-        foreach($files['name'] as $i => $name){
-            if (empty($name) || $files['error'][$i] !== UPLOAD_ERR_OK) {
+        //looping the files to upload multiple at one and add them to the gallery with the correct order
+        foreach ($files['name'] as $i => $name) {
+            if (empty($name)) {
                 continue;
             }
+
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                // Log the error but don't throw - allow other images to upload even if one fails
+                error_log("Gallery image upload error for restaurant {$restaurantId}: " . $files['error'][$i]);
+                continue;
+            }
+
             $file = [
                 'name' => $files['name'][$i],
                 'type' => $files['type'][$i],
@@ -226,6 +273,7 @@ class RestaurantService implements IRestaurantService
             $result = $this->mediaService->uploadAndCreate($file, 'Yummy/Restaurant', $altText);
 
             if (!($result['success'] ?? false)) {
+                error_log("Failed to upload gallery image for restaurant {$restaurantId}: " . ($result['error'] ?? 'Unknown error'));
                 continue;
             }
 
@@ -237,16 +285,30 @@ class RestaurantService implements IRestaurantService
                 $order
             );
         }
-
     }
 
-    public function replaceRestaurantGalleryImages(?Restaurant $restaurant, array $files){
-        if (!$restaurant?->gallery->gallery_id) {
+    /**
+     * This method replaces existing gallery images for a restaurant based on the provided files.
+     * It checks for files that have keys starting with 'gallery_replace_' to identify which images to replace.
+     * For each identified file, it uses the MediaService to replace the existing media with the new file.
+     * @param ?Restaurant $restaurant The restaurant instance.
+     * @param array $files The uploaded files.
+     * @return void
+     * @throws \Exception If image replacement fails.
+     */
+    public function replaceRestaurantGalleryImages(?Restaurant $restaurant, array $files)
+    {
+        if (!$restaurant?->gallery?->gallery_id) {
             return;
         }
 
         foreach ($files as $key => $file) {
             if (!str_starts_with($key, 'gallery_replace_')) {
+                continue;
+            }
+
+            // Skip if not a valid single file upload (array-style uploads like gallery_images have different structure)
+            if (!is_array($file) || !isset($file['error']) || is_array($file['error'])) {
                 continue;
             }
 
@@ -265,16 +327,27 @@ class RestaurantService implements IRestaurantService
                 $altText
             );
             if (!($result['success'] ?? false)) {
-                throw new \Exception(('Failed to replace image'));
+                throw new ApplicationException(('Failed to replace image'));
             }
         }
     }
 
-    public function removeGalleryImage(int $restaurantId, int $mediaId): bool{
+    /**
+     * Removes a gallery image from a restaurant's gallery based on the provided restaurant ID and media ID.
+     * This method first checks if the restaurant has an associated gallery. If it does, 
+     * it calls the RestaurantRepository to remove the specified media from the gallery.
+     * @param int $restaurantId The ID of the restaurant.
+     * @param int $mediaId The ID of the media to be removed from the gallery.
+     * @return bool Returns true if the media was successfully removed, or false if the restaurant does not have a gallery.
+     * @throws \Exception If the restaurant is not found or if the gallery removal fails.
+     * 
+     */
+    public function removeGalleryImage(int $restaurantId, int $mediaId): bool
+    {
         $restaurant = $this->restaurantRepository->getRestaurantById($restaurantId);
         if (!$restaurant?->gallery?->gallery_id) {
-        return false;
-        }   
+            return false;
+        }
 
         return $this->restaurantRepository->removeMediaFromGallery(
             $restaurant->gallery->gallery_id,
@@ -282,13 +355,25 @@ class RestaurantService implements IRestaurantService
         );
     }
 
-    private function handleSessions(int $restaurantId, array $postData){
+    /**
+     * Handles the creation and updating of restaurant sessions.
+     * This method first deletes all existing sessions for the 
+     * specified restaurant ID to ensure that the session data is fully replaced.
+     * It then iterates through the session data provided in the post data, 
+     * creating new Session instances for each valid session entry and saving 
+     * them to the database using the RestaurantRepository.
+     * @param int $restaurantId The ID of the restaurant.
+     * @param array $postData The post data containing session information.
+     * @return void
+     */
+    private function handleSessions(int $restaurantId, array $postData)
+    {
         //delete old pairing
         $this->restaurantRepository->deleteSessionsByRestaurant($restaurantId);
         foreach ($postData['sessions'] ?? [] as $index => $data) {
-            if(empty($data['session_type_id']) && empty($data['start_time']) && empty($data['end_time'])){
+            if (empty($data['session_type_id']) && empty($data['start_time']) && empty($data['end_time'])) {
                 continue;
-            }       
+            }
             //create new sessions pairing
             $session = new Session();
             $session->session_id = (int)$data['session_type_id'];
@@ -299,5 +384,9 @@ class RestaurantService implements IRestaurantService
 
             $this->restaurantRepository->createSession($session);
         }
+    }
+    public function getEvents(): array
+    {
+        return $this->restaurantRepository->getEvents();
     }
 }
