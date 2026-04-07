@@ -29,8 +29,7 @@ class HistoryRepository extends Repository implements IHistoryRepository
                 ORDER BY sched.date ASC, sched.start_time ASC, tschem.ticket_language ASC";
 
         try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute();
+            $stmt = $this->pdo->query($sql);
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
             throw new \RuntimeException('Failed to fetch available tour options: ' . $e->getMessage(), 0, $e);

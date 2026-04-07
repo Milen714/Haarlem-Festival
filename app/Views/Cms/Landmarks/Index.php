@@ -21,19 +21,7 @@ $landmarks = $landmarks ?? [];
         </a>
     </header>
 
-    <?php if (isset($_SESSION['success'])): ?>
-    <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
-        <p class="font-medium">Success <?= htmlspecialchars($_SESSION['success']) ?></p>
-    </div>
-    <?php unset($_SESSION['success']); ?>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['error'])): ?>
-    <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
-        <p class="font-medium">Error <?= htmlspecialchars($_SESSION['error']) ?></p>
-    </div>
-    <?php unset($_SESSION['error']); ?>
-    <?php endif; ?>
+    <?php include __DIR__ . '/../Components/FlashMessages.php'; ?>
 
     <?php if (empty($landmarks)): ?>
         <div class="bg-white border rounded-lg p-12 text-center">

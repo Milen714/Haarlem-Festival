@@ -33,7 +33,7 @@ $breadcrumbs = [
     <div class="container mx-auto max-w-[1100px] px-4">
     <?php include __DIR__ . '/Components/TourTickets.php'; ?>
 
-    <p class="mt-3 w-[50vw] mx-auto text-center history-emphasis font-extrabold prose-xl text-xl"><?= htmlspecialchars($text->content_html ?? '') ?></p>
+    <p class="mt-3 mb-16 w-[50vw] mx-auto text-center history-emphasis font-extrabold prose-xl text-xl"><?= htmlspecialchars($text->content_html ?? '') ?></p>
     </div>
 
 </div>

@@ -34,4 +34,5 @@ interface ITicketService
     public function releaseSeats(int $ticketTypeId, int $quantity): bool;
     public function releaseOrderItems(array $orderItems): void;
     public function validateCapacityAgainstVenue(int $scheduleId, int $newCapacity, ?int $excludeTicketTypeId = null): void;
+    public function syncHistoryScheduleSoldOut(int $ticketTypeId): void;
 }

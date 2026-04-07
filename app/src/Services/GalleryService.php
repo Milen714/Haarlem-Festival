@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Services\MediaService;
 use App\Services\Interfaces\IMediaService;
+use App\Services\Interfaces\IGalleryService;
 use App\Repositories\GalleryRepository;
 
-class GalleryService {
+class GalleryService implements IGalleryService
+{
     private IMediaService $mediaService;
     private GalleryRepository $galleryRepository;
 

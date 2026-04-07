@@ -1,11 +1,11 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Referencias a los contenedores
+document.addEventListener('DOMContentLoaded', function() {
+    // Get references to the form elements
     const form = document.getElementById('ticket-form');
     const inputNormal = document.getElementById('qty-normal');
     const inputFamily = document.getElementById('qty-family');
     const spanTotal = document.getElementById('summary-total');
-    
-    // Referencias para el resumen
+
+    // Get references for the order summary
     const summaryDetails = document.getElementById('summary-details');
     const summaryQtyText = document.getElementById('summary-qty-text');
     const summaryDateText = document.getElementById('summary-date-text');
@@ -17,18 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const datesContainer = document.getElementById('dates-container');
     const timesContainer = document.getElementById('times-container');
 
-    // 1. Escuchar cuando cambian el Idioma
+    // Listen for language selection changes
     document.querySelectorAll('input[name="language"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             const selectedLang = e.target.value;
-            const availableDates = tourOptionsTree[selectedLang]; // Buscamos en el árbol
+            const availableDates = tourOptionsTree[selectedLang];
 
-            // Limpiamos fechas y horas anteriores
+            // Clear previous dates and times
             datesContainer.innerHTML = '';
             timesContainer.innerHTML = '';
-            stepTime.classList.add('hidden', 'opacity-0'); // Ocultamos horas
+            stepTime.classList.add('hidden', 'opacity-0');
 
-            // Pintamos los nuevos botones de fechas
+            // Create a button for each available date
             for (const date in availableDates) {
                 const dateObj = new Date(date);
                 const niceDate = dateObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -45,28 +45,28 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => stepDate.classList.remove('opacity-0'), 50);
 
             attachDateListeners(selectedLang);
-            updateOrderOverview(); 
+            updateOrderOverview();
         });
     });
 
-   // 2. Función para escuchar cuando cambian la Fecha
+    // Listen for date selection changes
     function attachDateListeners(selectedLang) {
         document.querySelectorAll('input[name="date"]').forEach(radio => {
             radio.addEventListener('change', (e) => {
                 const selectedDate = e.target.value;
-                const availableTimes = tourOptionsTree[selectedLang][selectedDate]; 
+                const availableTimes = tourOptionsTree[selectedLang][selectedDate];
 
                 timesContainer.innerHTML = '';
 
                 Object.keys(availableTimes).forEach(time => {
-                    const ticketIds = availableTimes[time]; 
-                    const niceTime = time.substring(0, 5); 
-                    
+                    const ticketIds = availableTimes[time];
+                    const niceTime = time.substring(0, 5);
+
                     timesContainer.innerHTML += `
                         <label class="cursor-pointer">
-                            <input type="radio" name="time" value="${time}" 
-                                   data-normal-id="${ticketIds.normalId || ''}" 
-                                   data-family-id="${ticketIds.familyId || ''}" 
+                            <input type="radio" name="time" value="${time}"
+                                   data-normal-id="${ticketIds.normalId || ''}"
+                                   data-family-id="${ticketIds.familyId || ''}"
                                    class="peer sr-only" required>
                             <div class="tour-radio-btn">${niceTime}</div>
                         </label>
@@ -77,26 +77,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => stepTime.classList.remove('opacity-0'), 50);
 
                 document.querySelectorAll('input[name="time"]').forEach(t => t.addEventListener('change', updateOrderOverview));
-                updateOrderOverview(); 
+                updateOrderOverview();
             });
         });
     }
 
-    // 3. Función Maestra para actualizar todo el panel derecho
+    // Update the right panel with the current selections and totals
     function updateOrderOverview() {
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;
-        
+
         let priceNormal = parseFloat(inputNormal.getAttribute('data-precio'));
         let priceFamily = parseFloat(inputFamily.getAttribute('data-precio'));
-        
+
         let total = (qtyNormal * priceNormal) + (qtyFamily * priceFamily);
         spanTotal.innerText = total.toFixed(2);
 
-        let qtyTextParts = [];
-        if (qtyNormal > 0) qtyTextParts.push(`${qtyNormal}x Normal`);
-        if (qtyFamily > 0) qtyTextParts.push(`${qtyFamily}x Family`);
-        summaryQtyText.innerText = qtyTextParts.length > 0 ? qtyTextParts.join(', ') : '0';
+        // Build the quantity summary text
+        let qtyText = '0';
+        if (qtyNormal > 0 && qtyFamily > 0) {
+            qtyText = qtyNormal + 'x Normal, ' + qtyFamily + 'x Family';
+        } else if (qtyNormal > 0) {
+            qtyText = qtyNormal + 'x Normal';
+        } else if (qtyFamily > 0) {
+            qtyText = qtyFamily + 'x Family';
+        }
+        summaryQtyText.innerText = qtyText;
 
         let selectedDate = document.querySelector('input[name="date"]:checked');
         let selectedLang = document.querySelector('input[name="language"]:checked');
@@ -106,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedLang) summaryLangText.innerText = selectedLang.nextElementSibling.innerText;
         if (selectedTime) summaryTimeText.innerText = selectedTime.nextElementSibling.innerText;
 
+        // Show the summary panel if anything has been selected
         if (qtyNormal > 0 || qtyFamily > 0 || selectedDate || selectedLang || selectedTime) {
             summaryDetails.classList.remove('hidden');
         } else {
@@ -120,10 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if(e.target.type === 'radio') updateOrderOverview();
     });
 
-    // 4. Enviar por AJAX (Fetch) al OrderController
-    // NOTA: Agregamos "async" aquí para poder usar "await" en los fetch
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault(); 
+    // Send the form data to the server using fetch
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
         let qtyNormal = parseInt(inputNormal.value) || 0;
         let qtyFamily = parseInt(inputFamily.value) || 0;
@@ -142,18 +148,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Extraemos los IDs que guardamos inteligentemente en el HTML
+        // Get the ticket IDs stored in the radio button's data attributes
         let normalId = selectedTime.getAttribute('data-normal-id');
         let familyId = selectedTime.getAttribute('data-family-id');
 
         const btnSubmit = document.getElementById('btn-submit');
 
         try {
-            // Cambiamos el estado del botón para que el usuario no haga doble clic
+            // Disable the button so the user cannot double-click
             btnSubmit.innerText = "Adding...";
             btnSubmit.disabled = true;
 
-            // A) Si compró tickets normales, mandamos un paquete al OrderController
+            // Add normal tickets to cart
             if (qtyNormal > 0 && normalId) {
                 const responseNormal = await fetch('/addToCart', {
                     method: 'POST',
@@ -164,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!responseNormal.ok || !resultNormal.success) throw new Error(resultNormal.message || 'Error adding normal tickets.');
             }
 
-            // B) Si compró tickets familiares, mandamos otro paquete al OrderController
+            // Add family tickets to cart
             if (qtyFamily > 0 && familyId) {
                 const responseFamily = await fetch('/addToCart', {
                     method: 'POST',
@@ -175,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!responseFamily.ok || !resultFamily.success) throw new Error(resultFamily.message || 'Error adding family tickets.');
             }
 
+            // Show the success message
             btnSubmit.innerText = "Add to Cart";
             btnSubmit.disabled = false;
             const successMsg = document.getElementById('tour-cart-success');
@@ -182,13 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
             successMsg.classList.add('flex');
 
         } catch (error) {
-            // Si hubo un error en el servidor, se lo mostramos al usuario
+            // Show the error to the user and re-enable the button
             showError(error.message || 'Something went wrong. Please try again.');
             btnSubmit.innerText = "Add to Cart";
             btnSubmit.disabled = false;
         }
     });
 
+    // Close the success modal when the user clicks "keep looking"
     const keepLooking = document.getElementById('modal-keep-looking');
     if (keepLooking) {
         keepLooking.addEventListener('click', () => {

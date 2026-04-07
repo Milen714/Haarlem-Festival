@@ -113,10 +113,10 @@ class TicketService implements ITicketService
         return $this->ticketRepository->reserveMultiple($items);
     }
 
-    /*public function syncHistoryScheduleSoldOut(int $ticketTypeId): void
+    public function syncHistoryScheduleSoldOut(int $ticketTypeId): void
     {
         $this->ticketRepository->syncHistoryScheduleSoldOut($ticketTypeId);
-    }*/
+    }
 
 
     public function releaseSeats(int $ticketTypeId, int $quantity): bool
@@ -145,7 +145,11 @@ class TicketService implements ITicketService
                     $items[] = ['ticket_type_id' => (int)$siblingId, 'quantity' => $quantity];
                 }
             } else {
-                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $quantity];
+                $releaseQty = $quantity;
+                if ($schemeEnum === TicketSchemeEnum::HISTORY_FAMILY_TICKET) {
+                    $releaseQty *= 4;
+                }
+                $items[] = ['ticket_type_id' => $ticketTypeId, 'quantity' => $releaseQty];
             }
         }
         if (!empty($items)) {
@@ -412,8 +416,4 @@ class TicketService implements ITicketService
         return (int)$value;
     }
 
-    /*public function getTicketTypeFromSelection(TicketSelectionDTO $ticketDTO): ?TicketType
-    {        
-        return $this->ticketRepository->getTicketTypeFromSelection($ticketDTO);
-    }*/
 }

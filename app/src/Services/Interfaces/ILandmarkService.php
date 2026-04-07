@@ -8,6 +8,7 @@ interface ILandmarkService
 {    
     public function getLandmarkById(int $landmarkId): ?Landmark;
     public function getAllLandmarks(): array;
+    public function getAllLandmarksWithDetails(): array;
     public function getLandmarkBySlug(string $slug);
 
     public function createLandmark(array $postData, array $filesData): Landmark;

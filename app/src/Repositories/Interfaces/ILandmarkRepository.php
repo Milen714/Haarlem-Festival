@@ -6,6 +6,7 @@ use App\Models\Landmark;
 interface ILandmarkRepository
 {
     public function getAll(): array;
+    public function getAllWithDetails(): array;
     public function getById(int $id): ?Landmark;
     public function getBySlug(string $slug): ?Landmark;
     

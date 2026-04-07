@@ -3,7 +3,7 @@
 namespace App\Services\Interfaces;
 
 use App\ViewModels\History\TicketHistoryViewModel;
-
+use App\CmsModels\PageSection;
 
 interface IHistoryService
 {
@@ -11,4 +11,5 @@ interface IHistoryService
     public function getHomepageData(): array;
     public function getTourData(): array;
     public function getDetailData(string $slug): array;
+    public function getTourRouteSection(): ?PageSection;
 }

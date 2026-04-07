@@ -24,18 +24,9 @@ class LandmarkController extends BaseController
         $this->logService = new LogService();
     }
 
-    private function startSession(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
-
     #[RequireRole([UserRole::ADMIN])]
     public function index(): void
     {
-        $this->startSession();
-
         try {
             $landmarks = $this->landmarkService->getAllLandmarks();
 
@@ -52,8 +43,6 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function create($vars = []): void
     {
-        $this->startSession();
-
         $images = $this->prepareImages();
 
         $this->cmsLayout('Cms/Landmarks/LandmarkForm', [
@@ -92,10 +81,9 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
-        $this->startSession();
-
         try {
             $this->landmarkService->createLandmark($_POST, $_FILES);
+            $_SESSION['success'] = 'Landmark created successfully.';
             $this->redirect('/cms/landmarks');
         } catch (ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -109,9 +97,8 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
-        $this->startSession();
-
-        $id = $vars['id'] ?? '';
+        $id = (int)($vars['id'] ?? 0);
+        if ($id <= 0) { $this->notFound(); return; }
 
         try {
             $landmark = $this->landmarkService->getLandmarkById($id);
@@ -138,12 +125,12 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
-        $this->startSession();
-
-        $id = $vars['id'] ?? '';
+        $id = (int)($vars['id'] ?? 0);
+        if ($id <= 0) { $this->notFound(); return; }
 
         try {
-            $this->landmarkService->updateLandmark((int)$id, $_POST, $_FILES);
+            $this->landmarkService->updateLandmark($id, $_POST, $_FILES);
+            $_SESSION['success'] = 'Landmark updated successfully.';
             $this->redirect('/cms/landmarks');
         } catch (ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -159,17 +146,15 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
-        $this->startSession();
-
-        $id = $vars['id'] ?? '';
+        $id = (int)($vars['id'] ?? 0);
 
         try {
             $this->landmarkService->deleteLandmark($id);
+            $this->redirect('/cms/landmarks');
         } catch (\Throwable $e) {
             $this->logService->exception('Landmark', $e);
             $_SESSION['error'] = 'Failed to delete landmark.';
+            $this->redirect('/cms/landmarks');
         }
-
-        $this->redirect('/cms/landmarks');
     }
 }

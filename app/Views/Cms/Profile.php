@@ -1,30 +1,20 @@
-<?php
-$user = $user ?? null;
-?>
-
 <section class="p-8 max-w-4xl mx-auto">
     
-    <header class="mb-8">
-        <h1 class="text-4xl font-bold mb-2" style="font-family: 'Cormorant Garamond', serif;">
-            Profile Settings
-        </h1>
-        <p class="text-gray-600">
-            Manage your account details
-        </p>
+    <header class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-4xl font-bold mb-2" style="font-family: 'Cormorant Garamond', serif;">
+                Profile Settings
+            </h1>
+            <p class="text-gray-600">
+                Manage your account details
+            </p>
+        </div>
+        <a href="/cms" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition text-center">
+            ← Back to Dashboard
+        </a>
     </header>
 
-    <?php if (!empty($error)): ?>
-    <div class="mb-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg text-sm font-semibold">
-        <?= htmlspecialchars($error) ?>
-    </div>
-    <?php endif; ?>
-
-    <?php if (!empty($_SESSION['success'])): ?>
-    <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-800 rounded-lg text-sm font-semibold">
-        <?= htmlspecialchars($_SESSION['success']) ?>
-    </div>
-    <?php unset($_SESSION['success']); ?>
-    <?php endif; ?>
+    <?php include __DIR__ . '/Components/FlashMessages.php'; ?>
 
     <div class="bg-white border rounded-lg p-6 mb-6">
         
@@ -102,28 +92,4 @@ $user = $user ?? null;
 
 </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('profile-form');
-    const inputs = document.querySelectorAll('.profile-input');
-    const btnEdit = document.getElementById('btn-edit');
-    const btnCancel = document.getElementById('btn-cancel');
-    const actionButtons = document.getElementById('action-buttons');
-
-    btnEdit.addEventListener('click', () => {
-        inputs.forEach(input => input.disabled = false);
-        btnEdit.classList.add('hidden');
-        actionButtons.classList.remove('hidden');
-        actionButtons.classList.add('flex');
-        inputs[0].focus();
-    });
-
-    btnCancel.addEventListener('click', () => {
-        form.reset();
-        inputs.forEach(input => input.disabled = true);
-        btnEdit.classList.remove('hidden');
-        actionButtons.classList.remove('flex');
-        actionButtons.classList.add('hidden');
-    });
-});
-</script>
+<script src="/Js/ProfileEdit.js"></script>

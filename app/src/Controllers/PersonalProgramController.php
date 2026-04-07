@@ -4,12 +4,8 @@ namespace App\Controllers;
 use App\Framework\BaseController;
 use App\Models\Enums\UserRole;
 use App\Middleware\RequireRole;
-use App\Services\Interfaces\ITicketService;
-use App\Services\TicketService;
 use App\Services\Interfaces\IOrderService;
 use App\Services\OrderService;
-use App\Services\Interfaces\ITicketFulfillmentService;
-use App\Services\TicketFulfillmentService;
 use App\Models\Payment\OrderItem;
 use App\Exceptions\ValidationException;
 use App\Exceptions\ResourceNotFoundException;
@@ -24,17 +20,13 @@ use App\Services\UserService;
 
 class PersonalProgramController extends BaseController
 {
-    private ITicketService $ticketService;
     private IOrderService $orderService;
-    private ITicketFulfillmentService $ticketFulfillmentService;
     private ILogService $logService;
     private IScheduleService $scheduleService;
     private IUserService $userService;
 
     public function __construct() {
-        $this->ticketService = new TicketService();
         $this->orderService = new OrderService();
-        $this->ticketFulfillmentService = new TicketFulfillmentService();
         $this->logService = new LogService();
         $this->scheduleService = new ScheduleService();
         $this->userService = new UserService();
@@ -46,7 +38,7 @@ class PersonalProgramController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function personalProgram()
     {
-        $date = $_GET['date'] ?? null; // Optional date filter in 'Y-m-d' format
+        $date = ($_GET['date'] ?? null) ?: null; // Optional date filter in 'Y-m-d' format, empty string treated as null
         $showMyTicketsSection = ($_GET['showMyTicketSection'] ?? 'false') === 'true'; // Read section preference
         
         try {
@@ -65,19 +57,17 @@ class PersonalProgramController extends BaseController
             }
 
             $paidOrders = $this->orderService->getPaidTicketsByUser($userId, $date);
-            $viewModel = new PaidTicketsViewModel($paidOrders, $date, $showMyTicketsSection);
+            $allPaidOrders = ($date !== null) ? $this->orderService->getPaidTicketsByUser($userId, null) : null;
+            $viewModel = new PaidTicketsViewModel($paidOrders, $date, $showMyTicketsSection, $allPaidOrders);
             $availableDates = $this->scheduleService->getAvailableDates();
 
             $this->view('ShoppingCart/PersonalProgram', ['viewModel' => $viewModel, 'availableDates' => $availableDates]);
-        } catch (ValidationException $e) {
-            $this->logService->info('PersonalProgram', 'Validation error: ' . $e->getMessage());
-            $this->view('ShoppingCart/PersonalProgram', ['viewModel' => null, 'error' => $e->getMessage()]);
-        } catch (UserFacingException $e) {
-            $this->logService->info('PersonalProgram', 'User-facing error: ' . $e->getMessage());
-            $this->view('ShoppingCart/PersonalProgram', ['viewModel' => null, 'error' => $e->getMessage()]);
+        } catch (ValidationException | UserFacingException $e) {
+            $this->logService->info('PersonalProgram', $e->getMessage());
+            $this->view('ShoppingCart/PersonalProgram', ['viewModel' => null, 'availableDates' => [], 'error' => $e->getMessage()]);
         } catch (\Exception $e) {
             $this->logService->exception('PersonalProgram', $e);
-            $this->view('ShoppingCart/PersonalProgram', ['viewModel' => null, 'error' => 'An error occurred while loading your personal program. Please try again later.']);
+            $this->view('ShoppingCart/PersonalProgram', ['viewModel' => null, 'availableDates' => [], 'error' => 'An error occurred while loading your personal program. Please try again later.']);
         }
     }
 
@@ -87,7 +77,7 @@ class PersonalProgramController extends BaseController
     #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
     public function programContent()
     {
-        $date = $_GET['date'] ?? null;
+        $date = ($_GET['date'] ?? null) ?: null;
         $userId = $this->getLoggedInUser()?->id;
         if (!$userId) { http_response_code(401); return; }
 
@@ -113,84 +103,78 @@ class PersonalProgramController extends BaseController
      */
     private function isValidDateFormat(string $date): bool
     {
-        $datePattern = '/^\d{4}-\d{2}-\d{2}$/';
-        if (!preg_match($datePattern, $date)) {
-            return false;
-        }
-
-        // Check if it's a valid date
-        $parts = explode('-', $date);
-        return checkdate((int)$parts[1], (int)$parts[2], (int)$parts[0]);
+        $d = \DateTime::createFromFormat('Y-m-d', $date);
+        return $d && $d->format('Y-m-d') === $date;
     }
 
-/**
- * Generates share token for the logged-in user or returns the existing one 
- */
-#[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
-public function generateShareToken(array $params = [])
-{
-    $sessionUser = $this->getLoggedInUser();
-    if (!$sessionUser) {
-        $this->sendErrorResponse('Unauthorized', 401);
-        return;
-    }
-
-    try {
-        $paidOrders = $this->orderService->getPaidTicketsByUser($sessionUser->id);
-        if (empty($paidOrders)) {
-            $this->sendErrorResponse('You have no paid tickets to share.', 400);
+    /**
+     * Generates share token for the logged-in user or returns the existing one
+     */
+    #[RequireRole([UserRole::ADMIN, UserRole::CUSTOMER, UserRole::EMPLOYEE])]
+    public function generateShareToken(array $_params = [])
+    {
+        $sessionUser = $this->getLoggedInUser();
+        if (!$sessionUser) {
+            $this->sendErrorResponse('Unauthorized', 401);
             return;
         }
 
-        // Re-fetch from DB to get current share_token state
-        $user = $this->userService->getUserById($sessionUser->id);
-        if (!$user->share_token) {
-            $token = bin2hex(random_bytes(24));
-            $this->userService->saveShareToken($user->id, $token);
-            $user->share_token = $token;
+        try {
+            $paidOrders = $this->orderService->getPaidTicketsByUser($sessionUser->id);
+            if (empty($paidOrders)) {
+                $this->sendErrorResponse('You have no paid tickets to share.', 400);
+                return;
+            }
+
+            // Re-fetch from DB to get current share_token state
+            $user = $this->userService->getUserById($sessionUser->id);
+            if (!$user->share_token) {
+                $token = bin2hex(random_bytes(24));
+                $this->userService->saveShareToken($user->id, $token);
+                $user->share_token = $token;
+            }
+
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $url = $scheme . '://' . $host . '/shared-program/' . $user->share_token;
+
+            $this->sendSuccessResponse(['url' => $url]);
+        } catch (\Exception $e) {
+            $this->logService->exception('PersonalProgram', $e);
+            $this->sendErrorResponse('Could not generate share link. Please try again.', 500);
         }
-
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $url = $scheme . '://' . $host . '/shared-program/' . $user->share_token;
-
-        $this->sendSuccessResponse(['url' => $url]);
-    } catch (\Exception $e) {
-        $this->logService->exception('PersonalProgram', $e);
-        $this->sendErrorResponse('Could not generate share link. Please try again.', 500);
-    }
-}
-
-/**
- * Public view of a shared program
- */
-public function sharedProgram(array $params = [])
-{
-    $token = $params['token'] ?? null;
-    if (!$token) {
-        $this->notFound();
-        return;
     }
 
-    try {
-        $user = $this->userService->findByShareToken($token);
-        if (!$user) {
+    /**
+     * Public view of a shared program
+     */
+    public function sharedProgram(array $params = [])
+    {
+        $token = $params['token'] ?? null;
+        if (!$token) {
             $this->notFound();
             return;
         }
 
-        $paidOrders = $this->orderService->getPaidTicketsByUser($user->id);
-        $viewModel = new PaidTicketsViewModel($paidOrders, null, false);
+        try {
+            $user = $this->userService->findByShareToken($token);
+            if (!$user) {
+                $this->notFound();
+                return;
+            }
 
-        $this->view('ShoppingCart/SharedProgram', [
-            'viewModel' => $viewModel,
-            'sharedByUser' => $user,
-        ]);
-    } catch (\Exception $e) {
-        $this->logService->exception('PersonalProgram', $e);
-        $this->internalServerError();
+            $paidOrders = $this->orderService->getPaidTicketsByUser($user->id);
+            $viewModel = new PaidTicketsViewModel($paidOrders, null, false);
+
+            $this->view('ShoppingCart/SharedProgram', [
+                'viewModel' => $viewModel,
+                'sharedByUser' => $user,
+            ]);
+        } catch (\Exception $e) {
+            $this->logService->exception('PersonalProgram', $e);
+            $this->internalServerError();
+        }
     }
-}
 
 
 }
