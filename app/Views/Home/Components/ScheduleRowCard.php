@@ -20,7 +20,7 @@ if (isset($scheduleItem) && !empty($scheduleItem)) {
             break;
         case EventType::History:
             $cardStyles = ['side' => 'bg-[var(--home-history-accent)] dark:bg-[var(--home-history-accent-muted)]', 'muted' => 'bg-[var(--home-history-accent-muted)] dark:bg-[var(--home-history-accent-muted-high-contrast)]'];
-            $cardImage = $scheduleRef->landmark?->landmark_image ?? new Media();
+            $cardImage = $scheduleRef->landmark?->main_image_id ?? new Media();
             $eventLabel = 'History';
             $scheduleName = $scheduleRef->venue->name ?? 'Walking Tour @Haarlem';
             break;

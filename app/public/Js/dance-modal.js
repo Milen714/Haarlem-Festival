@@ -44,7 +44,7 @@ function updateModalUI() {
     
     document.getElementById('qty-decrease').disabled = (modalData.qty <= 1);
     document.getElementById('qty-increase').disabled = (modalData.qty >= 10);
-}
+}cd
 
 async function confirmTicketAdd() {
     const btn = document.getElementById('modal-add-btn');

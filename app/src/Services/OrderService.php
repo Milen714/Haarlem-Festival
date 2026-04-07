@@ -11,6 +11,7 @@ use App\Repositories\Interfaces\IOrderRepository;
 use App\Repositories\OrderRepository;
 use App\Services\Interfaces\IOrderService;
 use App\Exceptions\ValidationException;
+use App\Models\Enums\UserRole;
 
 class OrderService implements IOrderService
 {
@@ -376,12 +377,12 @@ class OrderService implements IOrderService
 
         public function canUserDownloadOrderTickets(User $user, Order $order): bool
         {
-            return $user->id === $order->user->id || $user->role === \App\Models\Enums\UserRole::ADMIN;
+            return $user->id === $order->user->id || $user->role === UserRole::ADMIN;
         }
 
         public function authorizeOrderOwnership(User $user, Order $order, callable $onUnauthorized): bool
         {
-            if ($user->id !== $order->user->id && $user->role !== \App\Models\Enums\UserRole::ADMIN) {
+            if ($user->id !== $order->user->id && $user->role !== UserRole::ADMIN) {
                 $onUnauthorized();
                 return false;
             }

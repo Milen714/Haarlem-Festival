@@ -158,7 +158,7 @@ class UserController extends BaseController
             $user->lname = $data['lname'] ?? $user->lname;
             $user->phone = $data['phone'] ?? $user->phone;
             $user->address = $data['address'] ?? $user->address;
-            $user->role = \App\Models\Enums\UserRole::from($data['role']);
+            $user->role = UserRole::from($data['role']);
             $this->userService->updateUser($user);
 
             $_SESSION['success'] = "User '{$user->email}' updated successfully.";
