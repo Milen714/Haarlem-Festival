@@ -240,9 +240,9 @@ class AccountController extends BaseController
     public function settings($vars = [])
     {
         $loggedUser = $this->getLoggedInUser();
-        if (!isset($loggedUser)) {
-            header("Location: /login");
-            exit();
+        if (!$loggedUser) {
+            $this->redirect('/login');
+            return;
         }
         try {
             $user = $this->userService->getUserById($loggedUser->id);
@@ -254,8 +254,8 @@ class AccountController extends BaseController
             }
         } catch (\Throwable $e) {
             $this->logService->exception('Account', $e);
-            header("Location: /login");
-            exit();
+            $this->redirect('/login');
+            return;
         }
     }
 
@@ -269,7 +269,7 @@ class AccountController extends BaseController
 
         try {
             $user = $this->userService->getUserById($loggedUser->id);
-            $user->fromPDOData($_POST);
+            $this->userService->updateUserFromRequest($user, $_POST);
             $this->userService->updateUser($user);
             $this->setLoggedInUser($user);
 
@@ -282,10 +282,11 @@ class AccountController extends BaseController
             }
         } catch (\Throwable $e) {
             $this->logService->exception('Account', $e);
+            $displayUser = $user ?? $loggedUser;
             if ($loggedUser->role === UserRole::ADMIN) {
-                $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $loggedUser, 'error' => 'An error occurred. Please try again.']);
+                $this->cmsLayout('Cms/Profile', ['title' => 'Admin Profile', 'user' => $displayUser, 'error' => 'An error occurred. Please try again.']);
             } else {
-                $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $loggedUser, 'error' => 'An error occurred. Please try again.']);
+                $this->view('Account/Settings', ['title' => 'Account Settings', 'user' => $displayUser, 'error' => 'An error occurred. Please try again.']);
             }
         }
     }

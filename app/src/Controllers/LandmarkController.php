@@ -83,6 +83,7 @@ class LandmarkController extends BaseController
     {
         try {
             $this->landmarkService->createLandmark($_POST, $_FILES);
+            $_SESSION['success'] = 'Landmark created successfully.';
             $this->redirect('/cms/landmarks');
         } catch (ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -96,7 +97,8 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function edit($vars = []): void
     {
-        $id = $vars['id'] ?? '';
+        $id = (int)($vars['id'] ?? 0);
+        if ($id <= 0) { $this->notFound(); return; }
 
         try {
             $landmark = $this->landmarkService->getLandmarkById($id);
@@ -123,10 +125,12 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
-        $id = $vars['id'] ?? '';
+        $id = (int)($vars['id'] ?? 0);
+        if ($id <= 0) { $this->notFound(); return; }
 
         try {
-            $this->landmarkService->updateLandmark((int)$id, $_POST, $_FILES);
+            $this->landmarkService->updateLandmark($id, $_POST, $_FILES);
+            $_SESSION['success'] = 'Landmark updated successfully.';
             $this->redirect('/cms/landmarks');
         } catch (ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
@@ -142,15 +146,15 @@ class LandmarkController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
-        $id = $vars['id'] ?? '';
+        $id = (int)($vars['id'] ?? 0);
 
         try {
             $this->landmarkService->deleteLandmark($id);
+            $this->redirect('/cms/landmarks');
         } catch (\Throwable $e) {
             $this->logService->exception('Landmark', $e);
             $_SESSION['error'] = 'Failed to delete landmark.';
+            $this->redirect('/cms/landmarks');
         }
-
-        $this->redirect('/cms/landmarks');
     }
 }

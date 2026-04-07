@@ -15,19 +15,7 @@
     </header>
 </div>
 
-<?php if (isset($_SESSION['success'])): ?>
-<div class="w-full bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
-    <p class="font-medium">✓ <?= htmlspecialchars($_SESSION['success']) ?></p>
-    <?php unset($_SESSION['success']); ?>
-</div>
-<?php endif; ?>
-
-<?php if (isset($_SESSION['error'])): ?>
-<div class="w-full bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
-    <p class="font-medium">✗ <?= htmlspecialchars($_SESSION['error']) ?></p>
-    <?php unset($_SESSION['error']); ?>
-</div>
-<?php endif; ?>
+<?php include __DIR__ . '/../Components/FlashMessages.php'; ?>
 
 <section class="flex flex-col gap-4 items-start p-3 mx-auto mb-10 max-w-xl">
 

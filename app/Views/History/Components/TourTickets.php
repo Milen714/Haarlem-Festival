@@ -8,28 +8,27 @@
     
     <div class="mb-12">
         <h3 class="font-history-serif text-[1.5rem] md:text-[2rem] text-ink-900 font-bold">
-            Tickets
+            <?= htmlspecialchars($tourTickets->title ?? '') ?>
         </h3>
         <div class="underline-history"></div>
+        <div class="text-sm text-ink-700"><?= $tourTickets->content_html ?? '' ?></div>
     </div>
-
+                            
     <form id="ticket-form" class="flex flex-col lg:flex-row gap-8 items-start">
         
         <div class="ticket-options w-full lg:w-2/3 p-6 md:p-8 ">
             
-            <div class="mb-8">
-                <h3 class="font-history-serif text-xl text-ink-900 font-bold mb-4">Select Tickets</h3>
-                
+            <div class="mb-8">                
                 <div class="space-y-4">
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
                             <div class="font-semibold text-ink-900">Normal Ticket</div>
-                            <div class="text-sm text-ink-700">€<?= number_format($ticketOptions->normalPrice, 2) ?> per person</div>
+                            <div class="text-sm text-ink-700">€<?= number_format($ticketOptions->normalPrice, 2) ?></div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="changeQty('qty-normal',-1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">−</button>
+                            <button type="button" onclick="changeQty('qty-normal',-1)" class="w-8 h-8 rounded-full bg-[#D1EC92]  border border-[#263209] font-bold text-lg hover:bg-[#CAA359] transition-colors">−</button>
                             <span id="qty-normal-display" class="w-6 text-center font-semibold">0</span>
-                            <button type="button" onclick="changeQty('qty-normal',1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">+</button>
+                            <button type="button" onclick="changeQty('qty-normal',1)" class="w-8 h-8 rounded-full bg-[#D1EC92] border border-[#263209] font-bold text-lg hover:bg-[#CAA359] transition-colors">+</button>
                         </div>
                         <input type="hidden" id="qty-normal" name="qtyNormal" value="0" data-precio="<?= $ticketOptions->normalPrice ?>">
                     </div>
@@ -37,12 +36,12 @@
                     <div class="flex justify-between items-center p-4 bg-[#FFF1C8] border border-[#CAA359] rounded-md">
                         <div>
                             <div class="font-semibold text-ink-900">Family Ticket</div>
-                            <div class="text-sm text-ink-700">Max 4 participants. €<?= number_format($ticketOptions->familyPrice, 2) ?> total</div>
+                            <div class="text-sm text-ink-700">€<?= number_format($ticketOptions->familyPrice, 2) ?> </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="changeQty('qty-family',-1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">−</button>
+                            <button type="button" onclick="changeQty('qty-family',-1)" class="w-8 h-8 rounded-full bg-[#D1EC92] border border-[#263209] font-bold text-lg hover:bg-[#CAA359] transition-colors">−</button>
                             <span id="qty-family-display" class="w-6 text-center font-semibold">0</span>
-                            <button type="button" onclick="changeQty('qty-family',1)" class="w-8 h-8 rounded-full border border-[#CAA359] font-bold text-lg hover:bg-[#CAA359] transition-colors">+</button>
+                            <button type="button" onclick="changeQty('qty-family',1)" class="w-8 h-8 rounded-full bg-[#D1EC92] border border-[#263209] font-bold text-lg hover:bg-[#CAA359] transition-colors">+</button>
                         </div>
                         <input type="hidden" id="qty-family" name="qtyFamily" value="0" data-precio="<?= $ticketOptions->familyPrice ?>">
                     </div>
@@ -101,18 +100,18 @@
                     <span id="summary-lang-text" class="text-right">-</span>
                 </div>
             </div>
-            <div class="border-t border-[#CAA359] pt-4 mb-6">
+            <div class="border-t border-[#CAA359] pt-4 mb-10">
                 <div class="flex justify-between items-center">
                     <h3 class="text-lg font-bold text-ink-900">Total:</h3>
                     <h3 class="text-2xl font-bold text-ink-900">€<span id="summary-total">0.00</span></h3>
                 </div>
             </div>
             
-            <button type="submit" id="btn-submit" class="w-full bg-[#546A21] hover:bg-[#465e10] text-white font-semibold py-3 px-4 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#546A21]">
+            <button type="submit" id="btn-submit" class="w-full btn-history text-center" style="padding: 0.5rem 1.25rem; font-size: 1rem;">
                 Add to Cart
             </button>
 
-            <a href="/personal-program" class="mt-3 w-full block text-center bg-[#546A21] hover:bg-[#465e10] text-white font-semibold py-3 px-4 rounded-md transition-colors shadow-sm">
+            <a href="/personal-program" class="mt-3 w-full block text-center btn-history" style="padding: 0.5rem 1.25rem; font-size: 1rem;">
                 See my program
             </a>
 

@@ -26,6 +26,13 @@ class HistoryService implements IHistoryService
         $this->landmarkService   = new LandmarkService();
     }
 
+    /**
+     * Fetches all available tour options from the database and builds a
+     * TicketHistoryViewModel grouped by language → date → time, with
+     * separate IDs for normal and family ticket types.
+     *
+     * @return TicketHistoryViewModel
+     */
     public function getAvailableTourOptions(): TicketHistoryViewModel
     {
         $rawOptions = $this->historyRepository->getAvailableTourOptions();
@@ -33,32 +40,19 @@ class HistoryService implements IHistoryService
         
         $viewModel = new TicketHistoryViewModel();
 
-        // Creamos el Árbol de Decisiones
         $ticketOptions = [];
 
         foreach ($rawOptions as $row) {
-            $language = $row['language'];
-            $date = $row['date'];
-            $time = $row['time'];
-            $id   = (int)$row['ticket_type_id']; 
-            $schemeType = $row['scheme_enum']; 
+            $language   = $row['language'];
+            $date       = $row['date'];
+            $time       = $row['time'];
+            $id         = (int)$row['ticket_type_id'];
+            $schemeType = $row['scheme_enum'];
 
-            // Si el idioma no existe en el árbol, lo creamos
-            if (!isset($ticketOptions[$language])) {
-                $ticketOptions[$language] = [];
-            }
-            // Si la fecha no existe dentro de ese idioma, la creamos
-            if (!isset($ticketOptions[$language][$date])) {
-                $ticketOptions[$language][$date] = [];
-            }
-            
-            // ¡EL CAMBIO IMPORTANTE ESTÁ AQUÍ!
-            // Inicializamos la hora usando su llave explícita [$time]
-            if (!isset($ticketOptions[$language][$date][$time])) {
-                $ticketOptions[$language][$date][$time] = ['normalId' => null, 'familyId' => null];
-            }
+            $ticketOptions[$language] ??= [];
+            $ticketOptions[$language][$date] ??= [];
+            $ticketOptions[$language][$date][$time] ??= ['normalId' => null, 'familyId' => null];
 
-            // Asignamos el ID correcto usando validación estricta con tu Enum
             if ($schemeType === TicketSchemeEnum::HISTORY_SINGLE_TICKET->value) {
                 $ticketOptions[$language][$date][$time]['normalId'] = $id;
             } elseif ($schemeType === TicketSchemeEnum::HISTORY_FAMILY_TICKET->value) {
@@ -73,6 +67,13 @@ class HistoryService implements IHistoryService
         return $viewModel;
     }
 
+    /**
+     * Returns all data needed to render the History homepage:
+     * page content sections (hero, welcome, book_tour) and the
+     * featured landmarks with resolved image paths.
+     *
+     * @return array<string, mixed>
+     */
     public function getHomepageData(): array
     {
         $pageData  = $this->pageService->getPageBySlug('events-history');
@@ -83,27 +84,50 @@ class HistoryService implements IHistoryService
         $welcome  = $s['welcome'];
         $bookTour = $s['book_tour'];
 
+        foreach ($landmarks as $lm) {
+            $lm->imagePath = $this->resolveImagePath($lm->main_image_id?->file_path);
+        }
+
         return compact('pageData', 'landmarks', 'hero', 'welcome', 'bookTour');
     }
 
+    /**
+     * Returns all data needed to render the History Tour page:
+     * page sections, ticket options, decoded route stops, and tour features.
+     *
+     * @return array<string, mixed>
+     */
     public function getTourData(): array
     {
         $pageData      = $this->pageService->getPageBySlug('history-tour');
         $ticketOptions = $this->getAvailableTourOptions();
         $sections      = $pageData->content_sections ?? [];
 
-        $s            = $this->extractSections($sections, ['hero_picture', 'tour_info', 'book_tour', 'good_to_know', 'tour_route', 'text']);
+        $s            = $this->extractSections($sections, ['hero_picture', 'tour_info', 'book_tour', 'good_to_know', 'tour_route', 'text', 'tour_tickets']);
         $hero         = $s['hero_picture'];
         $tourInfo     = $s['tour_info'];
         $bookTour     = $s['book_tour'];
         $goodToKnow   = $s['good_to_know'];
         $tourRoute    = $s['tour_route'];
         $text         = $s['text'];
+        $tourTickets  = $s['tour_tickets'];
         $tourFeatures = array_values(array_filter($sections, fn($sec) => $sec->section_type->value === 'tour_features'));
 
-        return compact('pageData', 'ticketOptions', 'hero', 'tourInfo', 'bookTour', 'goodToKnow', 'tourRoute', 'text', 'tourFeatures');
+        $stopsData  = ($tourRoute && $tourRoute->content_html) ? json_decode($tourRoute->content_html, true) : [];
+        $routeStops = array_column($stopsData, 'name');
+        $totalStops = count($routeStops);
+
+        return compact('pageData', 'ticketOptions', 'hero', 'tourInfo', 'bookTour', 'goodToKnow', 'tourRoute', 'text', 'tourTickets', 'tourFeatures', 'routeStops', 'totalStops');
     }
 
+    /**
+     * Returns all data needed to render a landmark detail page.
+     * Throws LandmarkNotFoundException if the slug does not match any landmark.
+     *
+     * @param  string $slug  URL slug of the landmark
+     * @return array<string, mixed>
+     * @throws LandmarkNotFoundException
+     */
     public function getDetailData(string $slug): array
     {
         $landmark = $this->landmarkService->getLandmarkBySlug($slug);
@@ -117,18 +141,27 @@ class HistoryService implements IHistoryService
         $welcome  = $s['welcome'];
 
         $placeholder = '/Assets/Home/ImagePlaceholder.png';
-        $introImage = $historyImage = $whyVisitImage = $placeholder;
+        $imageKeys   = ['introImage', 'historyImage', 'whyVisitImage'];
+        $images      = array_fill_keys($imageKeys, $placeholder);
         if (!empty($landmark->gallery->media_items)) {
             $items = array_values($landmark->gallery->media_items);
-            if (isset($items[0]->media)) $introImage    = '/' . ltrim($items[0]->media->file_path, '/');
-            if (isset($items[1]->media)) $historyImage  = '/' . ltrim($items[1]->media->file_path, '/');
-            if (isset($items[2]->media)) $whyVisitImage = '/' . ltrim($items[2]->media->file_path, '/');
+            foreach ($imageKeys as $i => $key) {
+                if (isset($items[$i]->media)) {
+                    $images[$key] = '/' . ltrim($items[$i]->media->file_path, '/');
+                }
+            }
         }
+        [$introImage, $historyImage, $whyVisitImage] = array_values($images);
 
         $otherLandmarks = array_values(array_filter(
             $this->landmarkService->getAllLandmarksWithDetails(),
             fn($l) => $l->landmark_slug !== $slug
         ));
+
+        foreach ($otherLandmarks as $other) {
+            $items = !empty($other->gallery->media_items) ? array_values($other->gallery->media_items) : [];
+            $other->imagePath = $this->resolveImagePath($items[0]->media->file_path ?? null);
+        }
 
         return compact('landmark', 'introImage', 'historyImage', 'whyVisitImage', 'otherLandmarks', 'bookTour', 'welcome');
     }
@@ -138,6 +171,19 @@ class HistoryService implements IHistoryService
         $pageData = $this->pageService->getPageBySlug('history-tour');
         $s = $this->extractSections($pageData->content_sections ?? [], ['tour_route']);
         return $s['tour_route'];
+    }
+
+    /**
+     * Returns a web-safe image path. Falls back to the placeholder if
+     * $filePath is null or empty.
+     *
+     * @param  string|null $filePath     Raw file path from the database
+     * @param  string      $placeholder  Fallback image URL
+     * @return string
+     */
+    private function resolveImagePath(?string $filePath, string $placeholder = '/Assets/Home/ImagePlaceholder.png'): string
+    {
+        return $filePath ? '/' . ltrim($filePath, '/') : $placeholder;
     }
 
     private function extractSections(array $sections, array $keys): array

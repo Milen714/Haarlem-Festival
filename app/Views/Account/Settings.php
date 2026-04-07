@@ -1,6 +1,3 @@
-<?php
-$user = $user ?? null;
-?>
 
 <section class="container mx-auto max-w-[1200px] px-4 mt-16 mb-32 font-montserrat">
     
@@ -37,7 +34,7 @@ $user = $user ?? null;
                 </button>
             </div>
 
-            <form id="profile-form" action="/account/settings/update" method="POST" class="space-y-6">
+            <form id="profile-form" action="/settings/update" method="POST" class="space-y-6">
                 
                 <div class="flex flex-col sm:flex-row gap-4">
                     <div class="w-full sm:w-1/2">
@@ -106,12 +103,9 @@ $user = $user ?? null;
                     <a href="/personal-program" class="home_calendar_button_active flex justify-center items-center gap-2 px-6 py-3 w-fit">
                         My Personal Program
                     </a>
-
-                    <?php if (!($user->is_verified ?? false)): ?>
-                    <a href="/verify-account" class="home_calendar_button_inactive flex justify-center items-center gap-2 px-6 py-3 w-fit">
-                        Validate My Account
+                    <a href="/verify-account" class="home_calendar_button_active flex justify-center items-center gap-2 px-6 py-3 w-fit">
+                        Verify Account
                     </a>
-                    <?php endif; ?>
                 </div>
             </div>
 
@@ -120,28 +114,4 @@ $user = $user ?? null;
     </div>
 </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('profile-form');
-    const inputs = document.querySelectorAll('.profile-input');
-    const btnEdit = document.getElementById('btn-edit');
-    const btnCancel = document.getElementById('btn-cancel');
-    const actionButtons = document.getElementById('action-buttons');
-
-    btnEdit.addEventListener('click', () => {
-        inputs.forEach(input => input.disabled = false);
-        btnEdit.classList.add('hidden');
-        actionButtons.classList.remove('hidden');
-        actionButtons.classList.add('flex');
-        inputs[0].focus();
-    });
-
-    btnCancel.addEventListener('click', () => {
-        form.reset();
-        inputs.forEach(input => input.disabled = true);
-        btnEdit.classList.remove('hidden');
-        actionButtons.classList.remove('flex');
-        actionButtons.classList.add('hidden');
-    });
-});
-</script>
+<script src="/Js/ProfileEdit.js"></script>

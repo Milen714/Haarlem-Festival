@@ -1,10 +1,6 @@
 <?php
-/** @var App\CmsModels\PageSection|null $tourRoute */
-$stopsData = ($tourRoute && $tourRoute->content_html)
-    ? json_decode($tourRoute->content_html, true)
-    : [];
-$routeStops = array_column($stopsData, 'name');
-$totalStops = count($routeStops);
+/** @var string[] $routeStops */
+/** @var int $totalStops */
 ?>
 
 <section class="grid md:grid-cols-2 gap-8 md:gap-x-12 items-stretch mb-20 mt-10">

@@ -1,15 +1,11 @@
 <?php /** @var App\Models\Landmark[] $landmarks */ ?>
 <section class="space-y-[3rem] mb-[5rem]">
     <?php foreach ($landmarks as $i => $landmark):
-        $image = '/Assets/Home/ImagePlaceholder.png';
-        if (!empty($landmark->main_image_id?->file_path)) {
-            $image = '/' . ltrim($landmark->main_image_id->file_path, '/');
-        }
         $imageLeft = $i % 2 === 0;
     ?>
     <article class="grid md:grid-cols-2 gap-8 md:gap-x-16 items-stretch mb-5">
         <div class="md:col-span-1 <?= $imageLeft ? 'order-1' : 'order-2' ?>">
-            <img src="<?= htmlspecialchars($image) ?>"
+            <img src="<?= htmlspecialchars($landmark->imagePath ?? '/Assets/Home/ImagePlaceholder.png') ?>"
                  class="w-full h-[16rem] md:h-full object-cover rounded-[0.5rem] shadow-md" />
         </div>
         <div class="md:col-span-1 <?= $imageLeft ? 'order-2' : 'order-1' ?> p-[2rem] flex flex-col justify-center <?= !$imageLeft ? 'text-right md:text-left' : '' ?>">
