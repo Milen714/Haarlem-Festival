@@ -3,6 +3,9 @@
 namespace App\Controllers;
 
 use App\Framework\BaseController;
+use App\Exceptions\ApplicationException;
+use App\Exceptions\ResourceNotFoundException;
+use App\Exceptions\ValidationException;
 use App\Services\VenueService;
 use App\Services\Interfaces\IVenueService;
 use App\Services\LogService;
@@ -44,12 +47,12 @@ class VenueController extends BaseController
                 'title' => 'Manage Venues',
                 'venues' => $venues
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logService->exception('Venue', $e);
             $this->cmsLayout('Cms/Venues/Index', [
                 'title' => 'Manage Venues',
                 'venues' => [],
-                'error' => 'Failed to load venues: ' . $e->getMessage()
+                'error' => 'Failed to load venues.'
             ]);
         }
     }
@@ -85,7 +88,6 @@ class VenueController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function store($vars = []): void
     {
-        $this->startSession();
 
         try {
             $venue = $this->venueService->createFromRequest($_POST, $_FILES);
@@ -94,9 +96,12 @@ class VenueController extends BaseController
                 $_SESSION['success'] = "Venue '{$venue->name}' created successfully!";
             }
             $this->redirect('/cms/venues');
-        } catch (\Exception $e) {
-            $this->logService->exception('Venue', $e);
+        } catch (ValidationException $e) {
             $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/venues/create');
+        } catch (ApplicationException | \Throwable $e) {
+            $this->logService->exception('Venue', $e);
+            $_SESSION['error'] = 'Failed to create venue.';
             $this->redirect('/cms/venues/create');
         }
     }
@@ -119,8 +124,7 @@ class VenueController extends BaseController
             $venue = $this->venueService->getVenueById($venueId);
 
             if (!$venue) {
-                $this->handleError('Venue not found');
-                return;
+                throw new ResourceNotFoundException('Venue not found.');
             }
 
             $this->cmsLayout('Cms/Venues/Form', [
@@ -128,9 +132,13 @@ class VenueController extends BaseController
                 'venue' => $venue,
                 'action' => "/cms/venues/update/{$venueId}"
             ]);
-        } catch (\Exception $e) {
+        } catch (ResourceNotFoundException $e) {
+            $_SESSION['error'] = $e->getMessage();
+            $this->redirect('/cms/venues');
+        } catch (\Throwable $e) {
             $this->logService->exception('Venue', $e);
-            $this->handleError('Failed to load venue: ' . $e->getMessage());
+            $_SESSION['error'] = 'Failed to load venue.';
+            $this->redirect('/cms/venues');
         }
     }
 
@@ -147,7 +155,6 @@ class VenueController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function update($vars = []): void
     {
-        $this->startSession();
         $venueId = (int)($vars['id'] ?? 0);
 
         try {
@@ -157,9 +164,12 @@ class VenueController extends BaseController
                 $_SESSION['success'] = "Venue '{$venue->name}' updated successfully!";
             }
             $this->redirect('/cms/venues');
-        } catch (\Exception $e) {
-            $this->logService->exception('Venue', $e);
+        } catch (ValidationException | ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
+            $this->redirect("/cms/venues/edit/{$venueId}");
+        } catch (ApplicationException | \Throwable $e) {
+            $this->logService->exception('Venue', $e);
+            $_SESSION['error'] = 'Failed to update venue.';
             $this->redirect("/cms/venues/edit/{$venueId}");
         }
     }
@@ -177,53 +187,27 @@ class VenueController extends BaseController
     #[RequireRole([UserRole::ADMIN])]
     public function delete($vars = []): void
     {
-        $this->startSession();
+
         $venueId = (int)($vars['id'] ?? 0);
 
         try {
             $venue = $this->venueService->getVenueById($venueId);
 
             if (!$venue) {
-                throw new \Exception('Venue not found');
+                throw new ResourceNotFoundException('Venue not found.');
             }
 
             $venueName = $venue->name;
             $this->venueService->deleteVenue($venueId);
 
             $_SESSION['success'] = "Venue '{$venueName}' deleted successfully!";
-        } catch (\Exception $e) {
-            $this->logService->exception('Venue', $e);
+        } catch (ResourceNotFoundException $e) {
             $_SESSION['error'] = $e->getMessage();
+        } catch (\Throwable $e) {
+            $this->logService->exception('Venue', $e);
+            $_SESSION['error'] = 'Failed to delete venue.';
         }
 
         $this->redirect('/cms/venues');
-    }
-
-    /**
-     * Ensures the PHP session is started before writing to $_SESSION.
-     * Safe to call multiple times — checks session_status() before calling session_start().
-     *
-     * @return void
-     */
-    private function startSession(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
-
-    /**
-     * Stores an error message in the session and redirects to the CMS home.
-     * Used as a fallback when a venue cannot be loaded for the edit form.
-     *
-     * @param string $message  The error message to show the user.
-     *
-     * @return void
-     */
-    private function handleError(string $message): void
-    {
-        $this->startSession();
-        $_SESSION['error'] = $message;
-        $this->redirect('/cms');
     }
 }
