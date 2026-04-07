@@ -27,12 +27,15 @@ class GalleryService {
                 $existingMediaId = $postData[$inputName . '_id'] ?? null;
 
                 if ($existingMediaId && $existingMediaId !== '') {
-                    $this->mediaService->replaceMedia(
-                        (int)$existingMediaId, 
-                        $filesData[$inputName], 
-                        'Landmarks', 
+                    $result = $this->mediaService->replaceMedia(
+                        (int)$existingMediaId,
+                        $filesData[$inputName],
+                        'Landmarks',
                         "Landmark Section Image $order"
                     );
+                    if (!($result['success'] ?? false)) {
+                        throw new \RuntimeException('Failed to replace section image: ' . ($result['error'] ?? 'Unknown error'));
+                    }
                 } else {
                     $result = $this->mediaService->uploadAndCreate(
                         $filesData[$inputName], 

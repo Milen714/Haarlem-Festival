@@ -153,11 +153,13 @@ $content = $content ?? '';
                             </ul>
                         </div>
                     </li>
+                    <?php if (isset($_SESSION['loggedInUser'])): ?>
                     <li class="flex items-center gap-2">
                         <a href="/personal-program"
                             class="flex items-center gap-2 after:content-arrow_right after:ml-1 py-2 font-bold <?php echo str_contains($_SERVER['REQUEST_URI'], '/personal-program') ? 'text-blue-600 ' : 'text_colors_nav' ?> px-3 rounded hover-color md:hover:bg-transparent md:border-0 md:p-0">
                             Personal Plan</a>
                     </li>
+                    <?php endif; ?>
                     <?php if (isset($_SESSION['loggedInUser']) && $_SESSION['loggedInUser']->role->value === 'ADMIN'): ?>
                     <li class="flex items-center gap-2">
                         <a href="/cms"

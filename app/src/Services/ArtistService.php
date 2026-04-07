@@ -187,18 +187,20 @@ class ArtistService implements IArtistService
                 'Artists',
                 $artist->name . ' profile'
             );
+            if (!($result['success'] ?? false)) {
+                throw new ApplicationException('Failed to replace artist image: ' . ($result['error'] ?? 'Unknown error'));
+            }
+            // profile_image object stays the same — media_id unchanged, only the file on disk was swapped
         } else {
             $result = $this->mediaService->uploadAndCreate(
                 $files['profile_image'],
                 'Artists',
                 $artist->name . ' profile'
             );
-        }
-
-        if ($result['success'] && isset($result['media'])) {
+            if (!($result['success'] ?? false) || !isset($result['media'])) {
+                throw new ApplicationException('Failed to upload artist image: ' . ($result['error'] ?? 'Unknown error'));
+            }
             $artist->profile_image = $result['media'];
-        } else {
-            throw new ApplicationException('Failed to upload artist image.');
         }
 
         return $artist;
