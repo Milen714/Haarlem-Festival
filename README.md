@@ -64,7 +64,16 @@ You'll need to provide:
 
 A database dump file (`DatabaseDump.sql`) is available in the root for local development. Import it into your database to get started with sample data.
 
-### 3. Start Docker
+### 3. Install Composer dependencies
+
+From the app directory, install all PHP dependencies:
+
+```bash
+cd app
+docker compose run --rm php composer install
+```
+
+### 4. Start Docker
 
 ```bash
 docker-compose up -d
@@ -75,7 +84,7 @@ This spins up Nginx, PHP-FPM, PhpMyAdmin, Stripe CLI (for local webhook testing)
 The app will be available at `http://localhost`.
 PhpMyAdmin is available at `http://localhost:8080`.
 
-### 4. Configure Stripe webhooks
+### 5. Configure Stripe webhooks
 
 The Stripe CLI container automatically forwards webhook events to your local app. After Docker starts, grab the webhook signing secret it generates:
 
@@ -85,7 +94,7 @@ docker-compose logs stripe-cli | grep "webhook signing secret"
 
 Copy the `whsec_...` value and paste it into `STRIPE_WEBHOOK_SECRET` in both `.env` and `app/.env`. Without this step, payments will process but order confirmation won't trigger.
 
-### 5. Start the CSS watcher
+### 6. Start the CSS watcher
 
 In a separate terminal from the project root:
 
