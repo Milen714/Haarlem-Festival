@@ -63,7 +63,17 @@ This spins up Nginx, PHP-FPM, PhpMyAdmin, Stripe CLI (for local webhook testing)
 The app will be available at `http://localhost`.
 PhpMyAdmin is available at `http://localhost:8080`.
 
-### 4. Start the CSS watcher
+### 4. Configure Stripe webhooks
+
+The Stripe CLI container automatically forwards webhook events to your local app. After Docker starts, grab the webhook signing secret it generates:
+
+```bash
+docker-compose logs stripe-cli | grep "webhook signing secret"
+```
+
+Copy the `whsec_...` value and paste it into `STRIPE_WEBHOOK_SECRET` in both `.env` and `app/.env`. Without this step, payments will process but order confirmation won't trigger.
+
+### 5. Start the CSS watcher
 
 In a separate terminal from the project root:
 
