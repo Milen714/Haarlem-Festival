@@ -21,6 +21,9 @@ composer.phar
 !.env.example
 !/app/.env.example
 
+# Database dumps (local development only)
+DatabaseDump.sql
+
 # Logs and caches
 *.log
 logs/

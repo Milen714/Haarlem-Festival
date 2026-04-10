@@ -4,6 +4,16 @@ A full-stack web application built for the Haarlem Festival — a multi-day even
 
 ---
 
+## Documentation & Design
+
+- [📋 Figma Documentation](https://www.figma.com/design/kGgpd20OKJPyzFJRY4MJAQ/HaarlemFestivalDocumentation-IT2C-Grp4?node-id=0-1&t=FEGwT3mtH1ni8inX-1)
+- [🎨 Figma Design](https://www.figma.com/design/z2mHRFXuuakpjFqsZa3gZG/IT2CGroup4?node-id=12300-61594&t=GwRH3TRw4t3zxWU8-1)
+- 📁 **[Documentation/](./Documentation/)** — Raw diagram files and PNG exports of the same diagrams for offline viewing
+
+> **Note:** All documentation and diagrams are hosted in Figma to provide a comfortable viewing experience for large, complex diagrams. Local exports (raw files and PNGs) are available in the Documentation folder for offline reference.
+
+---
+
 ## Tech Stack
 
 | Layer            | Technology                                |
@@ -51,6 +61,8 @@ You'll need to provide:
 - Gmail SMTP credentials
 - Google Maps API key
 - Google reCAPTCHA keys
+
+A database dump file (`DatabaseDump.sql`) is available in the root for local development. Import it into your database to get started with sample data.
 
 ### 3. Start Docker
 
