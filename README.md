@@ -1,5 +1,7 @@
 # Haarlem Festival
 
+> ⚠️ **Important:** This README is submitted separately. You **must clone the repository** from GitHub to get the full codebase, then follow these instructions to set it up locally.
+
 A full-stack web application built for the Haarlem Festival — a multi-day event in the city of Haarlem featuring jazz, dance, magic, and food. This app handles everything from browsing events and buying tickets to managing the festival through an admin CMS. It was built as a school project at Hogeschool Inholland.
 
 ---
@@ -40,21 +42,30 @@ A full-stack web application built for the Haarlem Festival — a multi-day even
 
 ### 1. Clone the repo
 
+Clone this repository from GitHub:
+
 ```bash
 git clone <repo-url>
 cd Haarlem-Festival
 ```
 
+This step is **required** — the README alone is not sufficient to run the application.
+
 ### 2. Set up your environment
 
-Copy the example env files and fill in your credentials:
+> **Note:** Due to a 100 MB submission limit, the `.env` files and `DatabaseDump.sql` are submitted separately. Follow the steps below to set them up.
+
+⚠️ **IMPORTANT:** Place the provided `.env` files in **BOTH locations**:
 
 ```bash
-cp .env.example .env
-cp app/.env.example app/.env
+# Place the provided .env file in the root directory
+.env
+
+# Place the same provided .env file (or a copy) in the app directory
+app/.env
 ```
 
-You'll need to provide:
+Both directories need the same `.env` file with:
 
 - MySQL / Aiven database credentials
 - Stripe API keys (public + secret)
@@ -62,7 +73,7 @@ You'll need to provide:
 - Google Maps API key
 - Google reCAPTCHA keys
 
-A database dump file (`DatabaseDump.sql`) is available in the root for local development. Import it into your database to get started with sample data.
+The provided `DatabaseDump.sql` file should be imported into your database to populate it with sample data.
 
 ### 3. Install Composer dependencies
 
